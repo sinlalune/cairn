@@ -11,7 +11,7 @@
     "architecture": "docs/architecture",
     "decisions": "docs/adr",
     "modules": "docs/modules",
-    "concepts": "docs/cairn/specification/concepts",
+    "concepts": "spec/concepts",
     "source": [
       "tools"
     ]

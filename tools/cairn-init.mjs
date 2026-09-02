@@ -65,7 +65,7 @@ export const REFERENCE_TOOLS = [
 
 /** Portable protocol text, copied whole. An adopter running a validator whose
  *  rules they cannot read is being asked to obey an unreadable law. */
-export const PORTABLE_DOCS = 'docs/cairn/specification'
+export const PORTABLE_DOCS = 'spec'
 
 export function sourceCommit(root = SOURCE_ROOT) {
   try {
@@ -114,7 +114,7 @@ export function buildConfig(options) {
       architecture: `${options.docsRoot}/architecture`,
       decisions: `${options.docsRoot}/adr`,
       modules: `${options.docsRoot}/modules`,
-      concepts: `${options.docsRoot}/cairn/specification/concepts`,
+      concepts: `${PORTABLE_DOCS}/concepts`,
       source: options.sourceRoots
     },
     areas: [
@@ -166,7 +166,7 @@ This file points; it does not carry project memory.
    convention: registration, one writer per worktree, checkpoints, closure.
 2. \`${options.projectRoot}/coding-paths/binding.md\` — this repository's
    BINDING: exact roots, commands, branch and remote.
-3. \`${options.docsRoot}/cairn/specification/reference/execution-protocol.md\` —
+3. \`${PORTABLE_DOCS}/reference/execution-protocol.md\` —
    the portable per-session order.
 4. \`${options.projectRoot}/coding-paths/ACTIVE.md\` — what is running now. It is
    generated; never hand-edit it.
@@ -212,7 +212,7 @@ paths, command names and runtime details. Portable protocol text never does.
 | accepted architecture | \`${options.docsRoot}/architecture/\` |
 | decisions | \`${options.docsRoot}/adr/\` |
 | implemented-area notes | \`${options.docsRoot}/modules/\` |
-| concept wiki | \`${options.docsRoot}/cairn/specification/concepts/\` |
+| concept wiki | \`${PORTABLE_DOCS}/concepts/\` |
 | source roots | ${options.sourceRoots.map((r) => `\`${r}/\``).join(', ')} |
 | trunk | \`${options.trunk}\` |
 | remote | \`${options.remote}\` |
@@ -228,9 +228,9 @@ name from this repository into portable protocol text.
 
 ## Where the concept wiki starts
 
-New vocabulary goes in \`${options.docsRoot}/cairn/specification/concepts/\`, one
+New vocabulary goes in \`${PORTABLE_DOCS}/concepts/\`, one
 article per term, following
-[the one-concept template](../../${options.docsRoot}/cairn/specification/concepts/concept-template.md).
+[the one-concept template](../../${PORTABLE_DOCS}/concepts/concept-template.md).
 The index there separates borrowed vocabulary from Cairn-defined concepts; keep
 that separation, because only the second kind is yours to change.
 
@@ -398,7 +398,7 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
   put(`${options.projectRoot}/coding-paths/paths.md`, readFileSync(convention))
   put(`${options.projectRoot}/coding-paths/binding.md`, hostBinding(options))
 
-  put(`${options.docsRoot}/cairn/specification/concepts/concept-template.md`, conceptTemplate())
+  put(`${PORTABLE_DOCS}/concepts/concept-template.md`, conceptTemplate())
 
 
 

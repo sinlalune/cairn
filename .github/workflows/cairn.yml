@@ -3,7 +3,7 @@ name: cairn
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, "path/**"]
 jobs:
   protocol:
     runs-on: ubuntu-latest

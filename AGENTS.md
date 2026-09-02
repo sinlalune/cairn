@@ -8,7 +8,7 @@ This file points; it does not carry project memory.
    convention: registration, one writer per worktree, checkpoints, closure.
 2. `project/coding-paths/binding.md` — this repository's
    BINDING: exact roots, commands, branch and remote.
-3. `docs/cairn/specification/reference/execution-protocol.md` —
+3. `spec/reference/execution-protocol.md` —
    the portable per-session order.
 4. `project/coding-paths/ACTIVE.md` — what is running now. It is
    generated; never hand-edit it.

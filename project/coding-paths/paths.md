@@ -11,7 +11,7 @@ cairn:
 # Parallel coding paths
 
 > **PORTABLE REQUIRED READING.** This page projects the canonical
-> [Cairn specification](../../docs/cairn/specification/index.md) into the order
+> [Cairn specification](../../spec/index.md) into the order
 > used to operate one path. Repository-specific roots, commands, runtime
 > isolation and examples belong in the adjacent [binding appendix](./binding.md).
 > A host that had a combined operating page before this split keeps it as
@@ -61,13 +61,13 @@ rollup operation.
 
 ## Open and register before branching
 
-1. Obtain and record [opening acceptance](../../docs/cairn/specification/concepts/opening-acceptance.md)
+1. Obtain and record [opening acceptance](../../spec/concepts/opening-acceptance.md)
    for the path's outcome, scope and initial writer.
 2. From a clean, current trunk, create the accepted path record using the
-   [path template](../../docs/cairn/specification/reference/path-template.md).
+   [path template](../../spec/reference/path-template.md).
    Set `status: running`, the derived path branch, and `base_commit` to the
    exact trunk tip immediately before registration.
-3. Regenerate the [live view](../../docs/cairn/specification/concepts/live-view.md)
+3. Regenerate the [live view](../../spec/concepts/live-view.md)
    and run the protocol gate.
 4. Land and push a metadata-only trunk unit containing the accepted path
    declaration, regenerated live view and opening record. It contains no
@@ -77,7 +77,7 @@ rollup operation.
 
 The repository's [binding appendix](./binding.md) supplies the exact trunk,
 remote, paths and commands. The full copy-ready sequence is in
-[Cairn operations](../../docs/cairn/specification/reference/operations.md#register-an-accepted-path).
+[Cairn operations](../../spec/reference/operations.md#register-an-accepted-path).
 
 ## Give one writable worktree one writer
 
@@ -95,7 +95,7 @@ were portable protocol.
 
 ## Complete one work unit at a time
 
-Follow the portable [execution protocol](../../docs/cairn/specification/reference/execution-protocol.md).
+Follow the portable [execution protocol](../../spec/reference/execution-protocol.md).
 In one coherent unit:
 
 1. change the implementation or protocol artefact;

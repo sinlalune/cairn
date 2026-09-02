@@ -19,7 +19,7 @@ const CHECK_FILE = join(REPO, 'tools/cairn-check.mjs')
  *  exist — the defect this generator was built for. The splice makes the
  *  regeneration one command, and the test makes the shipped table executable:
  *  a specification that has drifted from the validator fails the build. */
-export const SPEC_FILE = 'docs/cairn/specification/index.md'
+export const SPEC_FILE = 'spec/reference/conformance.md'
 export const TABLE_BEGIN = '<!-- cairn:rules:begin -->'
 export const TABLE_END = '<!-- cairn:rules:end -->'
 export const LINKAGE_BEGIN = '<!-- cairn:conformance:begin -->'

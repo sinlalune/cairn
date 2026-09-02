@@ -92,11 +92,11 @@ installs with one command. Deletion before addition, at every unit.
 - `docs/cairn/manifesto.md` — what the protocol is for; every cut is measured against it.
 - `docs/cairn/cairn-manifesto-convergence-2026-09-02.md` — the audit, the state of the art, and section 4: the shape this path builds.
 - `project/coding-paths/paths.md` — the 0.2 lifecycle this record follows until it replaces it.
-- `docs/cairn/specification/index.md` — the 0.2 specification being cut.
+- `spec/index.md` — the specification, on the six stages since S01; the 0.2 text it was cut from is pinned in `governs:` at its old path.
 
 ### Conditional
 
-- `docs/cairn/specification/reference/conformance.md` — when the weight budget and the rule linkage are written.
+- `spec/reference/conformance.md` — when the rules are cut (S02) and when the weight budget is measured (S08).
 - Atomik's journal entry for CP-OPS-002 (https://github.com/sinlalune/atomik/blob/46bdd11ba8d0d255fa3598273216b996ce5527d0/atomik-project/log/2026-09-02-cp-ops-002.md) — the named debts, when the rules are cut.
 
 ### Deliberately excluded
@@ -105,7 +105,8 @@ installs with one command. Deletion before addition, at every unit.
 
 ## Steps
 
-- **S01** — in progress; its file is linked when it is written
+- **[S01](./steps/S01.md)** — the specification moved to `spec/` and written on the six stages; 17,455 words became 5,588, 50 own concepts became 31; the 0.2 matrix moved to the conformance page — COMPLETE
+- **S02** — in progress; its file is linked when it is written
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
@@ -115,10 +116,10 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 base commit : 43cfeb96670eba615567b967f7368f32b3d8a409
 branch      : path/cp-cairn-001
 writer      : cp-cairn-001-writer
-remote      : not yet published
-gates       : cairn-check OK on the genesis commit
-session     : registering
-next action : S01 — the specification reorganised on the six stages, cut before added
+remote      : origin/path/cp-cairn-001, tip = the S01 commit, pushed; the brief names the checkpoint before it
+gates       : cairn-check OK on S01, one advisory (concept-growth, explained in the step)
+session     : safe boundary after S01
+next action : S02 — the rules cut to the keep list, the fixture suite brought over, the matrix rewritten
 blockers    : none
 cleanup plan: after remote integration proof, remove the exact clean secondary
               worktree without force

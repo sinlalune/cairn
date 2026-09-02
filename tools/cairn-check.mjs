@@ -2730,7 +2730,10 @@ function walk(dir, out = []) {
 }
 
 function markdownCorpus() {
-  const roots = [...new Set([DOCUMENTATION_DIR, PROJECT_DIR])]
+  // The specification lives beside its concept wiki — `spec/` at the root of
+  // the protocol's own repository, wherever an adopter binds it — so the wiki's
+  // parent joins the two planes. Files reached twice dedupe by path.
+  const roots = [...new Set([DOCUMENTATION_DIR, PROJECT_DIR, dirname(CONCEPTS_DIR)])]
   return [...new Set(roots.flatMap((root) =>
     existsSync(join(REPO, root)) ? walk(root, []).filter((file) => file.endsWith('.md')) : []
   ))]

@@ -19,7 +19,7 @@ paths, command names and runtime details. Portable protocol text never does.
 | accepted architecture | `docs/architecture/` |
 | decisions | `docs/adr/` |
 | implemented-area notes | `docs/modules/` |
-| concept wiki | `docs/cairn/specification/concepts/` |
+| concept wiki | `spec/concepts/` |
 | source roots | `tools/` |
 | trunk | `main` |
 | remote | `origin` |
@@ -35,9 +35,9 @@ name from this repository into portable protocol text.
 
 ## Where the concept wiki starts
 
-New vocabulary goes in `docs/cairn/specification/concepts/`, one
+New vocabulary goes in `spec/concepts/`, one
 article per term, following
-[the one-concept template](../../docs/cairn/specification/concepts/concept-template.md).
+[the one-concept template](../../spec/concepts/concept-template.md).
 The index there separates borrowed vocabulary from Cairn-defined concepts; keep
 that separation, because only the second kind is yours to change.
 
