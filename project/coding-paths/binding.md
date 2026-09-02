@@ -19,12 +19,13 @@ paths, command names and runtime details. Portable protocol text never does.
 | accepted architecture | `docs/architecture/` |
 | decisions | `docs/adr/` |
 | implemented-area notes | `docs/modules/` |
-| concept wiki | `spec/concepts/` |
+| concept wiki | `spec/concepts/` — the protocol's own is this repository's own |
 | source roots | `tools/` |
 | trunk | `main` |
 | remote | `origin` |
 | metadata namespace | `cairn` |
 | enforcement profile | `ci` |
+| integration transport | `pull-request` |
 | path-history policy | **forbidden** — a published branch is never rewritten |
 | path branch | `path/<lowercase-path-id>` |
 

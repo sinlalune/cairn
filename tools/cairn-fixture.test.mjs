@@ -27,7 +27,7 @@ import { appendFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync, mkdir
 import { dirname, join } from 'node:path'
 import { tmpdir } from 'node:os'
 
-import { applyPlan, defaultOptions, planInstall } from './cairn-init.mjs'
+import { applyPlan, defaultOptions, planInstall } from './cairn.mjs'
 
 const CHECK = 'tools/cairn-check.mjs'
 
@@ -257,7 +257,7 @@ fixture('a link that resolves nowhere', 'links', (dir) => {
 })
 
 fixture('a concept nothing outside the wiki links', 'concept-orphan', (dir) => {
-  write(dir, 'spec/concepts/unused-idea.md',
+  write(dir, 'docs/concepts/unused-idea.md',
     '---\ntype: Cairn Concept\ntitle: Unused idea\ndescription: Nobody links this.\ntags: [cairn, concept]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Unused idea\n\nA concept no text needed.\n')
 })
 

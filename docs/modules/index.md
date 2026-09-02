@@ -8,8 +8,7 @@ timestamp: 2026-09-02T00:00:00Z
 
 # Module notes
 
-One note per implemented area: flow, boundaries and tests.
-
-The companion history is [log.md](./log.md).
+One note per implemented area: flow, boundaries and tests. Git keeps the
+folder's history.
 
 - [The reference tools](./application.md) — `tools/`: the checker and its companions, how they find the specification, how they are tested.

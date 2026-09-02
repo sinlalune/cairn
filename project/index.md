@@ -14,4 +14,4 @@ and resume section live in its `index.md`; its closing review is the pull
 request. `sessions/` holds the one opening record written before the
 acceptance moved inline, kept as history.
 
-The companion history is [log.md](./log.md).
+Git keeps this plane's history.

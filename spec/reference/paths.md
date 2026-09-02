@@ -11,9 +11,11 @@ cairn:
 # Parallel coding paths
 
 > **PORTABLE REQUIRED READING.** This page projects the canonical
-> [Cairn specification](../../spec/index.md) into the order
+> [Cairn specification](../index.md) into the order
 > used to operate one path. Repository-specific roots, commands, runtime
-> isolation and examples belong in the adjacent [binding appendix](./binding.md).
+> isolation and examples belong in the repository's
+> [binding appendix](../../project/coding-paths/binding.md), which the
+> bootloader pairs with this page.
 > A host that had a combined operating page before this split keeps it as
 > explanatory history and names it from its binding, not from here: a portable
 > page that links one repository's history is a portable page that only resolves
@@ -62,14 +64,14 @@ rollup operation.
 
 ## Open and register before branching
 
-1. Obtain [opening acceptance](../../spec/concepts/opening-acceptance.md)
+1. Obtain [opening acceptance](../concepts/opening-acceptance.md)
    for the path's outcome, scope and initial writer, and record it in the
    record's own `## Opening acceptance` section with the scope digest.
 2. From a clean, current trunk, create the accepted path record using the
-   [path template](../../spec/reference/path-template.md).
+   [path template](../reference/path-template.md).
    Set `status: running`, the derived path branch, and `base_commit` to the
    exact trunk tip immediately before registration.
-3. Regenerate the [live view](../../spec/concepts/live-view.md)
+3. Regenerate the [live view](../concepts/live-view.md)
    and run the protocol gate.
 4. Land and push a metadata-only trunk unit containing the accepted path
    declaration, regenerated live view and opening record. It contains no
@@ -77,7 +79,7 @@ rollup operation.
 5. Create the path branch and its dedicated worktree from that registration
    commit, then publish the branch.
 
-The repository's [binding appendix](./binding.md) supplies the exact trunk,
+The repository's [binding appendix](../../project/coding-paths/binding.md) supplies the exact trunk,
 remote, paths and commands. The full copy-ready sequence is in the
 [`cairn-open` skill](../../skills/cairn-open/reference.md).
 
@@ -97,7 +99,7 @@ were portable protocol.
 
 ## Complete one work unit at a time
 
-Follow the portable [execution protocol](../../spec/reference/execution-protocol.md).
+Follow the portable [execution protocol](../reference/execution-protocol.md).
 In one coherent unit:
 
 1. change the implementation or protocol artefact;
@@ -209,5 +211,5 @@ verdict.
 
 This file contains no application names, local directory names, product hot
 files or runtime environment variables. The repository bootloader pairs it with
-exactly one [host binding](./binding.md). If the portable convention and its
+exactly one [host binding](../../project/coding-paths/binding.md). If the portable convention and its
 binding disagree, report the defect; do not silently choose one.

@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-001
   route: full
   status: running
-  current_step: S05
+  current_step: S06
   base_commit: 43cfeb96670eba615567b967f7368f32b3d8a409
   branch: path/cp-cairn-001
   assigned_writer: cp-cairn-001-writer
@@ -28,7 +28,6 @@ cairn:
     - kit/**
     - tools/**
     - site/**
-    - project/coding-paths/paths.md
     - project/coding-paths/binding.md
     - project/coding-paths/CP-CAIRN-001/**
     - project/index.md
@@ -111,7 +110,7 @@ immutable original; the block above carries the same digest.
 
 - `docs/cairn/manifesto.md` — what the protocol is for; every cut is measured against it.
 - `docs/cairn/cairn-manifesto-convergence-2026-09-02.md` — the audit, the state of the art, and section 4: the shape this path builds.
-- `project/coding-paths/paths.md` — the 0.2 lifecycle this record follows until it replaces it.
+- `project/coding-paths/paths.md` — the 0.2 lifecycle this record follows until it replaces it; since S06 the page lives at `spec/reference/paths.md`, and the pin above names the blob it was accepted at.
 - `spec/index.md` — the specification, on the six stages since S01; the 0.2 text it was cut from is pinned in `governs:` at its old path.
 
 ### Conditional
@@ -130,7 +129,8 @@ immutable original; the block above carries the same digest.
 - **[S03](./steps/S03.md)** — one folder per path: opening acceptance inline and read there, the resume section replacing the brief, `depends_on:` validated and projected as the unblocked view, `foundation` and `emergency` gone, folder logs gone; this record migrated as the worked example — COMPLETE
 - **[S04](./steps/S04.md)** — the pull request is the closing record: `pull-request` the default transport with `manual-git` as the fallback, the checker proving only what Git holds on the first and reading one closing record in the path folder on the second, the drift base derived from the merge-base — COMPLETE
 - **[S05](./steps/S05.md)** — the procedures as five Agent Skills under `skills/`, each under a thousand tokens, the operations page cut into their reference files and deleted, the skills checked and installed with the kit — COMPLETE
-- **S06** — in progress; its file is linked when it is written
+- **[S06](./steps/S06.md)** — the `cairn` command of the `cairn-protocol` package: `init` from a kit of 26 files that links the specification at the pinned commit, `status` and `update` by lock digest, `adopt` for a lock-less installation, run on Atomik at `46bdd11`; this repository's lock rewritten; the path convention moved beside the execution protocol — COMPLETE
+- **S07** — in progress; its file is linked when it is written
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
@@ -139,21 +139,21 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : eb216c5df3e109475e82fbfd57f094186068d6b1 — the S04 completing commit, on origin/path/cp-cairn-001; S05 is the commit that carries this refresh
-unit   : 04
+commit : 7b6a3e199c38ca8e1212cb1a5211751789b82b74 — the S05 commit, on origin/path/cp-cairn-001; S06 is the commit that carries this refresh
+unit   : 05
 base   : 43cfeb96670eba615567b967f7368f32b3d8a409
 trunk  : ca34010040daa836fe81004eb2f400f9a5c7511f — origin/main has not moved since registration
 ```
 
 ### Next action
 
-S06 — `npx cairn`: `init` from a thin kit that links the specification at the
-pinned release instead of copying it, `status` comparing `cairn.lock.json` with
-the published release, `update` rewriting pristine files by digest and
-reporting edited ones, and `adopt` for a repository that carries the protocol
-without a lock. The lock is rewritten to the 1.0 paths. Atomik at
-`46bdd11ba8d0d255fa3598273216b996ce5527d0` is the acceptance test for `adopt`.
-Plan item 6 in `plan.md`.
+S07 — `README.md` with the beginner overview and three quick starts; the
+manifesto's edited edition as `manifesto.md` at the repository root; `site/`,
+the React Markdown renderer with Mermaid built from the manifesto, the README
+and the specification, published to GitHub Pages. Plan item 7 in `plan.md`.
+The overview states compatibility with spec-driven toolkits rather than
+competing with them (convergence record, section 3), and names the package
+`cairn-protocol` with its `cairn` binary.
 
 ### Blockers
 
@@ -186,14 +186,20 @@ None.
   guarantee the forge already gives.
 - A `roots.skills` configuration field (S05) — the standard fixes the folder's
   shape, and a field would be a migration for a name nobody would change.
+- Installing the `cairn` command into the adopter's tools (S06) — it runs from
+  the package against the lock; a local copy would copy from itself.
+- `adopt` deleting the 0.2 shapes it recognises (S06) — they are the
+  adopter's, some are its history; it reports them and touches none.
+- Pinning the specification links at a release tag (S06) — dead until S08
+  tags; the source commit is exact and already on the forge.
 
 ### Reading order
 
 1. `docs/cairn/manifesto.md@e248bc94232ba75777cbd305a9270fb114069d8e` — what every cut is measured against.
 2. `docs/cairn/cairn-manifesto-convergence-2026-09-02.md@5ec546716b369b674574a4f370823385bea12518` — section 4 is the definition of done; its transport decisions are S04's instruction.
-3. `docs/cairn/cairn-manifesto-convergence-2026-09-02.md` section 4, *Distribution* and *The cutover* — what S06 builds and what it must not do.
-4. `tools/cairn-init.mjs` and `cairn.lock.json` at the S05 tip — the installer to rebuild thin, and the lock still listing the 0.2 paths.
-5. `project/coding-paths/CP-CAIRN-001/steps/S01.md`, the debt noted for S06 — the lock and the installer's remaining 0.2 assumptions.
+3. `docs/cairn/cairn-project-note-2026-09-02.md` and the convergence record's sections 2 (*The engagement*, *The pedagogy*) and 3 — the four documentation layers S07 writes, and the compatibility statement.
+4. `docs/cairn/manifesto.md@e248bc94232ba75777cbd305a9270fb114069d8e` — the text S07 edits into `manifesto.md`, without changing what it says.
+5. `spec/index.md` at the S06 tip — what the README's overview summarises and the site renders.
 
 ### Verify
 

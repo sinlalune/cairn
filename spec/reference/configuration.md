@@ -22,13 +22,14 @@ by the Cairn 1.0 cut, and a field no rule reads is a claim no rule checks. A
 schema-1 file is refused by name; `npx cairn adopt` is where the migration is
 written (S06).
 
-This is **partial portable conformance**, not the completed distribution story.
-`cairn-init` now installs a repository transactionally and writes this file, and
-`cairn.lock.json` records the release and a digest per installed file — which is
-what an update would need to tell a pristine file from an edited one. The update
-itself, and schema-to-schema migrations and transport tests, are still absent.
-The checked-in workflow is an installed host adapter. Those open obligations remain visible
-in [current conformance](../index.md#current-conformance).
+The `cairn` command of the `cairn-protocol` package installs a repository
+transactionally and writes this file (`init`), reads the lock to say which kit
+files are pristine, edited or missing and whether a newer release exists
+(`status`), rewrites the pristine ones, migrates this file field by field from
+schema 1 and reports the rest (`update`), and turns a repository that carries
+the protocol without a lock into an installation (`adopt`). The checked-in
+workflow is an installed host adapter. What remains open is on the
+[conformance page](./conformance.md).
 
 ## Intended file
 
@@ -94,7 +95,7 @@ parent-traversing, dot-segment, empty-segment, and backslash forms are rejected.
 | `roots.architecture` | accepted doctrine | normalised repository-relative path |
 | `roots.decisions` | decision records | normalised repository-relative path |
 | `roots.modules` | implemented-area notes | normalised repository-relative path |
-| `roots.concepts` | one-idea explanatory wiki | normalised repository-relative path |
+| `roots.concepts` | this repository's own one-idea wiki — the project scope; the protocol's wiki is read at the release, never written into | normalised repository-relative path |
 | `roots.source` | guarded source roots | non-empty path array |
 | `areas` | source pattern to module-note routing | ordered `{ name, match[], note }` entries; first matching entry wins |
 | `defaultRoute` | route a new-path generator writes and a missing-field diagnostic recommends | `lightweight \| full`; the resulting path record still declares it explicitly |
@@ -128,10 +129,12 @@ A portable implementation MUST:
 
 Configuration may rename a role. It may not weaken a protocol `MUST`.
 
-The installed schema-2 loader currently satisfies obligations 1, 3, and the
-binding portion of 5; rejects unknown versions for obligation 2; and prints the
-effective profile plus branch/base binding for obligation 8. It does **not**
-claim the missing half of 2 or obligations 4, 6, and 7. A declaration of
+The installed schema-2 loader satisfies obligations 1, 3, and the binding
+portion of 5; the `cairn` command satisfies 2 — an unknown version is refused,
+and schema 1 migrates to 2 — and 6, installation and update; and the checker
+prints the effective profile plus branch/base binding for obligation 8. The
+package states its Node requirement for 4. Obligation 7 is the fixture suite's
+for `manual-git` and the forge's for `pull-request`. A declaration of
 `pathHistoryPolicy: forbidden` satisfies the paired declaration in obligation
 9; whether a host actually prevents the push is an enforcement-profile claim,
 not something a local JSON reader can prove.

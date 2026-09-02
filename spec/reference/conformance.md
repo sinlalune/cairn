@@ -30,7 +30,7 @@ bound is a count, not a constraint.
 | :-- | --: | --: |
 | `spec/index.md` | under 8,000 words | *measured at release* |
 | the required entry chain — bootloader, path convention, binding, execution protocol | under 3,000 words | *measured at release* |
-| files the kit installs | under 30 | *measured at release* |
+| files the kit installs | under 30 | 26 and the lock on the `ci` profile, 25 on `local` (S06); confirmed at release |
 | protocol files one lightweight unit writes | under 6 | *measured at release* |
 
 ## Where the matrix stands
@@ -80,7 +80,7 @@ means a judgement was scored; it means a fact was read.
 | The concept wiki: an orphan blocks, growth is reported | **implemented**; `concept-orphan` blocks a concept that no document outside the wiki links, and `concept-growth` reports the articles a change adds (chapter 6) | only the protocol scope is bound here; a project's own wiki binds through `roots.concepts` |
 | Every relative link in the corpus resolves | **implemented**; `links` blocks a relative Markdown link that resolves nowhere, code stripped, across the documentation plane, the project plane and the specification | none |
 | An adversarial fixture per blocking rule | **implemented**; nineteen of nineteen blocking rules have a fixture that installs a real repository with `cairn-init`, proves it green, introduces exactly one violation and requires that rule among the blocking findings; coverage is declared, so a new blocking rule forces the choice | a fixture proves the rule catches *that* violation, not the class |
-| Installation, update and adoption | **partially implemented**; `cairn-init` installs the shapes stated here — the transport it is told, the request template with `pull-request`, no briefs, sessions or audits folders — writes the area note its configuration names, and passes its own gate on the first command; `update` and `adopt` are not implemented and the kit still copies the specification | S06: `npx cairn` and the lock-digest migrator |
+| Installation, update and adoption | **implemented**; the `cairn` command of the `cairn-protocol` package: `init` installs a thin kit — the reference tools, the five skills, the host files and the folder indexes, 26 files and the lock on the `ci` profile — that links the specification and the path convention at the commit it was cut from and passes its own gate on the first command; `status` tells pristine, edited and missing kit files apart by the lock's digests and says whether a newer release exists; `update` rewrites pristine kit files, restores missing ones, keeps edited ones, deletes pristine files that left the kit, migrates the configuration from schema 1, and writes the new lock; `adopt` turns a repository carrying the protocol without a lock into an installation — configuration migrated, tools and skills written, host files kept where they exist, the view regenerated, the lock written, every 0.2 shape reported and none deleted | the npm name `cairn` is another package's, so the package is `cairn-protocol` and its binary `cairn`; publishing is the release's (S08); the specification links pin the source commit and resolve once it is on the forge |
 | The pilots | **cold-resume run once** (20 trials, 35% would act without asking); **greenfield rerun at release** (S08) | a second writer, a hosted remote with the CI adapter |
 
 The current supported claim is therefore:

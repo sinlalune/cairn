@@ -4,7 +4,7 @@ This file points; it does not carry project memory.
 
 ## Start here, in order
 
-1. `project/coding-paths/paths.md` — the PORTABLE path
+1. `spec/reference/paths.md` — the PORTABLE path
    convention: registration, one writer per worktree, checkpoints, closure.
 2. `project/coding-paths/binding.md` — this repository's
    BINDING: exact roots, commands, branch and remote.
@@ -26,6 +26,7 @@ npm run cairn-check     # the blocking and advisory rules, in full
 npm run cairn-active    # regenerate the running-paths view
 npm run cairn-audit     # the closing review: the request's description to paste, or the closing record on manual-git
 npm test                # the tools' own fixture suite: one adversarial fixture per blocking rule
+npm run cairn -- status # the installed release against this package, and what update would touch
 ```
 
 ## Absolute rules

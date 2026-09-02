@@ -14,6 +14,8 @@ reference supplies exact forms:
 
 - [Repository layout](./repository-layout.md) — directories, file roles, and
   naming conventions.
+- [The path convention](./paths.md) — the portable operating convention for
+  one path: registration, one writer per worktree, checkpoints, closure.
 - [Execution protocol](./execution-protocol.md) — the ordered portable route for
   entering, advancing, handing off, resuming, and closing one path.
 - [Coding-path template](./path-template.md) — a complete path record: the

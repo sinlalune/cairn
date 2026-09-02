@@ -49,13 +49,13 @@ repository/
 │   │   └── cairn.yml
 │   └── pull_request_template.md
 ├── tools/
+│   ├── cairn.mjs               the command: init · status · update · adopt (the package's, not installed)
 │   ├── cairn-check.mjs
 │   ├── cairn-config.mjs
 │   ├── cairn-config.schema.json
 │   ├── cairn-active.mjs
 │   ├── cairn-audit.mjs
-│   ├── cairn-init.mjs
-│   ├── cairn-rules.mjs
+│   ├── cairn-rules.mjs         the protocol repository's, not installed
 │   ├── soundness.md
 │   └── <tool>.test.mjs
 ├── skills/
@@ -96,8 +96,6 @@ repository/
     ├── log.md
     ├── coding-paths/
     │   ├── index.md
-    │   ├── log.md
-    │   ├── paths.md
     │   ├── binding.md
     │   ├── ACTIVE.md
     │   ├── CP-<ID>/
@@ -142,8 +140,8 @@ what Cairn defines, not what any one adoption happens to contain.
 | :-- | :-- | :-- |
 | `AGENTS.md` | small bootloader pointing participants to operating state and doctrine | change only with the protocol entry route |
 | `cairn.config.json` | versioned machine-readable binding from portable roles to this host | host configuration change |
-| `cairn.lock.json` | the protocol release installed here, and one digest per installed file, so an update can tell a pristine file from an edited one | written by `cairn-init`; never hand-edited |
-| `tools/cairn-init.mjs` | transactional installer: resolves the whole file set, refuses to overwrite, rolls back on failure | independently reviewed control-plane change |
+| `cairn.lock.json` | the release installed here, the commit it was cut from, and one digest per kit file as the kit wrote it, so `status` can tell a pristine file from an edited one and `update` can rewrite the first | written by the `cairn` command; never hand-edited |
+| `tools/cairn.mjs` | the `cairn` command of the `cairn-protocol` package: `init` installs the kit transactionally, `status` reads the lock, `update` rewrites pristine kit files and migrates the configuration, `adopt` turns a repository carrying the protocol without a lock into an installation | independently reviewed control-plane change |
 | `package.json` | exposes the reference commands without making Node a protocol requirement | control-plane change |
 | `.github/workflows/cairn.yml` | current CI adapter; the one required check, on the exact commit that lands | independently reviewed control-plane change |
 | `.github/pull_request_template.md` | the closing review's shape, filled into every request on `pull-request` transport | control-plane change |
@@ -163,7 +161,7 @@ what Cairn defines, not what any one adoption happens to contain.
 | `skills/<name>/SKILL.md` | one procedure as an Agent Skill — brainstorm, open, unit, close — or the coding stance; its `reference.md` carries the command sequences | same work unit as the procedure it teaches |
 | `site/` | generated self-contained reader | generator only |
 | `project/index.md` | entry map for durable project knowledge and execution state | project-plane change |
-| `project/coding-paths/paths.md` | portable operating convention for opening, running, integrating, and cleaning paths | accepted protocol operation change |
+| `spec/reference/paths.md` | portable operating convention for opening, running, integrating, and cleaning paths — read at the release by an installed repository | accepted protocol operation change |
 | `project/coding-paths/binding.md` | human-readable host adapter: installed roots, commands, worktree/runtime details, and local examples | host configuration change |
 | `project/coding-paths/CP-<ID>/` | one path as one folder: declaration, opening acceptance, step index and resume section in `index.md`, forward plan in `plan.md`, one file per step under `steps/`; no folder log | current assigned writer |
 | `project/coding-paths/CP-<ID>/steps/S<NN>.md` | one step's complete record, written to be read alone | append-only once written |
@@ -253,10 +251,9 @@ documentation coverage.
 
 The [configuration contract](./configuration.md) is the machine-readable
 counterpart. The schema-2 loader resolves the installed binding for the
-checker, active view, and audit scaffold. Schema migrations, installation,
-updates, and generated host adapters remain open, so that loader is not by
-itself a claim of complete portable conformance. Installed names still MUST NOT
-leak into portable documentation.
+checker, the live view and the closing scaffolder; the `cairn` command installs
+it, migrates it from schema 1, and updates the kit by lock digest. Installed
+names still MUST NOT leak into portable documentation.
 
 ## Naming relationships
 

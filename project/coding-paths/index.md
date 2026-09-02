@@ -1,13 +1,19 @@
 ---
 type: Cairn Folder Index
 title: Coding paths
-description: One record per bounded change, and the generated live view.
+description: One folder per bounded change, the generated live view, and the roadmap register.
 tags: [index, cairn]
 timestamp: 2026-09-02T00:00:00Z
 ---
 
 # Coding paths
 
-One record per bounded change, and the generated live view.
+One folder per bounded change, the generated live view, and the roadmap register.
 
-The companion history is [log.md](./log.md).
+## Roadmap
+
+Every milestone is accounted for: it has a path, or it says it does not yet.
+
+| Milestone | Outcome | Paths | State |
+| :-- | :-- | :-- | :-- |
+| M1 — the first milestone | what the product can do when it is reached | *no path yet* | planned |
