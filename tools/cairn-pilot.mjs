@@ -37,13 +37,22 @@ const BRANCH = 'path/cp-pilot-001'
 const RECORD = `project/coding-paths/${PATH_ID}/index.md`
 const STEP = `project/coding-paths/${PATH_ID}/steps/S01.md`
 
+/** The pilot is its own author, so it runs where no identity is configured —
+ *  a CI runner, a fresh machine — and the merge commit it makes is no
+ *  exception. Found by the first CI run of this file. */
+const IDENTITY = {
+  ...process.env,
+  GIT_AUTHOR_NAME: 'pilot', GIT_AUTHOR_EMAIL: 'pilot@example.invalid',
+  GIT_COMMITTER_NAME: 'pilot', GIT_COMMITTER_EMAIL: 'pilot@example.invalid'
+}
+
 function git(dir, ...args) {
-  return execFileSync('git', args, { cwd: dir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+  return execFileSync('git', args, { cwd: dir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: IDENTITY }).trim()
 }
 
 function commit(dir, message, paths) {
   git(dir, 'add', ...paths)
-  git(dir, '-c', 'user.email=pilot@example.invalid', '-c', 'user.name=pilot', 'commit', '-qm', message)
+  git(dir, 'commit', '-qm', message)
   return git(dir, 'rev-parse', 'HEAD')
 }
 
