@@ -41,6 +41,8 @@ repository/
 │                   └── g<NN>/
 │                       └── <ledger-unit-ordinal>
 ├── AGENTS.md
+├── README.md
+├── manifesto.md
 ├── cairn.config.json
 ├── cairn.lock.json
 ├── package.json
@@ -62,6 +64,9 @@ repository/
 │   └── <cairn-skill>/
 │       ├── SKILL.md
 │       └── reference.md
+├── site/
+│   ├── build-content.mjs
+│   └── src/
 ├── spec/
 │   ├── index.md
 │   ├── concepts/
@@ -159,7 +164,9 @@ what Cairn defines, not what any one adoption happens to contain.
 | `spec/concepts/*.md` | one explanatory article per specialised object | same specification work unit |
 | `spec/reference/*.md` | exact layouts, schemas, and conformance | same specification work unit |
 | `skills/<name>/SKILL.md` | one procedure as an Agent Skill — brainstorm, open, unit, close — or the coding stance; its `reference.md` carries the command sequences | same work unit as the procedure it teaches |
-| `site/` | generated self-contained reader | generator only |
+| `README.md` | the beginner overview and the three quick starts | the protocol's own repository |
+| `manifesto.md` | the edited edition of the owner's statement; the verbatim original stays in the documentation plane | the protocol's own repository |
+| `site/` | the React Markdown renderer with Mermaid, built from the manifesto, the README, the specification and the skills, and published to GitHub Pages | the protocol's own repository, as a second implemented area |
 | `project/index.md` | entry map for durable project knowledge and execution state | project-plane change |
 | `spec/reference/paths.md` | portable operating convention for opening, running, integrating, and cleaning paths — read at the release by an installed repository | accepted protocol operation change |
 | `project/coding-paths/binding.md` | human-readable host adapter: installed roots, commands, worktree/runtime details, and local examples | host configuration change |
@@ -307,8 +314,8 @@ one flat path record
 integrated path + its accepted candidate
   └── project/log/YYYY-MM-DD-<id>.md
 
-canonical Markdown article graph
-  └── site/
+manifesto, README, specification and skills
+  └── site/  (built, never hand-written)
 ```
 
 An arrow means “generated or projected from,” not “maintained as another

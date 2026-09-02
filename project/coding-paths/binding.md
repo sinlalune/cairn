@@ -20,7 +20,7 @@ paths, command names and runtime details. Portable protocol text never does.
 | decisions | `docs/adr/` |
 | implemented-area notes | `docs/modules/` |
 | concept wiki | `spec/concepts/` — the protocol's own is this repository's own |
-| source roots | `tools/` |
+| source roots | `tools/`, `site/` |
 | trunk | `main` |
 | remote | `origin` |
 | metadata namespace | `cairn` |

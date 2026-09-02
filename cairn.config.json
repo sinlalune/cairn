@@ -13,7 +13,8 @@
     "modules": "docs/modules",
     "concepts": "spec/concepts",
     "source": [
-      "tools"
+      "tools",
+      "site"
     ]
   },
   "areas": [
@@ -23,6 +24,13 @@
         "tools/**"
       ],
       "note": "docs/modules/application.md"
+    },
+    {
+      "name": "site",
+      "match": [
+        "site/**"
+      ],
+      "note": "docs/modules/site.md"
     }
   ],
   "defaultRoute": "lightweight",

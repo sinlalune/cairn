@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-001
   route: full
   status: running
-  current_step: S06
+  current_step: S07
   base_commit: 43cfeb96670eba615567b967f7368f32b3d8a409
   branch: path/cp-cairn-001
   assigned_writer: cp-cairn-001-writer
@@ -20,6 +20,8 @@ cairn:
     - manifesto.md
     - package.json
     - cairn.config.json
+    - cairn.lock.json
+    - .gitignore
     - AGENTS.md
     - .github/**
     - docs/**
@@ -130,7 +132,8 @@ immutable original; the block above carries the same digest.
 - **[S04](./steps/S04.md)** — the pull request is the closing record: `pull-request` the default transport with `manual-git` as the fallback, the checker proving only what Git holds on the first and reading one closing record in the path folder on the second, the drift base derived from the merge-base — COMPLETE
 - **[S05](./steps/S05.md)** — the procedures as five Agent Skills under `skills/`, each under a thousand tokens, the operations page cut into their reference files and deleted, the skills checked and installed with the kit — COMPLETE
 - **[S06](./steps/S06.md)** — the `cairn` command of the `cairn-protocol` package: `init` from a kit of 26 files that links the specification at the pinned commit, `status` and `update` by lock digest, `adopt` for a lock-less installation, run on Atomik at `46bdd11`; this repository's lock rewritten; the path convention moved beside the execution protocol — COMPLETE
-- **S07** — in progress; its file is linked when it is written
+- **[S07](./steps/S07.md)** — the four documentation layers: `manifesto.md` as the edited edition, `README.md` with the overview and three quick starts, and `site/`, the React Markdown renderer with Mermaid built from 74 documents and deployed to GitHub Pages from the trunk — COMPLETE
+- **S08** — in progress; its file is linked when it is written
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
@@ -139,21 +142,23 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 7b6a3e199c38ca8e1212cb1a5211751789b82b74 — the S05 commit, on origin/path/cp-cairn-001; S06 is the commit that carries this refresh
-unit   : 05
+commit : 43bddf4528ce785d68743020b2a75acca73ea19a — the S06 commit, on origin/path/cp-cairn-001; S07 is the commit that carries this refresh
+unit   : 06
 base   : 43cfeb96670eba615567b967f7368f32b3d8a409
 trunk  : ca34010040daa836fe81004eb2f400f9a5c7511f — origin/main has not moved since registration
 ```
 
 ### Next action
 
-S07 — `README.md` with the beginner overview and three quick starts; the
-manifesto's edited edition as `manifesto.md` at the repository root; `site/`,
-the React Markdown renderer with Mermaid built from the manifesto, the README
-and the specification, published to GitHub Pages. Plan item 7 in `plan.md`.
-The overview states compatibility with spec-driven toolkits rather than
-competing with them (convergence record, section 3), and names the package
-`cairn-protocol` with its `cairn` binary.
+S08 — budget, pilot, release, then closure. Measure the weight budget onto
+the conformance page — the specification index, the entry chain, the kit,
+one lightweight unit's protocol files. Rerun the greenfield pilot from the
+release install to `done` on a throwaway repository and record its findings.
+Tag `1.0.0` on the trunk and publish `cairn-protocol`, which is the owner's
+credential to use. Then close this path with `cairn-close`: merge the trunk
+in, the candidate, the pull request from this branch with the review as its
+description, the administrative commit, the merge, and the integrating commit
+with the journal entry. Plan item 8 in `plan.md`.
 
 ### Blockers
 
@@ -192,14 +197,16 @@ None.
   adopter's, some are its history; it reports them and touches none.
 - Pinning the specification links at a release tag (S06) — dead until S08
   tags; the source commit is exact and already on the forge.
+- Writing pages for the site that are not documents of the repository (S07)
+  — a second copy that drifts; the site is a projection.
 
 ### Reading order
 
 1. `docs/cairn/manifesto.md@e248bc94232ba75777cbd305a9270fb114069d8e` — what every cut is measured against.
 2. `docs/cairn/cairn-manifesto-convergence-2026-09-02.md@5ec546716b369b674574a4f370823385bea12518` — section 4 is the definition of done; its transport decisions are S04's instruction.
-3. `docs/cairn/cairn-project-note-2026-09-02.md` and the convergence record's sections 2 (*The engagement*, *The pedagogy*) and 3 — the four documentation layers S07 writes, and the compatibility statement.
-4. `docs/cairn/manifesto.md@e248bc94232ba75777cbd305a9270fb114069d8e` — the text S07 edits into `manifesto.md`, without changing what it says.
-5. `spec/index.md` at the S06 tip — what the README's overview summarises and the site renders.
+3. `spec/reference/conformance.md` at the S07 tip, *The weight budget* — the four numbers S08 measures and states.
+4. `docs/cairn/cairn-manifesto-convergence-2026-09-02.md`, section 1 and the greenfield pilot row of the 0.2 matrix — what the pilot measured before, so the rerun compares like with like.
+5. `skills/cairn-close/SKILL.md` and its reference — the closure this path runs on itself, on `pull-request` transport.
 
 ### Verify
 
