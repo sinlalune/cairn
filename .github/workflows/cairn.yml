@@ -1,0 +1,23 @@
+# Cairn protocol gate. Installed ADAPTER, not portable protocol.
+name: cairn
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  protocol:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The gate must judge the branch that will land, so it needs history
+          # rather than a shallow single commit.
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Bare. A pipe would report the LAST command's exit code, which is how a
+      # gate comes to pass over its own failure.
+      - name: cairn-check
+        run: node tools/cairn-check.mjs --base origin/main
