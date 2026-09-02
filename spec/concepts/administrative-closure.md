@@ -25,15 +25,15 @@ has to be field-level or it is not a restriction.
 
 ## In Cairn
 
-`A` MAY add the exact [coherence audit](./coherence-audit.md) record and the
-exact [closing acceptance](./closing-acceptance.md) record, both new files
-naming `C`.
+On `manual-git`, `A` MAY add the exact closing record naming `C` — the
+[review](./coherence-audit.md) and the [acceptance](./closing-acceptance.md)
+in one file. On `pull-request` there is no file to add: the request carries
+both.
 
 Within the path record, `A` MAY change only:
 
 - `status`, set to `ready`;
-- `subject_commit`, set to `C`;
-- one appended [work-ledger](./work-ledger.md) entry.
+- `subject_commit`, set to `C`.
 
 Within the [resume section](./handoff.md), `A` MAY change only the checkpoint
 and the fields that follow from it.

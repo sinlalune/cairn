@@ -20,6 +20,9 @@ test('cairn-init: a new repository is created in the shapes the protocol states 
   assert.equal(config.defaultRoute, 'lightweight')
   assert.equal(config.version, 2)
   assert.ok(!('sharedFiles' in config) && !('staleAfterDays' in config), 'schema 2 carries no field for a retired rule')
+  assert.deepEqual(config.transport, { registration: 'pull-request', integration: 'pull-request' })
+  assert.deepEqual(buildConfig({ ...defaultOptions(), transport: 'manual-git' }).transport, { registration: 'manual-git', integration: 'manual-git' })
+  assert.throws(() => planInstall({ ...defaultOptions(), transport: 'carrier-pigeon' }), /generated configuration is invalid/)
 })
 
 test('cairn-init: an invalid generated binding fails before anything is written', () => {
@@ -40,8 +43,15 @@ test('cairn-init: the installation carries what its own links and rules need, an
   assert.ok(plan.files.has('docs/modules/application.md'))
   // The specification keeps no folder log; the owner retired them there.
   assert.ok(!plan.files.has('spec/log.md'))
-  // No briefs: the resume section lives in the path record.
-  assert.ok(![...plan.files.keys()].some((path) => path.startsWith('project/briefs/')))
+  // No briefs, no sessions, no audits: the resume section and the opening
+  // acceptance live in the path record; closing is the request, or one closing
+  // record in the path folder on manual-git.
+  for (const folder of ['project/briefs/', 'project/sessions/', 'project/audits/']) {
+    assert.ok(![...plan.files.keys()].some((path) => path.startsWith(folder)), folder)
+  }
+  // The request template travels with the pull-request transport, and only with it.
+  assert.ok(plan.files.has('.github/pull_request_template.md'))
+  assert.ok(!planInstall({ ...defaultOptions(), transport: 'manual-git' }).files.has('.github/pull_request_template.md'))
   // The tests are not installed: they exercise this repository's fixtures.
   assert.ok(![...plan.files.keys()].some((path) => path.endsWith('.test.mjs')))
 })

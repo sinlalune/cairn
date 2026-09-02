@@ -45,8 +45,9 @@ repository/
 ├── cairn.lock.json
 ├── package.json
 ├── .github/
-│   └── workflows/
-│       └── cairn.yml
+│   ├── workflows/
+│   │   └── cairn.yml
+│   └── pull_request_template.md
 ├── tools/
 │   ├── cairn-check.mjs
 │   ├── cairn-config.mjs
@@ -98,6 +99,7 @@ repository/
     │   ├── CP-<ID>/
     │   │   ├── index.md
     │   │   ├── plan.md
+    │   │   ├── closing-<full-subject-commit>.md   (manual-git only)
     │   │   └── steps/
     │   │       └── S<NN>.md
     │   ├── CP-<ID>.md
@@ -105,16 +107,6 @@ repository/
     │       ├── index.md
     │       ├── log.md
     │       └── CP-<ID>-S<NN>.md
-    ├── sessions/
-    │   ├── index.md
-    │   ├── log.md
-    │   ├── <date>-<path-id>-<event>.md
-    │   └── <date>-<session>/
-    │       └── <session-artifact>.md
-    ├── audits/
-    │   ├── index.md
-    │   ├── log.md
-    │   └── <path-id>-<full-subject-commit>.md
     ├── log/
     │   ├── index.md
     │   └── <date>-<path-id>.md
@@ -149,7 +141,8 @@ what Cairn defines, not what any one adoption happens to contain.
 | `cairn.lock.json` | the protocol release installed here, and one digest per installed file, so an update can tell a pristine file from an edited one | written by `cairn-init`; never hand-edited |
 | `tools/cairn-init.mjs` | transactional installer: resolves the whole file set, refuses to overwrite, rolls back on failure | independently reviewed control-plane change |
 | `package.json` | exposes the reference commands without making Node a protocol requirement | control-plane change |
-| `.github/workflows/cairn.yml` | current CI adapter; reports checks for the supplied comparison refs | independently reviewed control-plane change |
+| `.github/workflows/cairn.yml` | current CI adapter; the one required check, on the exact commit that lands | independently reviewed control-plane change |
+| `.github/pull_request_template.md` | the closing review's shape, filled into every request on `pull-request` transport | control-plane change |
 | `tools/cairn-check.mjs` | deterministic blocking and advisory predicates | independently reviewed control-plane change |
 | `tools/cairn-config.mjs` | dependency-free binding loader and schema-2 validator | independently reviewed control-plane change |
 | `tools/cairn-config.schema.json` | editor-readable schema for the installed binding | same work unit as the loader |
@@ -169,11 +162,10 @@ what Cairn defines, not what any one adoption happens to contain.
 | `project/coding-paths/binding.md` | human-readable host adapter: installed roots, commands, worktree/runtime details, and local examples | host configuration change |
 | `project/coding-paths/CP-<ID>/` | one path as one folder: declaration, opening acceptance, step index and resume section in `index.md`, forward plan in `plan.md`, one file per step under `steps/`; no folder log | current assigned writer |
 | `project/coding-paths/CP-<ID>/steps/S<NN>.md` | one step's complete record, written to be read alone | append-only once written |
+| `project/coding-paths/CP-<ID>/closing-<C>.md` | the review and acceptance of one exact candidate, on `manual-git` | reviewer; immutable thereafter |
 | `project/coding-paths/CP-*.md` | the same path as a flat record — the older shape, still conforming | current assigned writer |
 | `project/coding-paths/ACTIVE.md` | generated live-path index | generator only |
 | `project/coding-paths/history/*.md` | verbatim completed ledger sections rolled out of a FLAT record; a born-sliced record has no rollup and writes the step where it lives | created by that path; immutable thereafter |
-| `project/sessions/*.md` | closing acceptances and other human decisions; opening acceptance lives in the path record | participant recording the event; immutable thereafter |
-| `project/audits/*.md` | one audit bound to one full candidate hash | auditor; immutable thereafter |
 | `project/log/*.md` | one integrated outcome per file | integration unit; immutable thereafter |
 | `project/brainstorm/` | explicitly provisional thinking | normal path work; never treated as accepted doctrine |
 | `refs/heads/path/<id>` | one path's branch, carrying every checkpoint it has pushed | current assigned writer |
@@ -285,17 +277,12 @@ branch field remains present for `running`, `blocked`, and `ready`.
 
 ```text
 project/coding-paths/<PATH-ID>/index.md#opening-acceptance
-project/sessions/YYYY-MM-DD-<lowercase-path-id>-closing.md
+project/coding-paths/<PATH-ID>/closing-<full-subject-commit>.md   (manual-git)
 ```
 
-The opening acceptance is a section of the record. In the closing record,
-root-level metadata, not the filename, defines `path` and `ceremony`.
-
-### Audit record
-
-```text
-project/audits/<lowercase-path-id>-<full-40-character-subject-commit>.md
-```
+The opening acceptance is a section of the record. The closing record's
+filename carries the candidate it binds, and its metadata names the same id;
+on `pull-request` there is no file, because the request is the record.
 
 ### Journal entry
 
@@ -315,7 +302,7 @@ live path records
 one flat path record
   └── project/coding-paths/history/<id>-S<NN>.md   (FLAT records only)
 
-integrated path + exact audit + exact closing acceptance
+integrated path + its accepted candidate
   └── project/log/YYYY-MM-DD-<id>.md
 
 canonical Markdown article graph

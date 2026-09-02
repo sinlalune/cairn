@@ -38,16 +38,15 @@ carries durable meaning:
   its [scope digest](./scope-digest.md), and its base;
 - a [journal](./journal.md) entry at integration.
 
-It combines what only ceremony separates. Opening acceptance is recorded in the
-path record itself rather than as its own session file — on every route, since
-Cairn 1.0 — and the resume section replaces the separate brief. The
+It combines what only ceremony separates, on every route since Cairn 1.0:
+opening acceptance is recorded in the path record itself rather than as its
+own session file; the resume section replaces the separate brief; and the
 [coherence-audit](./coherence-audit.md) questions are the pull request's
-checklist rather than a separate audit file, and
-[administrative closure](./administrative-closure.md) may share the candidate's
-commit where the transport can still bind acceptance to an exact id: those two
-arrive with pull-request transport, and until then the reference checker reads
-a separate audit file and requires one administrative commit on every route.
-The [conformance](./conformance.md) page says which is which.
+checklist rather than a separate audit file — or, on `manual-git`, one closing
+record beside the record rather than two files in two folders.
+[Administrative closure](./administrative-closure.md) remains one commit after
+the candidate on both routes: the request needs a commit that names `C`, and a
+commit cannot name itself.
 
 ### When the full route is required
 

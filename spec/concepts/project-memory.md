@@ -19,10 +19,12 @@ be opened by another process later, compared with an earlier version, and
 included in a [commit](./commit.md); its path also gives other files a stable
 way to refer to it.
 
-Cairn therefore makes files the smallest durable records. A path file carries
-execution state; a session file carries an acceptance; an audit file carries a
-judgement. Each important statement has one canonical file rather than several
-manually maintained copies.
+Cairn therefore makes files the smallest durable records. A path record
+carries execution state and the acceptance that opened it; a step file carries
+one unit's work; a journal entry carries one integrated outcome. Each important
+statement has one canonical file rather than several manually maintained
+copies — and where the forge natively keeps a record, the review of a
+candidate, Cairn uses that rather than a copy.
 
 ## In Cairn
 

@@ -16,13 +16,15 @@ its steps are one file each, written where they live and readable alone.
 project/coding-paths/CP-<ID>/
 ├── index.md      declaration · goal · definition of done · opening acceptance · coverage · step index · resume
 ├── plan.md       forward steps, optional, read when planning
+├── closing-<C>.md  the review and acceptance of one candidate — on manual-git only
 └── steps/
     └── S<NN>.md  one complete step record, written to be read alone
 ```
 
 Nothing else exists per path: no separate brief, session file, audit file or
-folder log. The one file written outside the folder is the journal entry
-integration adds. A flat `project/coding-paths/CP-<ID>.md` from an earlier
+folder log. On `pull-request` transport the closing review is the request
+itself, and the folder holds no closing file at all. The one file written
+outside the folder is the journal entry integration adds. A flat `project/coding-paths/CP-<ID>.md` from an earlier
 release remains conforming — every rule keys on the declared id, not the file
 carrying it — and migrates without restarting its lifecycle.
 
@@ -265,8 +267,8 @@ acceptance, create one administrative commit that:
 - sets `status: ready`;
 - sets `subject_commit` to the full object id of `C`;
 - regenerates the live view, which projects the status it just moved;
-- adds the exact audit and closing record, and points the resume section's
-  checkpoint at `C`.
+- points the resume section's checkpoint at `C`, and on `manual-git` adds the
+  closing record `closing-<C>.md` beside it.
 
 It changes no other field of the record — not the definition of done, not
 `scope_ref`, not `writes:`, not `governs:`. The comparison is against the

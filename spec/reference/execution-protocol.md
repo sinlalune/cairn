@@ -121,8 +121,10 @@ Closure binds one exact [implementation candidate](../concepts/implementation-ca
    `forbidden` host; on a `retained` host fetch the retention namespace, retain
    every completed checkpoint, then rebase and fold provisional work;
 2. run the complete gates on candidate `C`;
-3. record the [coherence audit](../concepts/coherence-audit.md) for `C`;
-4. obtain [closing acceptance](../concepts/closing-acceptance.md) for `C`;
+3. write the [review](../concepts/coherence-audit.md) of `C` — the request's
+   description, or the closing record on `manual-git`;
+4. obtain [closing acceptance](../concepts/closing-acceptance.md) for `C` —
+   the approval, or the record's acceptance fields;
 5. add only [administrative closure](../concepts/administrative-closure.md);
 6. check [acceptance drift](../concepts/acceptance-drift.md);
 7. integrate the accepted tree and verify the exact remote trunk commit;

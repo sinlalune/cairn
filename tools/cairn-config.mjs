@@ -19,6 +19,7 @@ export const CONFIG_PATH = resolve(REPO, 'cairn.config.json')
 const DEFAULT_ROUTES = new Set(['lightweight', 'full'])
 const PROFILES = new Set(['local', 'ci', 'protected'])
 const HISTORY_POLICIES = new Set(['retained', 'forbidden'])
+const TRANSPORTS = new Set(['pull-request', 'manual-git'])
 const ROOT_FIELDS = new Set([
   '$schema', 'version', 'trunk', 'remote', 'metadataNamespace',
   'enforcementProfile', 'roots', 'areas',
@@ -165,11 +166,9 @@ export function configErrors(config) {
     add(`scopeDigestAlgorithm must be sha256 in configuration schema ${SUPPORTED_CONFIG_VERSION}`)
   }
   if (!isPlainObject(config.transport) ||
-      typeof config.transport.registration !== 'string' ||
-      !IDENTIFIER.test(config.transport.registration) ||
-      typeof config.transport.integration !== 'string' ||
-      !IDENTIFIER.test(config.transport.integration)) {
-    add('transport must name non-empty registration and integration adapters')
+      !TRANSPORTS.has(config.transport.registration) ||
+      !TRANSPORTS.has(config.transport.integration)) {
+    add('transport.registration and transport.integration must each be pull-request or manual-git')
   } else {
     for (const field of unknownFields(config.transport, TRANSPORT_FIELDS)) {
       add(`transport has unknown field ${field}`)

@@ -145,12 +145,12 @@ export const RULE_METADATA = {
     enforcing: 'redactionMarkers(stripCode(text)) => redaction record exists'
   },
   'scope-digest': {
-    condition: 'The accepted definition of done moved after acceptance, or was accepted without a digest',
-    enforcing: 'scopeDigest(resolveScopeSection(pathRecord, scope_ref)) === record.scope_digest'
+    condition: 'The definition of done no longer digests to what the opening acceptance accepted, the opening carries no digest, or on manual-git the closing record disagrees with the opening',
+    enforcing: 'scopeDigest(resolveScopeSection(pathRecord, opening.scope_ref)) === opening.scope_digest (=== closing.scope_digest on manual-git)'
   },
   'acceptance-drift': {
-    condition: 'The trunk moved inside the path\'s declared writes: or governs: since the accepted base',
-    enforcing: 'acceptanceDrift(git diff --name-only <base> <trunk>, writes, governs) — never trunk === base'
+    condition: 'The trunk moved inside the path\'s declared writes: or governs: since the base the candidate was read against — the merge-base of the branch and the trunk',
+    enforcing: 'acceptanceDrift(git diff --name-only $(git merge-base <trunk> HEAD) <trunk>, writes, governs) — never trunk === base'
   },
   'work-unit': {
     condition: 'A changed path record carries no `cairn-unit` block for its current step, a block declares an unknown type, or source changed without a module note and the path record moving with it (the area-precise note is advisory)',
@@ -201,8 +201,8 @@ export const RULE_METADATA = {
     enforcing: 'transitionErrors(previous, current, onPathBranch)'
   },
   'acceptance': {
-    condition: 'A ready or done path lacks exact-commit acceptance; implementation changed after acceptance; the coherence audit bound to the candidate is missing or unfilled; the closure commit moved a field acceptance was measured against; the advisory dispositions do not match the advisories attested at the candidate (advisory: a collapsed reviewer, or a prose disposition on a grandfathered path)',
-    enforcing: 'closingAcceptanceErrors(record) + pathClosureState(path, record) + cairn-audit --check --subject C + closureFieldErrors(recordAtC, current) + dispositionErrors(disposition, advisories_at_candidate, raised) + opening.accepted_by === closing.accepted_by'
+    condition: 'A ready path\'s candidate is not an ancestor, or is followed by anything but one administrative commit, or implementation changed after it, or the closure moved a field acceptance was measured against; a done path\'s candidate is not reachable. On manual-git additionally: the closing record in the path folder is missing, names another candidate, lacks its fields, is not a completed review, or its dispositions do not match the advisories attested at the candidate (advisory: a collapsed reviewer, or a prose disposition on a grandfathered path). On pull-request the request\'s description and approval are the record and are not read',
+    enforcing: 'pathClosureState(path) + closureFieldErrors(recordAtC, current) [+ manual-git: closingAcceptanceErrors(record) + fillErrors(record) + dispositionErrors(disposition, advisories_at_candidate, raised) + opening.accepted_by === closing.accepted_by]'
   },
   'record-integrity': {
     condition: 'An immutable event/history record changed, or a born-sliced step no longer preserves its adding blob as a prefix',

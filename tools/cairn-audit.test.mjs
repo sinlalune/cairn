@@ -1,116 +1,76 @@
 /**
- * Tests for the coherence-audit record — `npm test`.
+ * Tests for the closing scaffolder — `npm test`.
  *
- * A closing audit names the exact implementation candidate. The administrative
- * closure commit contains the record without changing that subject. Since
- * Cairn 1.0 the audit is checked under `acceptance`; this file pins the
- * scaffolder and the record shape that check reads.
+ * The review of one exact candidate is written where the transport keeps it:
+ * the request's description on `pull-request`, a closing record in the path
+ * folder on `manual-git`. The checker reads the second under `acceptance`;
+ * this file pins the shapes the scaffolder produces and what "filled" means.
  */
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { METADATA_NAMESPACE } from './cairn-check.mjs'
-import {
-  auditBindingErrors,
-  auditName,
-  auditPathRecordFiles,
-  auditTemplate,
-  fillErrors,
-  findAudit,
-  findingsSections,
-  isFilled,
-  resolveAuditBranch
-} from './cairn-audit.mjs'
+import { CLOSING_RECORD, METADATA_NAMESPACE, closingRecordIn, fillErrors, findingsSections } from './cairn-check.mjs'
+import { PLACEHOLDER, QUESTIONS, closingTemplate, requestDescription, resolveAuditBranch } from './cairn-audit.mjs'
 
 const PATH = 'CP-EX-010'
 const HEAD = 'a'.repeat(40)
-const PARENT = 'b'.repeat(40)
 const TRUNK = 'd'.repeat(40)
+const fields = { pathId: PATH, branch: 'path/cp-ex-010', subjectCommit: HEAD, base: TRUNK, scopeRef: 'project/coding-paths/CP-EX-010/index.md#definition-of-done' }
 
-const files = [auditName(PATH, HEAD), auditName(PATH, PARENT)]
-
-test('audit path discovery sees flat and born-sliced records', () => {
-  const entries = [
-    { name: 'CP-FLAT.md', isDirectory: () => false },
-    { name: 'CP-SLICED', isDirectory: () => true },
-    { name: 'README.md', isDirectory: () => false }
-  ]
-  assert.deepEqual(auditPathRecordFiles(entries), ['CP-FLAT.md', 'CP-SLICED/index.md'])
-  assert.deepEqual(auditPathRecordFiles(entries, (file) => file !== 'CP-SLICED/index.md'), ['CP-FLAT.md'])
-})
-
-test('the host-resolved branch overrides detached HEAD for audit checks', () => {
+test('the host-resolved branch overrides detached HEAD', () => {
   assert.equal(resolveAuditBranch(['node', 'audit', '--branch', 'path/cp-ex-010'], 'HEAD'), 'path/cp-ex-010')
   assert.equal(resolveAuditBranch(['node', 'audit'], 'path/local'), 'path/local')
 })
 
-test('a record naming an earlier path commit does not satisfy the exact candidate', () => {
-  assert.equal(findAudit([auditName(PATH, PARENT)], HEAD, PATH), undefined)
+test('a closing record is named after the candidate it binds, and only one shape is one', () => {
+  assert.ok(CLOSING_RECORD.test(`closing-${HEAD}.md`))
+  assert.ok(CLOSING_RECORD.test(`closing-${'b'.repeat(64)}.md`))
+  assert.ok(!CLOSING_RECORD.test('closing-abc1234.md'), 'a prefix is never a candidate identity')
+  assert.ok(!CLOSING_RECORD.test('closing.md'))
+  const files = ['index.md', `closing-${'b'.repeat(40)}.md`, `closing-${HEAD}.md`, 'plan.md']
+  assert.equal(closingRecordIn(files, 'p', HEAD), `p/closing-${HEAD}.md`)
+  assert.equal(closingRecordIn(files, 'p', 'c'.repeat(40)), null, 'a record naming another candidate does not satisfy this one')
+  assert.equal(closingRecordIn(files, 'p'), `p/closing-${'b'.repeat(40)}.md`, 'without a subject, the latest by name')
+  assert.equal(closingRecordIn(['index.md'], 'p'), null)
 })
 
-test('a record naming the exact candidate satisfies the check', () => {
-  assert.equal(findAudit(files, HEAD, PATH), auditName(PATH, HEAD))
+test('the scaffold binds the exact path, branch, candidate and base, and is not yet a review', () => {
+  const text = closingTemplate(fields)
+  const front = text.slice(0, text.indexOf('\n---', 4))
+  assert.match(front, new RegExp(`^${METADATA_NAMESPACE}:$`, 'm'))
+  assert.match(front, /^  subject_commit: a{40}$/m)
+  assert.match(front, /^  base: d{40}$/m)
+  assert.match(front, /^  path: CP-EX-010$/m)
+  assert.match(front, /^  scope_ref: project\/coding-paths\/CP-EX-010\/index\.md#definition-of-done$/m)
+  for (const question of QUESTIONS) assert.ok(text.includes(`### ${question}`))
+  assert.ok(fillErrors(text, PLACEHOLDER).includes('still carries the scaffold placeholder'))
 })
 
-test('a commit outside this path proves nothing', () => {
-  assert.equal(findAudit([auditName(PATH, TRUNK)], HEAD, PATH), undefined)
-})
-
-test('another path record is refused even when the sha matches', () => {
-  assert.equal(findAudit([auditName('CP-EX-011', HEAD)], HEAD, PATH), undefined)
-  assert.equal(findAudit([], HEAD, PATH), undefined)
-  assert.equal(findAudit(files, HEAD.slice(0, 7), PATH), undefined)
-})
-
-test('a record naming a commit no branch contains any more is refused', () => {
-  assert.equal(findAudit([auditName(PATH, 'e'.repeat(40))], HEAD, PATH), undefined)
-})
-
-test('a record naming a valid commit but still a scaffold does not count', () => {
-  const scaffold = auditTemplate({ pathId: PATH, branch: 'path/cp-ex-010', subjectCommit: HEAD, base: TRUNK })
-  assert.equal(isFilled(scaffold), false)
-  assert.ok(fillErrors(scaffold).includes('still carries the scaffold placeholder'))
-})
-
-test('the audit frontmatter must bind the exact path, branch and full candidate', () => {
-  const text = auditTemplate({ pathId: PATH, branch: 'path/cp-ex-010', subjectCommit: HEAD, base: TRUNK })
-  assert.deepEqual(auditBindingErrors(text, { pathId: PATH, branch: 'path/cp-ex-010', subjectCommit: HEAD, baseCommit: TRUNK }), [])
-  assert.equal(auditBindingErrors(text, { pathId: 'CP-OTHER', branch: 'path/cp-other', subjectCommit: PARENT }).length, 3)
-  assert.ok(auditBindingErrors(text, { pathId: PATH, branch: 'path/cp-ex-010', subjectCommit: HEAD, baseCommit: PARENT })
-    .some((error) => error.includes(`${METADATA_NAMESPACE}.base`)))
+test('the request description carries the same review, to paste', () => {
+  const text = requestDescription(fields)
+  assert.ok(text.includes(HEAD) && text.includes(TRUNK))
+  for (const question of QUESTIONS) assert.ok(text.includes(question))
+  assert.match(text, /--scope-digest project\/coding-paths\/CP-EX-010\/index\.md#definition-of-done/)
 })
 
 /** A record with the shape the template produces, parameterised where the
- *  rule looks. "Filled" once meant "the placeholder string is absent", which
- *  measured a DELETION rather than an audit. */
+ *  rule looks. */
 function record({ verdict = 'clean', answers = ['No.', '', '', ''] } = {}) {
-  const questions = [
-    'Does the diff contradict an accepted decision?',
-    'Does it duplicate something another running path is building?',
-    'Did it introduce architecture that belongs in an ADR and has none?',
-    'Is anything now documented in two places that will drift apart?'
-  ]
   return `---
-type: Cairn Coherence Audit
-title: Coherence audit — ${PATH}
+type: Cairn Closing Record
+title: ${PATH} — closing
 timestamp: 2026-08-25T00:00:00.000Z
 ${METADATA_NAMESPACE}:
   path: ${PATH}
-  branch: path/cp-ex-010
   subject_commit: ${HEAD}
-  base: ${TRUNK}
   verdict: ${verdict}
 ---
 
-# Coherence audit
-
-## What to read
-
-- the candidate diff for this branch, against the trunk it will land on
+# Closing
 
 ## Findings
 
-${questions.map((q, i) => `### ${q}\n\n${answers[i]}\n`).join('\n')}
-## Verdict
+${QUESTIONS.map((q, i) => `### ${q}\n\n${answers[i]}\n`).join('\n')}
+## Decision
 
 **${verdict}**
 `
@@ -118,30 +78,23 @@ ${questions.map((q, i) => `### ${q}\n\n${answers[i]}\n`).join('\n')}
 
 test('a hollowed-out record — placeholder deleted, nothing written — does not count', () => {
   const hollow = record({ answers: ['', '', '', ''] })
-  assert.ok(!hollow.includes('TO BE FILLED BY THE AUDITING AGENT'))
-  assert.equal(isFilled(hollow), false)
+  assert.ok(!hollow.includes(PLACEHOLDER))
   assert.deepEqual(fillErrors(hollow), ['no findings section has been answered'])
-  assert.equal(isFilled(record()), true)
+  assert.deepEqual(fillErrors(record()), [], 'one answered question is enough: the rule asks whether the reviewer answered, never whether the answer is good')
 })
 
-test('the verdict must name an outcome from the stated vocabulary', () => {
-  assert.equal(isFilled(record({ verdict: 'looks fine to me' })), false)
-  assert.equal(isFilled(record({ verdict: '' })), false)
+test('the verdict must name an outcome from the stated vocabulary, and may qualify it', () => {
+  assert.ok(fillErrors(record({ verdict: 'looks fine to me' })).some((e) => /names none of/.test(e)))
   assert.deepEqual(fillErrors(record({ verdict: '' })), ['no `verdict:` in its frontmatter'])
-  for (const stated of ['clean', 'drift noted, proceeding', 'needs a conversation before merge']) {
-    assert.equal(isFilled(record({ verdict: stated })), true, stated)
+  for (const stated of ['clean', 'Clean', 'drift noted, proceeding', 'drift noted, repaired before merge', 'needs a conversation before merge']) {
+    assert.deepEqual(fillErrors(record({ verdict: stated })), [], stated)
   }
-})
-
-test('a verdict may QUALIFY one of the three, because a real record does', () => {
-  assert.equal(isFilled(record({ verdict: 'drift noted, repaired before merge' })), true)
-  assert.equal(isFilled(record({ verdict: 'Clean' })), true)
 })
 
 test('findingsSections reads only the Findings block', () => {
   const sections = findingsSections(record({ answers: ['No.', 'No.', 'No.', 'No.'] }))
   assert.equal(sections.length, 4)
-  assert.equal(sections[0].heading, 'Does the diff contradict an accepted decision?')
+  assert.equal(sections[0].heading, QUESTIONS[0])
   assert.equal(sections[0].body, 'No.')
   assert.ok(!sections.some((s) => s.body.includes('**No.**')))
   assert.deepEqual(findingsSections('# a record with no Findings section at all'), [])

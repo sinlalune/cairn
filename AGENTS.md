@@ -22,7 +22,7 @@ after a failure.
 ```bash
 npm run cairn-check     # the blocking and advisory rules, in full
 npm run cairn-active    # regenerate the running-paths view
-npm run cairn-audit     # scaffold the pre-merge coherence audit
+npm run cairn-audit     # the closing review: the request's description to paste, or the closing record on manual-git
 npm test                # the tools' own fixture suite: one adversarial fixture per blocking rule
 ```
 

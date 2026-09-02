@@ -96,7 +96,12 @@ export function defaultOptions() {
     profile: 'local',
     projectRoot: 'project',
     docsRoot: 'docs',
-    sourceRoots: ['src']
+    sourceRoots: ['src'],
+    // The pull request is the default transport: a review that is recorded, a
+    // required check on the exact commit that lands, and a merge that is the
+    // same object CI tested are native there. `manual-git` is the fallback for
+    // a repository with no forge.
+    transport: 'pull-request'
   }
 }
 
@@ -131,7 +136,7 @@ export function buildConfig(options) {
     checkpointRetentionRef: null,
     pathHistoryPolicy: 'forbidden',
     scopeDigestAlgorithm: 'sha256',
-    transport: { registration: 'manual-git', integration: 'manual-git' },
+    transport: { registration: options.transport, integration: options.transport },
     migration: { unregisteredPaths: [], undeclaredOpenings: [], v02Records: [] }
   }
 }
@@ -175,7 +180,7 @@ after a failure.
 \`\`\`bash
 npm run cairn-check     # the blocking and advisory rules, in full
 npm run cairn-active    # regenerate the running-paths view
-npm run cairn-audit     # scaffold the pre-merge coherence audit
+npm run cairn-audit     # the closing review: the request's description to paste, or the closing record on manual-git
 npm test                # the tools' own fixture suite, where the tests are installed
 \`\`\`
 
@@ -287,7 +292,44 @@ jobs:
       # Bare. A pipe would report the LAST command's exit code, which is how a
       # gate comes to pass over its own failure.
       - name: cairn-check
-        run: node tools/cairn-check.mjs --base origin/${options.trunk}
+        env:
+          CAIRN_BASE_REF: origin/\${{ github.base_ref || '${options.trunk}' }}
+        run: node tools/cairn-check.mjs --base "$CAIRN_BASE_REF"
+`
+}
+
+/** The request template a forge fills into every pull request: the closing
+ *  review's shape, so the description is the record from the first draft. */
+export function requestTemplate() {
+  return `<!-- Cairn closing review. On pull-request transport this description IS the
+coherence review of one exact candidate and the approval IS the closing
+acceptance. \`npm run cairn-audit\` prints this shape filled in for the current
+candidate. The checker proves the candidate, its closure surface, the opening
+digest and the trunk drift from Git; it reads none of the text below, which is
+what the approver reads. -->
+
+## Candidate
+
+- path: CP-<ID>
+- candidate \`C\`: <full object id>
+- base \`T\`, the trunk tip merged into the candidate: <full object id>
+- scope digest at \`C\`: <output of node tools/cairn-check.mjs --scope-digest <record>#definition-of-done>; equals the opening acceptance: yes | no
+
+## Coherence
+
+- [ ] Does the diff contradict an accepted decision?
+- [ ] Does it duplicate something another running path is building?
+- [ ] Did it introduce architecture that belongs in a decision record and has none?
+- [ ] Is anything now documented in two places that will drift apart?
+
+## Advisories at \`C\`
+
+Every advisory \`cairn-check\` raised at the candidate, each fixed, accepted, or
+deferred to a named owner and follow-up; or *none*.
+
+## Roles
+
+- reviewer: <who approves>, holding the roles <initiator | writer | reviewer | integrator> on this path
 `
 }
 
@@ -403,9 +445,7 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
     [`${options.docsRoot}/architecture`, 'Architecture', 'Accepted architecture and constitutional doctrine.'],
     [`${options.docsRoot}/adr`, 'Decisions', 'One accepted decision per record.'],
     [`${options.docsRoot}/modules`, 'Module notes', 'One note per implemented area: flow, boundaries and tests.'],
-    [`${options.projectRoot}/coding-paths`, 'Coding paths', 'One record per bounded change, and the generated live view.'],
-    [`${options.projectRoot}/sessions`, 'Sessions', 'Closing acceptances and other human decisions. Immutable once written; opening acceptance lives in the path record.'],
-    [`${options.projectRoot}/audits`, 'Audits', 'One coherence audit bound to one exact candidate commit.'],
+    [`${options.projectRoot}/coding-paths`, 'Coding paths', 'One folder per bounded change, and the generated live view.'],
     [`${options.projectRoot}/log`, 'Journal', 'One file per integrated outcome, written at merge time.']
   ]) {
     put(`${dir}/index.md`, folderIndex(title, purpose))
@@ -414,7 +454,7 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
 
   put(`${options.projectRoot}/index.md`, folderIndex(
     'Project plane',
-    'Durable execution state: coding paths, closing sessions, audits and the journal.'
+    'Durable execution state: one folder per coding path, and the journal of integrated outcomes.'
   ))
   put(`${options.projectRoot}/log.md`, folderLog('Project plane'))
   // A placeholder, immediately overwritten by the generator below. The
@@ -431,6 +471,7 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
   put(`${options.docsRoot}/log.md`, folderLog('Documentation plane'))
 
   if (options.profile === 'ci') put('.github/workflows/cairn.yml', workflow(options))
+  if (options.transport === 'pull-request') put('.github/pull_request_template.md', requestTemplate())
 
   const dangling = outwardLinks(files)
   if (dangling.length) {
@@ -548,6 +589,7 @@ function parseArgs(argv) {
     else if (arg === '--project-root') options.projectRoot = next()
     else if (arg === '--docs-root') options.docsRoot = next()
     else if (arg === '--source') options.sourceRoots = next().split(',').map((s) => s.trim()).filter(Boolean)
+    else if (arg === '--transport') options.transport = next()
     else if (arg === '--dry-run') dryRun = true
     else throw new Error(`cairn-init: unknown argument ${arg}`)
   }

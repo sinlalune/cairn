@@ -24,4 +24,6 @@ jobs:
       - name: validator self-test
         run: npm test
       - name: cairn-check
-        run: node tools/cairn-check.mjs --base origin/main
+        env:
+          CAIRN_BASE_REF: origin/${{ github.base_ref || 'main' }}
+        run: node tools/cairn-check.mjs --base "$CAIRN_BASE_REF"

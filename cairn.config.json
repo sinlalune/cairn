@@ -30,8 +30,8 @@
   "pathHistoryPolicy": "forbidden",
   "scopeDigestAlgorithm": "sha256",
   "transport": {
-    "registration": "manual-git",
-    "integration": "manual-git"
+    "registration": "pull-request",
+    "integration": "pull-request"
   },
   "migration": {
     "unregisteredPaths": [],

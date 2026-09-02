@@ -509,7 +509,8 @@ full, unabbreviated object id.
 4. An authorised reviewer's approval is the
    [closing acceptance](./concepts/closing-acceptance.md). It binds three
    things: the result, `C`; the scope, whose digest MUST equal the opening
-   digest; and the base, `T`.
+   digest; and the base, `T` — the merge-base of the branch and the trunk,
+   which is where step 1 left it.
 5. One [administrative closure](./concepts/administrative-closure.md) commit
    sets `status: ready` and `subject_commit: C`, and changes nothing else: not
    the definition of done, not the surfaces, not the plan, not the product. The
@@ -548,10 +549,11 @@ checked and accepted; `done`, it is reachable from the remote trunk. A path
 branch MUST NOT set itself to `done`.
 
 The pull request merges with `cairn-check` as its one required status check on
-the exact commit that lands. The integrating unit starts from the current
-trunk, contains `C` and its closure unchanged, records `status: done` and
-`resolution: completed`, regenerates the live view, and writes one journal
-entry — one file per integrated outcome. The merged commit is fetched back and
+the exact commit that lands. The integrating unit — the trunk commit that
+follows the merge, or the `--no-ff` merge itself on `manual-git` — starts from
+the current trunk, contains `C` and its closure unchanged, records
+`status: done` and `resolution: completed`, regenerates the live view, and
+writes one journal entry — one file per integrated outcome. The merged commit is fetched back and
 proved reachable from the remote trunk. Then, from another checkout, the exact
 secondary worktree is removed only if it is Git-clean, never with force, never
 the primary checkout; the path branch stays.

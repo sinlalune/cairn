@@ -22,9 +22,10 @@ import { test } from 'node:test'
 import {
   adrFrontmatterErrors,
   closingAcceptanceErrors,
-  closingRecordFromSessions,
+  closingRecordIn,
+  fillErrors,
+  INTEGRATION_TRANSPORT,
   areaOf,
-  ceremonyFromSessions,
   journalRecords,
   filenameDate,
   recordDateFindings,
@@ -60,8 +61,6 @@ import {
   METADATA_NAMESPACE,
   PROJECT_DIR,
   PATH_DIR,
-  SESSION_DIR,
-  AUDIT_DIR,
   JOURNAL_DIR,
   MODULE_DIR,
   ADR_DIR,
@@ -107,6 +106,12 @@ const NOTE = AREA.note                                // the area's module note
 const ARCH = `${slash(CAIRN_CONFIG.roots.architecture)}index.md`
 const CANDIDATE = 'a'.repeat(40)
 
+/** Roles a record from another host might still keep; nothing here reads them. */
+const SESSIONS = `${PROJECT_DIR}/sessions`
+const CLOSING = `${PATH_DIR}/CP-EX-010/closing-${'a'.repeat(40)}.md`
+/** The closing record lives in the path folder on manual-git; nothing on pull-request. */
+const MANUAL = { transport: 'manual-git' }
+
 const A_PATH = {
   file: `${PATH_DIR}/CP-EX-010.md`,
   front: {
@@ -120,6 +125,7 @@ const A_PATH = {
 }
 
 test('the checker exposes the installed host binding instead of parallel constants', () => {
+  assert.equal(INTEGRATION_TRANSPORT, CAIRN_CONFIG.transport.integration)
   assert.equal(TRUNK_BRANCH, CAIRN_CONFIG.trunk)
   assert.equal(REMOTE, CAIRN_CONFIG.remote)
   assert.equal(METADATA_NAMESPACE, CAIRN_CONFIG.metadataNamespace)
@@ -157,7 +163,10 @@ const acceptedRecord = (pathId = A_PATH.front.id, subject = CANDIDATE) => ({
   scope_ref: `${PATH_DIR}/${pathId}.md#definition-of-done`,
   advisories_at_candidate: [],
   advisory_disposition: [],
-  __file: `${SESSION_DIR}/2026-08-25-${pathId.toLowerCase()}-closing.md`
+  scope_digest: 'sha256:abc',
+  verdict: 'clean',
+  __file: `${PATH_DIR}/${pathId}/closing-${subject}.md`,
+  __fill: []
 })
 
 /** `git status --porcelain -z` output: NUL-terminated records, never quoted. */
@@ -392,40 +401,77 @@ const readyPath = (extra = {}) => ({
   front: { ...A_PATH.front, status: 'ready', subject_commit: CANDIDATE, ...extra }
 })
 
-test('a path branch may declare ready only for an exactly accepted candidate', () => {
+test('on manual-git a path branch may declare ready only with a closing record for exactly that candidate', () => {
   const ready = readyPath()
-  const closing = [ready.file, `${SESSION_DIR}/cp-ex-010-closing.md`]
+  const closing = [ready.file, CLOSING]
 
   const recorded = run(closing, 'path/cp-ex-010', [ready], {
-    previousPaths: new Map([[ready.file, A_PATH.front]])
+    ...MANUAL, previousPaths: new Map([[ready.file, A_PATH.front]])
   })
   assert.ok(!rules(recorded, 'blocking').includes('branch-path'))
   assert.ok(!rules(recorded, 'blocking').includes('acceptance'))
 
   const missing = run(closing, 'path/cp-ex-010', [ready], {
-    previousPaths: new Map([[ready.file, A_PATH.front]]),
-    closureFor: () => null
+    ...MANUAL, previousPaths: new Map([[ready.file, A_PATH.front]]), closureFor: () => null
   })
   assert.ok(rules(missing, 'blocking').includes('acceptance'))
+
+  const other = run(closing, 'path/cp-ex-010', [ready], {
+    ...MANUAL, previousPaths: new Map([[ready.file, A_PATH.front]]),
+    closureFor: () => acceptedRecord(A_PATH.front.id, 'b'.repeat(40))
+  })
+  assert.ok(messages(other, 'acceptance', 'blocking').some((m) => /must equal the closing record subject_commit/.test(m)))
 })
 
-test('a path marked done without exact candidate acceptance is blocked', () => {
+test('on pull-request the request is the record: no closing file is asked for', () => {
+  // The forge keeps the description and the approval. What the checker can
+  // prove from Git it still proves: the candidate, its closure surface, the
+  // opening digest, provisional commits and drift.
+  const ready = readyPath()
+  const found = run([ready.file], 'path/cp-ex-010', [ready], {
+    transport: 'pull-request', previousPaths: new Map([[ready.file, A_PATH.front]]), closureFor: () => null
+  })
+  assert.ok(!rules(found, 'blocking').includes('acceptance'))
+  const moved = run([ready.file], 'path/cp-ex-010', [ready], {
+    transport: 'pull-request', previousPaths: new Map([[ready.file, A_PATH.front]]), closureFor: () => null,
+    closureStateFor: () => ({ subjectIsAncestor: true, commitsAfterSubject: 1, forbiddenFiles: [SRC] })
+  })
+  assert.ok(messages(moved, 'acceptance', 'blocking').some((m) => /implementation changed/.test(m)))
+  const twice = run([ready.file], 'path/cp-ex-010', [ready], {
+    transport: 'pull-request', previousPaths: new Map([[ready.file, A_PATH.front]]), closureFor: () => null,
+    closureStateFor: () => ({ subjectIsAncestor: true, commitsAfterSubject: 2, forbiddenFiles: [] })
+  })
+  assert.ok(messages(twice, 'acceptance', 'blocking').some((m) => /exactly one administrative commit/.test(m)))
+})
+
+test('a path marked done proves its candidate reachable; on manual-git it also needs its closing record', () => {
   const done = {
     ...A_PATH,
     front: { ...A_PATH.front, status: 'done', subject_commit: CANDIDATE, resolution: 'completed' }
   }
-  const closing = [done.file, `${SESSION_DIR}/x.md`]
-
-  const missing = run(closing, TRUNK_BRANCH, [done], {
-    previousPaths: new Map([[done.file, A_PATH.front]]),
-    closureFor: () => null
+  const missing = run([done.file], TRUNK_BRANCH, [done], {
+    ...MANUAL, previousPaths: new Map([[done.file, A_PATH.front]]), closureFor: () => null
   })
   assert.ok(rules(missing, 'blocking').includes('acceptance'))
 
-  const recorded = run(closing, TRUNK_BRANCH, [done], {
-    previousPaths: new Map([[done.file, A_PATH.front]])
+  const recorded = run([done.file], TRUNK_BRANCH, [done], {
+    ...MANUAL, previousPaths: new Map([[done.file, A_PATH.front]])
   })
   assert.ok(!rules(recorded, 'blocking').includes('acceptance'))
+
+  // At done the transport has merged; other paths may have landed beside this
+  // one, so only reachability is proved here — the closure surface was proved
+  // at ready on the exact commit that landed.
+  const merged = run([done.file], TRUNK_BRANCH, [done], {
+    transport: 'pull-request', previousPaths: new Map([[done.file, A_PATH.front]]), closureFor: () => null,
+    closureStateFor: () => ({ subjectIsAncestor: true, commitsAfterSubject: 7, forbiddenFiles: ['other/path.ts'] })
+  })
+  assert.ok(!rules(merged, 'blocking').includes('acceptance'))
+  const unreachable = run([done.file], TRUNK_BRANCH, [done], {
+    transport: 'pull-request', previousPaths: new Map([[done.file, A_PATH.front]]), closureFor: () => null,
+    closureStateFor: () => ({ subjectIsAncestor: false, commitsAfterSubject: 0, forbiddenFiles: [] })
+  })
+  assert.ok(messages(unreachable, 'acceptance', 'blocking').some((m) => /not an ancestor/.test(m)))
 })
 
 test('paths that closed before the rule existed are left alone', () => {
@@ -446,11 +492,10 @@ test('closing acceptance names the exact candidate, actor, time, scope, and advi
   }
 })
 
-test('closing lookup selects the acceptance for the current candidate', () => {
-  const old = acceptedRecord(A_PATH.front.id, 'b'.repeat(40))
-  const current = acceptedRecord(A_PATH.front.id, CANDIDATE)
-  assert.equal(closingRecordFromSessions([old, current], A_PATH.front.id, CANDIDATE), current)
-  assert.equal(closingRecordFromSessions([old], A_PATH.front.id, CANDIDATE), null)
+test('closing lookup selects the record for the current candidate, by name', () => {
+  const files = ['index.md', 'plan.md', `closing-${'b'.repeat(40)}.md`, `closing-${CANDIDATE}.md`]
+  assert.equal(closingRecordIn(files, 'p', CANDIDATE), `p/closing-${CANDIDATE}.md`)
+  assert.equal(closingRecordIn(files.slice(0, 3), 'p', CANDIDATE), null)
 })
 
 test('implementation changes after exact acceptance invalidate ready', () => {
@@ -462,33 +507,42 @@ test('implementation changes after exact acceptance invalidate ready', () => {
   assert.ok(found.some((f) => f.rule === 'acceptance' && f.message.includes('implementation changed')))
 })
 
-test('ready with only an opening check on record is blocked', () => {
+test('on manual-git a closing record that is not a completed review is not an acceptance', () => {
+  // `coherence-audit` in 0.2. The judgement is never machine-scored; that the
+  // record names a verdict and answers its own questions is a fact.
   const ready = readyPath()
-  const sessions = [{ path: 'CP-EX-010', ceremony: 'opening' }]
-  const found = run([ready.file], 'path/cp-ex-010', [ready], {
-    previousPaths: new Map([[ready.file, A_PATH.front]]),
-    closureFor: (id) => (ceremonyFromSessions(sessions, id) ? acceptedRecord(id) : null)
+  const common = { ...MANUAL, previousPaths: new Map([[ready.file, A_PATH.front]]) }
+  const scaffold = run([ready.file], 'path/cp-ex-010', [ready], {
+    ...common, closureFor: (id) => ({ ...acceptedRecord(id), __fill: ['still carries the scaffold placeholder'] })
   })
-  assert.ok(rules(found, 'blocking').includes('acceptance'))
+  assert.ok(messages(scaffold, 'acceptance', 'blocking').some((m) => /not a completed review/.test(m)))
+  const filled = run([ready.file], 'path/cp-ex-010', [ready], common)
+  assert.ok(!messages(filled, 'acceptance').some((m) => /not a completed review/.test(m)))
+  // A running path is never asked for one.
+  const running = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], { ...MANUAL, closureFor: () => null })
+  assert.ok(!rules(running, 'blocking').includes('acceptance'))
 })
 
-test('a ready path whose coherence audit is missing or unreadable is not accepted', () => {
-  // `coherence-audit` in 0.2. The judgement is never machine-scored; that a
-  // filled record bound to exactly C exists is a fact about the acceptance.
-  const ready = readyPath()
-  const common = { previousPaths: new Map([[ready.file, A_PATH.front]]) }
-  const missing = run([ready.file], 'path/cp-ex-010', [ready], { ...common, auditFor: () => false })
-  assert.ok(messages(missing, 'acceptance', 'blocking').some((m) => /coherence audit/.test(m)))
+test('a closing record must name a verdict and answer a question', () => {
+  const text = (verdict, answer) => `---
+${METADATA_NAMESPACE}:
+  verdict: ${verdict}
+---
 
-  const unreadable = run([ready.file], 'path/cp-ex-010', [ready], { ...common, auditFor: () => null })
-  assert.ok(unreadable.some((f) => f.rule === 'acceptance' && f.outcome === 'inconclusive'))
+## Findings
 
-  const bound = run([ready.file], 'path/cp-ex-010', [ready], { ...common, auditFor: () => true })
-  assert.ok(!messages(bound, 'acceptance').some((m) => /coherence audit/.test(m)))
+### Q?
 
-  // The audit is a closing fact: a running path is never asked for one.
-  const running = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], { auditFor: () => false })
-  assert.ok(!messages(running, 'acceptance').some((m) => /coherence audit/.test(m)))
+${answer}
+
+## Decision
+
+yes
+`
+  assert.deepEqual(fillErrors(text('clean', 'No.')), [])
+  assert.ok(fillErrors(text('', 'No.')).includes('no `verdict:` in its frontmatter'))
+  assert.ok(fillErrors(text('clean', '')).includes('no findings section has been answered'))
+  assert.ok(fillErrors(text('TO BE FILLED', 'No.')).includes('still carries the scaffold placeholder'))
 })
 
 test('closure may move status and subject_commit and nothing else', () => {
@@ -519,7 +573,7 @@ test('a closure commit that rewrites the accepted scope is blocked under accepta
   const found = run([ready.file], 'path/cp-ex-010', [ready], {
     previousPaths: new Map([[ready.file, A_PATH.front]]),
     previousFronts: new Map([[ready.file, { ...A_PATH.front, scope_ref: 'was' }]]),
-    closureFor: () => digested(),
+    closureFor: () => null,
     scopeDigestFor: () => 'sha256:abc',
     migrationExempt: new Set()
   })
@@ -562,6 +616,7 @@ test('prose disposition is advised for a grandfathered path and blocked otherwis
   // `advisory-disposition` in 0.2.
   const ready = readyPath()
   const common = {
+    ...MANUAL,
     previousPaths: new Map([[ready.file, A_PATH.front]]),
     closureFor: () => prose(digested()),
     scopeDigestFor: () => 'sha256:abc'
@@ -575,9 +630,10 @@ test('prose disposition is advised for a grandfathered path and blocked otherwis
 })
 
 test('one actor on both acceptances is recorded as an acceptance advisory, not forbidden', () => {
-  // `role-collapse` in 0.2.
+  // `role-collapse` in 0.2. On pull-request the forge shows who approved.
   const ready = readyPath()
   const found = run([ready.file], 'path/cp-ex-010', [ready], {
+    ...MANUAL,
     previousPaths: new Map([[ready.file, A_PATH.front]]),
     closureFor: () => ({ ...digested(), accepted_by: 'solo@example.test' }),
     openingRecordFor: () => ({ accepted_by: 'solo@example.test', scope_digest: 'sha256:abc' }),
@@ -593,6 +649,7 @@ test('one actor on both acceptances is recorded as an acceptance advisory, not f
 test('two different actors raise no collapse finding', () => {
   const ready = readyPath()
   const found = run([ready.file], 'path/cp-ex-010', [ready], {
+    ...MANUAL,
     previousPaths: new Map([[ready.file, A_PATH.front]]),
     closureFor: () => ({ ...digested(), accepted_by: 'reviewer@example.test' }),
     openingRecordFor: () => ({ accepted_by: 'initiator@example.test' }),
@@ -647,47 +704,41 @@ test('the digest changes when the accepted text changes, and only then', () => {
   assert.match(before, /^sha256:[0-9a-f]{64}$/)
 })
 
-test('a closing record whose digest no longer matches the path record is blocked', () => {
+test('a definition of done that no longer digests to what the opening accepted is blocked', () => {
   const ready = readyPath()
   const found = run([ready.file], 'path/cp-ex-010', [ready], {
     previousPaths: new Map([[ready.file, A_PATH.front]]),
-    closureFor: () => digested(),
+    closureFor: () => null,
     scopeDigestFor: () => 'sha256:def',
     migrationExempt: new Set()
   })
-  assert.ok(rules(found, 'blocking').includes('scope-digest'))
+  assert.ok(messages(found, 'scope-digest', 'blocking').some((m) => /moved after acceptance/.test(m)))
 })
 
-test('a matching digest passes, and an unreadable scope_ref is inconclusive', () => {
+test('a matching digest passes, an unreadable scope_ref is inconclusive, and a missing section blocks', () => {
   const ready = readyPath()
-  const ok = run([ready.file], 'path/cp-ex-010', [ready], {
-    previousPaths: new Map([[ready.file, A_PATH.front]]),
-    closureFor: () => digested(),
-    scopeDigestFor: () => 'sha256:abc',
-    openingRecordFor: () => ({ scope_digest: 'sha256:abc' }),
-    migrationExempt: new Set()
-  })
-  assert.ok(!rules(ok, 'blocking').includes('scope-digest'))
-
-  const unreadable = run([ready.file], 'path/cp-ex-010', [ready], {
-    previousPaths: new Map([[ready.file, A_PATH.front]]),
-    closureFor: () => digested(),
-    scopeDigestFor: () => undefined,
-    migrationExempt: new Set()
-  })
-  assert.equal(unreadable.find((f) => f.rule === 'scope-digest').outcome, 'inconclusive')
+  const common = { previousPaths: new Map([[ready.file, A_PATH.front]]), closureFor: () => null, migrationExempt: new Set() }
+  assert.ok(!rules(run([ready.file], 'path/cp-ex-010', [ready], { ...common, scopeDigestFor: () => 'sha256:abc' }), 'blocking').includes('scope-digest'))
+  assert.equal(run([ready.file], 'path/cp-ex-010', [ready], { ...common, scopeDigestFor: () => undefined }).find((f) => f.rule === 'scope-digest').outcome, 'inconclusive')
+  assert.ok(messages(run([ready.file], 'path/cp-ex-010', [ready], { ...common, scopeDigestFor: () => null }), 'scope-digest', 'blocking').some((m) => /names no section/.test(m)))
 })
 
-test('a listed migration path is advised about a missing digest, never blocked', () => {
+test('an opening without a digest is bound to nothing: blocked, advised on a grandfathered path', () => {
+  const ready = readyPath()
+  const common = { previousPaths: new Map([[ready.file, A_PATH.front]]), closureFor: () => null, scopeDigestFor: () => 'sha256:abc', openingRecordFor: () => ({ ...OPENING, scope_digest: undefined }) }
+  assert.ok(rules(run([ready.file], 'path/cp-ex-010', [ready], { ...common, migrationExempt: new Set() }), 'blocking').includes('scope-digest'))
+  const exempt = run([ready.file], 'path/cp-ex-010', [ready], { ...common, migrationExempt: new Set(['CP-EX-010']) })
+  assert.ok(!rules(exempt, 'blocking').includes('scope-digest'))
+  assert.ok(rules(exempt, 'advisory').includes('scope-digest'))
+})
+
+test('on manual-git the closing record re-computes the digest and must find the accepted text', () => {
   const ready = readyPath()
   const found = run([ready.file], 'path/cp-ex-010', [ready], {
-    previousPaths: new Map([[ready.file, A_PATH.front]]),
-    closureFor: () => acceptedRecord(),
-    scopeDigestFor: () => 'sha256:abc',
-    migrationExempt: new Set(['CP-EX-010'])
+    ...MANUAL, previousPaths: new Map([[ready.file, A_PATH.front]]),
+    closureFor: () => digested({ scope_digest: 'sha256:stale' }), scopeDigestFor: () => 'sha256:abc', migrationExempt: new Set()
   })
-  assert.ok(!rules(found, 'blocking').includes('scope-digest'))
-  assert.ok(rules(found, 'advisory').includes('scope-digest'))
+  assert.ok(messages(found, 'scope-digest', 'blocking').some((m) => /closing record for CP-EX-010 says sha256:stale/.test(m)))
 })
 
 /* ------------------------------------------------------------------ *
@@ -706,7 +757,7 @@ test('a trunk that moved inside the declared surfaces invalidates the acceptance
   const ready = { ...readyPath(), writes: ['apps/example/**'], governs: [] }
   const common = {
     previousPaths: new Map([[ready.file, A_PATH.front]]),
-    closureFor: () => ({ ...digested(), base: '70f7e27' }),
+    closureFor: () => null,
     scopeDigestFor: () => 'sha256:abc',
     migrationExempt: new Set(['CP-EX-010'])
   }
@@ -724,7 +775,7 @@ test('a busy trunk alone never invalidates an acceptance', () => {
   const ready = { ...readyPath(), writes: ['apps/example/**'], governs: [] }
   const busy = run([ready.file], 'path/cp-ex-010', [ready], {
     previousPaths: new Map([[ready.file, A_PATH.front]]),
-    closureFor: () => ({ ...digested(), base: '70f7e27' }),
+    closureFor: () => null,
     scopeDigestFor: () => 'sha256:abc',
     trunkDelta: Array.from({ length: 200 }, (_, i) => `other/area/file-${i}.ts`),
     migrationExempt: new Set(['CP-EX-010'])
@@ -775,25 +826,23 @@ test('a provisional HEAD is durable work, advised rather than forbidden', () => 
  * ------------------------------------------------------------------ */
 
 test('an existing durable record cannot be rewritten, but a new record may be added', () => {
-  const existing = run([`${AUDIT_DIR}/existing.md`], 'path/cp-ex-010', [A_PATH], {
-    immutableMutations: [`${AUDIT_DIR}/existing.md`]
-  })
+  const existing = run([CLOSING], 'path/cp-ex-010', [A_PATH], { immutableMutations: [CLOSING] })
   assert.ok(rules(existing, 'blocking').includes('record-integrity'))
 
-  const added = run([`${AUDIT_DIR}/new.md`], 'path/cp-ex-010', [A_PATH], { immutableMutations: [] })
+  const added = run([`${JOURNAL_DIR}/new.md`], 'path/cp-ex-010', [A_PATH], { immutableMutations: [] })
   assert.ok(!rules(added, 'blocking').includes('record-integrity'))
 
-  const unknown = run([`${AUDIT_DIR}/maybe-new.md`], 'path/cp-ex-010', [A_PATH], { immutableMutations: null })
+  const unknown = run([`${JOURNAL_DIR}/maybe-new.md`], 'path/cp-ex-010', [A_PATH], { immutableMutations: null })
   assert.ok(unknown.some((f) => f.rule === 'record-integrity' && f.outcome === 'inconclusive'))
 })
 
-test('append-only namespaces exclude their mutable index and log views', () => {
-  assert.equal(isImmutableRecord(`${SESSION_DIR}/2026-08-25-x.md`), true)
-  assert.equal(isImmutableRecord(`${AUDIT_DIR}/cp-x-aaaa.md`), true)
+test('the immutable records are the closing record, the journal and the steps; folders another host kept are not', () => {
+  assert.equal(isImmutableRecord(CLOSING), true)
+  assert.equal(isImmutableRecord(`${PATH_DIR}/CP-EX-010/closing-${'b'.repeat(64)}.md`), true)
+  assert.equal(isImmutableRecord(`${PATH_DIR}/CP-EX-010/closing-notes.md`), false, 'a closing record is named after a full candidate id')
   assert.equal(isImmutableRecord(`${JOURNAL_DIR}/2026-08-25-cp-x.md`), true)
-  assert.equal(isImmutableRecord(`${SESSION_DIR}/index.md`), false)
-  assert.equal(isImmutableRecord(`${AUDIT_DIR}/log.md`), false)
   assert.equal(isImmutableRecord(`${JOURNAL_DIR}/index.md`), false)
+  assert.equal(isImmutableRecord(`${SESSIONS}/2026-08-25-x.md`), false, 'a 0.2 session record is history, not a 1.0 record')
   // The flat `<project>/log.md` was Atomik's frozen journal archive. Here it is
   // a folder log like any other, and treating it as immutable was a hole a
   // host assumption had left in portable code.
@@ -851,9 +900,9 @@ test('a relocated record is not a mutation, and the exemption is stated out loud
   const unpaired = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], { immutableMutations: moved.flat(), relocations: [] })
   assert.equal(unpaired.filter((f) => f.rule === 'record-integrity' && f.level === 'blocking').length, 2)
 
-  const sessionMove = [[`${SESSION_DIR}/2026-08-25-old.md`, `${SESSION_DIR}/2026-08-25-new.md`]]
-  assert.ok(!isStepRecordRelocation(...sessionMove[0]))
-  const forbidden = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], { immutableMutations: sessionMove.flat(), relocations: sessionMove })
+  const closingMove = [[CLOSING, `${PATH_DIR}/CP-EX-010/closing-${'b'.repeat(40)}.md`]]
+  assert.ok(!isStepRecordRelocation(...closingMove[0]))
+  const forbidden = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], { immutableMutations: closingMove.flat(), relocations: closingMove })
   assert.equal(forbidden.filter((f) => f.rule === 'record-integrity' && f.level === 'blocking').length, 2)
 })
 
@@ -1025,25 +1074,6 @@ test('depends_on names known paths, never itself, and the view knows which are m
   assert.deepEqual(unmetDependencies({}, statuses), [])
 })
 
-test('an opening check is not a closing ceremony', () => {
-  const opening = [{ path: 'CP-EX-010', ceremony: 'opening' }]
-  assert.equal(ceremonyFromSessions(opening, 'CP-EX-010'), false)
-  assert.equal(ceremonyFromSessions([...opening, { path: 'CP-EX-010', ceremony: 'closing' }], 'CP-EX-010'), true)
-})
-
-test('a ceremony note belongs to exactly one path', () => {
-  assert.equal(ceremonyFromSessions([{ path: 'CP-EX-0010', ceremony: 'closing' }], 'CP-EX-001'), false)
-  assert.equal(ceremonyFromSessions([{ path: 'CP-EX-001' }], 'CP-EX-001'), false)
-  assert.equal(ceremonyFromSessions([], 'CP-EX-001'), false)
-})
-
-test('the nested ceremony form declares nothing', () => {
-  const nested = ['---', 'type: Cairn Session Record', `${METADATA_NAMESPACE}:`, '  path: CP-EX-010', '  ceremony: closing', '---', '', '# closing', ''].join('\n')
-  const note = readFrontmatter(nested).data
-  assert.equal(note.path, undefined)
-  assert.deepEqual(note[METADATA_NAMESPACE], { path: 'CP-EX-010', ceremony: 'closing' })
-  assert.equal(ceremonyFromSessions([note], 'CP-EX-010'), false)
-})
 
 const AN_ADR = `${ADR_DIR}/ADR-012-parallel-paths-self-merge.md`
 const ADR_FRONT = { id: 'ADR-012', status: 'accepted', date: '2026-08-15' }
@@ -1401,8 +1431,8 @@ test('a lightweight path that has already spanned two units must escalate', () =
 
 test('a date is read from the head of a filename, and only from there', () => {
   assert.equal(filenameDate(`${JOURNAL_DIR}/2026-08-27-cp-x.md`), '2026-08-27')
-  assert.equal(filenameDate(`${AUDIT_DIR}/cp-x-a380f2a.md`), null)
-  assert.equal(filenameDate(`${SESSION_DIR}/release-2026-08-27.md`), null)
+  assert.equal(filenameDate(`${JOURNAL_DIR}/cp-x-a380f2a.md`), null)
+  assert.equal(filenameDate(`${SESSIONS}/release-2026-08-27.md`), null)
   assert.equal(filenameDate(undefined), null)
 })
 
@@ -1428,7 +1458,7 @@ test('a correctly dated record, one day of slack, and an uncommitted record repo
 
 test('a misdated record is advised on disagreement and on drift, and never blocks', () => {
   const disagreement = run(['README.md'], 'path/cp-ex-010', [A_PATH], {
-    addedRecords: [{ file: `${SESSION_DIR}/2026-08-20-x.md`, named: '2026-08-20', declared: '2026-08-31', addedOn: '2026-08-31' }]
+    addedRecords: [{ file: `${SESSIONS}/2026-08-20-x.md`, named: '2026-08-20', declared: '2026-08-31', addedOn: '2026-08-31' }]
   })
   assert.ok(rules(disagreement, 'advisory').includes('record-date'))
   assert.ok(!rules(disagreement, 'blocking').includes('record-date'))
@@ -1453,9 +1483,9 @@ test('a redaction marker inside code is documentation, not a finding', () => {
 test('a marker with no redaction record behind it is advised, not blocked', () => {
   const index = {
     has: (marker) => marker === '2026-01-01-cp-ex-010-redaction',
-    markersIn: (file) => (file === `${SESSION_DIR}/note.md` ? ['2026-01-01-cp-ex-010-redaction'] : ['ghost'])
+    markersIn: (file) => (file === `${SESSIONS}/note.md` ? ['2026-01-01-cp-ex-010-redaction'] : ['ghost'])
   }
-  const good = run([`${SESSION_DIR}/note.md`], 'path/cp-ex-010', [A_PATH], { redactionRecordExists: index })
+  const good = run([`${SESSIONS}/note.md`], 'path/cp-ex-010', [A_PATH], { redactionRecordExists: index })
   assert.ok(!rules(good, 'advisory').includes('redaction'))
 
   const bad = run(['docs/other.md'], 'path/cp-ex-010', [A_PATH], { redactionRecordExists: index })
@@ -1543,9 +1573,8 @@ test('frontmatter: yaml nesting, json blocks, and garbage', () => {
 })
 
 test('an inline comment is stripped from a scalar, the way it already was from a list item', () => {
-  const commented = readFrontmatter(['---', 'path: CP-EX-010', 'ceremony: closing   # opening | closing', '---', ''].join('\n')).data
-  assert.equal(commented.ceremony, 'closing')
-  assert.equal(ceremonyFromSessions([commented], 'CP-EX-010'), true)
+  const commented = readFrontmatter(['---', 'path: CP-EX-010', 'decision: accepted   # accepted | refused', '---', ''].join('\n')).data
+  assert.equal(commented.decision, 'accepted')
   const wholeLine = readFrontmatter(['---', 'cairn:', '  writes:   # ADVISORY, never a lock', '    - src/**', '---', ''].join('\n')).data
   assert.deepEqual(wholeLine.cairn.writes, ['src/**'])
   const quoted = readFrontmatter(['---', "title: 'a heading # with a hash'", '---', ''].join('\n')).data
@@ -1631,17 +1660,17 @@ test('porcelain paths: renames report the new path, noise is dropped', () => {
 
 test('append-only mutation parsing permits additions and reports existing changes', () => {
   assert.deepEqual(porcelainMutations(z(
-    `?? ${AUDIT_DIR}/new.md`, `A  ${SESSION_DIR}/new.md`, ` M ${AUDIT_DIR}/existing.md`,
-    `D  ${JOURNAL_DIR}/existing.md`, `R  ${AUDIT_DIR}/renamed.md`, `${AUDIT_DIR}/old.md`
-  )), [`${AUDIT_DIR}/existing.md`, `${JOURNAL_DIR}/existing.md`, `${AUDIT_DIR}/renamed.md`, `${AUDIT_DIR}/old.md`])
+    `?? ${JOURNAL_DIR}/new.md`, `A  ${SESSIONS}/new.md`, ` M ${JOURNAL_DIR}/existing.md`,
+    `D  ${JOURNAL_DIR}/existing.md`, `R  ${JOURNAL_DIR}/renamed.md`, `${JOURNAL_DIR}/old.md`
+  )), [`${JOURNAL_DIR}/existing.md`, `${JOURNAL_DIR}/existing.md`, `${JOURNAL_DIR}/renamed.md`, `${JOURNAL_DIR}/old.md`])
 })
 
 test('committed mutation parsing keeps both sides of renames and treats copies as additions', () => {
   assert.deepEqual(nameStatusMutations([
-    'M', `${AUDIT_DIR}/existing.md`, 'A', `${AUDIT_DIR}/new.md`,
-    'R100', `${AUDIT_DIR}/old.md`, 'elsewhere/renamed.md',
-    'C100', `${AUDIT_DIR}/source.md`, `${AUDIT_DIR}/copy.md`, ''
-  ].join('\0')), [`${AUDIT_DIR}/existing.md`, `${AUDIT_DIR}/old.md`, 'elsewhere/renamed.md'])
+    'M', `${JOURNAL_DIR}/existing.md`, 'A', `${JOURNAL_DIR}/new.md`,
+    'R100', `${JOURNAL_DIR}/old.md`, 'elsewhere/renamed.md',
+    'C100', `${JOURNAL_DIR}/source.md`, `${JOURNAL_DIR}/copy.md`, ''
+  ].join('\0')), [`${JOURNAL_DIR}/existing.md`, `${JOURNAL_DIR}/old.md`, 'elsewhere/renamed.md'])
 })
 
 test('a path with a space is read whole, not quoted', () => {

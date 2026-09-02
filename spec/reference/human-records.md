@@ -1,7 +1,7 @@
 ---
 type: Cairn Reference
 title: Opening, audit, and closing records
-description: Canonical schemas for the judgement-bearing records Cairn binds to a path, its accepted scope, and one exact implementation candidate.
+description: Canonical shapes for the judgement-bearing records Cairn binds to a path — the opening acceptance in the record, and the closing review as the request's description or as one closing record on manual-git.
 tags: [cairn, reference, ceremony, audit, frontmatter, template]
 timestamp: 2026-08-26T00:00:00Z
 ---
@@ -13,11 +13,11 @@ object. Their shape and their binding — to a candidate, to a scope digest, to 
 base — are mechanical; their reasoning is not.
 
 Opening acceptance lives **in the path record**, under its own heading, on
-every route. Closing acceptance and the coherence audit are still written as
-their own files on every route: the pull-request transport that makes the
-request's description and approval the record is the next unit of the genesis
-path, and the [conformance page](./conformance.md) says which shape the
-reference tools read today.
+every route. Closing is the transport's: on `pull-request` the request's
+description is the review and its approval the acceptance; on `manual-git` the
+two are one closing record in the path folder. The
+[conformance page](./conformance.md) says what the reference tools read of
+each.
 
 ## Opening acceptance
 
@@ -80,40 +80,84 @@ decision, actor, time, scope reference and digest are present and well formed;
 whether the actor was authorised is the host's governance to prove, and
 `accepted_roles` is recorded, not validated.
 
-## Coherence audit
+## The closing review on `pull-request`
 
-Filename:
+The request opened from the path branch to the trunk carries the review as its
+description and the acceptance as its approval. The kit installs
+`.github/pull_request_template.md` so every request starts in this shape, and
+`npm run cairn-audit` prints it filled in for the current candidate:
+
+````md
+## Candidate
+
+- path: CP-EXAMPLE-001
+- candidate `C`: fedcba9876543210fedcba9876543210fedcba98
+- base `T`, the trunk tip merged into the candidate: 0123456789abcdef0123456789abcdef01234567
+- scope digest at `C`: sha256:9f2c…; equals the opening acceptance: yes
+
+## Coherence
+
+- [x] Does the diff contradict an accepted decision? No — …
+- [x] Does it duplicate something another running path is building? No — …
+- [x] Did it introduce architecture that belongs in a decision record and has none? No — …
+- [x] Is anything now documented in two places that will drift apart? No — …
+
+## Advisories at `C`
+
+- `scope-drift` — accepted: the wider root cause is declared in `writes:` at this commit.
+- `record-date` — deferred to participant-id, CP-EXAMPLE-002.
+
+## Roles
+
+- reviewer: participant-id, holding the roles reviewer and integrator on this path
+````
+
+The reference checker reads none of this: the forge holds it, shows who
+approved, and merges only with `cairn-check` green on the exact commit that
+lands. What the checker proves from Git is the candidate, its closure surface,
+the opening digest against the definition of done, the absence of provisional
+commits, and the trunk delta since `T`.
+
+## The closing record on `manual-git`
+
+Filename, inside the path folder and named after the candidate it binds:
 
 ```text
-project/audits/cp-example-001-<full-subject-object-id>.md
+project/coding-paths/CP-EXAMPLE-001/closing-<full-subject-object-id>.md
 ```
 
-Template:
+`npm run cairn-audit` scaffolds it. Template, filled:
 
 ````md
 ---
-type: Cairn Coherence Audit
-title: Coherence audit — CP-EXAMPLE-001
-timestamp: 2026-01-15T13:30:00Z
+type: Cairn Closing Record
+title: CP-EXAMPLE-001 — closing of fedcba9
+timestamp: 2026-01-15T14:30:00Z
 cairn:
   path: CP-EXAMPLE-001
   branch: path/cp-example-001
   subject_commit: fedcba9876543210fedcba9876543210fedcba98
   base: 0123456789abcdef0123456789abcdef01234567
-  governs:
-    - docs/architecture/example.md@89ab89ab89ab89ab89ab89ab89ab89ab89ab89ab
+  accepted_by: participant-id
+  accepted_roles: [reviewer, integrator]
+  accepted_at: 2026-01-15T14:30:00Z
+  decision: accepted
+  scope_ref: project/coding-paths/CP-EXAMPLE-001/index.md#definition-of-done
+  scope_digest: sha256:9f2c4b1d5e6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c
+  advisories_at_candidate: [scope-drift, record-date]
+  advisory_disposition:
+    - rule: scope-drift
+      disposition: accepted
+      reason: the wider root cause is declared in writes: at this same commit
+    - rule: record-date
+      disposition: deferred
+      reason: the step carries the date its work started, and says why
+      owner: participant-id
+      follow_up: CP-EXAMPLE-002
   verdict: clean
 ---
 
-# Coherence audit — CP-EXAMPLE-001
-
-## Inputs reviewed
-
-- exact diff from the current trunk to the subject commit
-- every document pinned in `governs:`, read at its pinned object id
-- relevant decision records
-- affected module notes
-- live paths declaring overlapping surfaces
+# CP-EXAMPLE-001 — closing of fedcba9
 
 ## Findings
 
@@ -121,100 +165,17 @@ cairn:
 
 No. Evidence: …
 
-### Does it duplicate another live path's work?
+### Does it duplicate something another running path is building?
 
 No. Evidence: …
 
-### Did it introduce architecture without a decision record?
+### Did it introduce architecture that belongs in a decision record and has none?
 
 No. Evidence: …
 
-### Does it create independently maintained statements that may drift?
+### Is anything now documented in two places that will drift apart?
 
 No. Evidence: …
-
-## Verdict
-
-clean
-````
-
-Allowed verdict stems are `clean`, `drift noted`, and
-`needs a conversation before merge`. A qualified verdict may state the
-disposition. If a finding changes implementation, create and audit a new
-candidate.
-
-The object-id length above is SHA-1's forty characters because that is what most
-repositories are configured for. The requirement is the **full object id in the
-repository's configured format**: a SHA-256 repository writes sixty-four
-characters in the same field and the same filename.
-
-### What `base` names in each record
-
-The audit's `base` is the path's registration `base_commit`: the scaffolder
-writes it and `cairn-audit --check` requires it, so the audit is bound to the
-same base the path record declares. The closing record's `base` is `T`, the
-trunk tip the candidate was read against, because that is what the
-[acceptance-drift](../concepts/acceptance-drift.md) predicate diffs from. On a
-path that merged the trunk in before closing, `T` is the trunk tip at that
-merge; it equals `base_commit` only when the trunk did not move while the path
-ran.
-
-## Closing acceptance
-
-Filename:
-
-```text
-project/sessions/YYYY-MM-DD-cp-example-001-closing.md
-```
-
-Template:
-
-````md
----
-type: Cairn Session Record
-title: CP-EXAMPLE-001 closing acceptance
-timestamp: 2026-01-15T14:30:00Z
-tags: [cairn, closing]
-path: CP-EXAMPLE-001
-ceremony: closing
-subject_commit: fedcba9876543210fedcba9876543210fedcba98
-base: 0123456789abcdef0123456789abcdef01234567
-accepted_by: participant-id
-accepted_roles: [reviewer, auditor]
-accepted_at: 2026-01-15T14:30:00Z
-decision: accepted
-scope_ref: project/coding-paths/CP-EXAMPLE-001/index.md#definition-of-done
-scope_digest: sha256:9f2c4b1d5e6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c
-advisories_at_candidate: [scope-drift, record-date]
-advisory_disposition:
-  - rule: scope-drift
-    disposition: accepted
-    reason: the wider root cause is declared in writes: at this same commit
-  - rule: record-date
-    disposition: deferred
-    reason: the step carries the date its work started, and says why
-    owner: participant-id
-    follow_up: CP-EXAMPLE-002
----
-
-# CP-EXAMPLE-001 — closing acceptance
-
-## Result reviewed
-
-- Candidate: `fedcba9876543210fedcba9876543210fedcba98`
-- Base accepted against: `0123456789abcdef0123456789abcdef01234567`
-- Scope digest re-computed at the candidate: matches opening
-- Delivered outcome: …
-- Definition-of-done evidence: …
-- Provisional commits folded: yes | none existed
-- User or domain review: …
-- Known limits: …
-
-## Advisory disposition
-
-Every advisory the checker raised at this candidate appears in the frontmatter
-list, and nothing else does. Prose here explains the entries; it does not
-replace them.
 
 ## Decision
 
@@ -225,29 +186,31 @@ Candidate accepted for administrative closure and exact integration.
 
 | Field | Binds |
 | :-- | :-- |
-| `subject_commit` | the exact result. MUST equal the audit's subject |
-| `scope_digest` | the accepted definition of done. MUST equal the opening digest |
-| `base` | the trunk tip the candidate was read against. Input to the [drift predicate](../concepts/acceptance-drift.md) |
-| `accepted_roles` | which of the five roles this actor held, so a collapse is visible |
+| `subject_commit` | the exact result; MUST equal the record's own filename and the path's `subject_commit` |
+| `scope_digest` | the accepted definition of done, re-computed at `C`; MUST equal the opening digest |
+| `base` | the trunk tip merged into the candidate — stated for the reader; the checker derives it as the merge-base |
+| `accepted_roles` | which roles this actor held, so a collapse is visible |
 | `advisories_at_candidate` | the advisory rules raised at `C`, attested by the reviewer |
-| `advisory_disposition` | a structured entry per advisory in that attested set |
+| `advisory_disposition` | one entry per advisory in that attested set: `fixed`, `accepted`, or `deferred` with `owner` and `follow_up` |
+| `verdict` | one of `clean`, `drift noted`, `needs a conversation`, possibly qualified |
 
-`advisory_disposition` is a list, not a sentence. Each entry names a `rule`, a
-`disposition` of `fixed`, `accepted`, or `deferred`, and a `reason`; a deferral
-also names an `owner` and a `follow_up`.
+The checker requires the record to exist for exactly `C`, to carry actor, time,
+decision, scope reference and digest, to name a verdict from the vocabulary and
+answer at least one question — a missing record, an untouched scaffold and a
+hollowed-out one must not look the same — and requires the dispositions to
+cover exactly the attested set. `A` is field-restricted, so its advisory set is
+a strict subset of `C`'s: any advisory that fires at `A` and is missing from the
+attested set proves the attestation incomplete.
 
-It is compared against `advisories_at_candidate`, not against whatever a checker
-raises while evaluating the closure commit. `A` is field-restricted, so its
-advisory set is a strict subset of `C`'s: comparing against it would let an
-advisory raised at the candidate pass undisposed. The attested set is the
-subject, and any advisory that does fire at `A` and is missing from it proves
-the attestation incomplete.
-
-Reviewer identity, UTC time, and an accepted decision remain required.
+Allowed verdict stems are `clean`, `drift noted`, and
+`needs a conversation before merge`. If a finding changes implementation,
+create and review a new candidate. The object-id length above is SHA-1's forty
+characters; a SHA-256 repository writes sixty-four in the same field and the
+same filename.
 
 ## Immutability and correction
 
-Once created, each closing or audit file is immutable. A factual correction
+Once created, a closing record is immutable. A factual correction
 creates a new uniquely named record that identifies and supersedes the earlier
 record. It never edits history into a more convenient shape.
 

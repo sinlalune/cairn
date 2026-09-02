@@ -8,8 +8,9 @@ timestamp: 2026-08-26T00:00:00Z
 
 # Implementation candidate
 
-An implementation candidate, written `C`, is the exact post-[rebase](./rebase.md)
-[commit](./commit.md) whose product content is proposed for integration.
+An implementation candidate, written `C`, is the exact [commit](./commit.md)
+whose product content is proposed for integration, produced after the trunk
+was merged into the branch.
 
 ## In Cairn
 
@@ -23,10 +24,10 @@ Candidate identity excludes [provisional commits](./provisional-commit.md): work
 pushed while incomplete is folded into the work unit it was drafting before `C`
 exists, so no marked-incomplete commit is ever part of what was accepted.
 
-The candidate is also bound to the state it was read against. Its closing record
-names the base `T` it was rebased onto, and
-[acceptance drift](./acceptance-drift.md) decides whether that acceptance still
-holds when the trunk has moved on. One later field-restricted
+The candidate is also bound to the state it was read against: the base `T`,
+the trunk tip merged into it, which Git holds as the merge-base of the branch
+and the trunk. [Acceptance drift](./acceptance-drift.md) decides whether that
+acceptance still holds when the trunk has moved on. One later field-restricted
 [administrative commit](./administrative-closure.md) may record acceptance
 without changing `C`.
 

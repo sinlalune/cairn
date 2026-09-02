@@ -13,8 +13,8 @@ one [trunk](./trunk.md) state, still describes the change that would land now.
 
 ## Build the idea
 
-A [candidate](./implementation-candidate.md) is accepted after being rebased
-onto a trunk tip `T`. Between acceptance and integration, other paths land, and
+A [candidate](./implementation-candidate.md) is accepted after the trunk tip
+`T` was merged into its branch. Between acceptance and integration, other paths land, and
 the trunk becomes `T'`. Something has to decide whether the acceptance survives.
 
 The obvious rule — require `T' == T` at integration — is wrong, and wrong in a
@@ -30,11 +30,10 @@ read against a body of knowledge. It is threatened only if the trunk moved
 
 ## In Cairn
 
-The closing record names the base it was accepted against:
-
-```yaml
-base: <full object id of T>
-```
+`T` is derived, not declared: it is the merge-base of the path branch and the
+trunk, because the branch merged the trunk in before the candidate was
+produced. A closing record on `manual-git` states it as `base:` for the reader;
+the checker computes it.
 
 An acceptance remains valid while the trunk delta from `T` to `T'` touches no
 file matched by the union of the path's `writes:` and `governs:` declarations.
@@ -46,8 +45,9 @@ file matched by the union of the path's `writes:` and `governs:` declarations.
 
 If the delta touches neither, the path integrates the accepted candidate
 unchanged. If it touches either, the acceptance is invalidated: the path returns
-to [`running`](./lifecycle.md), rebases onto `T'`, produces a new candidate,
-and repeats audit and acceptance.
+to [`running`](./lifecycle.md), merges `T'` in, produces a new candidate, and
+repeats review and acceptance. The checker runs this predicate on every ready
+path, which under `pull-request` transport is the request's own check.
 
 The predicate is deliberately conservative in one direction and honest about it:
 two paths writing genuinely disjoint surfaces do not invalidate each other, and

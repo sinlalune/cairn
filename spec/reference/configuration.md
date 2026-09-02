@@ -61,8 +61,8 @@ in [current conformance](../index.md#current-conformance).
   "pathHistoryPolicy": "forbidden",
   "scopeDigestAlgorithm": "sha256",
   "transport": {
-    "registration": "declared-adapter-name",
-    "integration": "declared-adapter-name"
+    "registration": "pull-request",
+    "integration": "pull-request"
   },
   "migration": {
     "unregisteredPaths": [],
@@ -101,7 +101,7 @@ parent-traversing, dot-segment, empty-segment, and backslash forms are rejected.
 | `checkpointRetentionRef` | ref prefix for [checkpoint retention](../concepts/checkpoint-retention.md), which the host's own tooling maintains — the reference checker does not read it | a ref prefix the remote accepts, or `null` where the repository forbids rewriting pushes instead |
 | `pathHistoryPolicy` | which conforming rewrite policy the host chose | `retained` with a ref prefix, or `forbidden` with a null prefix |
 | `scopeDigestAlgorithm` | digest used for [scope digests](../concepts/scope-digest.md) | a named algorithm; the digest is never abbreviated |
-| `transport` | registration and integration adapters | installed and tested adapter identifiers |
+| `transport` | how a registration and an accepted candidate reach the trunk, and where closing acceptance is recorded | `pull-request` — the default; the request is the record — or `manual-git` — a checked local merge, and one closing record in the path folder |
 | `migration` | finite exceptions for records predating installed predicates | three explicit path-id arrays; not a schema-version migration mechanism |
 
 `checkpointRetentionRef: null` is a conforming value only when the repository

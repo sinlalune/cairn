@@ -371,37 +371,53 @@ pathFixture('a path reaching done on the trunk with no journal entry', 'journal-
  * says to, so the baseline is itself the regression test.
  * ------------------------------------------------------------------ */
 
-const CLOSING = ({ subject, base, digest, attested = [], disposition = [] }) => {
+/** The closing record on manual-git: the acceptance and the review, one file
+ *  in the path folder named after the candidate. */
+const CLOSING = ({ subject, base, digest, attested = [], disposition = [], verdict = 'clean', answer = 'No — there is none.' }) => {
   const list = disposition.length === 0
-    ? 'advisory_disposition: []'
-    : `advisory_disposition:\n${disposition.map((d) =>
-      `  - rule: ${d.rule}\n    disposition: ${d.disposition}\n    reason: ${d.reason}`).join('\n')}`
+    ? '  advisory_disposition: []'
+    : `  advisory_disposition:\n${disposition.map((d) =>
+      `    - rule: ${d.rule}\n      disposition: ${d.disposition}\n      reason: ${d.reason}`).join('\n')}`
   return `---
-type: Cairn Session Record
-title: CP-FIXTURE-001 closing acceptance
+type: Cairn Closing Record
+title: CP-FIXTURE-001 — closing of ${subject.slice(0, 7)}
 timestamp: 2026-09-01T18:00:00Z
-tags: [cairn, closing]
-path: CP-FIXTURE-001
-ceremony: closing
-subject_commit: ${subject}
-base: ${base}
-accepted_by: fixture-closer
-accepted_roles: [reviewer, auditor]
-accepted_at: 2026-09-01T18:00:00Z
-decision: accepted
-scope_ref: ${RECORD}#definition-of-done
-scope_digest: ${digest}
-advisories_at_candidate: [${attested.join(', ')}]
+cairn:
+  path: CP-FIXTURE-001
+  branch: path/cp-fixture-001
+  subject_commit: ${subject}
+  base: ${base}
+  accepted_by: fixture-closer
+  accepted_roles: [reviewer]
+  accepted_at: 2026-09-01T18:00:00Z
+  decision: accepted
+  scope_ref: ${RECORD}#definition-of-done
+  scope_digest: ${digest}
+  advisories_at_candidate: [${attested.join(', ')}]
 ${list}
+  verdict: ${verdict}
 ---
 
-# CP-FIXTURE-001 — closing acceptance
+# CP-FIXTURE-001 — closing of ${subject.slice(0, 7)}
+
+## Findings
+
+### Does the diff contradict an accepted decision?
+
+${answer}
+
+### Does it duplicate something another running path is building?
+
+### Did it introduce architecture that belongs in a decision record and has none?
+
+### Is anything now documented in two places that will drift apart?
 
 ## Decision
 
 Candidate accepted for administrative closure and exact integration.
 `
 }
+const closingFile = (subject) => `project/coding-paths/CP-FIXTURE-001/closing-${subject}.md`
 
 const STEP_RECORD = `---
 type: Cairn Coding Path Step
@@ -432,8 +448,8 @@ verified: cairn-check
  *  in the working tree — exactly where the operations page says to run the
  *  gate. `provisional` marks the one implementation commit as a draft, which
  *  is the one state this harness builds red on purpose. */
-function readyRepository({ provisional = false } = {}) {
-  const dir = repository()
+function readyRepository({ provisional = false, transport = 'pull-request' } = {}) {
+  const dir = repository({ transport })
   const base = git(dir, 'rev-parse', 'HEAD').trim()
   writeAcceptedRecord(dir, {
     base_commit: base,
@@ -461,24 +477,21 @@ function readyRepository({ provisional = false } = {}) {
   const subject = git(dir, 'rev-parse', 'HEAD').trim()
   const trunk = git(dir, 'rev-parse', 'origin/main').trim()
 
-  // Closure: the real audit scaffold, filled; the closing record; A's edits.
-  execFileSync(process.execPath, ['tools/cairn-audit.mjs', '--subject', subject, '--branch', 'path/cp-fixture-001'],
-    { cwd: dir, stdio: 'pipe' })
-  const auditFile = `project/audits/cp-fixture-001-${subject}.md`
-  write(dir, auditFile, readFileSync(join(dir, auditFile), 'utf8')
-    .replace('verdict: TO BE FILLED BY THE AUDITING AGENT', 'verdict: clean')
-    .replace(/### Does the diff contradict an accepted decision\?\n\nTO BE FILLED BY THE AUDITING AGENT/,
-      '### Does the diff contradict an accepted decision?\n\nNo — there is none.')
-    .replace(/TO BE FILLED BY THE AUDITING AGENT/g, ''))
-  // An honest closing record attests every advisory the candidate raised. The
-  // provisional harness knows its candidate is a draft, and says so, so that
-  // the one blocking finding left is the rule under test.
-  write(dir, 'project/sessions/2026-09-01-cp-fixture-001-closing.md',
-    CLOSING({
+  // Closure. On pull-request the request's description and approval are the
+  // record, and the tree carries only A's edits. On manual-git the closing
+  // record is scaffolded by the real command and filled: an honest one attests
+  // every advisory the candidate raised, so the provisional harness, which
+  // knows its candidate is a draft, says so.
+  if (transport === 'manual-git') {
+    const scaffolded = execFileSync(process.execPath, ['tools/cairn-audit.mjs', '--subject', subject, '--branch', 'path/cp-fixture-001'],
+      { cwd: dir, encoding: 'utf8', stdio: 'pipe' })
+    assert.match(scaffolded, /scaffolded project\/coding-paths\/CP-FIXTURE-001\/closing-/)
+    write(dir, closingFile(subject), CLOSING({
       subject, base: trunk, digest: scopeDigest(dir),
       attested: provisional ? ['provisional'] : [],
       disposition: provisional ? [{ rule: 'provisional', disposition: 'accepted', reason: 'the harness marks its own draft' }] : []
     }))
+  }
   write(dir, RECORD,
     readFileSync(join(dir, RECORD), 'utf8')
       .replace('  status: running\n', '  status: ready\n')
@@ -488,11 +501,11 @@ function readyRepository({ provisional = false } = {}) {
 }
 
 /** A closure fixture: the uncommitted closure is green, and this one
- *  mutation makes the named rule block. */
-function closureFixture(name, rule, mutate) {
+ *  mutation makes the named rule block. Pull-request transport unless said. */
+function closureFixture(name, rule, mutate, options = {}) {
   COVERED.add(rule)
-  test(`adversarial: ${rule} — ${name}`, () => {
-    const { dir, subject, trunk } = readyRepository()
+  test(`adversarial: ${rule} — ${name}${options.transport ? ` (${options.transport})` : ''}`, () => {
+    const { dir, subject, trunk } = readyRepository(options)
     try {
       const clean = check(dir)
       assert.deepEqual(blocking(clean), [],
@@ -507,23 +520,25 @@ function closureFixture(name, rule, mutate) {
   })
 }
 
-test('closure: the committed, not-yet-pushed administrative commit is green', () => {
-  // The documented order is commit A, run the gate, push. Between the second
-  // and third steps `remote-checkpoint` fires about A itself, and the
-  // attestation rule once read that as an advisory missing from the
-  // candidate's set: the closure the pilot ran could not pass its own
-  // post-commit gate.
-  const { dir } = readyRepository()
-  try {
-    commit(dir, 'Close CP-FIXTURE-001')
-    const found = check(dir)
-    assert.deepEqual(blocking(found), [], `an unpushed closure commit must be green: ${describe(found)}`)
-    assert.ok(advisory(found).includes('remote-checkpoint'),
-      'the unpushed closure commit must still be reported, as an advisory')
-  } finally {
-    cleanup(dir, `${dir}.git`)
-  }
-})
+for (const transport of ['pull-request', 'manual-git']) {
+  test(`closure: the committed, not-yet-pushed administrative commit is green (${transport})`, () => {
+    // The documented order is commit A, run the gate, push. Between the second
+    // and third steps `remote-checkpoint` fires about A itself, and the
+    // attestation rule once read that as an advisory missing from the
+    // candidate's set: the closure the pilot ran could not pass its own
+    // post-commit gate.
+    const { dir } = readyRepository({ transport })
+    try {
+      commit(dir, 'Close CP-FIXTURE-001')
+      const found = check(dir)
+      assert.deepEqual(blocking(found), [], `an unpushed closure commit must be green: ${describe(found)}`)
+      assert.ok(advisory(found).includes('remote-checkpoint'),
+        'the unpushed closure commit must still be reported, as an advisory')
+    } finally {
+      cleanup(dir, `${dir}.git`)
+    }
+  })
+}
 
 closureFixture('the closure commit moves writes:, which acceptance was measured against', 'acceptance', (dir) => {
   edit(dir, RECORD, '    - src/**\n', '    - src/**\n    - lib/**\n')
@@ -533,14 +548,21 @@ closureFixture('implementation changes after acceptance, in the uncommitted clos
   write(dir, 'src/app.js', 'export const app = false\n')
 })
 
-closureFixture('the coherence audit bound to the candidate is missing', 'acceptance', (dir, { subject }) => {
-  rmSync(join(dir, `project/audits/cp-fixture-001-${subject}.md`))
-})
+closureFixture('the closing record for the candidate is missing', 'acceptance', (dir, { subject }) => {
+  rmSync(join(dir, closingFile(subject)))
+}, { transport: 'manual-git' })
+
+closureFixture('the closing record is still a scaffold', 'acceptance', (dir, { subject, trunk }) => {
+  write(dir, closingFile(subject), CLOSING({ subject, base: trunk, digest: scopeDigest(dir), verdict: 'TO BE FILLED BY THE REVIEWER', answer: '' }))
+}, { transport: 'manual-git' })
 
 closureFixture('an advisory attested at the candidate has no disposition', 'acceptance', (dir, { subject, trunk }) => {
-  write(dir, 'project/sessions/2026-09-01-cp-fixture-001-closing.md',
-    CLOSING({ subject, base: trunk, digest: scopeDigest(dir), attested: ['record-date'] }))
-})
+  write(dir, closingFile(subject), CLOSING({ subject, base: trunk, digest: scopeDigest(dir), attested: ['record-date'] }))
+}, { transport: 'manual-git' })
+
+closureFixture('the closing record re-computed a digest the opening did not accept', 'scope-digest', (dir, { subject, trunk }) => {
+  write(dir, closingFile(subject), CLOSING({ subject, base: trunk, digest: 'sha256:' + 'f'.repeat(64) }))
+}, { transport: 'manual-git' })
 
 closureFixture('the definition of done is edited after acceptance', 'scope-digest', (dir) => {
   edit(dir, RECORD, '- [ ] The rule fires.', '- [ ] The rule fires, eventually.')

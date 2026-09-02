@@ -14,28 +14,34 @@ approval of a [branch](./branch.md) name.
 
 ## In Cairn
 
-The record binds three things at once, because an acceptance that binds only the
-first is weaker than it appears:
+On the default `pull-request` [transport](./integration-transport.md) the
+acceptance is the reviewer's approval of the request opened from the path
+branch, and the request's description is the review. On `manual-git` it is one
+closing record in the path folder, `closing-<C>.md`, carrying the same fields.
+Either way it binds three things at once, because an acceptance that binds only
+the first is weaker than it appears:
 
-- **the result** — the full `subject_commit` of `C`, which MUST equal the
-  [coherence audit](./coherence-audit.md)'s subject;
-- **the scope** — a `scope_ref` and its [scope digest](./scope-digest.md),
-  re-computed at `C` and required to match the digest recorded at opening;
-- **the base** — `base: T`, the trunk tip `C` was rebased onto, which is what
+- **the result** — the full `subject_commit` of `C`, the commit the request
+  proposes and the administrative closure names;
+- **the scope** — the [scope digest](./scope-digest.md) re-computed at `C`,
+  required to equal the digest the opening acceptance recorded;
+- **the base** — `T`, the trunk tip merged into the candidate, which is what
   the [acceptance-drift](./acceptance-drift.md) predicate later tests.
 
-It also contains the path, `ceremony: closing`, reviewer identity, UTC time,
-`decision: accepted`, the roles that reviewer held on this path, and the
-structured disposition of every [advisory](./finding.md) raised at `C`.
+It also names the reviewer, the roles they held on this path, and the
+disposition of every [advisory](./finding.md) raised at `C`. On `manual-git` the
+checker reads all of that from the record; on `pull-request` the forge keeps
+it, and the checker proves only what Git holds — the candidate, its closure
+surface, the opening digest, provisional commits, and drift.
 
 If implementation changes, the acceptance no longer applies and closure repeats.
 
 ## It does not prove
 
-The record proves that an acceptance was recorded in the required shape. It does
-not prove the reviewer was authorised unless repository governance enforces that
-identity — and when the same actor opened and closed the path, the record makes
-that visible rather than making it true.
+A recorded acceptance proves that one was recorded in the required shape. It
+does not prove the reviewer was authorised unless the forge's rules or the
+repository's governance enforce that identity — and when the same actor opened
+and closed the path, the record makes that visible rather than making it true.
 
 Related: [implementation candidate](./implementation-candidate.md),
 [coherence audit](./coherence-audit.md), [scope digest](./scope-digest.md),

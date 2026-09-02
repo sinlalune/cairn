@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-001
   route: full
   status: running
-  current_step: S03
+  current_step: S04
   base_commit: 43cfeb96670eba615567b967f7368f32b3d8a409
   branch: path/cp-cairn-001
   assigned_writer: cp-cairn-001-writer
@@ -128,7 +128,8 @@ immutable original; the block above carries the same digest.
 - **[S01](./steps/S01.md)** — the specification moved to `spec/` and written on the six stages; 17,455 words became 5,588, 50 own concepts became 31; the 0.2 matrix moved to the conformance page — COMPLETE
 - **[S02](./steps/S02.md)** — the rules cut from 39 names to 24, nineteen blocking and every one with an adversarial fixture; the suite brought over from Atomik and completed; configuration schema 2; the conformance matrix rewritten against 1.0 — COMPLETE
 - **[S03](./steps/S03.md)** — one folder per path: opening acceptance inline and read there, the resume section replacing the brief, `depends_on:` validated and projected as the unblocked view, `foundation` and `emergency` gone, folder logs gone; this record migrated as the worked example — COMPLETE
-- **S04** — in progress; its file is linked when it is written
+- **[S04](./steps/S04.md)** — the pull request is the closing record: `pull-request` the default transport with `manual-git` as the fallback, the checker proving only what Git holds on the first and reading one closing record in the path folder on the second, the drift base derived from the merge-base — COMPLETE
+- **S05** — in progress; its file is linked when it is written
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
@@ -137,21 +138,19 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : e18bbe460ca1f2c6c35d58a31eec526aef4be351 — the S02 commit, on origin/path/cp-cairn-001; S03 is the commit that carries this refresh
-unit   : 02
+commit : de09c06a6609cebc2cb3cceb1cef4b2632ad83a1 — the S03 commit, on origin/path/cp-cairn-001; S04 is the commit that carries this refresh
+unit   : 03
 base   : 43cfeb96670eba615567b967f7368f32b3d8a409
 trunk  : ca34010040daa836fe81004eb2f400f9a5c7511f — origin/main has not moved since registration
 ```
 
 ### Next action
 
-S04 — pull-request transport: `pull-request` as the default `transport.integration`
-in the configuration with `manual-git` as the fallback; the coherence audit as
-the request's description and the approval as closing acceptance, read by
-`acceptance` through the forge or, on `manual-git`, from a closing record in the
-path folder; the acceptance-drift check as a CI step on the request;
-`cairn-check` the one required check. Plan item 4 in `plan.md`. This
-repository's own ruleset already requires the request.
+S05 — the skills: `skills/` with cairn-brainstorm, cairn-open, cairn-unit,
+cairn-close and cairn-code as Agent Skills folders, each a `SKILL.md` under
+5,000 tokens; the operations page becomes the skills' reference files;
+cairn-code carries the decision ladder from section 3 of the convergence
+record. Plan item 5 in `plan.md`.
 
 ### Blockers
 
@@ -179,15 +178,17 @@ None.
   links the specification (S06).
 - A rule for the resume section (S03) — its contract is a judgement measured
   by cold resume, and a schema over prose is a proxy predicate.
+- Reading the request's approval from the forge in the checker (S04) — a
+  network and a token in the one tool that must run offline, to re-check a
+  guarantee the forge already gives.
 
 ### Reading order
 
 1. `docs/cairn/manifesto.md@e248bc94232ba75777cbd305a9270fb114069d8e` — what every cut is measured against.
 2. `docs/cairn/cairn-manifesto-convergence-2026-09-02.md@5ec546716b369b674574a4f370823385bea12518` — section 4 is the definition of done; its transport decisions are S04's instruction.
-3. `spec/index.md` at the S03 tip, chapter 5, *Close one exact candidate* and *Integrate without claiming the future* — what S04 builds.
-4. `spec/reference/conformance.md` — the rows marked partial on S04: closing acceptance, acceptance drift, the route's two closing reliefs.
-5. `project/coding-paths/CP-CAIRN-001/steps/S03.md` — what the tools read today, and where the closing record and the audit file still are.
-6. `tools/cairn-fixture.test.mjs` — the closure harness S04 changes under; the closing record and the audit file it writes move with the transport.
+3. `docs/cairn/cairn-manifesto-convergence-2026-09-02.md` section 3, the Agent Skills and Ponytail rows — what S05 packages and the stance cairn-code carries.
+4. `spec/reference/operations.md` and `spec/reference/execution-protocol.md` at the S04 tip — the procedures the skills are cut from.
+5. `project/coding-paths/CP-CAIRN-001/steps/S04.md` — the closing sequence on each transport, which cairn-close teaches.
 
 ### Verify
 

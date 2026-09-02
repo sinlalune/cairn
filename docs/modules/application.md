@@ -17,7 +17,7 @@ dependency-free Node scripts that evaluate the protocol the
 | `cairn-config.mjs` | validates `cairn.config.json` against `cairn-config.schema.json` before any rule runs |
 | `cairn-check.mjs` | the checker: every blocking and advisory rule, reported by exit code |
 | `cairn-active.mjs` | regenerates the live view of running paths, or checks that it is current |
-| `cairn-audit.mjs` | scaffolds and checks the closing review of one exact candidate |
+| `cairn-audit.mjs` | scaffolds the closing review of one exact candidate: the request's description on `pull-request`, the closing record in the path folder on `manual-git` |
 | `cairn-rules.mjs` | regenerates the rule catalogue and the rule-to-requirement linkage on the [conformance page](../../spec/reference/conformance.md) |
 | `cairn-init.mjs` | installs the kit into a new repository, the area note its configuration names included |
 | `*.test.mjs` | the tools' own suite, run by `npm test`: the pure half of every rule against `evaluate()`, and one adversarial fixture per blocking rule against a real installed repository |
@@ -42,7 +42,10 @@ which also records where every 0.2 name went. One invocation form remains:
 the base defaults to the trunk. The configuration is schema 2. The checker reads
 a path's opening acceptance from the record's own `## Opening acceptance`
 block, validates `depends_on:`, and knows two routes; the live-view generator
-marks each live path unblocked or names what it waits on.
+marks each live path unblocked or names what it waits on. Closure follows the
+configured transport: on `pull-request` the checker proves the candidate, its
+closure surface, the opening digest and the trunk drift from Git and reads no
+review; on `manual-git` it also reads the closing record.
 
 ## Testing
 

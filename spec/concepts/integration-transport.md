@@ -14,19 +14,24 @@ An integration transport is the complete route by which a proposed
 
 ## In Cairn
 
-The transport must identify the exact candidate, attach required checks to that
+Two transports are named, in `cairn.config.json`:
+
+| `transport.integration` | What lands the candidate | Where acceptance is recorded |
+| :-- | :-- | :-- |
+| `pull-request` — the default | a request from the path branch to the trunk, merged by the forge with the checker as its one required status check on the exact commit that lands | the request's description and approval |
+| `manual-git` — the fallback for a repository with no forge | a checked local `--no-ff` merge from a clean trunk checkout, pushed and verified on the remote | one closing record in the path folder |
+
+Either transport must identify the exact candidate, attach the checks to that
 identity, prevent implementation changes after acceptance, record `done` only
-while integrating, and prove the landed result remotely. A checked local merge,
-a host-managed queue, a candidate-ref fast-forward, or a trusted bot can qualify
-only when the repository implements and tests the whole route.
+while integrating, and prove the landed result remotely. What neither may do is
+require the trunk to be unchanged since the candidate was accepted: equality
+with the accepted base is the obvious rule and a livelock, and
+[acceptance drift](./acceptance-drift.md) is the predicate that replaces it.
 
-What the transport MUST NOT do is require the trunk to be unchanged since the
-candidate was accepted. Equality with the accepted base is the obvious rule and
-a livelock: see [acceptance drift](./acceptance-drift.md) for the predicate that
-replaces it, and why.
-
-Registration needs a corresponding route that avoids requiring a path to already
-exist on trunk before its declaration can land.
+Registration uses the same vocabulary, `transport.registration`, and needs a
+route that does not require a path to already exist on the trunk before its
+declaration can land — a request from a registration branch, or a direct push
+where the trunk permits one.
 
 ## It does not prove
 

@@ -20,8 +20,9 @@ rule keys on the declared id, so a repository holding the older shape
 substitutes that one path and changes nothing else here.
 
 `cairn-init` installs a repository; the sequences below are what a participant
-then runs. `cairn-new` and `cairn-close` remain unimplemented, so registration
-and closure are manual.
+then runs. Registration and closure use the transport `cairn.config.json`
+declares: `pull-request` by default, `manual-git` where there is no forge.
+`npx cairn` (forward plan, S06) will script the manual parts.
 
 ## Register an accepted path
 
@@ -52,9 +53,10 @@ git push origin HEAD:main
 ```
 
 The printed parent must equal `base_commit`. No product implementation belongs
-in the registration commit. A protected profile replaces the final push with
-its tested registration adapter; it cannot reuse a check that requires the new
-path to already exist on trunk.
+in the registration commit. On `pull-request` transport the final push goes to
+a registration branch instead, and a request lands it on the trunk — the check
+runs on it like any other, and nothing requires the new path to already exist
+on the trunk.
 
 ## Create and publish the path
 
@@ -264,40 +266,42 @@ npm run build
 Use an ordinary push when rebase did not rewrite a published branch. The full
 output of `git rev-parse HEAD` is `C`.
 
-## Audit and accept exactly C
+## Review and accept exactly C
 
 ```bash
 npm run cairn-audit -- --subject <C> --branch path/cp-example-001
 ```
 
-Fill the generated audit record, whose filename and metadata carry the full
-object id of `C`. Read the candidate against the documents pinned in `governs:`,
-at their pinned ids.
+On `pull-request` transport that prints the request's description for `C` —
+candidate, base, digest line, the four coherence questions, the advisories to
+disposition, the roles — and the request template the kit installed offers the
+same shape. Open the request from the path branch to the trunk, paste and fill
+the description, and an authorised reviewer's approval is the closing
+acceptance: it names `C` through the request, the re-computed scope digest, and
+the base `T`.
 
-An authorised reviewer inspects exactly `C` and creates the closing acceptance
-record naming the same object id, the base `T`, the roles the reviewer held, the
-re-computed scope digest, and one structured entry per advisory raised at `C`:
+On `manual-git` the same command scaffolds
+`project/coding-paths/CP-EXAMPLE-001/closing-<C>.md`. Fill it: the reviewer,
+the roles they held, the UTC time, the digest, one structured entry per
+advisory raised at `C`, the four answers, the verdict.
+
+Either way the digest is computed by the same code that verifies it:
 
 ```bash
 node tools/cairn-check.mjs --scope-digest project/coding-paths/CP-EXAMPLE-001/index.md#definition-of-done
 npm run cairn-check -- --base origin/main   # the advisories to disposition
 ```
 
-The digest is computed by the same code that verifies it. A hand-built
-`sed | sha256sum` pipeline produces a different value — it includes the next
-heading and omits the algorithm prefix — and the gate then reports at closure
-that the definition of done moved.
-
-If the digest differs from the one recorded at opening, stop: the definition of
-done moved after acceptance. Restore it or record a scope amendment.
-
-If implementation changes, stop: commit a new `C`, rerun all checks, generate a
-new audit file, and obtain new acceptance.
+If the digest differs from the one in the opening acceptance, stop: the
+definition of done moved after acceptance. Restore it or record a scope
+amendment. If implementation changes, stop: commit a new `C`, rerun all checks,
+and review it again.
 
 ## Create administrative commit A
 
 Set the path to `status: ready` and `subject_commit: <C>`, and point the
-resume section's checkpoint at `C`. Change no other field of the path record — not the definition of done, not
+resume section's checkpoint at `C`; on `manual-git` add the closing record.
+Change no other field of the path record — not the definition of done, not
 `scope_ref`, not `writes:`, not `governs:`, not the step plan; the comparison is
 against the record as it stood at `C`, so a field that moved while the path ran
 is not a closure change. The live view projects the status, so regenerate it in
@@ -310,8 +314,7 @@ npm run cairn-active
 npm run cairn-check -- --base origin/main
 git add project/coding-paths/CP-EXAMPLE-001/index.md
 git add project/coding-paths/ACTIVE.md
-git add project/audits/cp-example-001-<C>.md
-git add project/sessions/YYYY-MM-DD-cp-example-001-closing.md
+git add project/coding-paths/CP-EXAMPLE-001/closing-<C>.md   # manual-git only
 git commit -m "Close CP-EXAMPLE-001 candidate <C>"
 git rev-list --count <C>..HEAD
 npm run cairn-check -- --base origin/main
@@ -323,26 +326,45 @@ after acceptance. The resulting commit is `A`.
 
 ## Check acceptance drift, then integrate
 
-Before integrating, test whether the acceptance still holds. `T` is the base
-recorded in the closing record:
+Before integrating, test whether the acceptance still holds. `T` is the
+merge-base of the branch and the trunk, and the checker runs this predicate on
+every ready path — on `pull-request` transport, the request's own check does:
 
 ```bash
 git fetch origin main
-git diff --name-only <T> origin/main
+git diff --name-only "$(git merge-base origin/main HEAD)" origin/main
+npm run cairn-check -- --base origin/main
 ```
 
-Compare that file list with the union of the path's `writes:` and `governs:`
-declarations. If nothing matches, the acceptance survives and integration
-proceeds. If anything matches, return the path to `running`, rebase onto the new
-tip, and repeat audit and acceptance.
+If no file in that list matches the union of the path's `writes:` and
+`governs:`, the acceptance survives and integration proceeds. If any does,
+return the path to `running`, merge the new tip in, and repeat review and
+acceptance.
 
 Do **not** require `origin/main` to equal `T`. That rule makes every landing
 invalidate every other open acceptance, and on a busy trunk nothing ever closes.
 
 ## Integrate the exact ready tip
 
-The exact procedure depends on the declared transport. A checked local merge
-transport can construct a candidate from a clean designated trunk checkout:
+**On `pull-request`** the forge merges the request — a merge commit, never a
+squash, so the commit that lands is the commit that was checked — with
+`cairn-check` as its one required status check. Then, from a clean trunk
+checkout, the integrating unit records the fact:
+
+```bash
+git switch main
+git fetch origin main
+git merge --ff-only origin/main
+git merge-base --is-ancestor <C> HEAD
+```
+
+Set the path to `status: done` and `resolution: completed`, retain
+`subject_commit: <C>`, regenerate `ACTIVE.md`, add one
+`project/log/YYYY-MM-DD-cp-example-001.md` entry, run the gate, and land that
+commit through the same transport.
+
+**On `manual-git`** a checked local merge constructs the integration unit from
+a clean designated trunk checkout:
 
 ```bash
 git switch main
@@ -372,9 +394,9 @@ npm test
 npm run build
 ```
 
-The ancestry command must succeed and the count must be exactly two: `A` and the
-integration commit. Only after every check passes may the transport land that
-exact commit:
+The ancestry command must succeed; the count is `A` plus the integration
+commit plus whatever the trunk landed beside them. Only after every check
+passes may the transport land that exact commit:
 
 ```bash
 git push origin HEAD:main
@@ -382,9 +404,8 @@ git fetch origin main
 git merge-base --is-ancestor HEAD origin/main
 ```
 
-A protected profile uses its tested candidate-ref, queue, or bot adapter rather
-than a direct push. In every profile, the checked identity and landed identity
-must be equal.
+In every profile and on either transport, the checked identity and the landed
+identity must be equal.
 
 ## Remove the secondary worktree safely
 
