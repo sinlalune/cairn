@@ -7,13 +7,13 @@ timestamp: 2026-09-02T00:00:00Z
 cairn:
   id: CP-CAIRN-001
   route: full
-  status: running
+  status: ready
   current_step: S08
   base_commit: 43cfeb96670eba615567b967f7368f32b3d8a409
   branch: path/cp-cairn-001
   assigned_writer: cp-cairn-001-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 7c0e9ce64ec3bb8bb20f30596fb00e09510ac0b6
   resolution: null
   writes:
     - README.md
@@ -142,21 +142,20 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : b8000e2f1823c9f683c605b7cc1f1b3499904158 — the S07 commit, on origin/path/cp-cairn-001; S08 is the commit that carries this refresh
-unit   : 07
+commit : 7c0e9ce64ec3bb8bb20f30596fb00e09510ac0b6 — the candidate C, the S08 commit, on origin/path/cp-cairn-001; this refresh is the administrative commit A
+unit   : 08
 base   : 43cfeb96670eba615567b967f7368f32b3d8a409
 trunk  : ca34010040daa836fe81004eb2f400f9a5c7511f — origin/main has not moved since registration
 ```
 
 ### Next action
 
-Close the path with `cairn-close` on `pull-request` transport: the trunk
-merged in (it has not moved since registration), the S08 commit as the
-candidate `C`, the checks on exactly `C`, the request opened from this branch
-with the review `cairn-audit` prints as its description, the administrative
-commit setting `ready` and `subject_commit: C`, then the owner's approval and
-merge. The integrating unit on the trunk records `done`, writes the journal
-entry, tags `1.0.0`, and the owner publishes `cairn-protocol`.
+The request from `path/cp-cairn-001` to `main` is open with the review as its
+description; the owner's approval is the closing acceptance, and the merge —
+a merge commit, never a squash — lands `C` with this administrative commit.
+Then the integrating unit on the trunk: `done`, `resolution: completed`, the
+live view, `project/log/2026-09-02-cp-cairn-001.md`, the tag `1.0.0`, the
+pilot rerun from the tag, and the owner's `npm publish` of `cairn-protocol`.
 
 ### Blockers
 
