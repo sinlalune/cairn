@@ -72,6 +72,13 @@ where they are — judged for reachability, never moved into a generation.
 
 Settled by **ADR-021**.
 
+**Since Cairn 1.0 the reference checker does not implement this namespace.**
+The default policy forbids rewriting, `path-history` enforces that, and a host
+that declares `pathHistoryPolicy: retained` supplies its own retention check;
+this page is the specification of what such a check proves, and the
+[conformance page](../reference/conformance.md) says that nothing in the
+reference tools proves it.
+
 A repository that cannot create or push that namespace has one other conforming
 option — forbid rewriting pushes on path branches entirely, and reach a current
 base by [merge](./merge.md) instead of rebase. Silently rewriting without

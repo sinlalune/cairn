@@ -1,0 +1,88 @@
+/**
+ * Tests for the derived running-paths view — `npm test`.
+ *
+ * The point of deriving this block is that the contradiction it used to be
+ * exposed to becomes impossible — once every accepted declaration has been
+ * registered on the trunk. These cases pin the projection itself; the
+ * separate registration rule pins the completeness of its inputs.
+ */
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
+import { METADATA_NAMESPACE, PATHS_BEGIN, PATHS_END } from './cairn-check.mjs'
+import { collectPaths, renderPaths, spliceBlock } from './cairn-active.mjs'
+
+const pathFile = (id, { status = 'running', branch, base = 'abc1234' } = {}) => ({
+  name: `${id}.md`,
+  text: [
+    '---',
+    `title: ${id} — a path doing something`,
+    `${METADATA_NAMESPACE}:`,
+    `  id: ${id}`,
+    `  status: ${status}`,
+    `  base_commit: ${base}`,
+    ...(branch ? [`  branch: ${branch}`] : []),
+    '---',
+    '',
+    '# Goal'
+  ].join('\n')
+})
+
+test('running, blocked and ready paths remain visible while done paths leave the live view', () => {
+  const live = collectPaths([
+    pathFile('CP-EX-010', { branch: 'path/cp-ex-010' }),
+    pathFile('CP-EX-011', { status: 'blocked', branch: 'path/cp-ex-011' }),
+    pathFile('CP-EX-012', { status: 'ready', branch: 'path/cp-ex-012' }),
+    pathFile('CP-EX-009', { status: 'done', branch: 'path/cp-ex-009' }),
+    pathFile('CP-OPS-001', { status: 'active' }),
+    pathFile('CP-EX-013', { status: 'running' })
+  ])
+  assert.deepEqual(live.map((p) => p.id), ['CP-EX-010', 'CP-EX-011', 'CP-EX-012'])
+  assert.deepEqual(live.map((p) => p.status), ['running', 'blocked', 'ready'])
+  assert.equal(live[0].branch, 'path/cp-ex-010')
+  assert.equal(live[0].base, 'abc1234')
+})
+
+test('output is deterministic whatever order the files are read in', () => {
+  const a = pathFile('CP-EX-010', { branch: 'path/cp-ex-010' })
+  const b = pathFile('CP-EX-011', { branch: 'path/cp-ex-011' })
+  const forward = renderPaths(collectPaths([a, b]))
+  const backward = renderPaths(collectPaths([b, a]))
+  assert.equal(forward, backward)
+  assert.ok(forward.indexOf('CP-EX-010') < forward.indexOf('CP-EX-011'))
+})
+
+test('no live paths reads as an honest empty state, never a blank block', () => {
+  const rendered = renderPaths([])
+  assert.ok(rendered.includes('no live path'))
+  assert.ok(rendered.trim().length > 0)
+})
+
+test('splicing replaces only the marked block and keeps the prose around it', () => {
+  const doc = ['# Active', '', '## Running paths', 'DERIVED — do not edit by hand.', PATHS_BEGIN, '- stale content that must vanish', PATHS_END, '', '## Previously', '- something that must survive'].join('\n')
+  const out = spliceBlock(doc, '- **CP-EX-010** — x · branch `path/cp-ex-010`')
+  assert.ok(!out.includes('stale content'))
+  assert.ok(out.includes('CP-EX-010'))
+  assert.ok(out.includes('DERIVED — do not edit by hand.'))
+  assert.ok(out.includes('- something that must survive'))
+  assert.equal(spliceBlock(out, '- **CP-EX-010** — x · branch `path/cp-ex-010`'), out)
+})
+
+test('a file without markers fails loudly rather than guessing', () => {
+  assert.throws(() => spliceBlock('# no markers here\n', '- x'), /missing/)
+})
+
+test('a path branch that has moved no status projects exactly what the trunk did', () => {
+  const files = [pathFile('CP-EX-010', { branch: 'path/cp-ex-010' }), pathFile('CP-EX-011', { branch: 'path/cp-ex-011' })]
+  const trunk = spliceBlock(`${PATHS_BEGIN}\nanything\n${PATHS_END}`, renderPaths(collectPaths(files)))
+  assert.equal(spliceBlock(trunk, renderPaths(collectPaths(files))), trunk)
+})
+
+test('closing a path makes the view stale in whatever checkout closed it', () => {
+  const running = [pathFile('CP-EX-010', { branch: 'path/cp-ex-010' })]
+  const view = spliceBlock(`${PATHS_BEGIN}\n\n${PATHS_END}`, renderPaths(collectPaths(running)))
+  assert.ok(view.includes('CP-EX-010'))
+  const closed = [pathFile('CP-EX-010', { status: 'done', branch: 'path/cp-ex-010' })]
+  const regenerated = spliceBlock(view, renderPaths(collectPaths(closed)))
+  assert.notEqual(regenerated, view)
+  assert.ok(regenerated.includes('no live path'))
+})

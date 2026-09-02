@@ -23,6 +23,7 @@ after a failure.
 npm run cairn-check     # the blocking and advisory rules, in full
 npm run cairn-active    # regenerate the running-paths view
 npm run cairn-audit     # scaffold the pre-merge coherence audit
+npm test                # the tools' own fixture suite: one adversarial fixture per blocking rule
 ```
 
 ## Absolute rules

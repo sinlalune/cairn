@@ -39,8 +39,8 @@ A solo developer working with agents holds every role, which makes closing
 acceptance a signature the signer issued to themselves. Cairn does not forbid
 that; forbidding it would make the protocol unusable for the setup most likely
 to adopt it first. It requires the collapse to be **visible**: acceptance
-records name the roles the actor held, and the checker raises an advisory,
-`role-collapse`, when one actor recorded both the opening and the closing
+records name the roles the actor held, and the checker raises an advisory
+under `acceptance` when one actor recorded both the opening and the closing
 acceptance of a path.
 
 The distinction that matters is between a weakness that is written down and one

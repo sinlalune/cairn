@@ -19,7 +19,8 @@ dependency-free Node scripts that evaluate the protocol the
 | `cairn-active.mjs` | regenerates the live view of running paths, or checks that it is current |
 | `cairn-audit.mjs` | scaffolds and checks the closing review of one exact candidate |
 | `cairn-rules.mjs` | regenerates the rule catalogue and the rule-to-requirement linkage on the [conformance page](../../spec/reference/conformance.md) |
-| `cairn-init.mjs` | installs the kit into a new repository |
+| `cairn-init.mjs` | installs the kit into a new repository, the area note its configuration names included |
+| `*.test.mjs` | the tools' own suite, run by `npm test`: the pure half of every rule against `evaluate()`, and one adversarial fixture per blocking rule against a real installed repository |
 
 ## How the tools find the specification
 
@@ -32,11 +33,23 @@ the specification is read wherever a host binds its wiki. The rule generator
 writes into the conformance page, not into the specification index, so the
 index stays under its word budget.
 
+## The rules
+
+The checker implements twenty-four rules — nineteen blocking, five advisory —
+inventoried on the [conformance page](../../spec/reference/conformance.md),
+which also records where every 0.2 name went. One invocation form remains:
+`cairn-check [--base <ref>] [--branch <name>] [--json]`, and on a path branch
+the base defaults to the trunk. The configuration is schema 2.
+
 ## Testing
 
-The tools' fixture suite — one adversarial fixture per blocking rule, each
-installing a real repository, proving it green, introducing one violation and
-requiring that rule among the findings — is not in this repository yet. The kit
-this repository was seeded from ships the tools without their tests; the suite
-is brought over from Atomik in the unit that cuts the rules. The discipline the
-suite implements is written in [soundness](../../tools/soundness.md).
+`npm test` runs Node's own runner over `tools/*.test.mjs`. Two kinds of test, and the difference is
+the whole discipline written in [soundness](../../tools/soundness.md): the unit
+suite proves each rule's predicate against `evaluate()` with hand-built
+arguments, and the fixture suite proves each rule is WIRED, by installing a real
+repository with `cairn-init`, proving it green, introducing exactly one
+violation and requiring the rule among the blocking findings. Every blocking
+rule has such a fixture, and the coverage is declared in the suite so that a
+new blocking rule forces the choice. Three parity tests assert that the local
+default and the CI invocation reach one verdict on one tree. CI runs the suite
+before the gate, in the one job that is the required check.

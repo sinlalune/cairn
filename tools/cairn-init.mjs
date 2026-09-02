@@ -41,7 +41,7 @@ import {
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { configErrors } from './cairn-config.mjs'
+import { CAIRN_CONFIG, configErrors } from './cairn-config.mjs'
 
 export const SOURCE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -103,7 +103,7 @@ export function defaultOptions() {
 export function buildConfig(options) {
   return {
     $schema: './tools/cairn-config.schema.json',
-    version: 1,
+    version: 2,
     trunk: options.trunk,
     remote: options.remote,
     metadataNamespace: options.namespace,
@@ -124,11 +124,6 @@ export function buildConfig(options) {
         note: `${options.docsRoot}/modules/application.md`
       }
     ],
-    sharedFiles: [
-      `${options.projectRoot}/coding-paths/ACTIVE.md`,
-      `${options.projectRoot}/coding-paths/index.md`
-    ],
-    staleAfterDays: 14,
     defaultRoute: 'lightweight',
     // ADR-022. A new repository has nothing to migrate, so it starts on the
     // policy that needs no retention namespace at all. Scaffolding an empty
@@ -181,6 +176,7 @@ after a failure.
 npm run cairn-check     # the blocking and advisory rules, in full
 npm run cairn-active    # regenerate the running-paths view
 npm run cairn-audit     # scaffold the pre-merge coherence audit
+npm test                # the tools' own fixture suite, where the tests are installed
 \`\`\`
 
 ## Absolute rules
@@ -246,26 +242,25 @@ this repository has no checkpoint-retention namespace to fetch or maintain.
 `
 }
 
-export function conceptTemplate() {
-  return front('Cairn Concept', 'One concept', 'Template for a single concept article.', ['cairn', 'concept', 'template']) +
-    `\n# One concept
+export function moduleNote(options) {
+  return front('Cairn Module Note', 'Application', 'The one implemented area a new repository starts with: what lives under its source roots, its boundaries, and how it is tested.', ['module', 'cairn']) +
+    `\n# Application
 
-State what the term MEANS in one paragraph, before any procedure. A reader
-arrives here because normative text used the word and they could not proceed.
+The configuration binds ${options.sourceRoots.map((r) => `\`${r}/\``).join(', ')} to this note. Every
+implementation unit that changes source there refreshes it in the same unit:
+what the area does, where its boundaries are, and which tests prove it.
 
-## Why it exists
+## Flow
 
-The failure this concept prevents. A concept with no failure behind it is
-vocabulary growth, and vocabulary is the one budget a protocol cannot refund —
-every article is something a reader must learn before the rules become readable.
+State the main flow in a paragraph, once the first unit lands.
 
-## How it is checked
+## Boundaries
 
-Name the predicate, or say plainly that nothing checks it. "Nothing checks this"
-is a legitimate and useful answer; a vague implication that something does is
-not.
+What this area owns, and what it deliberately does not.
 
-Settled by <ADR link, if a decision established it>.
+## Tests
+
+How the area is proved: the command, and what green means.
 `
 }
 
@@ -275,7 +270,7 @@ name: cairn
 on:
   pull_request:
   push:
-    branches: [${options.trunk}]
+    branches: [${options.trunk}, "path/**"]
 jobs:
   protocol:
     runs-on: ubuntu-latest
@@ -367,7 +362,8 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
       'cairn-check': 'node tools/cairn-check.mjs',
       'cairn-active': 'node tools/cairn-active.mjs',
       'cairn-audit': 'node tools/cairn-audit.mjs',
-      'cairn-rules': 'node tools/cairn-rules.mjs'
+      'cairn-rules': 'node tools/cairn-rules.mjs',
+      test: "node --test 'tools/*.test.mjs'"
     }
   }, null, 2)}\n`)
 
@@ -379,27 +375,28 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
 
   const specRoot = join(sourceRoot, PORTABLE_DOCS)
   if (!existsSync(specRoot)) throw new Error(`cairn-init: missing portable protocol at ${PORTABLE_DOCS}`)
-  const portableText = []
   for (const relativePath of walk(specRoot)) {
-    // A folder log is THIS repository's history of the folder, not portable
-    // protocol. Copying one hands an adopter someone else's changelog, with
-    // links into records they do not have; each installed folder gets a fresh
-    // log of its own instead.
-    if (relativePath.endsWith('log.md')) continue
-    const content = readFileSync(join(specRoot, relativePath))
-    portableText.push(content.toString('utf8'))
-    put(`${PORTABLE_DOCS}/${relativePath}`, content)
+    put(`${PORTABLE_DOCS}/${relativePath}`, readFileSync(join(specRoot, relativePath)))
   }
-  put(`${PORTABLE_DOCS}/log.md`, folderLog('Cairn specification'))
+  // The soundness note lives beside the tools and the wiki links it; it
+  // travels with the tools it documents. The manifesto the specification is
+  // measured against is linked by URL, not copied: an adopter's repository
+  // carries its own vision, not the protocol's.
+  const soundness = join(sourceRoot, 'tools/soundness.md')
+  if (!existsSync(soundness)) throw new Error('cairn-init: missing tools/soundness.md')
+  put('tools/soundness.md', readFileSync(soundness))
 
-  // The portable path convention travels verbatim; its host adapter is generated.
-  const convention = join(sourceRoot, 'atomik-project/coding-paths/paths.md')
+  // The portable path convention travels verbatim from the source
+  // repository's own project plane; its host adapter is generated.
+  const convention = join(sourceRoot, CAIRN_CONFIG.roots.project, 'coding-paths/paths.md')
   if (!existsSync(convention)) throw new Error('cairn-init: missing portable path convention')
   put(`${options.projectRoot}/coding-paths/paths.md`, readFileSync(convention))
   put(`${options.projectRoot}/coding-paths/binding.md`, hostBinding(options))
 
-  put(`${PORTABLE_DOCS}/concepts/concept-template.md`, conceptTemplate())
-
+  // The one area the generated configuration names must exist, or the first
+  // implementation unit is asked for a note the initializer never wrote
+  // (greenfield pilot, finding 16).
+  put(`${options.docsRoot}/modules/application.md`, moduleNote(options))
 
 
   for (const [dir, title, purpose] of [
@@ -575,7 +572,8 @@ function main(argv) {
   if (existsSync(join(target, 'package.json'))) {
     plan.files.delete('package.json')
     scriptsNotice = 'package.json already exists and was left alone — add: ' +
-      '"cairn-check": "node tools/cairn-check.mjs", "cairn-active": "node tools/cairn-active.mjs", "cairn-audit": "node tools/cairn-audit.mjs"'
+      '"cairn-check": "node tools/cairn-check.mjs", "cairn-active": "node tools/cairn-active.mjs", ' +
+      '"cairn-audit": "node tools/cairn-audit.mjs", "cairn-rules": "node tools/cairn-rules.mjs"'
   }
   const result = applyPlan(plan, target, { dryRun })
 

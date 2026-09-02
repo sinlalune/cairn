@@ -20,7 +20,7 @@ that matters lives only in a conversation. An idea, a piece of research, a
 decision, a plan, a unit of work and its acceptance are all files, and every
 file can be read cold by whoever comes next.
 
-The [manifesto](../docs/cairn/manifesto.md) states what the protocol is for.
+The [manifesto](https://github.com/sinlalune/cairn/blob/main/docs/cairn/manifesto.md) states what the protocol is for.
 This page states what the protocol is. It is written on the manifesto's
 **chronology**, in six chapters, one per stage:
 
@@ -734,6 +734,6 @@ measured at release; a cap that has never bound is a count, not a constraint.
 - The [concept wiki](./concepts/index.md) — every word, borrowed and own.
 - The [reference](./reference/index.md) — the path template, the execution
   protocol, the operations sequences, the configuration contract.
-- The [manifesto](../docs/cairn/manifesto.md) — what all of this is for, and
+- The [manifesto](https://github.com/sinlalune/cairn/blob/main/docs/cairn/manifesto.md) — what all of this is for, and
   the threats it names: more control through more rules, a protocol that thinks
   itself finished, progress outside it ignored.

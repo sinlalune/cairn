@@ -6,6 +6,7 @@
     "cairn-check": "node tools/cairn-check.mjs",
     "cairn-active": "node tools/cairn-active.mjs",
     "cairn-audit": "node tools/cairn-audit.mjs",
-    "cairn-rules": "node tools/cairn-rules.mjs"
+    "cairn-rules": "node tools/cairn-rules.mjs",
+    "test": "node --test 'tools/*.test.mjs'"
   }
 }

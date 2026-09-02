@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-001
   route: full
   status: running
-  current_step: S01
+  current_step: S02
   base_commit: 43cfeb96670eba615567b967f7368f32b3d8a409
   branch: path/cp-cairn-001
   assigned_writer: cp-cairn-001-writer
@@ -106,7 +106,8 @@ installs with one command. Deletion before addition, at every unit.
 ## Steps
 
 - **[S01](./steps/S01.md)** — the specification moved to `spec/` and written on the six stages; 17,455 words became 5,588, 50 own concepts became 31; the 0.2 matrix moved to the conformance page — COMPLETE
-- **S02** — in progress; its file is linked when it is written
+- **[S02](./steps/S02.md)** — the rules cut from 39 names to 24, nineteen blocking and every one with an adversarial fixture; the suite brought over from Atomik and completed; configuration schema 2; the conformance matrix rewritten against 1.0 — COMPLETE
+- **S03** — in progress; its file is linked when it is written
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
@@ -116,10 +117,10 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 base commit : 43cfeb96670eba615567b967f7368f32b3d8a409
 branch      : path/cp-cairn-001
 writer      : cp-cairn-001-writer
-remote      : origin/path/cp-cairn-001, tip = the S01 commit, pushed; the brief names the checkpoint before it
-gates       : cairn-check OK on S01, one advisory (concept-growth, explained in the step)
-session     : safe boundary after S01
-next action : S02 — the rules cut to the keep list, the fixture suite brought over, the matrix rewritten
+remote      : origin/path/cp-cairn-001, tip = the S02 commit, pushed; the brief names the checkpoint before it
+gates       : cairn-check OK on S02, one advisory (concept-growth, explained in S01); npm test 220 subtests green
+session     : safe boundary after S02
+next action : S03 — one folder per path: opening acceptance inline, the resume section, the lightweight route, depends_on: and the unblocked view; this path's record migrated in the same unit
 blockers    : none
 cleanup plan: after remote integration proof, remove the exact clean secondary
               worktree without force

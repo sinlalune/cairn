@@ -10,11 +10,17 @@ timestamp: 2026-08-26T00:00:00Z
 
 ## Status
 
-The schema-1 binding and its dependency-free loader are installed. Before any
+The schema-2 binding and its dependency-free loader are installed. Before any
 repository rule runs, `cairn-check`, `cairn-active`, and `cairn-audit` load and
 validate `cairn.config.json`. The checker prints the effective enforcement
 profile and consumes the configured roots, source areas, trunk, remote,
-metadata namespace, route default, checkpoint policy, and digest algorithm.
+metadata namespace, route default, path-history policy, and digest algorithm.
+
+Schema 2 is schema 1 without `sharedFiles` and `staleAfterDays`, the two
+fields that served `single-truth` and `path-staleness`; both rules were retired
+by the Cairn 1.0 cut, and a field no rule reads is a claim no rule checks. A
+schema-1 file is refused by name; `npx cairn adopt` is where the migration is
+written (S06).
 
 This is **partial portable conformance**, not the completed distribution story.
 `cairn-init` now installs a repository transactionally and writes this file, and
@@ -29,7 +35,7 @@ in [current conformance](../index.md#current-conformance).
 ```json
 {
   "$schema": "./tools/cairn-config.schema.json",
-  "version": 1,
+  "version": 2,
   "trunk": "main",
   "remote": "origin",
   "metadataNamespace": "cairn",
@@ -50,11 +56,6 @@ in [current conformance](../index.md#current-conformance).
       "note": "docs/modules/application.md"
     }
   ],
-  "sharedFiles": [
-    "project/coding-paths/ACTIVE.md",
-    "project/coding-paths/index.md"
-  ],
-  "staleAfterDays": 14,
   "defaultRoute": "lightweight",
   "checkpointRetentionRef": null,
   "pathHistoryPolicy": "forbidden",
@@ -96,10 +97,8 @@ parent-traversing, dot-segment, empty-segment, and backslash forms are rejected.
 | `roots.concepts` | one-idea explanatory wiki | normalised repository-relative path |
 | `roots.source` | guarded source roots | non-empty path array |
 | `areas` | source pattern to module-note routing | ordered `{ name, match[], note }` entries; first matching entry wins |
-| `sharedFiles` | generated or shared statements of record | repository-relative file array |
-| `staleAfterDays` | quiet-path advisory window | positive integer, advisory only |
 | `defaultRoute` | route a new-path generator writes and a missing-field diagnostic recommends | `lightweight \| full`; the resulting path record still declares it explicitly |
-| `checkpointRetentionRef` | ref prefix for [checkpoint retention](../concepts/checkpoint-retention.md) | a ref prefix the remote accepts, or `null` where the repository forbids rewriting pushes instead |
+| `checkpointRetentionRef` | ref prefix for [checkpoint retention](../concepts/checkpoint-retention.md), which the host's own tooling maintains — the reference checker does not read it | a ref prefix the remote accepts, or `null` where the repository forbids rewriting pushes instead |
 | `pathHistoryPolicy` | which conforming rewrite policy the host chose | `retained` with a ref prefix, or `forbidden` with a null prefix |
 | `scopeDigestAlgorithm` | digest used for [scope digests](../concepts/scope-digest.md) | a named algorithm; the digest is never abbreviated |
 | `transport` | registration and integration adapters | installed and tested adapter identifiers |
@@ -129,7 +128,7 @@ A portable implementation MUST:
 
 Configuration may rename a role. It may not weaken a protocol `MUST`.
 
-The installed schema-1 loader currently satisfies obligations 1, 3, and the
+The installed schema-2 loader currently satisfies obligations 1, 3, and the
 binding portion of 5; rejects unknown versions for obligation 2; and prints the
 effective profile plus branch/base binding for obligation 8. It does **not**
 claim the missing half of 2 or obligations 4, 6, and 7. A declaration of

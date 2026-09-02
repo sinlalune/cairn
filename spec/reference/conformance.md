@@ -35,81 +35,70 @@ bound is a count, not a constraint.
 
 ## Where the matrix stands
 
-The matrix below is the **0.2 matrix, moved here verbatim** by the genesis path's
-first unit, because it is still the exact statement of what the reference tools
-at this commit do: the tools were seeded from release 0.2 and have not yet been
-cut. The specification above it has. Until the rules are cut and this matrix is
-rewritten against them, read the two together as *what 1.0 requires* and *what
-the 0.2 tools enforce*, and treat every row that names a shape the specification
-no longer has — a separate session record, a separate brief, a retention
-namespace on the default policy, a `foundation` or `emergency` route — as a
-pending cut rather than a requirement.
+The matrix is written against the 1.0 [specification](../index.md), row by
+row on chapter 5 with one row each for the stages the tools touch, at the
+**rule cut**: thirty-nine rule names became twenty-four — nineteen that block
+and five that only report — and every blocking rule has an adversarial
+fixture. Three shapes the specification no longer describes are still what
+the tools read, because the units that replace them come after the cut:
+opening and closing acceptance are read from **session records** and the
+coherence audit from an **audit file** until the one-folder record (S03) and
+pull-request transport (S04) make the record and the request the source; the
+`foundation` route is still accepted until S03 folds it into `full`. Every row
+that depends on one of those says so.
+
+Read a row's second column as *what one implementation checks today* and its
+third as *what that check depends on, or cannot prove*. "Implemented" never
+means a judgement was scored; it means a fact was read.
 
 ## Current conformance
 
-[Conformance](../concepts/conformance.md) distinguishes the protocol from one
-implementation. A requirement can be canonical before the reference tools
-implement it, but its status must be visible — in this table, beside the claim,
-not in a separate document a reader may never open.
-
-| Capability | Protocol v0.2 | Reference tools | Additional dependency |
-| :-- | :-- | :-- | :-- |
-| Path record, branch identity, registration, and remote checkpoints | required | implemented, with repository-specific bindings | remote Git |
-| Full opening decision, actor, time, scope, and authority schema | required | **partially implemented**; path and ceremony presence are checked | repository governance |
-| Multiple team participants and checkpoint handoff | required | records support it; writer exclusivity is operational | team assignment policy |
-| `running`, `blocked`, `ready`, `done`, `archived` lifecycle | required | transition and state checks implemented for observable changes | complete comparison ref |
-| `ready → blocked` and unchanged-state acceptance | required | implemented; the transition table carries `ready → blocked`, refuses `blocked → ready`, accepts an unchanged state, and holds an archived resolution terminal | complete comparison ref |
-| Exact-candidate audit and closing acceptance | required | implemented | authorised reviewer |
-| Full object id in the repository's configured format | required | implemented; the checker accepts SHA-1 and SHA-256 ids and refuses every prefix | a repository configured for another object format |
-| Fail-closed critical inconclusive outcomes | required | implemented | complete trunk and comparison refs |
-| Existing session, audit, history, and journal immutability | required | implemented for new or changed records | complete comparison ref |
-| Checkpoint retention refs before any rewriting push | required | **implemented**; every declared unit except the newest must resolve a retention ref in the CURRENT generation, and every branch commit in `merge-base(trunk, HEAD)..HEAD` that is neither retained there, provisional, nor `HEAD` is reported as orphaned. The current generation is derived from ancestry; an empty one beside older generations is blocking and definite, while an unreadable namespace or branch range is inconclusive | the environment must FETCH `refs/cairn/*`, which no clone or checkout action does by default; a ref *moving* is unobservable to a single-commit validator — only the orphan it leaves behind is |
-| A published path branch is not rewritten | required on a `forbidden` host | **implemented**; where `pathHistoryPolicy` is `forbidden` the branch's own upstream MUST remain an ancestor of `HEAD`, so a rebase, amend, soft-reset fold or force-push of published work is blocking. This is the DEFAULT policy (**ADR-022**), and it replaces retention rather than joining it: if nothing is rewritten the branch already keeps every ledger-named commit reachable | it proves only that THIS checkout has not rewritten what it published — a remote rewritten by someone else is invisible here, and preventing the push itself needs host protection, which tier `ci` does not claim. It is also silent while no remote-tracking ref exists |
-| A repository can be created in the current shapes | required | **implemented**; `cairn-init` resolves the complete installation in memory, validates the generated binding before writing, refuses to overwrite any existing file, rolls back on failure, and generates the derived view rather than shipping one by hand. A new repository is born-sliced and no-rewrite, and it passes its own gate on the first command — asserted end-to-end by a test that installs, commits and runs the checker | updating an existing installation is NOT implemented: `cairn.lock.json` records the release and a per-file digest so a migrator could tell a pristine file from an edited one, and no migrator reads it yet. `cairn-new` and `cairn-close` remain manual, and `--profile protected` is refused because it asserts host protection no local command can configure |
-| Marked provisional commits excluded from candidate identity | required | implemented; a ready path whose candidate range still contains a marked commit is blocked | the fold itself is not verified to preserve content |
-| Handoff-brief field schema and answerable-alone contract | required | **partially implemented**; the nine fields, the seven exact sections and pinned `governs` entries are checked. The token budget is retired (ADR-020 decision 6): what will not fit is linked, not compressed, and that is a judgement rather than a predicate | the answerable-alone contract is a judgement and a cold-resume harness, and is never claimed by a checker |
-| Portable, host, and binding artefact separation | required | **implemented in the reference documentation**; the portable execution route and path convention carry no host names, the root bootloader points at one explicit binding appendix, and host architecture is absent from the unconditional entry chain | `cairn-init` must scaffold the classified shape before general release; classification itself is a documentation property rather than a repository predicate |
-| Field-level administrative closure surface | required | implemented; closure may move only `status` and `subject_commit` at `ready`, and additionally `resolution` at `done`, compared against the record at the accepted candidate rather than the trunk's copy | ledger append-only proof, which remains a separate open row |
-| An adversarial fixture per blocking rule | required | **partially implemented**; eight of thirty blocking rules now have a fixture that installs a REAL repository with `cairn-init`, proves it green, introduces exactly one violation, and requires that rule among the blocking findings. The green baseline is half the assertion — a fixture that blocks for an unrelated reason proves nothing about the rule it names. Coverage is DECLARED: every blocking rule is either covered or listed as uncovered, so adding a rule forces the choice | twenty-two rules remain uncovered, most needing states the harness cannot yet reach cheaply — a closed candidate with its audit and acceptance, a rewritten published tip, a detached checkout, a trunk that moved inside a declared surface |
-| No predicate branches on a value that varies by execution context | required | **implemented**; the derived-view exemption for `path/*` branches is removed rather than replaced. The view is already a pure projection of the statuses declared in the tree, so a checkout disagrees with it only when something there moved a status without regenerating, and no rule now reads the branch name to decide whether to run | the branch name still selects which path-scoped rules APPLY, which is a different question from whether a rule runs at all |
-| A dated record carries the date of its event | required | **partially implemented**; the two dates an author writes — the filename date and `timestamp:` — must agree, blocking, on records the change adds. Drift between the record's date and the author date of the commit that added it is reported and never blocks | agreement is not accuracy: a record with the same wrong date in both places passes the blocking half, which is why the drift half exists |
-| Local and CI invocations of one gate reach the same verdict | required | **implemented**; the default base on a path branch is the trunk comparison CI runs, and three fixtures now assert it on one real tree: both invocations reach the same verdict on a green repository, both see the same violation on a broken one, and `--working-tree` raises `base-parity` so a narrowed run announces itself | the assertion covers the reference invocations; a host that wires its CI to a different command is outside what this can observe |
-| Every stated requirement is enforced or listed as unenforced | required | **partially implemented**; the rows here remain human judgements, and prose cannot be generated from a validator. The LINKAGE is now generated and checked: every implemented rule either stands behind a named row or is declared as standing behind none, a mapped row title that no longer appears fails the build rather than orphaning its rules, and the map cannot name a rule the checker does not implement | the requirement TEXT is still authored and maintained by hand, so a stated requirement that nobody wrote a row for is still invisible. Deriving rows from the normative text would need that text marked up, which it is not |
-| Merge-time journal entry, one file per integrated outcome | required | **implemented**; a path record reaching `done` in a change must be declared by a journal entry's `path` field, read from the entry rather than from its filename, and an unreadable journal is inconclusive rather than a pass | none — the entry is written in the closing unit, which is the change the rule binds |
-| Scope digest recorded at opening and re-verified at closing | required | implemented; the resolved section is digested and compared at closure | a path opened before the rule cannot amend its immutable opening record — see the migration exception |
-| Candidate base `T` and the acceptance-drift predicate | required | implemented; the trunk delta since the recorded base is tested against `writes:` ∪ `governs:` | path matching is a proxy for semantic overlap, as stated |
-| Structured `advisory_disposition` matching findings at `C` | required | **partially implemented**; dispositions must cover the attested `advisories_at_candidate` exactly, and any advisory raised at `A` and absent from it is proved missing | an advisory that fires only at `C` stays attested rather than derived; closing that needs evaluation replayed at `C` |
-| Recorded roles and the collapsed-actor advisory | required | **partially implemented**; a shared opening/closing actor is reported | `accepted_roles` itself is recorded and not yet validated |
-| `scope-drift` blocking unless the declaration moves in the same commit | required | implemented; drift blocks unless `writes:` moved in the same change | none |
-| Typed work units keyed to their required parts | required | **partially implemented**; the `cairn-unit` block and its type vocabulary are checked | `same-work-unit` does not yet key its requirement to the declared type |
-| `lightweight` default route and one-way escalation | required | **partially implemented**; the configured new-path default is reported when an explicit route is missing, and the vocabulary, three structural triggers, second-unit backstop and one-way escalation are checked | `cairn-init` / `cairn-new` do not yet write the configured default; the *high-risk* trigger is policy and the multi-unit trigger is caught one unit late; the combined lightweight records — opening acceptance inside the path record, audit questions inline in the closing record — are not accepted, so every route writes the same separate records (greenfield pilot, 2026-09-01) |
-| `foundation` and adoption routes | required | **partially implemented**; the route is declarable and its write surface is confined to documents and the path records it produces | the adoption variant is a use of the same route, not a separate predicate |
-| Repair procedures for protocol violations | required | **not implemented**; procedural, with no predicate proposed | none — repair is recorded, not gated |
-| Redaction ceremony | required | **partially implemented**; every `[redacted: …]` marker must name a redaction record that exists | rotation-first ordering is a procedure, not a predicate |
-| Live-ledger prefix and verbatim-roll proof | required | **partially implemented**; a born-sliced step record is followed through renames to its adding blob, which must remain a prefix of the current file. Flat live-ledger prefix and verbatim-roll proof remain open | explicit markers/schema for flat ledgers and rolls |
-| Versioned portable configuration and schema migration | required for portable profile | **partially implemented**; schema 1, its JSON Schema, strict dependency-free validation, configured checker/active/audit bindings, and effective profile/binding output are installed | schema-to-schema migrations, install/update mechanics, generated adapters, and transport tests |
-| Exact protected integration transport | required for protected profile | **not installed or tested** | repository-host adapter |
-| Independently protected control plane | required for protected profile | **not installed or tested** | host ownership/approval policy |
-| Transactional `init`, `new`, and `close` commands | required before general release | **not implemented** | command tooling |
-| Emergency path | deliberately unspecified | **not implemented** | incident policy and retrospective |
-| Cold-resume pilot | required before general release | **run once**: 20 trials, 35% would act without asking; failures flat across paths, so no schema change is indicated | a writer axis, which needs `written_by` populated across more than one writer |
-| Greenfield pilot | required before general release | **run once** (2026-09-01): a repository created by `cairn-init` could not close an honest path on the first run — nineteen findings, ten of them predicates reading a proxy — and reached `done` on the repaired kit with zero red gates; 24 protocol files for 5 product files on the default route | a second writer, a hosted remote with the CI adapter, a trunk that moves during the path, and the lightweight reliefs once implemented |
+| Requirement | Reference tools | Depends on, or does not prove |
+| :-- | :-- | :-- |
+| One path: one record, one branch, one worktree, one writer | **implemented**; `branch-path` refuses a `path/*` branch that no `running`, `blocked` or `ready` record declares, a record without a pinned base, and — fail closed — a detached checkout whose branch cannot be named while guarded source changed | writer exclusivity is operational: a Git worktree isolates files and establishes no ownership |
+| Registration on the remote trunk before implementation | **implemented**; `registration` requires the declaration tuple (id, `running`, branch, base) on the trunk in either record shape, `registration-base` requires `base_commit` to be the parent of the commit that registered it, and both are inconclusive without a complete trunk ref | the trunk ref must be fetched; a path listed in `migration.unregisteredPaths` is advisory |
+| The path record, its declaration and its opening acceptance | **partially implemented**; `schema` validates the declaration against the vocabulary, refuses two records sharing an id or a branch, validates every decision record's frontmatter, and refuses a `running` record in the change with no opening acceptance behind it | the acceptance is read from a session record until S03 moves it inline; `accepted_roles` and `depends_on:` are recorded, not validated; the digest taken at opening is checked at closing |
+| Two declared surfaces, widened in the same unit | **implemented**; `scope-drift` blocks a change outside `writes:` unless the declaration moved in the same change, and exempts the records the lifecycle itself writes | path matching is a proxy for semantic overlap, as the specification states |
+| The route, its triggers and one-way escalation | **partially implemented**; `route` requires an explicit route, refuses an unknown one, blocks a `lightweight` path that meets a structural trigger — control plane, decision plane, two implemented areas — or has already spanned two units, and refuses a descent from `full` | the policy trigger is honoured, not checked; the multi-unit trigger is caught one unit late; `foundation` is still accepted with a documents-only surface until S03; the lightweight reliefs are not yet implemented (S03) |
+| A typed work unit, coherent in one commit | **partially implemented**; `work-unit` requires a `cairn-unit` block for the record's current step with a known type, and blocks source that changed without a module note and the path record in the same change; the area-precise note is advisory | the type does not key the required parts: on the branch-versus-trunk comparison the changed set is cumulative across every unit on the branch, so keying on the current unit's type would be unsound |
+| Every completed unit pushed as a remote checkpoint | **implemented, advisory**; `remote-checkpoint` reports a path HEAD that its upstream does not contain, or a branch with no upstream | reads local remote-tracking refs and performs no network operation; it can identify a current missing checkpoint, never prove the timing of older pushes |
+| Provisional commits never in a candidate | **implemented**; `provisional` blocks a ready path whose base-to-candidate range still carries a `Cairn-Provisional:` trailer, and reports a provisional HEAD | the fold itself is not verified to preserve content |
+| A published path branch is never rewritten | **implemented** where `pathHistoryPolicy` is `forbidden`; `path-history` blocks when the branch's own upstream is no longer an ancestor of HEAD | it proves only that THIS checkout has not rewritten what it published, and only while a remote-tracking ref exists; a `retained` host's retention namespace is not read by the reference checker — retention is the plugin that host supplies |
+| The branch contains the trunk tip before it merges | **implemented**; `rebase` — the id is historical, the requirement is containment — blocks a path branch that does not contain the trunk tip and is inconclusive when the trunk cannot be resolved; the remedy it prints is to merge the trunk in | the trunk ref must be fetched |
+| One invocation, one verdict: local and CI agree on one tree | **implemented**; on a path branch the base is the trunk, there is no narrower form, and three fixtures assert both invocations reach one verdict on one real tree; the branch is read from the host only for the repository the host checked out | a host that wires its CI to a different command is outside what this can observe |
+| The live view is generated and complete | **implemented**; `derived-view` blocks when the view differs from what its generator produces now, in every context | the unblocked view over `depends_on:` is S03 |
+| Closing acceptance binds the candidate, the scope and the base | **partially implemented**; `acceptance` requires a closing record naming exactly `C` by full object id with actor, time and scope, requires a filled coherence audit bound to `C`, refuses implementation after `C` and any commit beyond the administrative ones, refuses a closure that moves a field other than status and subject (and resolution at `done`) compared against the record at `C`, requires the advisory dispositions to cover exactly the advisories attested at `C`, and reports a self-issued acceptance. `scope-digest` requires the definition of done to digest to what was accepted at opening | the record is a session file and the audit an audit file until S04 makes the pull request's description and approval the record; an advisory that fires only at `C` stays attested rather than derived; the reviewer's judgement is never scored |
+| Acceptance drift decided by predicate, not trunk equality | **implemented**; `acceptance-drift` blocks when the trunk delta since the accepted base touches the union of `writes:` and `governs:`, never on trunk equality | path matching is a proxy for semantic overlap; S04 runs it as a CI step on the pull request |
+| The lifecycle is a statement of fact | **implemented**; `transition` enforces single-step transitions against one comparison ref, refuses `done` on a path branch, requires a resolution to archive and holds it terminal, and refuses a deleted declaration | inconclusive without a complete comparison ref |
+| Integration records done and writes one journal entry | **implemented**; `journal-entry` blocks a record reaching `done` with no journal entry declaring its path, read from the entry's frontmatter rather than its filename | none — the entry is written in the integrating unit, which is the change the rule binds |
+| Records are kept, not tidied | **implemented**; `record-integrity` blocks an edit, rename or deletion of an event record and any change to a step record that is not an exact suffix append of its adding blob; a verbatim relocation is reported, not blocked; committed mutations are judged against the merge-base with the trunk, the same comparison every other changed-file rule uses | the correction-record remedy — a superseding record naming both ids — has no predicate: the repair is recorded, not gated |
+| Redaction names the record that authorised it | **implemented, advisory**; `redaction` reports a `[redacted: …]` marker naming no redaction record, code spans and fences stripped | rotation-first ordering is a procedure, not a predicate |
+| A dated record carries the date of its event | **implemented, advisory**; `record-date` reports a record this change adds whose filename and `timestamp:` disagree, or whose date is more than a day from the author date of its adding commit | agreement is not accuracy |
+| Repair is a unit like any other | **not implemented**; `type: repair` is vocabulary the block accepts, and no predicate checks that a repair unit names its violation or leaves it visible | none proposed — repair is recorded, not gated |
+| The trust boundary and the enforcement profile | **printed, not proved**; the checker prints the declared profile with every verdict, and `cairn-init` refuses to install `protected` | host protection and independent approval are host claims no local reader can prove |
+| Architecture changes carry a decision record | **implemented, advisory**; `decision-drift` reports the architecture root changed with no decision record in the same change, and `schema` validates every decision record's frontmatter (chapter 3) | the *promoted from* links of a promotion are a convention |
+| Every milestone accounted for, and the unblocked view | **not implemented**; the roadmap register is prose and `depends_on:` is not read (chapter 4) | S03 |
+| Brainstorm and research notes | **links and frontmatter only, by design**; `links` and `schema` cover exactly what the specification says the tools check about them (chapters 1 and 2) | none |
+| The concept wiki: an orphan blocks, growth is reported | **implemented**; `concept-orphan` blocks a concept that no document outside the wiki links, and `concept-growth` reports the articles a change adds (chapter 6) | only the protocol scope is bound here; a project's own wiki binds through `roots.concepts` |
+| Every relative link in the corpus resolves | **implemented**; `links` blocks a relative Markdown link that resolves nowhere, code stripped, across the documentation plane, the project plane and the specification | none |
+| An adversarial fixture per blocking rule | **implemented**; nineteen of nineteen blocking rules have a fixture that installs a real repository with `cairn-init`, proves it green, introduces exactly one violation and requires that rule among the blocking findings; coverage is declared, so a new blocking rule forces the choice | a fixture proves the rule catches *that* violation, not the class |
+| Installation, update and adoption | **partially implemented**; `cairn-init` installs the shapes stated here, writes the area note its configuration names, and passes its own gate on the first command; `update` and `adopt` are not implemented and the kit still copies the specification | S06: `npx cairn` and the lock-digest migrator |
+| The pilots | **cold-resume run once** (20 trials, 35% would act without asking); **greenfield rerun at release** (S08) | a second writer, a hosted remote with the CI adapter |
 
 The current supported claim is therefore:
 
-> Cairn v0.2 is a local-first coordination and project-memory protocol for a
-> team of trusted developers and coding agents working through remote Git
-> branches. Its reference tools enforce a substantial but incomplete subset of
-> the protocol. It is not yet a general-purpose merge, governance, or security
-> system.
+> Cairn 1.0, at the rule cut, is a local-first coordination and project-memory
+> protocol for a team of trusted developers and coding agents working through
+> remote Git branches. Its reference checker enforces twenty-four rules, every
+> blocking one proved against a real repository, and states what it does not
+> check. It is not a general-purpose merge, governance, or security system.
 
-The honest residue is named rather than hidden: **repair procedures** have no
-predicate to propose, the **answerable-alone contract** is a judgement measured
-by cold resume, the **temporal half of checkpoint retention** is unobservable to
-a validator that sees one commit, and flat-ledger prefix plus verbatim-roll
-proof still await explicit markers. Born-sliced step records now have those
-markers and an adding-blob prefix proof; that closes one shape, not the whole
-row. Naming what cannot be checked is part of the claim.
+The honest residue is named rather than hidden: **repair** has no predicate to
+propose; the **resume section's answerable-alone contract** is a judgement
+measured by cold resume, never claimed by a checker; the **type of a work
+unit** does not key its required parts, because the merge-deciding comparison
+cannot see one unit at a time; and a **`retained` host** enforces its own
+retention or none. Naming what cannot be checked is part of the claim.
 
 ### Which rule stands behind which requirement
 
@@ -120,53 +109,37 @@ the matrix states, are both invisible from a green run.
 
 This table is GENERATED by `cairn-rules`. It fails the build when a rule belongs
 to neither map, when a mapped row title no longer appears above, or when the map
-names a rule the checker does not implement. A rule marked *(no conformance
-row)* keeps the documentation plane coherent rather than enforcing a stated
-protocol capability; mapping it to a row that does not mean it would make this
-table look complete while saying something false.
+names a rule the checker does not implement. Since the cut every rule stands
+behind a stated row; the mechanism for declaring one that does not is kept, and
+empty.
 
 <!-- cairn:conformance:begin -->
 | Rule | Stands behind |
 | :-- | :-- |
-| `acceptance` | Exact-candidate audit and closing acceptance |
-| `acceptance-drift` | Candidate base `T` and the acceptance-drift predicate |
-| `advisory-disposition` | Structured `advisory_disposition` matching findings at `C` |
-| `area-note` | *(no conformance row)* — documentation coherence: an implemented area whose note did not move |
-| `base-parity` | Local and CI invocations of one gate reach the same verdict |
-| `branch-identity` | Path record, branch identity, registration, and remote checkpoints |
-| `branch-path` | Path record, branch identity, registration, and remote checkpoints |
-| `brief-schema` | Handoff-brief field schema and answerable-alone contract |
-| `checkpoint-retention` | Checkpoint retention refs before any rewriting push |
-| `closure-surface` | Field-level administrative closure surface |
-| `coherence-audit` | Exact-candidate audit and closing acceptance |
-| `concept-growth` | *(no conformance row)* — documentation coherence: vocabulary growth made visible |
-| `concept-orphan` | *(no conformance row)* — documentation coherence: vocabulary nothing needed |
-| `decision-drift` | *(no conformance row)* — documentation coherence: a decision the change did not carry |
-| `derived-view` | No predicate branches on a value that varies by execution context |
-| `journal-entry` | Merge-time journal entry, one file per integrated outcome |
-| `ledger-size` | Live-ledger prefix and verbatim-roll proof |
-| `links` | *(no conformance row)* — documentation coherence: a relative link that resolves nowhere |
-| `migration-debt` | Versioned portable configuration and schema migration |
-| `opening-ceremony` | Full opening decision, actor, time, scope, and authority schema |
-| `path-history` | A published path branch is not rewritten |
-| `path-staleness` | *(no conformance row)* — operational hygiene: a quiet path noticed without blocking |
-| `provisional` | Marked provisional commits excluded from candidate identity |
-| `rebase` | *(no conformance row)* — branch currency: the branch must contain the trunk tip before it merges, which the matrix treats as integration transport rather than a stated capability |
+| `acceptance` | Closing acceptance binds the candidate, the scope and the base |
+| `acceptance-drift` | Acceptance drift decided by predicate, not trunk equality |
+| `branch-path` | One path: one record, one branch, one worktree, one writer |
+| `concept-growth` | The concept wiki: an orphan blocks, growth is reported |
+| `concept-orphan` | The concept wiki: an orphan blocks, growth is reported |
+| `decision-drift` | Architecture changes carry a decision record |
+| `derived-view` | The live view is generated and complete |
+| `journal-entry` | Integration records done and writes one journal entry |
+| `links` | Every relative link in the corpus resolves |
+| `path-history` | A published path branch is never rewritten |
+| `provisional` | Provisional commits never in a candidate |
+| `rebase` | The branch contains the trunk tip before it merges |
 | `record-date` | A dated record carries the date of its event |
-| `record-integrity` | Live-ledger prefix and verbatim-roll proof |
-| `redaction` | Redaction ceremony |
-| `registration` | Path record, branch identity, registration, and remote checkpoints |
-| `registration-base` | Path record, branch identity, registration, and remote checkpoints |
-| `remote-checkpoint` | Path record, branch identity, registration, and remote checkpoints |
-| `role-collapse` | Recorded roles and the collapsed-actor advisory |
-| `route` | `lightweight` default route and one-way escalation |
-| `same-work-unit` | `scope-drift` blocking unless the declaration moves in the same commit |
-| `schema` | Full opening decision, actor, time, scope, and authority schema |
-| `scope-digest` | Scope digest recorded at opening and re-verified at closing |
-| `scope-drift` | `scope-drift` blocking unless the declaration moves in the same commit |
-| `single-truth` | *(no conformance row)* — documentation coherence: a generated or shared file edited by hand |
-| `transition` | `running`, `blocked`, `ready`, `done`, `archived` lifecycle |
-| `work-unit` | Typed work units keyed to their required parts |
+| `record-integrity` | Records are kept, not tidied |
+| `redaction` | Redaction names the record that authorised it |
+| `registration` | Registration on the remote trunk before implementation |
+| `registration-base` | Registration on the remote trunk before implementation |
+| `remote-checkpoint` | Every completed unit pushed as a remote checkpoint |
+| `route` | The route, its triggers and one-way escalation |
+| `schema` | The path record, its declaration and its opening acceptance |
+| `scope-digest` | Closing acceptance binds the candidate, the scope and the base |
+| `scope-drift` | Two declared surfaces, widened in the same unit |
+| `transition` | The lifecycle is a statement of fact |
+| `work-unit` | A typed work unit, coherent in one commit |
 <!-- cairn:conformance:end -->
 
 ## Implemented rule catalogue
@@ -181,57 +154,58 @@ honest state of the work.
 <!-- cairn:rules:begin -->
 | Level | Rule Name | Scope | Trigger Condition | Enforcing Logic |
 | :--- | :--- | :--- | :--- | :--- |
-| **Blocking** | `acceptance` | diff | Ready/done path lacks exact-commit acceptance or changed implementation after acceptance | `closingAcceptanceErrors(record, pathId) + pathClosureState(path, record)` |
+| **Blocking** | `acceptance` | diff | A ready or done path lacks exact-commit acceptance; implementation changed after acceptance; the coherence audit bound to the candidate is missing or unfilled; the closure commit moved a field acceptance was measured against; the advisory dispositions do not match the advisories attested at the candidate (advisory: a collapsed reviewer, or a prose disposition on a grandfathered path) | `closingAcceptanceErrors(record) + pathClosureState(path, record) + cairn-audit --check --subject C + closureFieldErrors(recordAtC, current) + dispositionErrors(disposition, advisories_at_candidate, raised) + opening.accepted_by === closing.accepted_by` |
 | **Blocking** | `acceptance-drift` | diff | The trunk moved inside the path's declared writes: or governs: since the accepted base | `acceptanceDrift(git diff --name-only <base> <trunk>, writes, governs) — never trunk === base` |
-| **Blocking** | `advisory-disposition` | diff | advisory_disposition is not a structured list matching the advisories raised against the candidate | `dispositionErrors(record.advisory_disposition, raised) with set equality on rule names` |
-| **Blocking** | `branch-identity` | diff | Detached checkout where branch cannot be identified from host or git ref | `branchSource === 'detached' (blocking on guarded roots, advisory on others)` |
-| **Blocking** | `branch-path` | diff | Path branch not declared by a running path file, or missing base_commit | `isPathBranch(branch) && (!match \|\| !PATH_BRANCH_STATUSES.includes(status) \|\| !isCommitPin(base))` |
-| **Blocking** | `brief-schema` | diff | The handoff brief is missing, or lacks its nine fields, its seven exact sections, or pinned governs entries | `briefErrors(front, body) over BRIEF_FIELDS and BRIEF_SECTIONS` |
-| **Blocking** | `checkpoint-retention` | diff | A completed work unit has no retention ref in the current generation, the current generation is empty because a rewrite closed the last one, or the namespace or branch range cannot be read here and the question cannot be answered | `currentGeneration(retentionGenerations(refs), onBranch) => retainedRefs.has(refs/cairn/checkpoints/<id>/g<NN>/<n>), and unretainedCheckpoints over that generation (newest unit advisory; an unreadable namespace or range is inconclusive, an empty current generation is not)` |
-| **Blocking** | `closure-surface` | diff | An administrative closure commit changed a path field other than status and subject_commit at ready, or those plus resolution at done — compared against the record at the accepted candidate | `closureFieldErrors(previousFront, currentFront) over CLOSURE_MUTABLE_FIELDS` |
-| **Blocking** | `coherence-audit` | corpus | Ready path lacks a filled coherence audit bound to its exact subject_commit | `cairn-audit --check --subject path.subject_commit` |
+| **Blocking** | `branch-path` | diff | Path branch not declared by a running path record, missing base_commit, or a detached checkout whose branch cannot be identified while guarded source changed (inconclusive; advisory when nothing guarded changed) | `isPathBranch(branch) && (!match \|\| !PATH_BRANCH_STATUSES.includes(status) \|\| !isCommitPin(base)); branchSource === 'detached' && guarded.length > 0` |
 | **Blocking** | `concept-orphan` | corpus | A concept note that no normative or learning text outside the wiki links to | `orphanConcepts(conceptFiles, links from documents outside the concepts folder)` |
-| **Blocking** | `derived-view` | corpus | ACTIVE.md running-paths block does not match trunk path files | `tools/cairn-active.mjs --check` |
+| **Blocking** | `derived-view` | corpus | ACTIVE.md running-paths block does not match the path files it projects | `tools/cairn-active.mjs --check` |
 | **Blocking** | `journal-entry` | diff | A path record reaches `done` in this change and no journal entry declares that path | `journalRecords(loadJournal(), id) on the transition into done; inconclusive when the journal cannot be read` |
 | **Blocking** | `links` | corpus | Relative Markdown link points to non-existent target (code fences stripped) | `stripCode(text) => !existsSync(target)` |
-| **Blocking** | `migration-debt` | diff | A path listed in the v0.2 migration exception no longer needs it | `migrationDebt(paths, V02_MIGRATION_PATHS) — a spent exception is a bypass` |
-| **Blocking** | `opening-ceremony` | diff | Path declared running without an opening-check session note | `!openingFor(pathId) via session frontmatter { path, ceremony: 'opening' }` |
 | **Blocking** | `path-history` | diff | A published path commit was rewritten while this host forbids rewriting (ADR-022) | `pathHistoryPolicy === 'forbidden' && pathRemoteCheckpoint(branch).diverged` |
 | **Blocking** | `provisional` | diff | A proposed candidate still contains commits marked Cairn-Provisional, or HEAD is itself provisional | `git log --grep=^Cairn-Provisional: base..subject_commit (blocking on a ready path, advisory at HEAD)` |
-| **Blocking** | `rebase` | diff | Path branch does not contain latest trunk tip (stale branch). The id is historical: the requirement is trunk containment, and a no-rewrite host satisfies it by merging the trunk in (ADR-022) | `trunkContained(trunkRef) === false` |
-| **Blocking** | `record-date` | diff | A record this change adds carries two dates that disagree (blocking), or a date more than a day from the commit that wrote it (advisory) | `recordDateFindings(addedRecords) — filename date vs timestamp: vs the adding commit author date` |
-| **Blocking** | `record-integrity` | diff | An immutable event/history record changed, or a born-sliced step no longer preserves its adding blob as a prefix | `immutableRecordMutations(previousRef) + appendOnlyStepRecordMutations(changed) + preservesAppendOnlyRecord(before, after)` |
-| **Blocking** | `redaction` | diff | A `[redacted: …]` marker names no redaction record (code spans and fences stripped first) | `redactionMarkers(stripCode(text)) => redaction record exists` |
+| **Blocking** | `rebase` | diff | Path branch does not contain the trunk tip. The id is historical: the requirement is trunk containment, which a no-rewrite host satisfies by merging the trunk in (ADR-022) | `trunkContained(trunkRef) === false` |
+| **Blocking** | `record-integrity` | diff | An immutable event/history record changed, or a born-sliced step no longer preserves its adding blob as a prefix | `immutableRecordMutations(mergeBaseWithTrunk) + appendOnlyStepRecordMutations(changed) + preservesAppendOnlyRecord(before, after)` |
 | **Blocking** | `registration` | diff | Path declaration tuple (id, running, branch, base) missing from trunk | `pathRegistrationState() === 'missing' (blocking) or declared migration exception (advisory)` |
 | **Blocking** | `registration-base` | diff | Path base_commit cannot be proved to equal the registration commit parent | `pathRegistrationBaseState() === 'mismatch' \| null` |
 | **Blocking** | `route` | diff | A path declares no route, an unknown route, a lightweight route that meets a full-route trigger, a foundation surface outside documents, or a descent from full | `configured new-path default + fullRouteTriggers(writes) + foundationSurfaceViolations(writes) + routeDescent(previous, current)` |
-| **Blocking** | `same-work-unit` | diff | Source changed without accompanying module note and coding path update | `touched(configured source roots) => touched(configured modules root) && touched(PATH_DIR)` |
-| **Blocking** | `schema` | corpus | Path or ADR frontmatter fails parsing, or an id/status/date is outside vocabulary | `pathFrontmatterErrors(front) + adrFrontmatterErrors(front, file, bodyStatus)` |
+| **Blocking** | `schema` | diff | Path or decision-record frontmatter fails parsing, an id/status/date is outside vocabulary, two records share an id or a branch, or a record declares running with no opening acceptance behind it | `pathFrontmatterErrors(front) + duplicatePathIdentityFindings(paths) + adrFrontmatterErrors(front, file, bodyStatus) + !openingFor(id) on a running record in the diff` |
+| **Blocking** | `schema` | corpus | Path or decision-record frontmatter fails parsing, an id/status/date is outside vocabulary, two records share an id or a branch, or a record declares running with no opening acceptance behind it | `pathFrontmatterErrors(front) + duplicatePathIdentityFindings(paths) + adrFrontmatterErrors(front, file, bodyStatus) + !openingFor(id) on a running record in the diff` |
 | **Blocking** | `scope-digest` | diff | The accepted definition of done moved after acceptance, or was accepted without a digest | `scopeDigest(resolveScopeSection(pathRecord, scope_ref)) === record.scope_digest` |
 | **Blocking** | `scope-drift` | diff | Changed files outside path frontmatter declared writes: patterns | `!matchesAny(file, declaredWrites)` |
-| **Blocking** | `transition` | diff | Changed path state is not an allowed lifecycle transition, or prior state is unavailable | `transitionErrors(previous, current, onPathBranch)` |
-| **Blocking** | `work-unit` | diff | A changed path record carries no `cairn-unit` block, or one declares an unknown type | `parseWorkUnits(record) => workUnitErrors(unit) over WORK_UNIT_TYPES` |
-| *Advisory* | `acceptance` | diff | Ready/done path lacks exact-commit acceptance or changed implementation after acceptance | `closingAcceptanceErrors(record, pathId) + pathClosureState(path, record)` |
-| *Advisory* | `advisory-disposition` | diff | advisory_disposition is not a structured list matching the advisories raised against the candidate | `dispositionErrors(record.advisory_disposition, raised) with set equality on rule names` |
-| *Advisory* | `area-note` | diff | Subsystem source changed without touching matching area module note | `areaOf(file) => changed.includes(note)` |
-| *Advisory* | `base-parity` | diff | A path-branch run compared the working tree with HEAD instead of the branch with the trunk | `resolveBase() source is 'opt-out' or 'unresolvable' while isPathBranch(branch)` |
-| *Advisory* | `branch-identity` | diff | Detached checkout where branch cannot be identified from host or git ref | `branchSource === 'detached' (blocking on guarded roots, advisory on others)` |
-| *Advisory* | `brief-schema` | diff | The handoff brief is missing, or lacks its nine fields, its seven exact sections, or pinned governs entries | `briefErrors(front, body) over BRIEF_FIELDS and BRIEF_SECTIONS` |
-| *Advisory* | `checkpoint-retention` | diff | A completed work unit has no retention ref in the current generation, the current generation is empty because a rewrite closed the last one, or the namespace or branch range cannot be read here and the question cannot be answered | `currentGeneration(retentionGenerations(refs), onBranch) => retainedRefs.has(refs/cairn/checkpoints/<id>/g<NN>/<n>), and unretainedCheckpoints over that generation (newest unit advisory; an unreadable namespace or range is inconclusive, an empty current generation is not)` |
+| **Blocking** | `transition` | diff | Changed path state is not an allowed lifecycle transition, a path branch claims done, a declaration was deleted rather than archived, or the prior state is unavailable | `transitionErrors(previous, current, onPathBranch)` |
+| **Blocking** | `work-unit` | diff | A changed path record carries no `cairn-unit` block for its current step, a block declares an unknown type, or source changed without a module note and the path record moving with it (the area-precise note is advisory) | `parseWorkUnits(record) => workUnitErrors(unit) over WORK_UNIT_TYPES; touched(source roots) => touched(modules root) && touched(PATH_DIR); areaOf(file) => changed.includes(note) (advisory)` |
+| *Advisory* | `acceptance` | diff | A ready or done path lacks exact-commit acceptance; implementation changed after acceptance; the coherence audit bound to the candidate is missing or unfilled; the closure commit moved a field acceptance was measured against; the advisory dispositions do not match the advisories attested at the candidate (advisory: a collapsed reviewer, or a prose disposition on a grandfathered path) | `closingAcceptanceErrors(record) + pathClosureState(path, record) + cairn-audit --check --subject C + closureFieldErrors(recordAtC, current) + dispositionErrors(disposition, advisories_at_candidate, raised) + opening.accepted_by === closing.accepted_by` |
+| *Advisory* | `branch-path` | diff | Path branch not declared by a running path record, missing base_commit, or a detached checkout whose branch cannot be identified while guarded source changed (inconclusive; advisory when nothing guarded changed) | `isPathBranch(branch) && (!match \|\| !PATH_BRANCH_STATUSES.includes(status) \|\| !isCommitPin(base)); branchSource === 'detached' && guarded.length > 0` |
 | *Advisory* | `concept-growth` | corpus | A change adds concept articles; reported so vocabulary growth is a visible decision | `addedConcepts(previousRef listing, current listing), diff-scoped to the concepts folder` |
-| *Advisory* | `decision-drift` | diff | Configured architecture changed without an ADR in the same changeset | `touched(architectureRoot) => touched(decisionRoot)` |
-| *Advisory* | `ledger-size` | diff | A path file in the diff exceeds the ledger token budget | `changed.includes(path.file) && path.tokens > LEDGER_TOKEN_BUDGET` |
-| *Advisory* | `opening-ceremony` | diff | Path declared running without an opening-check session note | `!openingFor(pathId) via session frontmatter { path, ceremony: 'opening' }` |
-| *Advisory* | `path-staleness` | corpus | A path declaring running whose branch has had no commit for longer than the declared window | `staleRunningPaths(corpus, branchAges(corpus)) — advisory always; an unresolvable branch reports nothing` |
+| *Advisory* | `decision-drift` | diff | Configured architecture changed without a decision record in the same changeset | `touched(architectureRoot) => touched(decisionRoot)` |
 | *Advisory* | `provisional` | diff | A proposed candidate still contains commits marked Cairn-Provisional, or HEAD is itself provisional | `git log --grep=^Cairn-Provisional: base..subject_commit (blocking on a ready path, advisory at HEAD)` |
-| *Advisory* | `record-date` | diff | A record this change adds carries two dates that disagree (blocking), or a date more than a day from the commit that wrote it (advisory) | `recordDateFindings(addedRecords) — filename date vs timestamp: vs the adding commit author date` |
-| *Advisory* | `record-integrity` | diff | An immutable event/history record changed, or a born-sliced step no longer preserves its adding blob as a prefix | `immutableRecordMutations(previousRef) + appendOnlyStepRecordMutations(changed) + preservesAppendOnlyRecord(before, after)` |
+| *Advisory* | `record-date` | diff | A record this change adds carries two dates that disagree, or a date more than a day from the commit that wrote it | `recordDateFindings(addedRecords) — filename date vs timestamp: vs the adding commit author date` |
+| *Advisory* | `record-integrity` | diff | An immutable event/history record changed, or a born-sliced step no longer preserves its adding blob as a prefix | `immutableRecordMutations(mergeBaseWithTrunk) + appendOnlyStepRecordMutations(changed) + preservesAppendOnlyRecord(before, after)` |
+| *Advisory* | `redaction` | diff | A `[redacted: …]` marker names no redaction record (code spans and fences stripped first) | `redactionMarkers(stripCode(text)) => redaction record exists` |
 | *Advisory* | `registration` | diff | Path declaration tuple (id, running, branch, base) missing from trunk | `pathRegistrationState() === 'missing' (blocking) or declared migration exception (advisory)` |
 | *Advisory* | `remote-checkpoint` | diff | Local path HEAD not present on upstream tracking branch | `pathRemoteCheckpoint(branch).state === 'missing' \| 'unpushed'` |
-| *Advisory* | `role-collapse` | diff | One actor recorded both the opening and the closing acceptance for a path | `opening.accepted_by === closing.accepted_by (advisory: visible, never forbidden)` |
 | *Advisory* | `route` | diff | A path declares no route, an unknown route, a lightweight route that meets a full-route trigger, a foundation surface outside documents, or a descent from full | `configured new-path default + fullRouteTriggers(writes) + foundationSurfaceViolations(writes) + routeDescent(previous, current)` |
+| *Advisory* | `schema` | diff | Path or decision-record frontmatter fails parsing, an id/status/date is outside vocabulary, two records share an id or a branch, or a record declares running with no opening acceptance behind it | `pathFrontmatterErrors(front) + duplicatePathIdentityFindings(paths) + adrFrontmatterErrors(front, file, bodyStatus) + !openingFor(id) on a running record in the diff` |
 | *Advisory* | `scope-digest` | diff | The accepted definition of done moved after acceptance, or was accepted without a digest | `scopeDigest(resolveScopeSection(pathRecord, scope_ref)) === record.scope_digest` |
 | *Advisory* | `scope-drift` | diff | Changed files outside path frontmatter declared writes: patterns | `!matchesAny(file, declaredWrites)` |
-| *Advisory* | `single-truth` | diff | Manual edits to shared/derived statements of record | `SINGLE_TRUTH.includes(file)` |
-| *Advisory* | `transition` | diff | Changed path state is not an allowed lifecycle transition, or prior state is unavailable | `transitionErrors(previous, current, onPathBranch)` |
+| *Advisory* | `transition` | diff | Changed path state is not an allowed lifecycle transition, a path branch claims done, a declaration was deleted rather than archived, or the prior state is unavailable | `transitionErrors(previous, current, onPathBranch)` |
+| *Advisory* | `work-unit` | diff | A changed path record carries no `cairn-unit` block for its current step, a block declares an unknown type, or source changed without a module note and the path record moving with it (the area-precise note is advisory) | `parseWorkUnits(record) => workUnitErrors(unit) over WORK_UNIT_TYPES; touched(source roots) => touched(modules root) && touched(PATH_DIR); areaOf(file) => changed.includes(note) (advisory)` |
 <!-- cairn:rules:end -->
+
+## The cut, for the record
+
+A reader arriving from a 0.2 repository — an audit, a disposition, a step
+record — meets rule names this page no longer lists. Where each one went:
+
+| 0.2 name | 1.0 |
+| :-- | :-- |
+| `closure-surface`, `advisory-disposition`, `coherence-audit`, `role-collapse` | folded into `acceptance`: one rule about one acceptance |
+| `same-work-unit`, `area-note` | folded into `work-unit`: source, its note and its step are one coherence |
+| `branch-identity` | folded into `branch-path`: a branch with no name is the degenerate case of a branch with no record |
+| `opening-ceremony` | folded into `schema`: a `running` record with no acceptance behind it claims a state it has not earned |
+| `redaction`, `record-date` | demoted to advisory: evidence a reviewer weighs, not a repository left wrong |
+| `checkpoint-retention` | retired: dead under the default policy; a `retained` host's plugin |
+| `base-parity`, with `--working-tree` and `--previous` | retired: one invocation form remains, so there is no narrowing to announce |
+| `brief-schema` | retired: the brief merges into the record's resume section (S03) |
+| `single-truth` | retired: `derived-view` already blocks the one generated file, and the roadmap register is hand-written by design |
+| `path-staleness`, `ledger-size`, `migration-debt` | retired: a quiet path, a long record and a spent exception are host debts, not repository defects |

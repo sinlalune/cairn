@@ -8,8 +8,8 @@ cairn:
   path: CP-CAIRN-001
   branch: path/cp-cairn-001
   written_by: cp-cairn-001-writer
-  checkpoint: ca34010040daa836fe81004eb2f400f9a5c7511f
-  checkpoint_unit: 0
+  checkpoint: fb0b27eff1a985a6549d76dccc82ec826c486f2d
+  checkpoint_unit: 1
   checkpoint_pushed: true
   base_commit: 43cfeb96670eba615567b967f7368f32b3d8a409
   trunk_seen: ca34010040daa836fe81004eb2f400f9a5c7511f
@@ -39,6 +39,7 @@ cairn:
     - npm run cairn-check
     - npm run cairn-active -- --check
     - npm run cairn-rules -- --write
+    - npm test
 ---
 
 # Resume CP-CAIRN-001 here
@@ -54,15 +55,17 @@ release the greenfield pilot completes.
 
 ## State
 
-S01 is complete and is the tip of `origin/path/cp-cairn-001`; `checkpoint`
-above names the registration merge it was built on, because a brief cannot
-name the commit that carries it. The specification now lives at `spec/`, its
-index is written on the six stages at 5,588 words, the wiki holds 31 own
-concepts beside 21 borrowed, and the 0.2 conformance matrix with the generated
-catalogue and linkage sits on `spec/reference/conformance.md` under a preface
-that dates it. The tools are still the 0.2 tools: 38 rule names, session
-records, a separate brief, `foundation` in the route vocabulary. That gap is
-stated on the conformance page and closes in S02 to S04.
+S02 is complete and is the tip of `origin/path/cp-cairn-001`; `checkpoint`
+above names the S01 commit it was built on, because a brief cannot name the
+commit that carries it. The specification lives at `spec/` on the six stages
+(S01). The checker now implements the 1.0 rule set: 24 names, 19 blocking,
+every blocking rule with an adversarial fixture against a real installed
+repository; `npm test` runs 220 subtests; the configuration is schema 2; the
+conformance matrix is written against 1.0 and records where every 0.2 name
+went. What the tools still read in 0.2 shapes — opening and closing acceptance
+from session records, the audit from an audit file, the brief as a lifecycle
+record, `foundation` in the route vocabulary — is named row by row on the
+conformance page and closes in S03 and S04.
 
 What binds every unit: **delete before adding** (the decision ladder in section
 3 of the convergence record, turned on the protocol itself); **every gate by
@@ -72,14 +75,16 @@ runs on pushes to `path/**`; **no rewriting** of the published path branch;
 
 ## Next action
 
-S02 — the rules. Retire and demote per section 4's keep and retire lists;
-fold `closure-surface`, `advisory-disposition` and `coherence-audit` into
-`acceptance`; bring the fixture suite over from Atomik at
-`46bdd11ba8d0d255fa3598273216b996ce5527d0` and keep every fixture of every kept
-rule; run `cairn-rules --write` to regenerate the catalogue and the linkage on
-the conformance page; rewrite the matrix rows against the kept rules. Plan
-item 2 in `plan.md`. Settle or state the CP-OPS-002 debts listed at the end of
-`plan.md` in the same unit.
+S03 — one folder per path. Opening acceptance inline in `index.md` under its
+own heading, and `schema` reads it from there instead of from a session
+record; a resume section in `index.md` replacing this brief; the lightweight
+route as the specification states it (the three reliefs); `depends_on:` in the
+declaration and the unblocked view in `cairn-active`; `foundation` folded into
+`full` and `emergency` dropped from the checker's vocabulary and
+`WORK_UNIT_TYPES`; `cairn-init` writes the new shape. Migrate this path's own
+record to the new shape in the same unit — it is the worked example — and
+fold this brief into it. Plan item 3 in `plan.md`. Every fixture that builds a
+session opening record or a brief follows the shape it tests.
 
 ## Blockers
 
@@ -102,20 +107,27 @@ none
 - A new `roots.specification` configuration field so the checker finds
   `spec/` — rejected in S01: the parent of the concept root already says where
   the specification is, and a schema change is a migration every adopter pays.
+- Keying `work-unit`'s required parts to the declared unit type — rejected in
+  S02: the merge-deciding comparison sees every unit on the branch at once, so
+  the current unit's type cannot select the parts of a cumulative diff.
+- Copying the manifesto into every installed repository so the specification's
+  link resolves — rejected in S02: it drags the design history behind it; the
+  manifesto is linked by URL until the kit links the specification (S06).
 
 ## Reading order
 
 1. `project/coding-paths/paths.md@3aca8a6af72a72164ac1e27cb9c93e017af33da1` — the 0.2 lifecycle this record follows until S03 replaces it.
 2. `docs/cairn/manifesto.md@e248bc94232ba75777cbd305a9270fb114069d8e` — what every cut is measured against.
 3. `docs/cairn/cairn-manifesto-convergence-2026-09-02.md@5ec546716b369b674574a4f370823385bea12518` — section 4's keep and retire lists are S02's instruction.
-4. `spec/index.md` at the S01 tip, chapter 5 — what the kept rules must enforce; and `spec/reference/conformance.md`, the matrix to rewrite.
-5. `project/coding-paths/CP-CAIRN-001/steps/S01.md` — what S01 changed in the tools and the debts it named for S06.
+4. `spec/index.md` at the S02 tip, chapter 5 — the record shape, the route and the resume section S03 builds; and `spec/reference/conformance.md`, the rows marked partial on S03.
+5. `project/coding-paths/CP-CAIRN-001/steps/S02.md` — what S02 left reading 0.2 shapes on purpose, and where each is named.
+6. `tools/cairn-fixture.test.mjs` — the harness S03 changes the record shape under; every fixture that writes a session record or a brief moves with it.
 
 ## Verification
 
-`npm run cairn-check` prints `OK — protocol satisfied (1 advisory)` at the S01
+`npm run cairn-check` prints `OK — protocol satisfied (1 advisory)` at the S02
 tip against `origin/main`; the advisory is `concept-growth`, raised because the
 wiki's previous listing at `spec/concepts/` on the trunk is empty, and explained
-in the step. `npm run cairn-active -- --check` reports the view current.
+in S01. `npm run cairn-active -- --check` reports the view current.
 `npm run cairn-rules -- --write` rewrites the tables on the conformance page
-without a diff.
+without a diff. `npm test` reports 220 subtests passing, 0 failing.
