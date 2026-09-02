@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-001
   route: full
   status: running
-  current_step: S07
+  current_step: S08
   base_commit: 43cfeb96670eba615567b967f7368f32b3d8a409
   branch: path/cp-cairn-001
   assigned_writer: cp-cairn-001-writer
@@ -133,7 +133,7 @@ immutable original; the block above carries the same digest.
 - **[S05](./steps/S05.md)** — the procedures as five Agent Skills under `skills/`, each under a thousand tokens, the operations page cut into their reference files and deleted, the skills checked and installed with the kit — COMPLETE
 - **[S06](./steps/S06.md)** — the `cairn` command of the `cairn-protocol` package: `init` from a kit of 26 files that links the specification at the pinned commit, `status` and `update` by lock digest, `adopt` for a lock-less installation, run on Atomik at `46bdd11`; this repository's lock rewritten; the path convention moved beside the execution protocol — COMPLETE
 - **[S07](./steps/S07.md)** — the four documentation layers: `manifesto.md` as the edited edition, `README.md` with the overview and three quick starts, and `site/`, the React Markdown renderer with Mermaid built from 74 documents and deployed to GitHub Pages from the trunk — COMPLETE
-- **S08** — in progress; its file is linked when it is written
+- **[S08](./steps/S08.md)** — every budget target bound and measured by the tools; the greenfield pilot as a command and a test, green from install to done on both transports at two protocol files per unit; the version 1.0.0 and the lock rewritten — COMPLETE
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
@@ -142,23 +142,21 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 43bddf4528ce785d68743020b2a75acca73ea19a — the S06 commit, on origin/path/cp-cairn-001; S07 is the commit that carries this refresh
-unit   : 06
+commit : b8000e2f1823c9f683c605b7cc1f1b3499904158 — the S07 commit, on origin/path/cp-cairn-001; S08 is the commit that carries this refresh
+unit   : 07
 base   : 43cfeb96670eba615567b967f7368f32b3d8a409
 trunk  : ca34010040daa836fe81004eb2f400f9a5c7511f — origin/main has not moved since registration
 ```
 
 ### Next action
 
-S08 — budget, pilot, release, then closure. Measure the weight budget onto
-the conformance page — the specification index, the entry chain, the kit,
-one lightweight unit's protocol files. Rerun the greenfield pilot from the
-release install to `done` on a throwaway repository and record its findings.
-Tag `1.0.0` on the trunk and publish `cairn-protocol`, which is the owner's
-credential to use. Then close this path with `cairn-close`: merge the trunk
-in, the candidate, the pull request from this branch with the review as its
-description, the administrative commit, the merge, and the integrating commit
-with the journal entry. Plan item 8 in `plan.md`.
+Close the path with `cairn-close` on `pull-request` transport: the trunk
+merged in (it has not moved since registration), the S08 commit as the
+candidate `C`, the checks on exactly `C`, the request opened from this branch
+with the review `cairn-audit` prints as its description, the administrative
+commit setting `ready` and `subject_commit: C`, then the owner's approval and
+merge. The integrating unit on the trunk records `done`, writes the journal
+entry, tags `1.0.0`, and the owner publishes `cairn-protocol`.
 
 ### Blockers
 
@@ -204,9 +202,9 @@ None.
 
 1. `docs/cairn/manifesto.md@e248bc94232ba75777cbd305a9270fb114069d8e` — what every cut is measured against.
 2. `docs/cairn/cairn-manifesto-convergence-2026-09-02.md@5ec546716b369b674574a4f370823385bea12518` — section 4 is the definition of done; its transport decisions are S04's instruction.
-3. `spec/reference/conformance.md` at the S07 tip, *The weight budget* — the four numbers S08 measures and states.
-4. `docs/cairn/cairn-manifesto-convergence-2026-09-02.md`, section 1 and the greenfield pilot row of the 0.2 matrix — what the pilot measured before, so the rerun compares like with like.
-5. `skills/cairn-close/SKILL.md` and its reference — the closure this path runs on itself, on `pull-request` transport.
+3. `skills/cairn-close/SKILL.md` and its reference — the closure this path runs on itself, on `pull-request` transport.
+4. `spec/index.md` at the S08 tip, *Close one exact candidate* and *Integrate without claiming the future* — what the request, the administrative commit and the integrating unit must be.
+5. `project/coding-paths/CP-CAIRN-001/steps/S08.md` — the measured budget and the pilot the review cites as evidence for the definition of done.
 
 ### Verify
 

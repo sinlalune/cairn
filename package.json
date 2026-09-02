@@ -1,6 +1,6 @@
 {
   "name": "cairn-protocol",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0",
   "description": "Cairn \u2014 the lightest document-driven coding protocol: one command installs it, one checker enforces it.",
   "license": "MIT",
   "repository": {

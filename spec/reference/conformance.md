@@ -26,18 +26,21 @@ Cairn 1.0 is cut to a stated budget, measured at release and recorded here.
 The targets are the convergence record's, section 4; a cap that has never
 bound is a count, not a constraint.
 
-| Surface | Target | Measured |
+| Surface | Target | Measured at 1.0.0 |
 | :-- | --: | --: |
-| `spec/index.md` | under 8,000 words | *measured at release* |
-| the required entry chain — bootloader, path convention, binding, execution protocol | under 3,000 words | *measured at release* |
-| files the kit installs | under 30 | 26 and the lock on the `ci` profile, 25 on `local` (S06); confirmed at release |
-| protocol files one lightweight unit writes | under 6 | *measured at release* |
+| `spec/index.md` | under 8,000 words | **5,630 words** |
+| the required entry chain — bootloader, path convention, binding, execution protocol | under 3,000 words | **2,895 words** |
+| files the kit installs | under 30 | **26 and the lock** on the `ci` profile, 25 on `local` |
+| protocol files one lightweight unit writes | under 6 | **2** — the step record and the record's resume section; a whole lifecycle from registration to `done` touches 4 on `pull-request` transport and 5 on `manual-git`, measured by `tools/cairn-pilot.mjs` |
+
+Every target bound. The numbers are counted by the tools and the pilot, not
+estimated; a release that moves one of them past its target has to say so here.
 
 ## Where the matrix stands
 
 The matrix is written against the 1.0 [specification](../index.md), row by
-row on chapter 5 with one row each for the stages the tools touch, at the
-**rule cut**: thirty-nine rule names became twenty-four — nineteen that block
+row on chapter 5 with one row each for the stages the tools touch, at release
+**1.0.0**: thirty-nine rule names became twenty-four — nineteen that block
 and five that only report — and every blocking rule has an adversarial
 fixture, at the **one-folder record**, and with **pull-request transport** as
 the default: the request's description is the review and its approval the
@@ -81,15 +84,18 @@ means a judgement was scored; it means a fact was read.
 | Every relative link in the corpus resolves | **implemented**; `links` blocks a relative Markdown link that resolves nowhere, code stripped, across the documentation plane, the project plane and the specification | none |
 | An adversarial fixture per blocking rule | **implemented**; nineteen of nineteen blocking rules have a fixture that installs a real repository with `cairn-init`, proves it green, introduces exactly one violation and requires that rule among the blocking findings; coverage is declared, so a new blocking rule forces the choice | a fixture proves the rule catches *that* violation, not the class |
 | Installation, update and adoption | **implemented**; the `cairn` command of the `cairn-protocol` package: `init` installs a thin kit — the reference tools, the five skills, the host files and the folder indexes, 26 files and the lock on the `ci` profile — that links the specification and the path convention at the commit it was cut from and passes its own gate on the first command; `status` tells pristine, edited and missing kit files apart by the lock's digests and says whether a newer release exists; `update` rewrites pristine kit files, restores missing ones, keeps edited ones, deletes pristine files that left the kit, migrates the configuration from schema 1, and writes the new lock; `adopt` turns a repository carrying the protocol without a lock into an installation — configuration migrated, tools and skills written, host files kept where they exist, the view regenerated, the lock written, every 0.2 shape reported and none deleted | the npm name `cairn` is another package's, so the package is `cairn-protocol` and its binary `cairn`; publishing is the release's (S08); the specification links pin the source commit and resolve once it is on the forge |
-| The pilots | **cold-resume run once** (20 trials, 35% would act without asking); **greenfield rerun at release** (S08) | a second writer, a hosted remote with the CI adapter |
+| The pilots | **greenfield pilot rerun at 1.0.0 as a command**, `tools/cairn-pilot.mjs`, and as a test in the suite: a repository the kit installs is driven from `init` to `done` on each transport, green at every gate — installed, registered, unit pushed, candidate, ready, done — with two protocol files per unit. The 0.2 pilot of 2026-09-01 wrote 24 protocol files for one unit and could not close on the first run. **Cold resume run once** at 0.2 (20 trials, 35% would act without asking) against the brief; not rerun against the resume section | the pilot simulates the forge's merge on `pull-request` transport with the local merge the integrating checkout fetches back; a second writer and a hosted remote are outside it; the cold-resume trial against the resume section is a 1.1 measurement |
 
 The current supported claim is therefore:
 
-> Cairn 1.0, at the rule cut, is a local-first coordination and project-memory
-> protocol for a team of trusted developers and coding agents working through
-> remote Git branches. Its reference checker enforces twenty-four rules, every
-> blocking one proved against a real repository, and states what it does not
-> check. It is not a general-purpose merge, governance, or security system.
+> Cairn 1.0 is a local-first coordination and project-memory protocol for a
+> team of trusted developers and coding agents working through remote Git
+> branches, installed by one command as a kit of twenty-six files that links
+> its specification. Its reference checker enforces twenty-four rules, every
+> blocking one proved against a real repository, and a repository it installs
+> runs from install to done at two protocol files per unit. It states what it
+> does not check. It is not a general-purpose merge, governance, or security
+> system.
 
 The honest residue is named rather than hidden: **repair** has no predicate to
 propose; the **resume section's answerable-alone contract** is a judgement
