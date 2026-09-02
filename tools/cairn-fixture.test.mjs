@@ -99,7 +99,26 @@ function cleanup(...dirs) {
   for (const dir of dirs) rmSync(dir, { recursive: true, force: true })
 }
 
+const RECORD = 'project/coding-paths/CP-FIXTURE-001/index.md'
+const STEP = 'project/coding-paths/CP-FIXTURE-001/steps/S01.md'
+
+/** The opening acceptance a record carries inline, bound to the digest of the
+ *  definition of done as it stands when the record is registered. */
+const OPENING_SECTION = (digest) => `
+## Opening acceptance
+
+\`\`\`yaml
+decision: accepted
+accepted_by: fixture-opener
+accepted_roles: [initiator, reviewer]
+accepted_at: 2026-09-01T09:00:00Z
+scope_ref: ${RECORD}#definition-of-done
+scope_digest: ${digest}
+\`\`\`
+`
+
 const PATH_RECORD = (overrides = {}) => {
+  const { opening = null, ...rest } = overrides
   const fields = {
     id: 'CP-FIXTURE-001',
     route: 'lightweight',
@@ -107,7 +126,7 @@ const PATH_RECORD = (overrides = {}) => {
     current_step: 'S01',
     base_commit: 'a'.repeat(40),
     branch: 'path/cp-fixture-001',
-    ...overrides
+    ...rest
   }
   const body = Object.entries(fields)
     .map(([key, value]) => `  ${key}: ${value}`)
@@ -131,7 +150,21 @@ Exercise one rule.
 ## Definition of done
 
 - [ ] The rule fires.
-`
+${opening ? OPENING_SECTION(opening) : ''}`
+}
+
+function scopeDigest(dir) {
+  return execFileSync(process.execPath,
+    [CHECK, '--scope-digest', `${RECORD}#definition-of-done`],
+    { cwd: dir, encoding: 'utf8', stdio: 'pipe' }).trim()
+}
+
+/** Write the record, then write it again with its opening acceptance bound to
+ *  the digest the first write produced. The definition of done sits above the
+ *  acceptance, so the second write leaves the digested text unchanged. */
+function writeAcceptedRecord(dir, fields) {
+  write(dir, RECORD, PATH_RECORD(fields))
+  write(dir, RECORD, PATH_RECORD({ ...fields, opening: scopeDigest(dir) }))
 }
 
 /** A green repository with one registered path, checked out on its branch.
@@ -142,7 +175,7 @@ Exercise one rule.
 function pathRepository({ checkout = true, record = {} } = {}) {
   const dir = repository()
   const base = git(dir, 'rev-parse', 'HEAD').trim()
-  write(dir, 'project/coding-paths/CP-FIXTURE-001.md', PATH_RECORD({ base_commit: base, ...record }))
+  writeAcceptedRecord(dir, { base_commit: base, ...record })
   regenerateView(dir)
   commit(dir, 'register CP-FIXTURE-001')
   if (checkout) git(dir, 'checkout', '-q', '-b', 'path/cp-fixture-001')
@@ -229,11 +262,11 @@ fixture('a concept nothing outside the wiki links', 'concept-orphan', (dir) => {
 })
 
 fixture('a running path the generated view does not know about', 'derived-view', (dir) => {
-  write(dir, 'project/coding-paths/CP-FIXTURE-001.md', PATH_RECORD())
+  write(dir, RECORD, PATH_RECORD())
 })
 
 fixture('a path record whose frontmatter breaks the schema', 'schema', (dir) => {
-  write(dir, 'project/coding-paths/CP-FIXTURE-001.md', PATH_RECORD({ status: 'inventing' }))
+  write(dir, RECORD, PATH_RECORD({ status: 'inventing' }))
 })
 
 // A born-sliced record is born in a NEW FOLDER, and `git status --porcelain`
@@ -247,6 +280,21 @@ fixture('a running record born in an untracked folder, with no opening acceptanc
   regenerateView(dir)
 })
 
+fixture('a running record whose opening acceptance binds no digest', 'schema', (dir) => {
+  const base = git(dir, 'rev-parse', 'HEAD').trim()
+  write(dir, 'project/coding-paths/CP-FIXTURE-002/index.md',
+    PATH_RECORD({ id: 'CP-FIXTURE-002', branch: 'path/cp-fixture-002', base_commit: base, opening: 'x' })
+      .replace('scope_digest: x', 'scope_digest:'))
+  regenerateView(dir)
+})
+
+fixture('a record depending on a path nothing declares', 'schema', (dir) => {
+  const base = git(dir, 'rev-parse', 'HEAD').trim()
+  write(dir, 'project/coding-paths/CP-FIXTURE-002/index.md',
+    PATH_RECORD({ id: 'CP-FIXTURE-002', branch: 'path/cp-fixture-002', base_commit: base, opening: 'x', depends_on: '[CP-NOWHERE-001]' }))
+  regenerateView(dir)
+})
+
 advisoryFixture('a redaction marker naming no record', 'redaction', (dir) => {
   appendFileSync(join(dir, 'docs/index.md'), '\nRemoved [redacted: 2026-09-01-nonexistent] here.\n')
 })
@@ -257,11 +305,11 @@ advisoryFixture('a redaction marker naming no record', 'redaction', (dir) => {
 
 pathFixture('a path branch declaring an unknown route', 'route', (dir) => {
   const base = git(dir, 'rev-parse', 'HEAD').trim()
-  write(dir, 'project/coding-paths/CP-FIXTURE-001.md', PATH_RECORD({ base_commit: base, route: 'whatever' }))
+  writeAcceptedRecord(dir, { base_commit: base, route: 'whatever' })
 })
 
 pathFixture('a changed path record carrying no work unit', 'work-unit', (dir) => {
-  appendFileSync(join(dir, 'project/coding-paths/CP-FIXTURE-001.md'), '\n- [ ] One more thing.\n')
+  appendFileSync(join(dir, RECORD), '\n- [ ] One more thing.\n')
 })
 
 pathFixture('a branch no path declares', 'branch-path', (dir) => {
@@ -277,8 +325,7 @@ pathFixture('a path branch that does not contain the trunk tip', 'rebase', (dir)
 
 pathFixture('a path branch claiming done for itself', 'transition', (dir) => {
   const base = git(dir, 'rev-parse', 'HEAD~0').trim()
-  write(dir, 'project/coding-paths/CP-FIXTURE-001.md',
-    PATH_RECORD({ status: 'done', subject_commit: base, resolution: 'completed' }))
+  writeAcceptedRecord(dir, { status: 'done', subject_commit: base, resolution: 'completed' })
   regenerateView(dir)
 })
 
@@ -293,7 +340,7 @@ pathFixture('a published commit rewritten on a no-rewrite host', 'path-history',
 fixture('a path branched before its declaration reached the trunk', 'registration', (dir) => {
   const base = git(dir, 'rev-parse', 'HEAD').trim()
   git(dir, 'checkout', '-q', '-b', 'path/cp-fixture-001')
-  write(dir, 'project/coding-paths/CP-FIXTURE-001.md', PATH_RECORD({ base_commit: base }))
+  writeAcceptedRecord(dir, { base_commit: base })
   regenerateView(dir)
   commit(dir, 'declare CP-FIXTURE-001 on its own branch only')
 })
@@ -302,7 +349,7 @@ fixture('a registration whose base_commit is not the registration parent', 'regi
   const first = git(dir, 'rev-parse', 'HEAD').trim()
   write(dir, 'docs/between.md', '---\ntype: Note\ntitle: Between\ndescription: x\ntags: [x]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Between\n')
   commit(dir, 'a trunk commit between the claimed base and the registration')
-  write(dir, 'project/coding-paths/CP-FIXTURE-001.md', PATH_RECORD({ base_commit: first }))
+  writeAcceptedRecord(dir, { base_commit: first })
   regenerateView(dir)
   commit(dir, 'register CP-FIXTURE-001 with a stale base')
   git(dir, 'checkout', '-q', '-b', 'path/cp-fixture-001')
@@ -310,8 +357,7 @@ fixture('a registration whose base_commit is not the registration parent', 'regi
 
 pathFixture('a path reaching done on the trunk with no journal entry', 'journal-entry', (dir) => {
   const base = git(dir, 'rev-parse', 'HEAD').trim()
-  write(dir, 'project/coding-paths/CP-FIXTURE-001.md',
-    PATH_RECORD({ base_commit: base, status: 'done', subject_commit: base, resolution: 'completed' }))
+  writeAcceptedRecord(dir, { base_commit: base, status: 'done', subject_commit: base, resolution: 'completed' })
   regenerateView(dir)
 }, { checkout: false })
 
@@ -324,28 +370,6 @@ pathFixture('a path reaching done on the trunk with no journal entry', 'journal-
  * repair it names. The harness reaches `ready` the way the operations page
  * says to, so the baseline is itself the regression test.
  * ------------------------------------------------------------------ */
-
-const OPENING = (digest) => `---
-type: Cairn Session Record
-title: CP-FIXTURE-001 opening acceptance
-timestamp: 2026-09-01T09:00:00Z
-tags: [cairn, opening]
-path: CP-FIXTURE-001
-ceremony: opening
-decision: accepted
-accepted_by: fixture-opener
-accepted_roles: [initiator, reviewer]
-accepted_at: 2026-09-01T09:00:00Z
-scope_ref: project/coding-paths/CP-FIXTURE-001.md#definition-of-done
-scope_digest: ${digest}
----
-
-# CP-FIXTURE-001 — opening acceptance
-
-## Decision
-
-Accepted for trunk registration.
-`
 
 const CLOSING = ({ subject, base, digest, attested = [], disposition = [] }) => {
   const list = disposition.length === 0
@@ -365,7 +389,7 @@ accepted_by: fixture-closer
 accepted_roles: [reviewer, auditor]
 accepted_at: 2026-09-01T18:00:00Z
 decision: accepted
-scope_ref: project/coding-paths/CP-FIXTURE-001.md#definition-of-done
+scope_ref: ${RECORD}#definition-of-done
 scope_digest: ${digest}
 advisories_at_candidate: [${attested.join(', ')}]
 ${list}
@@ -379,13 +403,26 @@ Candidate accepted for administrative closure and exact integration.
 `
 }
 
-const UNIT_BLOCK = '\n## Ledger\n\n```cairn-unit\nstep: S01\nunit: 01\ntype: implementation\nverified: cairn-check\n```\n'
+const STEP_RECORD = `---
+type: Cairn Coding Path Step
+title: 'CP-FIXTURE-001 S01 — the one constant'
+timestamp: 2026-09-01T00:00:00Z
+cairn:
+  path: CP-FIXTURE-001
+  step: S01
+---
 
-function scopeDigest(dir) {
-  return execFileSync(process.execPath,
-    [CHECK, '--scope-digest', 'project/coding-paths/CP-FIXTURE-001.md#definition-of-done'],
-    { cwd: dir, encoding: 'utf8', stdio: 'pipe' }).trim()
-}
+# CP-FIXTURE-001 S01
+
+\`\`\`cairn-unit
+step: S01
+unit: 01
+type: implementation
+verified: cairn-check
+\`\`\`
+
+- one exported constant, and its module note
+`
 
 /** A real repository at the moment the closure commit A is being prepared:
  *  registered with a session-note opening, one implementation unit that
@@ -398,12 +435,11 @@ function scopeDigest(dir) {
 function readyRepository({ provisional = false } = {}) {
   const dir = repository()
   const base = git(dir, 'rev-parse', 'HEAD').trim()
-  write(dir, 'project/coding-paths/CP-FIXTURE-001.md', PATH_RECORD({
+  writeAcceptedRecord(dir, {
     base_commit: base,
     writes: '\n    - src/**',
     governs: `\n    - docs/architecture/index.md@${'b'.repeat(40)}`
-  }))
-  write(dir, 'project/sessions/2026-09-01-cp-fixture-001-opening.md', OPENING(scopeDigest(dir)))
+  })
   regenerateView(dir)
   commit(dir, 'register CP-FIXTURE-001')
   git(dir, 'checkout', '-q', '-b', 'path/cp-fixture-001')
@@ -411,10 +447,11 @@ function readyRepository({ provisional = false } = {}) {
   // S01: source, its module note, and a widening discovered while working.
   write(dir, 'src/app.js', 'export const app = true\n')
   write(dir, 'docs/modules/application.md', '---\ntype: Cairn Module Note\ntitle: Application\ndescription: The one area.\ntags: [module]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Application\n\nOne exported constant.\n')
-  const record = readFileSync(join(dir, 'project/coding-paths/CP-FIXTURE-001.md'), 'utf8')
-    .replace('    - src/**\n', '    - src/**\n    - docs/modules/application.md\n') + UNIT_BLOCK
+  const record = readFileSync(join(dir, RECORD), 'utf8')
+    .replace('    - src/**\n', '    - src/**\n    - docs/modules/application.md\n')
   assert.ok(record.includes('    - docs/modules/application.md'), 'the harness must widen writes: while running')
-  write(dir, 'project/coding-paths/CP-FIXTURE-001.md', record)
+  write(dir, RECORD, record)
+  write(dir, STEP, STEP_RECORD)
   commit(dir, provisional
     ? 'CP-FIXTURE-001 S01: the one constant\n\nCairn-Provisional: a draft nobody folded'
     : 'CP-FIXTURE-001 S01: the one constant')
@@ -442,8 +479,8 @@ function readyRepository({ provisional = false } = {}) {
       attested: provisional ? ['provisional'] : [],
       disposition: provisional ? [{ rule: 'provisional', disposition: 'accepted', reason: 'the harness marks its own draft' }] : []
     }))
-  write(dir, 'project/coding-paths/CP-FIXTURE-001.md',
-    readFileSync(join(dir, 'project/coding-paths/CP-FIXTURE-001.md'), 'utf8')
+  write(dir, RECORD,
+    readFileSync(join(dir, RECORD), 'utf8')
       .replace('  status: running\n', '  status: ready\n')
       .replace('  branch: path/cp-fixture-001\n', `  branch: path/cp-fixture-001\n  subject_commit: ${subject}\n`))
   regenerateView(dir)
@@ -489,7 +526,7 @@ test('closure: the committed, not-yet-pushed administrative commit is green', ()
 })
 
 closureFixture('the closure commit moves writes:, which acceptance was measured against', 'acceptance', (dir) => {
-  edit(dir, 'project/coding-paths/CP-FIXTURE-001.md', '    - src/**\n', '    - src/**\n    - lib/**\n')
+  edit(dir, RECORD, '    - src/**\n', '    - src/**\n    - lib/**\n')
 })
 
 closureFixture('implementation changes after acceptance, in the uncommitted closure', 'acceptance', (dir) => {
@@ -506,11 +543,11 @@ closureFixture('an advisory attested at the candidate has no disposition', 'acce
 })
 
 closureFixture('the definition of done is edited after acceptance', 'scope-digest', (dir) => {
-  edit(dir, 'project/coding-paths/CP-FIXTURE-001.md', '- [ ] The rule fires.', '- [ ] The rule fires, eventually.')
+  edit(dir, RECORD, '- [ ] The rule fires.', '- [ ] The rule fires, eventually.')
 })
 
-closureFixture('an immutable opening record edited after the fact', 'record-integrity', (dir) => {
-  appendFileSync(join(dir, 'project/sessions/2026-09-01-cp-fixture-001-opening.md'), '\nA later thought, written into the record of the earlier one.\n')
+closureFixture('a step record whose earlier text was rewritten', 'record-integrity', (dir) => {
+  edit(dir, STEP, 'one exported constant', 'one exported constant, rewritten after the fact')
 })
 
 closureFixture('the trunk moved inside the declared surface since the accepted base', 'acceptance-drift', (dir) => {
@@ -568,7 +605,7 @@ test('parity: the local default and the CI invocation agree on one tree', () => 
 test('parity: a violation is equally visible to both invocations', () => {
   const dir = pathRepository()
   try {
-    appendFileSync(join(dir, 'project/coding-paths/CP-FIXTURE-001.md'), '\n- [ ] One more thing.\n')
+    appendFileSync(join(dir, RECORD), '\n- [ ] One more thing.\n')
     const local = check(dir)
     const ci = check(dir, '--base', 'main')
     assert.ok(blocking(local).includes('work-unit'))
@@ -604,8 +641,8 @@ test('parity: a committed edit to an immutable record is judged against the trun
   // uses is the merge-base with the trunk, and so is this one now.
   const { dir } = readyRepository()
   try {
-    appendFileSync(join(dir, 'project/sessions/2026-09-01-cp-fixture-001-opening.md'), '\nedited later\n')
-    commit(dir, 'a later commit that touches an earlier record')
+    edit(dir, STEP, 'one exported constant', 'a constant that was always two')
+    commit(dir, 'a later commit that rewrites an earlier step')
     git(dir, 'push', '-q', 'origin', 'path/cp-fixture-001')
     // Committed AND pushed: the working tree is clean, so only a comparison
     // reaching back to the trunk can see the mutation.

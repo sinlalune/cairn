@@ -39,7 +39,10 @@ The checker implements twenty-four rules â€” nineteen blocking, five advisory â€
 inventoried on the [conformance page](../../spec/reference/conformance.md),
 which also records where every 0.2 name went. One invocation form remains:
 `cairn-check [--base <ref>] [--branch <name>] [--json]`, and on a path branch
-the base defaults to the trunk. The configuration is schema 2.
+the base defaults to the trunk. The configuration is schema 2. The checker reads
+a path's opening acceptance from the record's own `## Opening acceptance`
+block, validates `depends_on:`, and knows two routes; the live-view generator
+marks each live path unblocked or names what it waits on.
 
 ## Testing
 

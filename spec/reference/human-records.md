@@ -12,63 +12,39 @@ These records turn an authorised judgement into an inspectable repository
 object. Their shape and their binding — to a candidate, to a scope digest, to a
 base — are mechanical; their reasoning is not.
 
-On the [`full` route](../concepts/lightweight-path.md) each record below is its
-own file. On the default `lightweight` route the specification lets the opening
-block live in the path record and the audit questions be answered inside the
-closing record — **but the v0.2 reference checker does not accept either form
-yet**. Write each record below as its own file on every route until the
-conformance matrix says otherwise. The fields are identical either way.
+Opening acceptance lives **in the path record**, under its own heading, on
+every route. Closing acceptance and the coherence audit are still written as
+their own files on every route: the pull-request transport that makes the
+request's description and approval the record is the next unit of the genesis
+path, and the [conformance page](./conformance.md) says which shape the
+reference tools read today.
 
 ## Opening acceptance
 
-Filename:
-
-```text
-project/sessions/YYYY-MM-DD-cp-example-001-opening.md
-```
-
-Template:
+Recorded inside `project/coding-paths/CP-EXAMPLE-001/index.md`, under
+`## Opening acceptance`, as one fenced YAML block:
 
 ````md
----
-type: Cairn Session Record
-title: CP-EXAMPLE-001 opening acceptance
-timestamp: 2026-01-15T09:00:00Z
-tags: [cairn, opening]
-path: CP-EXAMPLE-001
-ceremony: opening
+## Opening acceptance
+
+```yaml
 decision: accepted
 accepted_by: participant-id
 accepted_roles: [initiator, reviewer]
 accepted_at: 2026-01-15T09:00:00Z
-scope_ref: project/coding-paths/CP-EXAMPLE-001.md#definition-of-done
+scope_ref: project/coding-paths/CP-EXAMPLE-001/index.md#definition-of-done
 scope_digest: sha256:9f2c4b1d5e6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c
----
+```
 
-# CP-EXAMPLE-001 — opening acceptance
-
-## Outcome
-
-The bounded result in one paragraph.
-
-## Review
-
-- Route: lightweight | full — with the trigger, if full
-- Definition of done: accepted | amended
-- Steps and evidence: accepted | amended
-- Expected writes and overlap: accepted | amended
-- Exclusions: accepted | amended
-- Governing documents pinned in `governs:`: accepted | amended
-- Initial writer assignment: participant-id
-
-## Amendments
-
-Record exact changes, or “none”.
-
-## Decision
-
-Accepted for trunk registration.
+Reviewed: route lightweight; definition of done, writes and overlap,
+exclusions and governing documents accepted; initial writer participant-id.
+Amendments: none.
 ````
+
+The checker reads the last block under that heading and requires a `decision`
+of `accepted`, an actor, a UTC time, a `scope_ref` naming a file and a heading,
+and a `scope_digest` — a record declaring `running` without them fails its
+schema. The prose beneath the block says what was reviewed and is not parsed.
 
 ### The scope digest
 
@@ -94,14 +70,15 @@ re-computes the digest and refuses to proceed on a mismatch.
 
 ### Amending accepted scope
 
-A scope change is not an edit. It is a new opening acceptance carrying the new
-digest, `supersedes:` naming the earlier record, and the reason. The superseded
-record is retained.
+A scope change is not an edit. It is a second block under the same heading,
+carrying the new digest, `supersedes:` naming the earlier acceptance's
+`accepted_at`, and the reason. The earlier block stays; the last block is the
+acceptance in force.
 
-The repository defines who may accept. The v0.2 reference checker currently
-proves the opening record's path and ceremony presence; actor, roles, decision,
-time, digest, and authority enforcement remain unimplemented and must be
-reported as such.
+The repository defines who may accept. The reference checker proves the
+decision, actor, time, scope reference and digest are present and well formed;
+whether the actor was authorised is the host's governance to prove, and
+`accepted_roles` is recorded, not validated.
 
 ## Coherence audit
 
@@ -206,16 +183,16 @@ accepted_by: participant-id
 accepted_roles: [reviewer, auditor]
 accepted_at: 2026-01-15T14:30:00Z
 decision: accepted
-scope_ref: project/coding-paths/CP-EXAMPLE-001.md#definition-of-done
+scope_ref: project/coding-paths/CP-EXAMPLE-001/index.md#definition-of-done
 scope_digest: sha256:9f2c4b1d5e6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c
-advisories_at_candidate: [scope-drift, path-staleness]
+advisories_at_candidate: [scope-drift, record-date]
 advisory_disposition:
   - rule: scope-drift
     disposition: accepted
     reason: the wider root cause is declared in writes: at this same commit
-  - rule: path-staleness
+  - rule: record-date
     disposition: deferred
-    reason: parked during the dependency freeze
+    reason: the step carries the date its work started, and says why
     owner: participant-id
     follow_up: CP-EXAMPLE-002
 ---
@@ -270,9 +247,9 @@ Reviewer identity, UTC time, and an accepted decision remain required.
 
 ## Immutability and correction
 
-Once created, each session or audit file is immutable. A factual correction
+Once created, each closing or audit file is immutable. A factual correction
 creates a new uniquely named record that identifies and supersedes the earlier
 record. It never edits history into a more convenient shape.
 
-Return to [exact-candidate closure](../index.md#close-one-exact-implementation-candidate)
+Return to [closing one exact candidate](../index.md#close-one-exact-candidate)
 or open [closing acceptance](../concepts/closing-acceptance.md).

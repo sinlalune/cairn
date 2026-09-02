@@ -12,11 +12,12 @@ These commands use the canonical defaults `main`, `origin`, and
 `path/cp-example-001`. Substitute validated bindings. Run gates directly; never
 pipe their verdict through another command.
 
-The examples write a [born-sliced](../index.md#put-one-bounded-change-on-a-coding-path)
-record — `CP-EXAMPLE-001/index.md` with one file per step under `steps/` — because
-that is the shape a new path should be created in. A flat `CP-EXAMPLE-001.md`
-stays conforming and every rule keys on the declared id, so a repository holding
-the older shape substitutes that one path and changes nothing else here.
+The examples write the one-folder record of the
+[path template](./path-template.md) — `CP-EXAMPLE-001/index.md` with one file
+per step under `steps/` — because that is the shape a new path is created in.
+A flat `CP-EXAMPLE-001.md` from an earlier release stays conforming and every
+rule keys on the declared id, so a repository holding the older shape
+substitutes that one path and changes nothing else here.
 
 `cairn-init` installs a repository; the sequences below are what a participant
 then runs. `cairn-new` and `cairn-close` remain unimplemented, so registration
@@ -35,16 +36,16 @@ git rev-parse origin/main
 ```
 
 The status output must be empty. Set `base_commit` to the exact remote trunk tip,
-record opening acceptance, set the path to running, and regenerate the live
-view:
+write the opening acceptance into the record with the digest the checker
+computes, set the path to running, and regenerate the live view:
 
 ```bash
+node tools/cairn-check.mjs --scope-digest project/coding-paths/CP-EXAMPLE-001/index.md#definition-of-done
 npm run cairn-active
 npm run cairn-check
 git status --short
 git add project/coding-paths/CP-EXAMPLE-001/
 git add project/coding-paths/ACTIVE.md
-git add project/sessions/YYYY-MM-DD-cp-example-001-opening.md
 git commit -m "Register CP-EXAMPLE-001 before branching"
 git rev-parse HEAD^
 git push origin HEAD:main
@@ -70,8 +71,8 @@ Assign one writer to this writable worktree.
 
 ## Complete one work unit
 
-First update the parts the work unit's declared type requires, plus the path
-ledger and handoff brief.
+First update the parts the work unit's declared type requires, write the step
+record, and refresh the resume section of `index.md`.
 
 Then:
 
@@ -86,15 +87,13 @@ git add path/to/tests
 git add docs/modules/example.md
 git add project/coding-paths/CP-EXAMPLE-001/index.md
 git add project/coding-paths/CP-EXAMPLE-001/steps/S01.md
-git add project/briefs/cp-example-001-handoff.md
 git commit -m "CP-EXAMPLE-001 S01: coherent outcome"
 git push origin path/cp-example-001
 git fetch origin path/cp-example-001
 git merge-base --is-ancestor HEAD origin/path/cp-example-001
 ```
 
-The final command must exit zero before the step is called complete. Then record
-the checkpoint in the ledger.
+The final command must exit zero before the step is called complete.
 
 **On a no-rewrite host** (`pathHistoryPolicy: forbidden`, the default) that is
 the whole of it. The commit keeps its object id for the life of the path, so the
@@ -297,9 +296,8 @@ new audit file, and obtain new acceptance.
 
 ## Create administrative commit A
 
-Set the path to `status: ready` and `subject_commit: <C>`, append one line to
-the record's folder log, and move the brief's checkpoint pointer to `C`. Change
-no other field of the path record — not the definition of done, not
+Set the path to `status: ready` and `subject_commit: <C>`, and point the
+resume section's checkpoint at `C`. Change no other field of the path record — not the definition of done, not
 `scope_ref`, not `writes:`, not `governs:`, not the step plan; the comparison is
 against the record as it stood at `C`, so a field that moved while the path ran
 is not a closure change. The live view projects the status, so regenerate it in
@@ -311,9 +309,7 @@ the closure surfaces:
 npm run cairn-active
 npm run cairn-check -- --base origin/main
 git add project/coding-paths/CP-EXAMPLE-001/index.md
-git add project/coding-paths/CP-EXAMPLE-001/log.md
 git add project/coding-paths/ACTIVE.md
-git add project/briefs/cp-example-001-handoff.md
 git add project/audits/cp-example-001-<C>.md
 git add project/sessions/YYYY-MM-DD-cp-example-001-closing.md
 git commit -m "Close CP-EXAMPLE-001 candidate <C>"

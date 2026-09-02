@@ -23,9 +23,10 @@ The digest is what makes the acceptance binding. Without it the record points at
 a heading whose contents may be rewritten afterwards, and closing acceptance
 would compare a fixed result against a moving standard.
 
-On the [lightweight route](./lightweight-path.md) this record lives in the path
-record itself rather than in a separate session file; the fields are the same,
-and so is the digest.
+The record lives in the [path record](./path-record.md) itself, under its own
+`## Opening acceptance` heading, on every route: a decision about a text
+belongs beside the text, and a path is one folder. A scope amendment is a
+second block under the same heading naming the one it supersedes.
 
 The repository's governance defines who may accept. Cairn does not require one
 permanent owner.

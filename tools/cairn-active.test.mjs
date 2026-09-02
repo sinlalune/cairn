@@ -11,7 +11,7 @@ import { test } from 'node:test'
 import { METADATA_NAMESPACE, PATHS_BEGIN, PATHS_END } from './cairn-check.mjs'
 import { collectPaths, renderPaths, spliceBlock } from './cairn-active.mjs'
 
-const pathFile = (id, { status = 'running', branch, base = 'abc1234' } = {}) => ({
+const pathFile = (id, { status = 'running', branch, base = 'abc1234', depends = null, resolution = null } = {}) => ({
   name: `${id}.md`,
   text: [
     '---',
@@ -21,6 +21,8 @@ const pathFile = (id, { status = 'running', branch, base = 'abc1234' } = {}) => 
     `  status: ${status}`,
     `  base_commit: ${base}`,
     ...(branch ? [`  branch: ${branch}`] : []),
+    ...(depends ? [`  depends_on: [${depends.join(', ')}]`] : []),
+    ...(resolution ? [`  resolution: ${resolution}`] : []),
     '---',
     '',
     '# Goal'
@@ -40,6 +42,29 @@ test('running, blocked and ready paths remain visible while done paths leave the
   assert.deepEqual(live.map((p) => p.status), ['running', 'blocked', 'ready'])
   assert.equal(live[0].branch, 'path/cp-ex-010')
   assert.equal(live[0].base, 'abc1234')
+})
+
+test('the view says which live paths are unblocked, and what the others wait on', () => {
+  const files = [
+    pathFile('CP-EX-009', { status: 'done', branch: 'path/cp-ex-009', resolution: 'completed' }),
+    pathFile('CP-EX-010', { branch: 'path/cp-ex-010' }),
+    pathFile('CP-EX-011', { branch: 'path/cp-ex-011', depends: ['CP-EX-009'] }),
+    pathFile('CP-EX-012', { branch: 'path/cp-ex-012', depends: ['CP-EX-010', 'CP-EX-011'] }),
+    pathFile('CP-EX-013', { status: 'archived', branch: 'path/cp-ex-013', resolution: 'abandoned' }),
+    pathFile('CP-EX-014', { branch: 'path/cp-ex-014', depends: ['CP-EX-013'] })
+  ]
+  const live = collectPaths(files)
+  assert.deepEqual(live.map((p) => [p.id, p.waitsOn]), [
+    ['CP-EX-010', []],
+    ['CP-EX-011', []],
+    ['CP-EX-012', ['CP-EX-010', 'CP-EX-011']],
+    ['CP-EX-014', ['CP-EX-013']]
+  ])
+  const rendered = renderPaths(live)
+  assert.match(rendered, /\*\*CP-EX-010\*\*.*· unblocked$/m)
+  assert.match(rendered, /\*\*CP-EX-011\*\*.*· unblocked$/m, 'a dependency that reached the trunk is met')
+  assert.match(rendered, /\*\*CP-EX-012\*\*.*· waits on CP-EX-010, CP-EX-011$/m)
+  assert.match(rendered, /\*\*CP-EX-014\*\*.*· waits on CP-EX-013$/m, 'an abandoned dependency never arrives')
 })
 
 test('output is deterministic whatever order the files are read in', () => {

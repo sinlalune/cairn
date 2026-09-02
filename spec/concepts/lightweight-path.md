@@ -30,29 +30,24 @@ A lightweight path declares `route: lightweight` and keeps everything that
 carries durable meaning:
 
 - a [path record](./path-record.md) with id, branch, base, `writes:`,
-  `governs:`, and a definition of done;
-- a [handoff brief](./handoff.md) meeting the same answerable-alone contract;
-- [remote checkpoints](./remote-checkpoint.md) and
-  [checkpoint retention](./checkpoint-retention.md);
+  `governs:`, a definition of done, its opening acceptance inline and a
+  [resume section](./handoff.md) meeting the answerable-alone contract;
+- [remote checkpoints](./remote-checkpoint.md) on a branch that is never
+  rewritten;
 - a [closing acceptance](./closing-acceptance.md) naming the exact candidate,
   its [scope digest](./scope-digest.md), and its base;
 - a [journal](./journal.md) entry at integration.
 
 It combines what only ceremony separates. Opening acceptance is recorded in the
-path record itself rather than as its own session file; the
-[coherence-audit](./coherence-audit.md) questions are answered inline in the
-closing record rather than in a separate audit file; and
+path record itself rather than as its own session file — on every route, since
+Cairn 1.0 — and the resume section replaces the separate brief. The
+[coherence-audit](./coherence-audit.md) questions are the pull request's
+checklist rather than a separate audit file, and
 [administrative closure](./administrative-closure.md) may share the candidate's
-commit where the repository's transport can still bind acceptance to an exact
-id.
-
-**What the v0.2 reference checker actually grants: none of those three.** It
-reads opening acceptance only from a session record, requires a separate filled
-audit bound to the candidate, and requires exactly one administrative commit
-after it — on every route. The greenfield pilot (2026-09-01) ran the default
-route and wrote every record a full path writes. The reliefs above are the
-stated intent; the [conformance](./conformance.md) matrix records them as
-unimplemented.
+commit where the transport can still bind acceptance to an exact id: those two
+arrive with pull-request transport, and until then the reference checker reads
+a separate audit file and requires one administrative commit on every route.
+The [conformance](./conformance.md) page says which is which.
 
 ### When the full route is required
 

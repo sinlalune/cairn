@@ -16,10 +16,10 @@ reference supplies exact forms:
   naming conventions.
 - [Execution protocol](./execution-protocol.md) — the ordered portable route for
   entering, advancing, handing off, resuming, and closing one path.
-- [Coding-path template](./path-template.md) — a complete path record.
-- [Handoff-brief contract](./handoff-brief.md) — frontmatter fields, capped body
-  sections, and the answerable-alone test.
-- [Human records](./human-records.md) — opening, audit, and closing schemas.
+- [Coding-path template](./path-template.md) — a complete path record: the
+  one folder, its opening acceptance, its resume section and one step.
+- [Human records](./human-records.md) — the opening acceptance block, and the
+  audit and closing schemas.
 - [Operations](./operations.md) — registration, checkpoints, exact-candidate
   closure, integration, and cleanup.
 - [Repair procedures](./repair.md) — what to do when a path has already

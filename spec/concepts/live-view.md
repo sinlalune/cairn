@@ -14,8 +14,10 @@ A live view is a generated navigation [file](./project-memory.md), canonically
 ## In Cairn
 
 It derives from path records and lists `running`, `blocked`, and `ready` paths
-with the information needed to find them. The generator rewrites it
-deterministically and the checker compares the result with its source records.
+with the information needed to find them, and for each one whether it is
+**unblocked** — every path named in its `depends_on:` has reached the trunk —
+or what it still waits on. The generator rewrites it deterministically and the
+checker compares the result with its source records.
 
 ## It does not prove
 

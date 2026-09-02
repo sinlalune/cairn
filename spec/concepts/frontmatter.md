@@ -24,7 +24,7 @@ identifier, a status, a subject commit, a timestamp — for a program.
 
 ## In Cairn
 
-Path records, decisions, sessions, audits, briefs, and concept articles are
+Path records, decisions, closing records, audits, and concept articles are
 Markdown. Human explanation remains primary; the frontmatter block provides the
 exact fields automation needs.
 

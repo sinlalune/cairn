@@ -1,7 +1,7 @@
 ---
 type: Cairn Concept
 title: Work ledger
-description: The append-only execution history inside a coding path, and the counterpart to the mutable handoff brief.
+description: The append-only execution history inside a coding path, and the counterpart to the mutable resume section.
 tags: [cairn, concept, execution, record]
 timestamp: 2026-08-26T00:00:00Z
 ---
@@ -19,10 +19,10 @@ code, tests, and documents. The entry names the unit's declared type, the exact
 checkpoint [object id](./commit-hash.md) it produced, and its verification
 result.
 
-The ledger and the [handoff brief](./handoff.md) divide one job. The ledger is
-append-only history and grows without bound; the brief is rewritten at every
-work unit and stays small enough to read cold. Neither substitutes for the
-other, and a brief that can only be understood by also reading the ledger has
+The ledger and the [resume section](./handoff.md) divide one job. The ledger is
+append-only history and grows without bound; the resume section is rewritten
+at every work unit and stays small enough to read cold. Neither substitutes for
+the other, and a resume section that can only be understood by also reading the ledger has
 failed its own contract.
 
 Because the ledger names checkpoints by object id, those commits must stay
@@ -42,6 +42,6 @@ the blob that added it. It does not yet prove the prefix of a flat live ledger
 or that a roll was byte-for-byte verbatim. Those remain visible conformance
 gaps.
 
-Related: [work unit](./work-unit.md), [handoff brief](./handoff.md),
+Related: [work unit](./work-unit.md), [handoff](./handoff.md),
 [checkpoint retention](./checkpoint-retention.md),
 [record integrity](./record-integrity.md).

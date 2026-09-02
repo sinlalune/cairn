@@ -35,8 +35,8 @@ Within the path record, `A` MAY change only:
 - `subject_commit`, set to `C`;
 - one appended [work-ledger](./work-ledger.md) entry.
 
-Within the [handoff brief](./handoff.md), `A` MAY change only the checkpoint
-pointer and the fields that follow from it.
+Within the [resume section](./handoff.md), `A` MAY change only the checkpoint
+and the fields that follow from it.
 
 Everything else MUST NOT change: the definition of done, `scope_ref`, `writes:`,
 `governs:`, the step plan, product source, tests, architecture, and

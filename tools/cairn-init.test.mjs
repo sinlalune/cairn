@@ -40,6 +40,8 @@ test('cairn-init: the installation carries what its own links and rules need, an
   assert.ok(plan.files.has('docs/modules/application.md'))
   // The specification keeps no folder log; the owner retired them there.
   assert.ok(!plan.files.has('spec/log.md'))
+  // No briefs: the resume section lives in the path record.
+  assert.ok(![...plan.files.keys()].some((path) => path.startsWith('project/briefs/')))
   // The tests are not installed: they exercise this repository's fixtures.
   assert.ok(![...plan.files.keys()].some((path) => path.endsWith('.test.mjs')))
 })

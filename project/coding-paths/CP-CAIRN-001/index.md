@@ -8,10 +8,11 @@ cairn:
   id: CP-CAIRN-001
   route: full
   status: running
-  current_step: S02
+  current_step: S03
   base_commit: 43cfeb96670eba615567b967f7368f32b3d8a409
   branch: path/cp-cairn-001
   assigned_writer: cp-cairn-001-writer
+  depends_on: []
   subject_commit: null
   resolution: null
   writes:
@@ -30,7 +31,7 @@ cairn:
     - project/coding-paths/paths.md
     - project/coding-paths/binding.md
     - project/coding-paths/CP-CAIRN-001/**
-    - project/briefs/cp-cairn-001-handoff.md
+    - project/index.md
   governs:
     - docs/cairn/manifesto.md@e248bc94232ba75777cbd305a9270fb114069d8e
     - docs/cairn/cairn-manifesto-convergence-2026-09-02.md@5ec546716b369b674574a4f370823385bea12518
@@ -85,6 +86,25 @@ installs with one command. Deletion before addition, at every unit.
 - [ ] Release `1.0.0` is tagged on the trunk, and the greenfield pilot is rerun
       from that release, install to `done`.
 
+## Opening acceptance
+
+```yaml
+decision: accepted
+accepted_by: sinlalune
+accepted_roles: [initiator, reviewer]
+accepted_at: 2026-09-02T11:19:13Z
+scope_ref: project/coding-paths/CP-CAIRN-001/index.md#definition-of-done
+scope_digest: sha256:bc3120b9e31b7ef2e76ad6444c14d9158f25117dbe020eab2d06b84996066832
+```
+
+Reviewed at registration: route `full` because the path changes the control
+plane; the definition of done is section 4 of the convergence record, every
+checklist of which the owner ticked, then confirmed with *"I want everything"*;
+no other path runs here; Atomik's product documentation excluded. Amendments:
+none. Recorded before opening acceptance moved inline, in
+`project/sessions/2026-09-02-cp-cairn-001-opening.md`, which stays as the
+immutable original; the block above carries the same digest.
+
 ## Documentation coverage
 
 ### Required
@@ -107,25 +127,77 @@ installs with one command. Deletion before addition, at every unit.
 
 - **[S01](./steps/S01.md)** — the specification moved to `spec/` and written on the six stages; 17,455 words became 5,588, 50 own concepts became 31; the 0.2 matrix moved to the conformance page — COMPLETE
 - **[S02](./steps/S02.md)** — the rules cut from 39 names to 24, nineteen blocking and every one with an adversarial fixture; the suite brought over from Atomik and completed; configuration schema 2; the conformance matrix rewritten against 1.0 — COMPLETE
-- **S03** — in progress; its file is linked when it is written
+- **[S03](./steps/S03.md)** — one folder per path: opening acceptance inline and read there, the resume section replacing the brief, `depends_on:` validated and projected as the unblocked view, `foundation` and `emergency` gone, folder logs gone; this record migrated as the worked example — COMPLETE
+- **S04** — in progress; its file is linked when it is written
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
-## Current checkpoint
+## Resume
+
+### Checkpoint
 
 ```text
-base commit : 43cfeb96670eba615567b967f7368f32b3d8a409
-branch      : path/cp-cairn-001
-writer      : cp-cairn-001-writer
-remote      : origin/path/cp-cairn-001, tip = the S02 commit, pushed; the brief names the checkpoint before it
-gates       : cairn-check OK on S02, one advisory (concept-growth, explained in S01); npm test 220 subtests green
-session     : safe boundary after S02
-next action : S03 — one folder per path: opening acceptance inline, the resume section, the lightweight route, depends_on: and the unblocked view; this path's record migrated in the same unit
-blockers    : none
-cleanup plan: after remote integration proof, remove the exact clean secondary
-              worktree without force
+commit : e18bbe460ca1f2c6c35d58a31eec526aef4be351 — the S02 commit, on origin/path/cp-cairn-001; S03 is the commit that carries this refresh
+unit   : 02
+base   : 43cfeb96670eba615567b967f7368f32b3d8a409
+trunk  : ca34010040daa836fe81004eb2f400f9a5c7511f — origin/main has not moved since registration
 ```
 
-## Blockers
+### Next action
 
-- None.
+S04 — pull-request transport: `pull-request` as the default `transport.integration`
+in the configuration with `manual-git` as the fallback; the coherence audit as
+the request's description and the approval as closing acceptance, read by
+`acceptance` through the forge or, on `manual-git`, from a closing record in the
+path folder; the acceptance-drift check as a CI step on the request;
+`cairn-check` the one required check. Plan item 4 in `plan.md`. This
+repository's own ruleset already requires the request.
+
+### Blockers
+
+None.
+
+### Tried and rejected
+
+- Building 1.0 inside Atomik and extracting afterwards — a hand-synchronised
+  second copy is how a specification and its implementation drift while both
+  look maintained (Atomik forward-plan item 12).
+- Keeping the 0.2 checker and only slimming the prose — the manifesto's first
+  threat is more control through more rules; the cut is the deliverable.
+- A graph database for path dependencies — one `depends_on:` field and the
+  live view cover the need; a database beside Markdown is the non-native
+  solution the manifesto warns about.
+- Leaving the conformance matrix in the specification index until the rule
+  cut (S01) — the index would have shipped at 12,000 words carrying a table
+  about tools it no longer describes.
+- A `roots.specification` configuration field (S01) — the parent of the
+  concept root already says where the specification is.
+- Keying `work-unit`'s required parts to the declared unit type (S02) — the
+  merge-deciding comparison sees every unit on the branch at once.
+- Copying the manifesto into every installed repository (S02) — it drags the
+  design history behind it; the manifesto is linked by URL until the kit
+  links the specification (S06).
+- A rule for the resume section (S03) — its contract is a judgement measured
+  by cold resume, and a schema over prose is a proxy predicate.
+
+### Reading order
+
+1. `docs/cairn/manifesto.md@e248bc94232ba75777cbd305a9270fb114069d8e` — what every cut is measured against.
+2. `docs/cairn/cairn-manifesto-convergence-2026-09-02.md@5ec546716b369b674574a4f370823385bea12518` — section 4 is the definition of done; its transport decisions are S04's instruction.
+3. `spec/index.md` at the S03 tip, chapter 5, *Close one exact candidate* and *Integrate without claiming the future* — what S04 builds.
+4. `spec/reference/conformance.md` — the rows marked partial on S04: closing acceptance, acceptance drift, the route's two closing reliefs.
+5. `project/coding-paths/CP-CAIRN-001/steps/S03.md` — what the tools read today, and where the closing record and the audit file still are.
+6. `tools/cairn-fixture.test.mjs` — the closure harness S04 changes under; the closing record and the audit file it writes move with the transport.
+
+### Verify
+
+```bash
+npm run cairn-check
+npm run cairn-active -- --check
+npm run cairn-rules -- --write
+npm test
+```
+
+`cairn-check` prints `OK — protocol satisfied (1 advisory)` against
+`origin/main`; the advisory is `concept-growth`, explained in S01. The view is
+current, the generated tables rewrite without a diff, and the suite passes.

@@ -29,13 +29,13 @@ parts MUST move together:
 
 | Type | Parts that must move together |
 | :-- | :-- |
-| `implementation` | source, its tests, affected [module note](./module-note.md), ledger entry, brief |
-| `documentation` | the documents and their indexes, ledger entry, brief |
-| `decision` | the [decision record](./decision-record.md), every document it amends, ledger entry, brief |
-| `repair` | the corrective change, a superseding record where one is owed, ledger entry naming the violation, brief |
+| `implementation` | source, its tests, affected [module note](./module-note.md), the step |
+| `documentation` | the documents and their indexes, the step |
+| `decision` | the [decision record](./decision-record.md), every document it amends, the step |
+| `repair` | the corrective change, a superseding record where one is owed, a step naming the violation |
 | `closure` | only the [administrative closure](./administrative-closure.md) surface |
 
-Every type requires the ledger entry, the refreshed brief, and a recorded
+Every type requires the step record, the refreshed resume section, and a recorded
 verification result; no type may omit those. After any required inspection
 passes, the parts become one coherent commit and an immediate push.
 

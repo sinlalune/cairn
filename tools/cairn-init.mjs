@@ -404,9 +404,8 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
     [`${options.docsRoot}/adr`, 'Decisions', 'One accepted decision per record.'],
     [`${options.docsRoot}/modules`, 'Module notes', 'One note per implemented area: flow, boundaries and tests.'],
     [`${options.projectRoot}/coding-paths`, 'Coding paths', 'One record per bounded change, and the generated live view.'],
-    [`${options.projectRoot}/sessions`, 'Sessions', 'Opening, closing and other human decisions. Immutable once written.'],
+    [`${options.projectRoot}/sessions`, 'Sessions', 'Closing acceptances and other human decisions. Immutable once written; opening acceptance lives in the path record.'],
     [`${options.projectRoot}/audits`, 'Audits', 'One coherence audit bound to one exact candidate commit.'],
-    [`${options.projectRoot}/briefs`, 'Briefs', 'The disposable current handoff projection for each running path.'],
     [`${options.projectRoot}/log`, 'Journal', 'One file per integrated outcome, written at merge time.']
   ]) {
     put(`${dir}/index.md`, folderIndex(title, purpose))
@@ -415,7 +414,7 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
 
   put(`${options.projectRoot}/index.md`, folderIndex(
     'Project plane',
-    'Durable execution state: coding paths, sessions, audits, briefs and the journal.'
+    'Durable execution state: coding paths, closing sessions, audits and the journal.'
   ))
   put(`${options.projectRoot}/log.md`, folderLog('Project plane'))
   // A placeholder, immediately overwritten by the generator below. The

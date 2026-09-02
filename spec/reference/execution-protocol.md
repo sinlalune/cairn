@@ -32,11 +32,11 @@ rule. A repository's root bootloader pairs it with one named host binding.
 4. Read every document under the path's **Required** coverage. Note each
    **Conditional** trigger and read it when it fires. Respect every
    **Deliberately excluded** entry; record any widening.
-5. Read the path index and handoff brief. Read the forward plan only when
+5. Read the path index and its resume section. Read the forward plan only when
    planning, and open earlier step records only when their index summaries make
    them relevant.
 6. Start the persisted next action. Conversation memory is never stronger than
-   the branch, path record, brief and repository state.
+   the branch, path record and repository state.
 
 ## Advance exactly one work unit
 
@@ -46,7 +46,7 @@ A work unit is coherent only when all of its required surfaces move together:
 - adversarial and ordinary tests;
 - affected durable documentation;
 - one self-contained path step with its `cairn-unit` block;
-- the path's live header and refreshed handoff brief.
+- the path's refreshed resume section.
 
 Execute one step at a time. A step file is written where it will live and must be
 readable by itself. Progress, corrections, rejected approaches, widening,
@@ -95,7 +95,7 @@ artifact, version and configuration before comparing the repository against it.
 ## Complete the session boundary
 
 Every completed and pushed work unit is a safe chat boundary. Refresh
-the [handoff brief](../concepts/handoff.md) in that same unit, then report:
+the [resume section](../concepts/handoff.md) in that same unit, then report:
 
 - the outcome rather than an activity list;
 - the exact remote commit, and its retention ref where the host retains;

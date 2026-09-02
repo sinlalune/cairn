@@ -49,11 +49,12 @@ a folder:
 
 ```text
 CP-EXAMPLE-001/
-  index.md      declaration, step index, live header, next action, blockers
-  plan.md       forward plan, read when planning
-  log.md        folder history
+  index.md      declaration, opening acceptance, step index, resume section
+  plan.md       forward plan, optional, read when planning
   steps/S01.md  one self-contained record per executed step
 ```
+
+Nothing else exists per path: no separate brief, session file or folder log.
 
 The step-index line MUST let a reader decide whether to open that step. A step
 record is append-only from the blob that adds it. There is no later ledger
@@ -61,8 +62,9 @@ rollup operation.
 
 ## Open and register before branching
 
-1. Obtain and record [opening acceptance](../../spec/concepts/opening-acceptance.md)
-   for the path's outcome, scope and initial writer.
+1. Obtain [opening acceptance](../../spec/concepts/opening-acceptance.md)
+   for the path's outcome, scope and initial writer, and record it in the
+   record's own `## Opening acceptance` section with the scope digest.
 2. From a clean, current trunk, create the accepted path record using the
    [path template](../../spec/reference/path-template.md).
    Set `status: running`, the derived path branch, and `base_commit` to the
@@ -101,7 +103,7 @@ In one coherent unit:
 1. change the implementation or protocol artefact;
 2. change the tests that prove the result;
 3. update affected durable documentation;
-4. append the current step record and refresh the handoff brief;
+4. append the current step record and refresh the resume section;
 5. run every relevant gate bare;
 6. review status and stage explicit paths;
 7. commit and immediately push to the path branch;
@@ -149,8 +151,8 @@ persisted next action. Proactively offer a fresh session. This ends a chat, not
 the still-running path.
 
 A resuming participant reuses the same worktree, follows the repository
-bootloader to this convention, the live view, its own path index and handoff
-brief, verifies repository reality, and starts the recorded next action without
+bootloader to this convention, the live view and its own path index with its
+resume section, verifies repository reality, and starts the recorded next action without
 requiring a conversation recap.
 
 ## Close one exact candidate

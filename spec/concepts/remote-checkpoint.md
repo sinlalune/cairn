@@ -20,8 +20,8 @@ it to a shared remote makes it available for verification and resumption.
 ## In Cairn
 
 Every completed step ends with a commit, immediate push, and ancestry proof
-against the remote path branch. The path record and
-[handoff brief](./handoff.md) identify that exact
+against the remote path branch. The path record's
+[resume section](./handoff.md) identifies that exact
 [object id](./commit-hash.md) and the next action.
 
 A checkpoint is not merely a pushed commit. A

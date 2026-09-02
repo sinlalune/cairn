@@ -18,7 +18,7 @@ what actually happens in the absence of anything better.
 Two rules govern every procedure below.
 
 1. **A repair is a work unit.** It declares `type: repair`, appends a ledger
-   entry naming the violation, refreshes the brief, and is committed and pushed
+   entry naming the violation, refreshes the resume section, and is committed and pushed
    like any other unit.
 2. **A repair MUST NOT be the same work unit as the work that caused it.** A
    commit that both breaks and silently fixes a rule leaves nothing for anyone

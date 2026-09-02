@@ -49,20 +49,22 @@ repository/
 │       └── cairn.yml
 ├── tools/
 │   ├── cairn-check.mjs
-│   ├── cairn-check.test.mjs
 │   ├── cairn-config.mjs
 │   ├── cairn-config.schema.json
-│   ├── cairn-config.test.mjs
 │   ├── cairn-active.mjs
-│   ├── cairn-active.test.mjs
 │   ├── cairn-audit.mjs
-│   ├── cairn-audit.test.mjs
 │   ├── cairn-init.mjs
-│   ├── cairn-init.test.mjs
 │   ├── cairn-rules.mjs
-│   ├── cairn-rules.test.mjs
-│   ├── cairn-spec-build.mjs
-│   └── cairn-spec.test.mjs
+│   ├── soundness.md
+│   └── <tool>.test.mjs
+├── spec/
+│   ├── index.md
+│   ├── concepts/
+│   │   ├── index.md
+│   │   └── <concept>.md
+│   └── reference/
+│       ├── index.md
+│       └── <reference-article>.md
 ├── apps/
 │   └── <application-files>
 ├── packages/
@@ -80,22 +82,10 @@ repository/
 │   │   ├── index.md
 │   │   ├── log.md
 │   │   └── ADR-<NNN>-<decision>.md
-│   ├── modules/
-│   │   ├── index.md
-│   │   ├── log.md
-│   │   └── <implemented-area>.md
-│   └── cairn/
+│   └── modules/
 │       ├── index.md
-│       ├── specification.html
-│       └── specification/
-│           ├── index.md
-│           ├── log.md
-│           ├── concepts/
-│           │   ├── index.md
-│           │   └── <concept>.md
-│           └── reference/
-│               ├── index.md
-│               └── <reference-article>.md
+│       ├── log.md
+│       └── <implemented-area>.md
 └── project/
     ├── index.md
     ├── log.md
@@ -107,11 +97,8 @@ repository/
     │   ├── ACTIVE.md
     │   ├── CP-<ID>/
     │   │   ├── index.md
-    │   │   ├── log.md
     │   │   ├── plan.md
     │   │   └── steps/
-    │   │       ├── index.md
-    │   │       ├── log.md
     │   │       └── S<NN>.md
     │   ├── CP-<ID>.md
     │   └── history/
@@ -128,11 +115,6 @@ repository/
     │   ├── index.md
     │   ├── log.md
     │   └── <path-id>-<full-subject-commit>.md
-    ├── briefs/
-    │   ├── index.md
-    │   ├── log.md
-    │   ├── <path-id>-handoff.md
-    │   └── <date>-<subject>.md
     ├── log/
     │   ├── index.md
     │   └── <date>-<path-id>.md
@@ -169,12 +151,11 @@ what Cairn defines, not what any one adoption happens to contain.
 | `package.json` | exposes the reference commands without making Node a protocol requirement | control-plane change |
 | `.github/workflows/cairn.yml` | current CI adapter; reports checks for the supplied comparison refs | independently reviewed control-plane change |
 | `tools/cairn-check.mjs` | deterministic blocking and advisory predicates | independently reviewed control-plane change |
-| `tools/cairn-config.mjs` | dependency-free binding loader and schema-1 validator | independently reviewed control-plane change |
+| `tools/cairn-config.mjs` | dependency-free binding loader and schema-2 validator | independently reviewed control-plane change |
 | `tools/cairn-config.schema.json` | editor-readable schema for the installed binding | same work unit as the loader |
 | `tools/cairn-active.mjs` | rebuilds the live-path projection | independently reviewed control-plane change |
 | `tools/cairn-audit.mjs` | scaffolds and checks one exact-candidate audit | independently reviewed control-plane change |
 | `tools/cairn-rules.mjs` | projects checker metadata into the rule catalogue | independently reviewed control-plane change |
-| `tools/cairn-spec-build.mjs` | projects canonical Markdown into the universal HTML reader | specification tooling change |
 | `tools/*.test.mjs` | executable contract for each reference tool | same work unit as the tool |
 | `docs/architecture/` | accepted architecture and constitutional doctrine | path plus decision record when meaning changes |
 | `docs/adr/ADR-*.md` | one durable architecture or protocol decision | path making the decision |
@@ -186,20 +167,19 @@ what Cairn defines, not what any one adoption happens to contain.
 | `project/index.md` | entry map for durable project knowledge and execution state | project-plane change |
 | `project/coding-paths/paths.md` | portable operating convention for opening, running, integrating, and cleaning paths | accepted protocol operation change |
 | `project/coding-paths/binding.md` | human-readable host adapter: installed roots, commands, worktree/runtime details, and local examples | host configuration change |
-| `project/coding-paths/CP-<ID>/` | one path as a born-sliced record: live header in `index.md`, forward plan in `plan.md`, one file per step under `steps/` | current assigned writer |
+| `project/coding-paths/CP-<ID>/` | one path as one folder: declaration, opening acceptance, step index and resume section in `index.md`, forward plan in `plan.md`, one file per step under `steps/`; no folder log | current assigned writer |
 | `project/coding-paths/CP-<ID>/steps/S<NN>.md` | one step's complete record, written to be read alone | append-only once written |
 | `project/coding-paths/CP-*.md` | the same path as a flat record — the older shape, still conforming | current assigned writer |
 | `project/coding-paths/ACTIVE.md` | generated live-path index | generator only |
 | `project/coding-paths/history/*.md` | verbatim completed ledger sections rolled out of a FLAT record; a born-sliced record has no rollup and writes the step where it lives | created by that path; immutable thereafter |
-| `project/sessions/*.md` | opening, closing, and other human decisions | participant recording the event; immutable thereafter |
+| `project/sessions/*.md` | closing acceptances and other human decisions; opening acceptance lives in the path record | participant recording the event; immutable thereafter |
 | `project/audits/*.md` | one audit bound to one full candidate hash | auditor; immutable thereafter |
-| `project/briefs/*.md` | disposable current handoff projection | current assigned writer |
 | `project/log/*.md` | one integrated outcome per file | integration unit; immutable thereafter |
 | `project/brainstorm/` | explicitly provisional thinking | normal path work; never treated as accepted doctrine |
 | `refs/heads/path/<id>` | one path's branch, carrying every checkpoint it has pushed | current assigned writer |
 | `refs/cairn/checkpoints/<id>/g<NN>/<n>` | one immovable pin per ledger-named checkpoint, inside the generation that was current when it was written | append-only; never moved or deleted while the path record lives |
 | each meaningful folder's `index.md` | what belongs there and how to navigate it | update when folder meaning or contents change materially |
-| each meaningful folder's `log.md` | recent meaningful changes in that scope | newest-first folder history; not an event record |
+| a documentation folder's `log.md` | recent meaningful changes in that scope | newest-first folder history; not an event record. Path folders and the specification keep none: Git already holds the per-folder history |
 
 The ownership classes are canonical knowledge, path-owned state, generated
 views, mutable navigation, provisional knowledge, and immutable event records.
@@ -275,7 +255,7 @@ the unconditional protocol route and is selected through each path's
 documentation coverage.
 
 The [configuration contract](./configuration.md) is the machine-readable
-counterpart. The schema-1 loader now resolves the installed binding for the
+counterpart. The schema-2 loader resolves the installed binding for the
 checker, active view, and audit scaffold. Schema migrations, installation,
 updates, and generated host adapters remain open, so that loader is not by
 itself a claim of complete portable conformance. Installed names still MUST NOT
@@ -287,10 +267,9 @@ leak into portable documentation.
 
 ```text
 CP-ROADMAP-010
-  → project/coding-paths/CP-ROADMAP-010/index.md   (born-sliced record)
+  → project/coding-paths/CP-ROADMAP-010/index.md   (the record, one folder)
   → project/coding-paths/CP-ROADMAP-010.md         (flat record, older shape)
   → path/cp-roadmap-010
-  → project/briefs/cp-roadmap-010-handoff.md
 ```
 
 A record's identity is the id it declares, not the file that carries it. Both
@@ -305,11 +284,12 @@ branch field remains present for `running`, `blocked`, and `ready`.
 ### Opening and closing records
 
 ```text
-project/sessions/YYYY-MM-DD-<lowercase-path-id>-opening.md
+project/coding-paths/<PATH-ID>/index.md#opening-acceptance
 project/sessions/YYYY-MM-DD-<lowercase-path-id>-closing.md
 ```
 
-Root-level metadata, not the filename, defines `path` and `ceremony`.
+The opening acceptance is a section of the record. In the closing record,
+root-level metadata, not the filename, defines `path` and `ceremony`.
 
 ### Audit record
 
@@ -332,8 +312,7 @@ an existing entry.
 live path records
   └── project/coding-paths/ACTIVE.md
 
-one path ledger
-  ├── project/briefs/<id>-handoff.md
+one flat path record
   └── project/coding-paths/history/<id>-S<NN>.md   (FLAT records only)
 
 integrated path + exact audit + exact closing acceptance
@@ -346,5 +325,5 @@ canonical Markdown article graph
 An arrow means “generated or projected from,” not “maintained as another
 independent truth.”
 
-Return to [one bounded path](../index.md#put-one-bounded-change-on-a-coding-path)
+Return to [one bounded change, one path](../index.md#one-bounded-change-one-path)
 or open the [repository concept](../concepts/repository.md).

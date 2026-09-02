@@ -299,7 +299,7 @@ weakens every answer computed from it.
 
 Every path declares a [route](./concepts/route.md): the ceremony it runs at.
 
-- **`lightweight`**, the default: the shape above, nothing more. Opening
+- **[`lightweight`](./concepts/lightweight-path.md)**, the default: the shape above, nothing more. Opening
   acceptance inline, steps, a pull request at the end. A protocol that demands
   nine artefacts for a one-line fix teaches people to route around it.
 - **`full`**: the same shape with two additions — the pull request's review
@@ -385,8 +385,8 @@ Every unit declares a **type**, and the type fixes which parts move together:
 | `closure` | only the administrative closure surface |
 
 Every unit ends with a step record carrying a fenced `cairn-unit` block —
-step, ledger ordinal, type, and what verified it — and a refreshed resume
-section in `index.md`:
+step, [ledger](./concepts/work-ledger.md) ordinal, type, and what verified it
+— and a refreshed resume section in `index.md`:
 
 ````text
 ```cairn-unit

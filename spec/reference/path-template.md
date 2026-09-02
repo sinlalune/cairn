@@ -1,35 +1,32 @@
 ---
 type: Cairn Reference
 title: Coding-path template
-description: A complete born-sliced Cairn path record — the folder layout, the index.md live header, one step file, and the exact-candidate closure fields.
-tags: [cairn, reference, template, coding-path, ledger]
-timestamp: 2026-08-26T00:00:00Z
+description: A complete Cairn path record — one folder with its index.md carrying the declaration, the opening acceptance, the step index and the resume section, an optional plan, and one file per step.
+tags: [cairn, reference, template, coding-path, resume]
+timestamp: 2026-09-02T00:00:00Z
 ---
 
 # Coding-path template
 
-A path record is **born sliced**: a folder whose `index.md` carries the live
-header that does not grow, whose forward plan is `plan.md`, and whose steps are
-one file each under `steps/`. Create it in that shape — a record created flat is
-a migration handed to whoever inherits it.
+A path is **one folder**, born as one. Its `index.md` carries everything a
+reader needs to decide what to open next and nothing that grows without bound;
+its steps are one file each, written where they live and readable alone.
 
 ```text
 project/coding-paths/CP-<ID>/
-├── index.md      identity, goal, definition of done, coverage, step index
-├── log.md        newest-first readable history of this record
-├── plan.md       forward steps, explanatory until executed
+├── index.md      declaration · goal · definition of done · opening acceptance · coverage · step index · resume
+├── plan.md       forward steps, optional, read when planning
 └── steps/
-    ├── index.md  one load-bearing line per step
-    ├── log.md
     └── S<NN>.md  one complete step record, written to be read alone
 ```
 
-The body below is `index.md`. Keep the path id, folder name, and branch
-mechanically related; a portable implementation substitutes its configured
-execution-state root. A flat `project/coding-paths/CP-<ID>.md` remains
-conforming — every rule keys on the declared id, not the file carrying it — so an
-existing flat record is not a defect and may migrate without restarting its
-lifecycle.
+Nothing else exists per path: no separate brief, session file, audit file or
+folder log. The one file written outside the folder is the journal entry
+integration adds. A flat `project/coding-paths/CP-<ID>.md` from an earlier
+release remains conforming — every rule keys on the declared id, not the file
+carrying it — and migrates without restarting its lifecycle.
+
+## `index.md`
 
 ````md
 ---
@@ -46,13 +43,13 @@ cairn:
   base_commit: null
   branch: path/cp-example-001
   assigned_writer: null
+  depends_on: []
   subject_commit: null
   resolution: null
   writes:
-    - apps/example/**
+    - src/example/**
     - docs/modules/example.md
     - project/coding-paths/CP-EXAMPLE-001/**
-    - project/briefs/cp-example-001-handoff.md
   governs:
     - docs/architecture/example.md@89ab89ab89ab89ab89ab89ab89ab89ab89ab89ab
 ---
@@ -65,21 +62,36 @@ State the observable result, not the activity.
 
 ## Definition of done
 
-This section is what `scope_ref` resolves to, and its
-[scope digest](../concepts/scope-digest.md) is recorded at opening acceptance
-and re-verified at closing. Editing it after acceptance invalidates that
-acceptance until a scope amendment is recorded.
+This section is what `scope_ref` resolves to. Its
+[scope digest](../concepts/scope-digest.md) is recorded in the opening
+acceptance below and re-computed at closing; editing it after acceptance
+invalidates that acceptance until a scope amendment is recorded.
 
 - [ ] Product behaviour is implemented and covered by relevant tests.
-- [ ] Affected architecture, decisions, module notes, and learning documents
-      are current.
-- [ ] Every completed step has one coherent ledger entry, refreshed handoff,
-      commit, and remote checkpoint.
-- [ ] The final implementation candidate is rebased, checked, audited, and
-      accepted by exact full object id, with every provisional commit folded.
-- [ ] The path reaches ready without implementation changes after acceptance.
-- [ ] The exact integration candidate lands, the trunk records done, the remote
-      result is proved, and the clean secondary worktree is removed safely.
+- [ ] Affected architecture, decisions and module notes are current.
+- [ ] Every completed step has one self-contained step record, a refreshed
+      resume section, one commit, and a remote checkpoint.
+- [ ] The final implementation candidate contains the trunk tip, is checked,
+      reviewed and accepted by exact full object id.
+- [ ] The exact candidate lands, the trunk records done, the remote result is
+      proved, and the clean secondary worktree is removed safely.
+
+## Opening acceptance
+
+```yaml
+decision: accepted
+accepted_by: participant-id
+accepted_roles: [initiator, reviewer]
+accepted_at: YYYY-MM-DDTHH:MM:SSZ
+scope_ref: project/coding-paths/CP-EXAMPLE-001/index.md#definition-of-done
+scope_digest: sha256:<digest of the section above, from --scope-digest>
+```
+
+One sentence on what was reviewed — route and its trigger, definition of
+done, writes and overlap, exclusions, governing documents, initial writer —
+and any amendment. A later scope amendment is a second block below this one,
+carrying `supersedes:` and the new digest; the last block is the acceptance in
+force.
 
 ## Documentation coverage
 
@@ -104,36 +116,65 @@ reader cannot decide from it whether to open the file. Forward steps live in
 - **[S01](./steps/S01.md)** — what it established, in a phrase — COMPLETE
 - **S02** — in progress; its file is linked when it is written
 
-A step is linked only once its file exists: the gate refuses a link that
-resolves nowhere, and the record is committed at registration before any step
-has been executed.
+## Resume
 
-No rollup operation exists. A step is written where it lives, and nothing is
-summarised when it moves.
-
-## Current checkpoint
+### Checkpoint
 
 ```text
-base commit : <trunk tip immediately before registration>
-branch      : path/cp-example-001
-writer      : <current assigned participant>
-remote      : origin/path/cp-example-001 @ <last completed checkpoint>
-gates       : exact latest verdicts
-session     : safe boundary, or a pushed provisional commit under review
-next action : exact next action
-blockers    : none | named condition and unblock condition
-cleanup plan: after remote integration proof, remove the exact clean secondary
-              worktree without force
+commit : <full object id of the last completed checkpoint, on the remote>
+unit   : <its cairn-unit ordinal; 0 before the first unit, naming the registration commit>
+base   : <base_commit>
+trunk  : <the trunk tip last merged in or fetched>
 ```
 
-## Blockers
+### Next action
 
-- None.
+Exactly one action.
+
+### Blockers
+
+The named condition and what would clear it, or `none`.
+
+### Tried and rejected
+
+- Approach A — rejected because …
+- Approach B — rejected because …
+
+### Reading order
+
+1. `docs/architecture/example.md@89ab…` — why it binds this work.
+
+### Verify
+
+```bash
+npm run cairn-check
+npm test
+```
 ````
 
-The step file `steps/S01.md` is a complete record on its own — deixis such as
-*"the checkpoint below"* is a defect at authoring time, because the file will be
-read alone:
+### The resume section
+
+The resume section is the last stop on the entry route and the first thing a
+participant acts from, and it is rewritten inside every completed work unit.
+The [handoff](../concepts/handoff.md) article carries its contract: a reader
+holding the bootloader, this record and the repository at the named checkpoint
+MUST be able to state the outcome, the exact commit to resume from, the single
+next action, what the path may write, what it must read and at which object
+id, what is blocking, what has been tried and rejected, and the commands that
+verify the checkpoint — each from this section or from a record it names at an
+exact id.
+
+The checkpoint names the last checkpoint that is already on the remote, never
+the commit that will carry this refresh: that commit does not exist while the
+section is being written. Before the first unit it names the registration
+commit with unit `0`. `governs:` pins every document at an object id, and the
+verify block is runnable as written.
+
+## `steps/S01.md`
+
+A step file is a complete record on its own — deixis such as *"the checkpoint
+below"* is a defect at authoring time, because the file will be read alone. It
+is append-only from the blob that adds it.
 
 ````md
 ---
@@ -149,9 +190,9 @@ cairn:
 
 ### S01 — title — **COMPLETE**
 
-#### Intent
+#### Plan
 
-What this step set out to establish.
+What this unit will change, and what it deliberately will not.
 
 #### Work
 
@@ -159,7 +200,7 @@ What this step set out to establish.
 step: S01
 unit: 01
 type: implementation
-verified: cairn-check, typecheck, test, build
+verified: cairn-check, test, build
 ```
 
 - implementation changed
@@ -167,104 +208,81 @@ verified: cairn-check, typecheck, test, build
 - documents changed
 - decisions, discoveries, reversals, and scope widening
 
+#### Self-review
+
+The diff read as a reviewer would: what would you refuse?
+
 #### Verification
 
 ```text
-cairn-check : not run | pass | fail/inconclusive with reason
-typecheck   : not run | pass | fail with reason
-tests       : not run | pass | fail with reason
-build       : not run | pass | fail with reason
-user review : not required | awaiting pass | passed by <identity>
-remote      : not pushed | origin/path/cp-example-001 @ <full commit>
+cairn-check : pass | fail/inconclusive with reason
+tests       : pass | fail with reason
+build       : pass | fail with reason
+user review : not required | passed by <identity>
+remote      : origin/path/cp-example-001 @ <full commit>
 ```
-
-#### Checkpoint
-
-```text
-status      : running
-current step: S01 complete only after required review and remote proof
-retention   : none (no-rewrite host) | refs/cairn/checkpoints/cp-example-001/g01/01
-changed     : exact surfaces or concise groups
-session     : safe boundary only after successful push
-next action : S02 — exact first action
-blockers    : none | named condition and responsible participant
-```
-
 ````
 
 ## State-specific edits
 
 ### Registering
 
-- record an accepted opening session;
-- set `status: running`;
-- set `base_commit` to the current trunk tip before registration;
-- set `assigned_writer`;
+- write the opening acceptance into `index.md`, with the digest from
+  `node tools/cairn-check.mjs --scope-digest <record>#definition-of-done`;
+- set `status: running`, `base_commit` to the current trunk tip, and
+  `assigned_writer`;
 - regenerate `ACTIVE.md`;
 - land one metadata-only registration commit whose parent equals
-  `base_commit`;
+  `base_commit`, through the declared transport;
 - only then create and push the path branch.
 
 ### Blocking
 
-Set `status: blocked`, retain `branch` and `base_commit`, and name the blocker,
-unblock condition, writer assignment, and last remote checkpoint. A path may
-block from `running` when execution stalls and from `ready` when acceptance or
-integration stalls; it returns only to `running`.
+Set `status: blocked`, retain `branch` and `base_commit`, and name the blocker
+and its unblock condition in the resume section. A path may block from
+`running` when execution stalls and from `ready` when acceptance or integration
+stalls; it returns only to `running`.
 
 ### Returning to running
 
 Set `status: running` when execution resumes, when a ready candidate becomes
 invalid by a finding, or when
 [acceptance drift](../concepts/acceptance-drift.md) invalidates it because the
-trunk moved inside `writes:` or `governs:`. Record why the transition occurred.
+trunk moved inside `writes:` or `governs:`. Record why in the current step.
 
 ### Producing a candidate
 
-On a no-rewrite host (`pathHistoryPolicy: forbidden`, the default) merge the
-trunk into the branch, finish the candidate, and push `C` with an ordinary push.
-Nothing is retained because nothing is rewritten, and provisional commits stay in
-the history rather than being folded.
-
-On a rewriting host (`retained`) retain every declared unit at
-`refs/cairn/checkpoints/<path-id>/g<NN>/<unit>` before rebasing, where `<unit>` is
-the ordinal in that entry's `cairn-unit` block and `g<NN>` is the generation still
-current. Then rebase, fold every provisional commit into the work unit it was
-drafting, and — in that same work unit, before the rewriting push completes —
-open `g<NN+1>` by retaining every completed commit of the rebased branch from the
-closed generation's floor upward. Move nothing. Then push `C`.
+Merge the trunk into the branch, finish the candidate, and push `C` with an
+ordinary push. Nothing is rewritten, so nothing is retained and provisional
+commits stay in the history as what they were. A host that declares
+`pathHistoryPolicy: retained` follows its own retention procedure first.
 
 ### Becoming ready
 
-After exact candidate `C` has passed its checks, audit, and acceptance, create
-one administrative commit that:
+After exact candidate `C` has passed its checks, its review and its
+acceptance, create one administrative commit that:
 
 - sets `status: ready`;
 - sets `subject_commit` to the full object id of `C`;
-- appends one line to the record's folder `log.md`;
 - regenerates the live view, which projects the status it just moved;
-- adds the exact audit and exact closing record, and moves the brief's
-  checkpoint pointer to `C`.
+- adds the exact audit and closing record, and points the resume section's
+  checkpoint at `C`.
 
-It changes no other field of this record — not the definition of done, not
-`scope_ref`, not `writes:`, not `governs:`, not the step plan. The comparison
-is against the record at `C`, so a `writes:` widened while the path ran is not
-a closure change.
+It changes no other field of the record — not the definition of done, not
+`scope_ref`, not `writes:`, not `governs:`. The comparison is against the
+record at `C`, so a `writes:` widened while the path ran is not a closure
+change.
 
 ### Recording done
 
-Only the trunk integration unit sets `status: done` and
-`resolution: completed`. A path branch never claims done.
+Only the integration unit sets `status: done` and `resolution: completed`. A
+path branch never claims done.
 
 ### Archiving
 
-Set `status: archived` and exactly one resolution:
+Set `status: archived` and exactly one resolution: `completed` after done,
+`abandoned` for stopped unintegrated work, `superseded` for work replaced by
+another path or decision. Keep the record.
 
-- `completed` after done;
-- `abandoned` for stopped, unintegrated work;
-- `superseded` for work replaced by another path or decision.
-
-Keep the path record.
-
-Return to [the path model](../index.md#put-one-bounded-change-on-a-coding-path)
-or [lifecycle](../concepts/lifecycle.md).
+Return to [the record](../index.md#the-record) or
+[lifecycle](../concepts/lifecycle.md).

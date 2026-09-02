@@ -137,8 +137,8 @@ export function conformanceLinkage(rules, specSource) {
 
 export const RULE_METADATA = {
   'route': {
-    condition: 'A path declares no route, an unknown route, a lightweight route that meets a full-route trigger, a foundation surface outside documents, or a descent from full',
-    enforcing: 'configured new-path default + fullRouteTriggers(writes) + foundationSurfaceViolations(writes) + routeDescent(previous, current)'
+    condition: 'A path declares no route, an unknown route, a lightweight route that meets a full-route trigger, or a descent from full',
+    enforcing: 'configured new-path default + fullRouteTriggers(writes) + routeDescent(previous, current)'
   },
   'redaction': {
     condition: 'A `[redacted: …]` marker names no redaction record (code spans and fences stripped first)',
@@ -225,8 +225,8 @@ export const RULE_METADATA = {
     enforcing: "tools/cairn-active.mjs --check"
   },
   'schema': {
-    condition: 'Path or decision-record frontmatter fails parsing, an id/status/date is outside vocabulary, two records share an id or a branch, or a record declares running with no opening acceptance behind it',
-    enforcing: "pathFrontmatterErrors(front) + duplicatePathIdentityFindings(paths) + adrFrontmatterErrors(front, file, bodyStatus) + !openingFor(id) on a running record in the diff"
+    condition: 'Path or decision-record frontmatter fails parsing, an id/status/date is outside vocabulary, two records share an id or a branch, depends_on names an unknown path or the path itself, or a record declares running with no valid opening acceptance under its own heading',
+    enforcing: "pathFrontmatterErrors(front) + duplicatePathIdentityFindings(paths) + dependencyFindings(paths) + adrFrontmatterErrors(front, file, bodyStatus) + openingAcceptanceErrors(openingFromRecord(record)) on a running record in the diff"
   },
   'links': {
     condition: 'Relative Markdown link points to non-existent target (code fences stripped)',

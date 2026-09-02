@@ -30,7 +30,10 @@ import {
   recordDateFindings,
   duplicatePathIdentityFindings,
   effectiveBinding,
-  openingFromSessions,
+  openingFromRecord,
+  openingAcceptanceErrors,
+  dependencyFindings,
+  unmetDependencies,
   evaluate,
   globToRegExp,
   isCommitPin,
@@ -76,14 +79,12 @@ import {
   closureFieldErrors,
   acceptanceDrift,
   dispositionErrors,
-  openingRecordFromSessions,
   CLOSURE_MUTABLE_FIELDS,
   CLOSURE_RAISED_ADVISORIES,
   closureMutableFields,
   isObjectId,
   DISPOSITIONS,
   fullRouteTriggers,
-  foundationSurfaceViolations,
   routeDescent,
   redactionMarkers,
   ROUTES,
@@ -136,6 +137,16 @@ test('the checker exposes the installed host binding instead of parallel constan
   assert.equal(effectiveBinding().defaultRoute, CAIRN_CONFIG.defaultRoute)
 })
 
+/** An opening acceptance as the record carries it inline. */
+const OPENING = {
+  decision: 'accepted',
+  accepted_by: 'initiator@example.test',
+  accepted_roles: ['initiator', 'reviewer'],
+  accepted_at: '2026-08-20T09:00:00Z',
+  scope_ref: `${PATH_DIR}/CP-EX-010/index.md#definition-of-done`,
+  scope_digest: 'sha256:abc'
+}
+
 const acceptedRecord = (pathId = A_PATH.front.id, subject = CANDIDATE) => ({
   path: pathId,
   ceremony: 'closing',
@@ -167,7 +178,7 @@ const run = (changed, branch, paths = [A_PATH], extra = {}) =>
       commitsAfterSubject: path.front.status === 'done' ? 2 : 1,
       forbiddenFiles: []
     }),
-    openingFor: () => true,
+    openingRecordFor: () => OPENING,
     previousPaths: new Map(paths.map((path) => [path.file, path.front])),
     immutableMutations: [],
     ...extra
@@ -591,15 +602,6 @@ test('two different actors raise no collapse finding', () => {
   assert.ok(!messages(found, 'acceptance').some((m) => /both the opening and the closing/.test(m)))
 })
 
-test('the opening record itself is retrievable, not merely its existence', () => {
-  const sessions = [
-    { path: 'CP-EX-010', ceremony: 'opening', accepted_by: 'a', scope_digest: 'sha256:1' },
-    { path: 'CP-OTHER', ceremony: 'opening', accepted_by: 'b' }
-  ]
-  assert.equal(openingRecordFromSessions(sessions, 'CP-EX-010').accepted_by, 'a')
-  assert.equal(openingRecordFromSessions(sessions, 'CP-NONE'), null)
-})
-
 test('an object id may be SHA-1 or SHA-256, and never a prefix', () => {
   assert.ok(isObjectId('a'.repeat(40)))
   assert.ok(isObjectId('a'.repeat(64)))
@@ -910,40 +912,117 @@ test('path ids and branch names are unique across the repository corpus', () => 
   assert.ok(errors.some((e) => e.startsWith('branch "path/cp-a"')))
 })
 
-test('a closing ceremony is not an opening check', () => {
-  const closing = [{ path: 'CP-EX-010', ceremony: 'closing' }]
-  assert.equal(openingFromSessions(closing, 'CP-EX-010'), false)
-  const both = [...closing, { path: 'CP-EX-010', ceremony: 'opening' }]
-  assert.equal(openingFromSessions(both, 'CP-EX-010'), true)
-  assert.equal(openingFromSessions(both, 'CP-EX-0100'), false)
+const RECORD_WITH_OPENING = `---
+type: Cairn Coding Path
+cairn:
+  id: CP-EX-010
+  status: running
+---
+
+# CP-EX-010
+
+## Definition of done
+
+- [ ] the result
+
+## Opening acceptance
+
+\`\`\`yaml
+decision: accepted
+accepted_by: initiator@example.test
+accepted_roles: [initiator, reviewer]
+accepted_at: 2026-08-20T09:00:00Z
+scope_ref: ${PATH_DIR}/CP-EX-010/index.md#definition-of-done
+scope_digest: sha256:abc
+\`\`\`
+
+Accepted at the owner's instruction.
+
+## Documentation coverage
+
+Nothing here is an acceptance.
+`
+
+test('the opening acceptance is read from the record, under its own heading', () => {
+  const opening = openingFromRecord(RECORD_WITH_OPENING)
+  assert.equal(opening.decision, 'accepted')
+  assert.equal(opening.accepted_by, 'initiator@example.test')
+  assert.deepEqual(opening.accepted_roles, ['initiator', 'reviewer'])
+  assert.equal(opening.scope_digest, 'sha256:abc')
+  assert.deepEqual(openingAcceptanceErrors(opening), [])
+  // No heading, no block, an empty block: none of these is an acceptance.
+  assert.equal(openingFromRecord(RECORD_WITH_OPENING.replace('## Opening acceptance', '## Something else')), null)
+  assert.equal(openingFromRecord('# CP-X\n\n## Opening acceptance\n\nprose only\n'), null)
+  assert.equal(openingFromRecord('## Opening acceptance\n\n```yaml\n```\n'), null)
+  // A block under a LATER heading is not this one's.
+  assert.equal(openingFromRecord('## Opening acceptance\n\nnone\n\n## Resume\n\n```yaml\ndecision: accepted\n```\n'), null)
 })
 
-test('a running path with no recorded opening acceptance fails its schema', () => {
+test('a scope amendment is a later block, and the last block is the acceptance in force', () => {
+  const amended = RECORD_WITH_OPENING.replace('Accepted at the owner\'s instruction.',
+    '```yaml\ndecision: accepted\naccepted_by: reviewer@example.test\naccepted_at: 2026-08-21T09:00:00Z\nscope_ref: x#definition-of-done\nscope_digest: sha256:def\nsupersedes: 2026-08-20T09:00:00Z\n```')
+  const opening = openingFromRecord(amended)
+  assert.equal(opening.scope_digest, 'sha256:def')
+  assert.equal(opening.supersedes, '2026-08-20T09:00:00Z')
+})
+
+test('an opening acceptance must decide, name its actor and time, and bind a digest', () => {
+  assert.deepEqual(openingAcceptanceErrors(null), ['no opening acceptance'])
+  const errors = openingAcceptanceErrors({ decision: 'maybe', scope_ref: 'file-without-anchor' })
+  for (const needle of ['decision', 'accepted_by', 'accepted_at', 'scope_ref', 'scope_digest']) {
+    assert.ok(errors.some((e) => e.includes(needle)), needle)
+  }
+})
+
+test('a running path with no opening acceptance in its record fails its schema', () => {
   // `opening-ceremony` in 0.2: a declaration claiming `running` with no
   // acceptance behind it claims a state it has not earned.
-  const found = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], { openingFor: () => false })
-  assert.ok(messages(found, 'schema', 'blocking').some((m) => /no opening acceptance/.test(m)))
+  const found = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], { openingRecordFor: () => null })
+  assert.ok(messages(found, 'schema', 'blocking').some((m) => /no valid opening acceptance/.test(m)))
+  const undigested = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], { openingRecordFor: () => ({ ...OPENING, scope_digest: '' }) })
+  assert.ok(messages(undigested, 'schema', 'blocking').some((m) => /scope_digest/.test(m)))
 })
 
-test('a running path with its opening acceptance on record passes', () => {
-  const found = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], {
-    openingFor: (id) => openingFromSessions([{ path: id, ceremony: 'opening' }], id)
-  })
+test('a running path with its opening acceptance in the record passes', () => {
+  const found = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], { openingRecordFor: () => openingFromRecord(RECORD_WITH_OPENING) })
   assert.ok(!rules(found, 'blocking').includes('schema'))
 })
 
 test('a path this change does not touch is never examined for its opening', () => {
-  const found = run(['docs/index.md'], 'path/cp-ex-010', [A_PATH], { openingFor: () => false })
+  const found = run(['docs/index.md'], 'path/cp-ex-010', [A_PATH], { openingRecordFor: () => null })
   assert.ok(!rules(found, 'blocking').includes('schema'))
 })
 
 test('a path that is not running is out of scope for the opening check', () => {
   const done = { ...A_PATH, front: { ...A_PATH.front, status: 'done', subject_commit: CANDIDATE, resolution: 'completed' } }
   const found = run([done.file], 'path/cp-ex-010', [done], {
-    openingFor: () => false,
+    openingRecordFor: () => null,
     previousPaths: new Map([[done.file, A_PATH.front]])
   })
   assert.ok(!rules(found, 'blocking').includes('schema'))
+})
+
+test('depends_on names known paths, never itself, and the view knows which are met', () => {
+  assert.deepEqual(pathFrontmatterErrors({ ...A_PATH.front, depends_on: [] }), [])
+  assert.deepEqual(pathFrontmatterErrors({ ...A_PATH.front, depends_on: ['CP-A'] }), [])
+  assert.ok(pathFrontmatterErrors({ ...A_PATH.front, depends_on: 'CP-A' }).some((e) => /list of path ids/.test(e)))
+  assert.ok(pathFrontmatterErrors({ ...A_PATH.front, depends_on: ['cp-a'] }).some((e) => /canonical/.test(e)))
+  assert.ok(pathFrontmatterErrors({ ...A_PATH.front, depends_on: ['CP-EX-010'] }).some((e) => /itself/.test(e)))
+
+  const a = { file: 'a', front: { id: 'CP-A', status: 'done', resolution: 'completed' } }
+  const b = { file: 'b', front: { id: 'CP-B', status: 'running', depends_on: ['CP-A', 'CP-C'] } }
+  assert.deepEqual(dependencyFindings([a, b]), ['b: depends_on names CP-C, which no path record declares'])
+  assert.deepEqual(dependencyFindings([a, { file: 'b', front: { id: 'CP-B', depends_on: ['CP-A'] } }]), [])
+
+  const statuses = new Map([
+    ['CP-A', { status: 'done' }],
+    ['CP-B', { status: 'archived', resolution: 'completed' }],
+    ['CP-C', { status: 'running' }],
+    ['CP-D', { status: 'archived', resolution: 'abandoned' }]
+  ])
+  assert.deepEqual(unmetDependencies({ depends_on: ['CP-A', 'CP-B'] }, statuses), [])
+  assert.deepEqual(unmetDependencies({ depends_on: ['CP-C', 'CP-D', 'CP-Z'] }, statuses), ['CP-C', 'CP-D', 'CP-Z'])
+  assert.deepEqual(unmetDependencies({}, statuses), [])
 })
 
 test('an opening check is not a closing ceremony', () => {
@@ -1257,7 +1336,8 @@ test('the structural full-route triggers fire on the control and decision planes
   assert.match(fullRouteTriggers([`${ADR_DIR}/**`], () => null)[0], /decision record/)
   const twoAreas = (file) => (file.startsWith('a/') ? 'alpha' : file.startsWith('b/') ? 'beta' : null)
   assert.match(fullRouteTriggers(['a/x.ts', 'b/y.ts'], twoAreas)[0], /implemented areas/)
-  assert.ok(ROUTES.includes('foundation'), 'foundation stays until the one-folder unit folds it into full')
+  assert.deepEqual(ROUTES, ['lightweight', 'full'], 'foundation folded into full; emergency was never specified')
+  assert.ok(!WORK_UNIT_TYPES.includes('foundation'))
 })
 
 test('a lightweight path that meets a trigger is blocked until it escalates', () => {
@@ -1297,11 +1377,11 @@ test('an omitted route is rejected and names the configured new-path default', (
   assert.match(found.find((f) => f.rule === 'route').message, new RegExp(`configured default.*${CAIRN_CONFIG.defaultRoute}`))
 })
 
-test("a foundation path's write surface is documents and the paths it produces", () => {
-  assert.deepEqual(foundationSurfaceViolations(['docs/**', `${PATH_DIR}/CP-A.md`]), [])
-  assert.deepEqual(foundationSurfaceViolations(['apps/desktop/x.ts']), ['apps/desktop/x.ts'])
-  const foundation = { ...A_PATH, front: { ...A_PATH.front, route: 'foundation' }, writes: [ARCH, 'apps/desktop/x.ts'] }
-  assert.ok(rules(run(['README.md'], 'path/cp-ex-010', [foundation]), 'blocking').includes('route'))
+test('a documents-only path runs full, and foundation is an unknown route', () => {
+  const foundation = { ...A_PATH, front: { ...A_PATH.front, route: 'foundation' }, writes: [ARCH] }
+  assert.ok(messages(run(['README.md'], 'path/cp-ex-010', [foundation]), 'route', 'blocking').some((m) => /outside lightweight \| full/.test(m)))
+  const documents = { ...A_PATH, front: { ...A_PATH.front, route: 'full' }, writes: [ARCH, `${ADR_DIR}/ADR-001-x.md`] }
+  assert.ok(!rules(run(['README.md'], 'path/cp-ex-010', [documents]), 'blocking').includes('route'))
 })
 
 test('a lightweight path that has already spanned two units must escalate', () => {

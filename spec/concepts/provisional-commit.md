@@ -35,7 +35,7 @@ Cairn-Provisional: <reason>
 
 It is a durable object, not a [remote checkpoint](./remote-checkpoint.md). It
 MUST NOT be reported as a completed [work unit](./work-unit.md), MUST NOT be
-named as a resume point in a [handoff brief](./handoff.md), and MUST NOT be
+named as a resume point in the [resume section](./handoff.md), and MUST NOT be
 proposed as an [implementation candidate](./implementation-candidate.md).
 
 Provisional commits are excluded from candidate identity. Before a candidate

@@ -36,7 +36,6 @@ export const DOCUMENTATION_DIR = CAIRN_CONFIG.roots.documentation
 export const PATH_DIR = `${PROJECT_DIR}/coding-paths`
 export const SESSION_DIR = `${PROJECT_DIR}/sessions`
 export const AUDIT_DIR = `${PROJECT_DIR}/audits`
-export const BRIEF_DIR = `${PROJECT_DIR}/briefs`
 export const JOURNAL_DIR = `${PROJECT_DIR}/log`
 export const ADR_DIR = CAIRN_CONFIG.roots.decisions
 export const MODULE_DIR = CAIRN_CONFIG.roots.modules
@@ -134,7 +133,7 @@ export const LEGACY_UNDECLARED_OPENINGS = new Set(CAIRN_CONFIG.migration.undecla
  * more — `migration-debt` was retired with Cairn 1.0 as a host debt — so a
  * spent entry is deleted by whoever adopts the release, not by a failing gate.
  */
-export const ROUTES = ['lightweight', 'full', 'foundation']
+export const ROUTES = ['lightweight', 'full']
 
 /** The files that evaluate the protocol. A writer who can change all of these
  *  can weaken the mechanism that judges the same change, which is why touching
@@ -151,22 +150,12 @@ export const DECISION_PLANE = [
   slash(CAIRN_CONFIG.roots.decisions)
 ]
 
-/** A foundation path's work units are documents, so its write surface is
- *  documents plus the draft path records it produces — and nothing else. */
-const prefixPattern = (path) => new RegExp(`^${path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:/|$)`)
-export const FOUNDATION_SURFACE = [
-  prefixPattern(DOCUMENTATION_DIR),
-  prefixPattern(`${PROJECT_DIR}/coding-paths`),
-  prefixPattern('project')
-]
-
 export const V02_MIGRATION_PATHS = new Set(CAIRN_CONFIG.migration.v02Records)
 
 export const WORK_UNIT_TYPES = [
   'implementation',
   'documentation',
   'decision',
-  'foundation',
   'repair',
   'closure'
 ]
@@ -431,6 +420,19 @@ export function pathFrontmatterErrors(front, file = null) {
   if (front.status === 'ready' && !isObjectId(front.subject_commit)) {
     errors.push(`status "ready" requires ${METADATA_NAMESPACE}.subject_commit as a full object id — ${OBJECT_ID_FORMATS}`)
   }
+  if (front.depends_on !== undefined) {
+    if (!Array.isArray(front.depends_on)) {
+      errors.push(`${METADATA_NAMESPACE}.depends_on must be a list of path ids`)
+    } else {
+      for (const id of front.depends_on) {
+        if (!/^CP-[A-Z0-9][A-Z0-9-]*$/.test(String(id))) {
+          errors.push(`${METADATA_NAMESPACE}.depends_on names "${id}", which is not a canonical CP-<UPPERCASE-ID>`)
+        } else if (id === front.id) {
+          errors.push(`${METADATA_NAMESPACE}.depends_on names the path itself`)
+        }
+      }
+    }
+  }
   if (front.status === 'archived' && front.resolution && !PATH_RESOLUTIONS.includes(front.resolution)) {
     errors.push(
       `${METADATA_NAMESPACE}.resolution "${front.resolution}" is outside the vocabulary (${PATH_RESOLUTIONS.join(' | ')})`
@@ -502,6 +504,35 @@ export function transitionErrors(previous, current, onPathBranch = false) {
     errors.push(`status \`done\` requires subject_commit as a full object id — ${OBJECT_ID_FORMATS}`)
   }
   return errors
+}
+
+/** A dependency names a path this repository knows. `depends_on:` is the one
+ *  edge Cairn keeps between paths, and an edge to nothing is a claim the live
+ *  view cannot project: the path would wait forever on a name. */
+export function dependencyFindings(paths) {
+  const known = new Set(paths.map((path) => String(path.front?.id ?? '')).filter(Boolean))
+  const findings = []
+  for (const path of paths) {
+    for (const id of Array.isArray(path.front?.depends_on) ? path.front.depends_on : []) {
+      if (!known.has(String(id))) {
+        findings.push(`${path.file}: depends_on names ${id}, which no path record declares`)
+      }
+    }
+  }
+  return findings
+}
+
+/** Whether every path a record depends on has reached the trunk: `done`, or
+ *  archived as completed. A dependency in any other state — or one the corpus
+ *  does not know — is still waited on. Pure, shared with the live view. */
+export function unmetDependencies(front, statuses) {
+  const deps = Array.isArray(front?.depends_on) ? front.depends_on : []
+  return deps.filter((id) => {
+    const dep = statuses.get(String(id))
+    if (!dep) return true
+    if (dep.status === 'done') return false
+    return !(dep.status === 'archived' && dep.resolution === 'completed')
+  })
 }
 
 export function duplicatePathIdentityFindings(paths) {
@@ -1090,6 +1121,40 @@ export function resolveScopeSection(text, anchor) {
   return lines.slice(start, end).map((line) => line.replace(/[ \t]+$/, '')).join('\n').trim()
 }
 
+/** The opening acceptance a path record carries inline: the last fenced YAML
+ *  block under its `## Opening acceptance` heading. A later block is a scope
+ *  amendment — a new acceptance naming the one it supersedes — so the last one
+ *  is the acceptance in force. `null` when the record carries none.
+ *
+ *  Cairn 0.2 read this from a session record; 1.0 keeps it in the record it
+ *  accepts, because a decision about a text belongs beside the text, and a
+ *  path is one folder. Pure: the caller supplies the record's text. */
+export function openingFromRecord(text) {
+  const section = resolveScopeSection(String(text ?? ''), '#opening-acceptance')
+  if (!section) return null
+  const blocks = [...section.matchAll(/^```ya?ml[ \t]*\n([\s\S]*?)^```[ \t]*$/gm)]
+  if (blocks.length === 0) return null
+  const parsed = readFrontmatter(`---\n${blocks.at(-1)[1]}\n---\n`)
+  return parsed?.data && Object.keys(parsed.data).length > 0 ? parsed.data : null
+}
+
+/** What an opening acceptance must say to accept anything: a decision, an
+ *  actor, a UTC time, the scope it accepted and the digest that binds it. */
+export function openingAcceptanceErrors(opening) {
+  if (!opening) return ['no opening acceptance']
+  const errors = []
+  if (opening.decision !== 'accepted') errors.push('decision must equal accepted')
+  if (!String(opening.accepted_by ?? '').trim()) errors.push('accepted_by is required')
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(String(opening.accepted_at))) {
+    errors.push('accepted_at must be an ISO UTC timestamp')
+  }
+  if (!String(opening.scope_ref ?? '').includes('#')) errors.push('scope_ref must name a file and a heading anchor')
+  if (!/^[a-z0-9]+:[0-9a-f]+$/.test(String(opening.scope_digest ?? ''))) {
+    errors.push('scope_digest is required — a scope accepted without a digest is bound to nothing')
+  }
+  return errors
+}
+
 export function scopeDigest(section, algorithm = CAIRN_CONFIG.scopeDigestAlgorithm) {
   if (section == null) return null
   return `${algorithm}:${createHash(algorithm).update(section, 'utf8').digest('hex')}`
@@ -1248,10 +1313,6 @@ export function fullRouteTriggers(writes = [], areaOfFile = areaOf, unitCount = 
   return triggers
 }
 
-export function foundationSurfaceViolations(writes = []) {
-  return writes.filter((pattern) => !FOUNDATION_SURFACE.some((allowed) => allowed.test(pattern)))
-}
-
 /** Escalation is one-way. A change does not become small by being called small,
  *  so the only direction a route may move is toward more ceremony. */
 export function routeDescent(previous, current) {
@@ -1302,7 +1363,6 @@ export function evaluate({
   remoteCheckpoint,
   closureFor,
   closureStateFor,
-  openingFor,
   previousPaths = new Map(),
   immutableMutations = [],
   relocations = [],
@@ -1612,24 +1672,25 @@ export function evaluate({
   //     behind it fails the record's own schema: the declaration claims a
   //     state it has not earned. This was `opening-ceremony` in 0.2, a rule of
   //     its own that read a session note; Cairn 1.0 folds it into `schema`
-  //     because the acceptance is part of the record (inline in `index.md`
-  //     once the one-folder shape lands), and the session note is where it is
-  //     read from until then.
+  //     because the acceptance is part of the record, inline under its own
+  //     heading in `index.md`.
   //
   //     Scoped to a path file IN THE DIFF declaring `running`, so a path that
   //     closed before the requirement existed is never examined.
-  if (openingFor) {
+  if (openingRecordFor) {
     for (const path of paths) {
       if (path.front?.status !== 'running' || !stateChanged.includes(path.file)) continue
       const id = path.front.id
-      if (openingFor(id)) continue
+      const opening = openingRecordFor(id)
+      const errors = openingAcceptanceErrors(opening)
+      if (errors.length === 0) continue
       if (LEGACY_UNDECLARED_OPENINGS.has(id)) {
         add('advisory', 'schema',
-          `${path.file} predates the declared ceremony schema — add \`path: ${id}\` and \`ceremony: opening\` to its existing opening-check note to clear this, and do not copy the exception`)
+          `${path.file} predates the inline opening acceptance — write its \`## Opening acceptance\` section from the record it has, and do not copy the exception`)
         continue
       }
       add('blocking', 'schema',
-        `${path.file} is running with no opening acceptance declaring \`path: ${id}\` and \`ceremony: opening\` — a path activates on recorded acceptance, never on a conversation`)
+        `${path.file} is running with no valid opening acceptance under \`## Opening acceptance\` (${errors.join('; ')}) — a path activates on recorded acceptance, never on a conversation`)
     }
   }
 
@@ -1873,13 +1934,6 @@ export function evaluate({
         add('blocking', 'route',
           `${match.file} declares route: lightweight while ${triggers.join('; ')} — escalate to full before the next checkpoint and record the trigger in the ledger`)
       }
-      if (route === 'foundation') {
-        const outside = foundationSurfaceViolations(match.writes ?? [])
-        if (outside.length > 0) {
-          add('blocking', 'route',
-            `a foundation path's work units are documents, but ${match.file} declares ${outside.slice(0, 4).join(', ')} outside docs/ and the path records it produces`)
-        }
-      }
       const descent = routeDescent(previousFronts.get(match.file)?.route, route)
       if (descent) add('blocking', 'route', `${match.file}: ${descent}`)
     }
@@ -2032,9 +2086,8 @@ function pathRegistrationBaseState(trunkRef, branch, paths) {
  *  2026-09-01). Both stay visible; neither is disposed. */
 export const CLOSURE_RAISED_ADVISORIES = new Set(['acceptance', 'remote-checkpoint'])
 
-/** The records the lifecycle itself requires a path to write — its opening
- *  and closing acceptance, its coherence audit, its journal entry and its
- *  handoff brief. They are outputs of the protocol, not of the work, so a
+/** The records the lifecycle itself requires a path to write — its closing
+ *  acceptance, its coherence audit and its journal entry. They are outputs of the protocol, not of the work, so a
  *  `writes:` declaration that omits them is not stale. Before this, every
  *  closure raised `scope-drift` on its own audit and closing record, and the
  *  attestation rule then demanded that advisory be attested as raised at the
@@ -2042,7 +2095,6 @@ export const CLOSURE_RAISED_ADVISORIES = new Set(['acceptance', 'remote-checkpoi
 export function isLifecycleRecord(file, pathId) {
   const id = String(pathId ?? '').toLowerCase()
   if (!id || !file) return false
-  if (file === `${BRIEF_DIR}/${id}-handoff.md`) return true
   const name = String(file).split('/').at(-1)
   return [SESSION_DIR, AUDIT_DIR, JOURNAL_DIR].some((dir) => file.startsWith(`${dir}/`)) &&
     name.includes(id)
@@ -2053,7 +2105,6 @@ function closureAllowedFiles(path, record) {
   const subject = String(record?.subject_commit ?? '')
   const exact = new Set([
     path.file,
-    `${BRIEF_DIR}/${id}-handoff.md`,
     `${AUDIT_DIR}/${id}-${subject}.md`,
     record?.__file
   ].filter(Boolean))
@@ -2063,11 +2114,6 @@ function closureAllowedFiles(path, record) {
   // and regenerating it was "implementation after acceptance" (greenfield
   // pilot, 2026-09-01). A generated projection is never implementation.
   exact.add(ACTIVE_FILE)
-  // A born-sliced record's folder log is the readable history of the record
-  // itself, appended in the same unit as every change to it; closure is one.
-  if (path.file.endsWith('/index.md')) {
-    exact.add(`${path.file.slice(0, -'/index.md'.length)}/log.md`)
-  }
   const journal = new RegExp(
     `^${JOURNAL_DIR.replace(/[.*+?^\${}()|[\]\\]/g, '\\$&')}/\\d{4}-\\d{2}-\\d{2}-${id.replace(/[.*+?^\${}()|[\]\\]/g, '\\$&')}\\.md$`
   )
@@ -2519,32 +2565,6 @@ export function closingRecordFromSessions(sessions, pathId, subjectCommit = null
   return matches.at(-1) ?? null
 }
 
-/**
- * Does an OPENING check exist for this path?
- *
- * `paths.md`: activation needs the owner's explicit acceptance, recorded in a
- * session note. That was the one ceremony nothing checked — the closing gate was
- * repaired at F2 while its twin stayed a convention, so a path could be
- * registered, branched and worked with no recorded acceptance at all.
- *
- * Scoped like the closing gate: it fires only on a path file IN THE DIFF that
- * declares `running`. The eight paths that predate session notes are never
- * examined, because a change that does not touch them cannot make them wrong.
- */
-export function openingFromSessions(sessions, pathId) {
-  return ceremonyOfKind(sessions, pathId, 'opening')
-}
-
-/** The opening record itself, not merely the fact that one exists. Closure
- *  needs its `accepted_by` to see a collapsed reviewer, and its `scope_digest`
- *  to prove the definition of done did not move after it was accepted. */
-export function openingRecordFromSessions(sessions, pathId) {
-  const matches = sessions.filter(
-    (note) => note?.path === pathId && String(note?.ceremony).toLowerCase() === 'opening'
-  )
-  return matches.at(-1) ?? null
-}
-
 function loadSessions() {
   try {
     return readdirSync(join(REPO, SESSION_DIR))
@@ -2615,10 +2635,6 @@ function hasCeremony(pathId) {
 
 function closingRecord(pathId, subjectCommit = null) {
   return closingRecordFromSessions(loadSessions(), pathId, subjectCommit)
-}
-
-function hasOpening(pathId) {
-  return openingFromSessions(loadSessions(), pathId)
 }
 
 function loadAdrs() {
@@ -2700,6 +2716,13 @@ function loadPaths() {
         parseError: parsed?.error ?? null
       }
     })
+}
+
+/** The opening acceptance a path carries in its own record, by id. */
+function openingRecord(pathId, paths) {
+  const path = paths.find((entry) => entry.front?.id === pathId)
+  if (!path) return null
+  return openingFromRecord(readFileSync(join(REPO, path.file), 'utf8'))
 }
 
 /** Schema + link integrity over the whole corpus, not just the diff: these
@@ -2828,7 +2851,7 @@ function corpusFindings(previousRef = null, changed = [], viewCurrent = null) {
     }
   }
 
-  for (const error of duplicatePathIdentityFindings(corpus)) {
+  for (const error of [...duplicatePathIdentityFindings(corpus), ...dependencyFindings(corpus)]) {
     findings.push({ level: 'blocking', rule: 'schema', message: error })
   }
 
@@ -2924,7 +2947,6 @@ function main() {
       remoteCheckpoint: pathRemoteCheckpoint(branch),
       closureFor: closingRecord,
       closureStateFor: pathClosureState,
-      openingFor: hasOpening,
       previousPaths: previousPathStates(paths, previousRef),
       immutableMutations: immutableRecordMutations(previousRef, changed),
       relocations: verbatimRelocations(previousRef),
@@ -2936,7 +2958,7 @@ function main() {
       scopeDigestFor: scopeDigestOf,
       subjectFrontFor: subjectFrontOf,
       derivedViewCurrent: viewCurrent,
-      openingRecordFor: (id) => openingRecordFromSessions(loadSessions(), id),
+      openingRecordFor: (id) => openingRecord(id, paths),
       previousFronts: previousFrontStates(paths, previousRef),
       journalEntries: loadJournal(),
       trunkDelta: pathForBranch?.front?.status === 'ready'
