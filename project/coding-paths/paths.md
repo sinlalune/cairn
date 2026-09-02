@@ -78,8 +78,8 @@ rollup operation.
    commit, then publish the branch.
 
 The repository's [binding appendix](./binding.md) supplies the exact trunk,
-remote, paths and commands. The full copy-ready sequence is in
-[Cairn operations](../../spec/reference/operations.md#register-an-accepted-path).
+remote, paths and commands. The full copy-ready sequence is in the
+[`cairn-open` skill](../../skills/cairn-open/reference.md).
 
 ## Give one writable worktree one writer
 

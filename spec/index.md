@@ -735,7 +735,8 @@ measured at release; a cap that has never bound is a count, not a constraint.
 
 - The [concept wiki](./concepts/index.md) — every word, borrowed and own.
 - The [reference](./reference/index.md) — the path template, the execution
-  protocol, the operations sequences, the configuration contract.
+  protocol, the configuration contract; and the skills under `skills/`, where
+  the procedures and their command sequences live.
 - The [manifesto](https://github.com/sinlalune/cairn/blob/main/docs/cairn/manifesto.md) — what all of this is for, and
   the threats it names: more control through more rules, a protocol that thinks
   itself finished, progress outside it ignored.

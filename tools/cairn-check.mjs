@@ -2367,11 +2367,19 @@ function walk(dir, out = []) {
   return out
 }
 
+/** Where the procedures live, as Agent Skills: one folder per skill at the
+ *  repository root, installed by the kit beside the tools. A fixed name, like
+ *  the specification's, because it is the standard's shape rather than a role
+ *  a host binds. */
+export const SKILLS_DIR = 'skills'
+
 function markdownCorpus() {
   // The specification lives beside its concept wiki — `spec/` at the root of
   // the protocol's own repository, wherever an adopter binds it — so the wiki's
-  // parent joins the two planes. Files reached twice dedupe by path.
-  const roots = [...new Set([DOCUMENTATION_DIR, PROJECT_DIR, dirname(CONCEPTS_DIR)])]
+  // parent joins the two planes, and the skills join them where they exist:
+  // a procedure that links a page that moved is as broken as any other link.
+  // Files reached twice dedupe by path.
+  const roots = [...new Set([DOCUMENTATION_DIR, PROJECT_DIR, dirname(CONCEPTS_DIR), SKILLS_DIR])]
   return [...new Set(roots.flatMap((root) =>
     existsSync(join(REPO, root)) ? walk(root, []).filter((file) => file.endsWith('.md')) : []
   ))]

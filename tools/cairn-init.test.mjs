@@ -49,6 +49,10 @@ test('cairn-init: the installation carries what its own links and rules need, an
   for (const folder of ['project/briefs/', 'project/sessions/', 'project/audits/']) {
     assert.ok(![...plan.files.keys()].some((path) => path.startsWith(folder)), folder)
   }
+  // The five skills travel with the kit, one folder each.
+  for (const skill of ['cairn-brainstorm', 'cairn-open', 'cairn-unit', 'cairn-close', 'cairn-code']) {
+    assert.ok(plan.files.has(`skills/${skill}/SKILL.md`), skill)
+  }
   // The request template travels with the pull-request transport, and only with it.
   assert.ok(plan.files.has('.github/pull_request_template.md'))
   assert.ok(!planInstall({ ...defaultOptions(), transport: 'manual-git' }).files.has('.github/pull_request_template.md'))

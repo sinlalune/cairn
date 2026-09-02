@@ -12,8 +12,9 @@ cairn:
 
 This is the required execution route projected from the
 [canonical specification](../index.md). It adds no requirements: exact command
-forms live in [operations](./operations.md), schemas live in the other reference
-pages, and explanatory terms live in the [concept wiki](../concepts/index.md).
+forms live in the skills' reference files — `cairn-open`, `cairn-unit` and
+`cairn-close` under `skills/` — schemas live in the other reference pages, and
+explanatory terms live in the [concept wiki](../concepts/index.md).
 
 The page is **PORTABLE**. It uses protocol role names and contains no application
 name, host path, product command, runtime variable or product-specific security

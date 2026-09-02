@@ -19,7 +19,7 @@ dependency-free Node scripts that evaluate the protocol the
 | `cairn-active.mjs` | regenerates the live view of running paths, or checks that it is current |
 | `cairn-audit.mjs` | scaffolds the closing review of one exact candidate: the request's description on `pull-request`, the closing record in the path folder on `manual-git` |
 | `cairn-rules.mjs` | regenerates the rule catalogue and the rule-to-requirement linkage on the [conformance page](../../spec/reference/conformance.md) |
-| `cairn-init.mjs` | installs the kit into a new repository, the area note its configuration names included |
+| `cairn-init.mjs` | installs the kit into a new repository — the tools, the specification, the five skills, the area note its configuration names |
 | `*.test.mjs` | the tools' own suite, run by `npm test`: the pure half of every rule against `evaluate()`, and one adversarial fixture per blocking rule against a real installed repository |
 
 ## How the tools find the specification

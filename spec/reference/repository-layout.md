@@ -58,6 +58,10 @@ repository/
 │   ├── cairn-rules.mjs
 │   ├── soundness.md
 │   └── <tool>.test.mjs
+├── skills/
+│   └── <cairn-skill>/
+│       ├── SKILL.md
+│       └── reference.md
 ├── spec/
 │   ├── index.md
 │   ├── concepts/
@@ -155,7 +159,8 @@ what Cairn defines, not what any one adoption happens to contain.
 | `docs/modules/<area>.md` | implemented-area flow, boundaries, and tests | path changing that area |
 | `spec/index.md` | canonical normative protocol | accepted specification change |
 | `spec/concepts/*.md` | one explanatory article per specialised object | same specification work unit |
-| `spec/reference/*.md` | exact layouts, schemas, and operations | same specification work unit |
+| `spec/reference/*.md` | exact layouts, schemas, and conformance | same specification work unit |
+| `skills/<name>/SKILL.md` | one procedure as an Agent Skill — brainstorm, open, unit, close — or the coding stance; its `reference.md` carries the command sequences | same work unit as the procedure it teaches |
 | `site/` | generated self-contained reader | generator only |
 | `project/index.md` | entry map for durable project knowledge and execution state | project-plane change |
 | `project/coding-paths/paths.md` | portable operating convention for opening, running, integrating, and cleaning paths | accepted protocol operation change |

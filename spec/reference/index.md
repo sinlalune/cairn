@@ -20,14 +20,17 @@ reference supplies exact forms:
   one folder, its opening acceptance, its resume section and one step.
 - [Human records](./human-records.md) — the opening acceptance block, and the
   audit and closing schemas.
-- [Operations](./operations.md) — registration, checkpoints, exact-candidate
-  closure, integration, and cleanup.
 - [Repair procedures](./repair.md) — what to do when a path has already
   violated the protocol.
 - [Configuration](./configuration.md) — the versioned portability contract and
   its current implementation status.
 - [Conformance](./conformance.md) — the matrix of what the reference tools
   check, the generated rule catalogue and linkage, and the weight budget.
+
+The command sequences — registration, the work unit, the provisional commit,
+the candidate, the review, the administrative commit, drift, integration and
+cleanup — are the reference files of the `cairn-open`, `cairn-unit` and
+`cairn-close` skills under `skills/`, beside the procedures that use them.
 
 Reference pages do not add requirements. If a reference and the specification
 disagree, the specification is authoritative and the disagreement is a defect.

@@ -67,6 +67,9 @@ export const REFERENCE_TOOLS = [
  *  rules they cannot read is being asked to obey an unreadable law. */
 export const PORTABLE_DOCS = 'spec'
 
+/** The procedures, as Agent Skills: copied whole, one folder per skill. */
+export const SKILLS = 'skills'
+
 export function sourceCommit(root = SOURCE_ROOT) {
   try {
     return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim()
@@ -170,6 +173,8 @@ This file points; it does not carry project memory.
    the portable per-session order.
 4. \`${options.projectRoot}/coding-paths/ACTIVE.md\` — what is running now. It is
    generated; never hand-edit it.
+5. \`${SKILLS}/\` — the procedures as Agent Skills: \`cairn-brainstorm\`,
+   \`cairn-open\`, \`cairn-unit\`, \`cairn-close\`, and the \`cairn-code\` stance.
 
 ## The mechanical contract
 
@@ -420,6 +425,12 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
   for (const relativePath of walk(specRoot)) {
     put(`${PORTABLE_DOCS}/${relativePath}`, readFileSync(join(specRoot, relativePath)))
   }
+  const skillsRoot = join(sourceRoot, SKILLS)
+  if (!existsSync(skillsRoot)) throw new Error(`cairn-init: missing skills at ${SKILLS}`)
+  for (const relativePath of walk(skillsRoot)) {
+    put(`${SKILLS}/${relativePath}`, readFileSync(join(skillsRoot, relativePath)))
+  }
+
   // The soundness note lives beside the tools and the wiki links it; it
   // travels with the tools it documents. The manifesto the specification is
   // measured against is linked by URL, not copied: an adopter's repository
