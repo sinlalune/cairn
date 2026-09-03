@@ -7,14 +7,14 @@ timestamp: 2026-09-02T00:00:00Z
 cairn:
   id: CP-CAIRN-001
   route: full
-  status: ready
+  status: done
   current_step: S09
   base_commit: 43cfeb96670eba615567b967f7368f32b3d8a409
   branch: path/cp-cairn-001
   assigned_writer: cp-cairn-001-writer
   depends_on: []
   subject_commit: fdb73f110d388b51874829372ee52dd97e1cd454
-  resolution: null
+  resolution: completed
   writes:
     - README.md
     - manifesto.md
@@ -151,12 +151,13 @@ trunk  : ca34010040daa836fe81004eb2f400f9a5c7511f — origin/main has not moved 
 
 ### Next action
 
-Pull request #2 names this candidate; the owner's approval is the closing
-acceptance, and the merge — a merge commit, never a squash — lands `C` with
-this administrative commit. Then the integrating unit on the trunk: `done`,
-`resolution: completed`, the live view, `project/log/<date>-cp-cairn-001.md`,
-the tag `1.0.0`, the pilot rerun from the tag, and the owner's `npm publish`
-of `cairn-protocol`.
+None: the path is integrated. Candidate `fdb73f110d388b51874829372ee52dd97e1cd454`
+landed on the trunk in merge commit `4533b428a7a6aa81603a0b4cf2750d45885c6b52`
+through pull request #2, approved by the owner; this integrating unit records
+`done` and writes the journal entry `project/log/2026-09-03-cp-cairn-001.md`.
+Release `1.0.0` is the tag on the trunk that follows this unit; the owner
+publishes `cairn-protocol` from it. The secondary worktree of this path is
+removed from another checkout, without force, once it is clean.
 
 ### Blockers
 
