@@ -31,14 +31,19 @@ import {
   PATH_DIR,
   PATHS_BEGIN,
   PATHS_END,
-  readFrontmatter
+  readFrontmatter,
+  unmetDependencies
 } from './cairn-check.mjs'
 import { REPO, metadataOf } from './cairn-config.mjs'
 
 const LIVE_STATUSES = new Set(['running', 'blocked', 'ready'])
 
 /** Deterministic by construction: sorted by id, so two people regenerating
- *  from the same path files produce byte-identical output. */
+ *  from the same path files produce byte-identical output. The last field is
+ *  the one edge Cairn keeps between paths, projected: a path is UNBLOCKED when
+ *  every path it depends on has reached the trunk, and otherwise the view
+ *  names what it waits on — so the next piece of work is a fact the repository
+ *  computes, not a judgement repeated in every planning conversation. */
 export function renderPaths(paths) {
   if (paths.length === 0) {
     return '- *(no live path)*'
@@ -46,10 +51,11 @@ export function renderPaths(paths) {
   return paths
     .slice()
     .sort((a, b) => a.id.localeCompare(b.id))
-    .map(
-      (path) =>
-        `- **${path.id}** — ${path.title} · status \`${path.status}\` · branch \`${path.branch}\` · base \`${path.base}\``
-    )
+    .map((path) => {
+      const waits = path.waitsOn ?? []
+      const edge = waits.length === 0 ? 'unblocked' : `waits on ${waits.join(', ')}`
+      return `- **${path.id}** — ${path.title} · status \`${path.status}\` · branch \`${path.branch}\` · base \`${path.base}\` · ${edge}`
+    })
     .join('\n')
 }
 
@@ -67,17 +73,25 @@ export function spliceBlock(text, body) {
 }
 
 export function collectPaths(files) {
-  const live = []
-  for (const { name, text } of files) {
+  const records = files.map(({ name, text }) => {
     const parsed = readFrontmatter(text)
-    const front = metadataOf(parsed?.data)
+    return { name, parsed, front: metadataOf(parsed?.data) }
+  })
+  // Every record's state, live or not: a dependency on a `done` path is met,
+  // and only the whole corpus can say so.
+  const statuses = new Map(records
+    .filter(({ front }) => front?.id)
+    .map(({ front }) => [String(front.id), { status: front.status, resolution: front.resolution }]))
+  const live = []
+  for (const { name, parsed, front } of records) {
     if (!front || !LIVE_STATUSES.has(front.status) || !front.branch) continue
     live.push({
       id: front.id ?? name,
       title: (parsed.data.title ?? '').replace(/^['"]|['"]$/g, '').split(' — ')[0],
       status: front.status,
       branch: front.branch,
-      base: front.base_commit ?? 'unpinned'
+      base: front.base_commit ?? 'unpinned',
+      waitsOn: unmetDependencies(front, statuses)
     })
   }
   return live

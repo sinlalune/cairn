@@ -3,7 +3,7 @@ name: cairn
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, "path/**"]
 jobs:
   protocol:
     runs-on: ubuntu-latest
@@ -18,6 +18,12 @@ jobs:
         with:
           node-version: 22
       # Bare. A pipe would report the LAST command's exit code, which is how a
-      # gate comes to pass over its own failure.
+      # gate comes to pass over its own failure. The tools' own fixture suite
+      # runs first: a checker whose suite is red has no verdict to give, and
+      # both steps are one job, so `cairn-check` stays the one required check.
+      - name: validator self-test
+        run: npm test
       - name: cairn-check
-        run: node tools/cairn-check.mjs --base origin/main
+        env:
+          CAIRN_BASE_REF: origin/${{ github.base_ref || 'main' }}
+        run: node tools/cairn-check.mjs --base "$CAIRN_BASE_REF"

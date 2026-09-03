@@ -4,14 +4,16 @@ This file points; it does not carry project memory.
 
 ## Start here, in order
 
-1. `project/coding-paths/paths.md` — the PORTABLE path
+1. `spec/reference/paths.md` — the PORTABLE path
    convention: registration, one writer per worktree, checkpoints, closure.
 2. `project/coding-paths/binding.md` — this repository's
    BINDING: exact roots, commands, branch and remote.
-3. `docs/cairn/specification/reference/execution-protocol.md` —
+3. `spec/reference/execution-protocol.md` —
    the portable per-session order.
 4. `project/coding-paths/ACTIVE.md` — what is running now. It is
    generated; never hand-edit it.
+5. `skills/` — the procedures as Agent Skills: `cairn-brainstorm`,
+   `cairn-open`, `cairn-unit`, `cairn-close`, and the `cairn-code` stance.
 
 ## The mechanical contract
 
@@ -22,7 +24,9 @@ after a failure.
 ```bash
 npm run cairn-check     # the blocking and advisory rules, in full
 npm run cairn-active    # regenerate the running-paths view
-npm run cairn-audit     # scaffold the pre-merge coherence audit
+npm run cairn-audit     # the closing review: the request's description to paste, or the closing record on manual-git
+npm test                # the tools' own fixture suite: one adversarial fixture per blocking rule
+npm run cairn -- status # the installed release against this package, and what update would touch
 ```
 
 ## Absolute rules

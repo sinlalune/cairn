@@ -1,11 +1,36 @@
 {
-  "name": "cairn-repository",
-  "private": true,
+  "name": "cairn-protocol",
+  "version": "1.0.0",
+  "description": "Cairn \u2014 the lightest document-driven coding protocol: one command installs it, one checker enforces it.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sinlalune/cairn.git"
+  },
   "type": "module",
+  "bin": {
+    "cairn": "tools/cairn.mjs"
+  },
+  "files": [
+    "tools/cairn.mjs",
+    "tools/cairn-check.mjs",
+    "tools/cairn-config.mjs",
+    "tools/cairn-config.schema.json",
+    "tools/cairn-active.mjs",
+    "tools/cairn-audit.mjs",
+    "tools/release.json",
+    "skills/"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
+    "prepack": "node tools/cairn.mjs stamp",
+    "cairn": "node tools/cairn.mjs",
     "cairn-check": "node tools/cairn-check.mjs",
     "cairn-active": "node tools/cairn-active.mjs",
     "cairn-audit": "node tools/cairn-audit.mjs",
-    "cairn-rules": "node tools/cairn-rules.mjs"
+    "cairn-rules": "node tools/cairn-rules.mjs",
+    "test": "node --test 'tools/*.test.mjs'"
   }
 }

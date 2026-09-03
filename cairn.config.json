@@ -1,6 +1,6 @@
 {
   "$schema": "./tools/cairn-config.schema.json",
-  "version": 1,
+  "version": 2,
   "trunk": "main",
   "remote": "origin",
   "metadataNamespace": "cairn",
@@ -11,9 +11,10 @@
     "architecture": "docs/architecture",
     "decisions": "docs/adr",
     "modules": "docs/modules",
-    "concepts": "docs/cairn/specification/concepts",
+    "concepts": "spec/concepts",
     "source": [
-      "tools"
+      "tools",
+      "site"
     ]
   },
   "areas": [
@@ -23,20 +24,22 @@
         "tools/**"
       ],
       "note": "docs/modules/application.md"
+    },
+    {
+      "name": "site",
+      "match": [
+        "site/**"
+      ],
+      "note": "docs/modules/site.md"
     }
   ],
-  "sharedFiles": [
-    "project/coding-paths/ACTIVE.md",
-    "project/coding-paths/index.md"
-  ],
-  "staleAfterDays": 14,
   "defaultRoute": "lightweight",
   "checkpointRetentionRef": null,
   "pathHistoryPolicy": "forbidden",
   "scopeDigestAlgorithm": "sha256",
   "transport": {
-    "registration": "manual-git",
-    "integration": "manual-git"
+    "registration": "pull-request",
+    "integration": "pull-request"
   },
   "migration": {
     "unregisteredPaths": [],
