@@ -7,13 +7,13 @@ timestamp: 2026-09-02T00:00:00Z
 cairn:
   id: CP-CAIRN-001
   route: full
-  status: running
+  status: ready
   current_step: S09
   base_commit: 43cfeb96670eba615567b967f7368f32b3d8a409
   branch: path/cp-cairn-001
   assigned_writer: cp-cairn-001-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: fdb73f110d388b51874829372ee52dd97e1cd454
   resolution: null
   writes:
     - README.md
@@ -143,19 +143,20 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 7c0e9ce64ec3bb8bb20f30596fb00e09510ac0b6 — the S08 commit, the last completed unit on origin/path/cp-cairn-001; S09 is the commit that carries this refresh, and the next candidate
-unit   : 08
+commit : fdb73f110d388b51874829372ee52dd97e1cd454 — the candidate C, the S09 commit, on origin/path/cp-cairn-001; this refresh is the administrative commit A
+unit   : 09
 base   : 43cfeb96670eba615567b967f7368f32b3d8a409
 trunk  : ca34010040daa836fe81004eb2f400f9a5c7511f — origin/main has not moved since registration
 ```
 
 ### Next action
 
-Close again, on the S09 commit as the candidate: edit the description of
-pull request #2 to name it, make the administrative commit setting `ready`
-and `subject_commit`, and wait for the owner's approval and merge. Then the
-integrating unit on the trunk: `done`, the journal entry, the tag `1.0.0`,
-the pilot rerun from the tag, and the owner's `npm publish`.
+Pull request #2 names this candidate; the owner's approval is the closing
+acceptance, and the merge — a merge commit, never a squash — lands `C` with
+this administrative commit. Then the integrating unit on the trunk: `done`,
+`resolution: completed`, the live view, `project/log/<date>-cp-cairn-001.md`,
+the tag `1.0.0`, the pilot rerun from the tag, and the owner's `npm publish`
+of `cairn-protocol`.
 
 ### Blockers
 
