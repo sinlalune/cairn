@@ -206,9 +206,18 @@ export function loadConfig(path = CONFIG_PATH) {
   return parsed
 }
 
-export const CAIRN_CONFIG = loadConfig()
+/** The installed configuration, loaded the first time a tool asks for it.
+ *  Not a module-level constant: the `cairn` command runs from the package,
+ *  which carries no host configuration, and importing this module for its
+ *  pure validators must not require one. The checker, the live view and the
+ *  scaffolder ask at their start, and fail there with the path named. */
+let installed = null
+export function installedConfig(path = CONFIG_PATH) {
+  installed ??= loadConfig(path)
+  return installed
+}
 
-export function metadataOf(data, config = CAIRN_CONFIG) {
+export function metadataOf(data, config = installedConfig()) {
   return data?.[config.metadataNamespace] ?? null
 }
 

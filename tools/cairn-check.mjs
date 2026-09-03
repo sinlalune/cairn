@@ -28,7 +28,9 @@ import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { CAIRN_CONFIG, REPO, metadataOf, slash } from './cairn-config.mjs'
+import { REPO, installedConfig, metadataOf, slash } from './cairn-config.mjs'
+
+const CAIRN_CONFIG = installedConfig()
 
 export const METADATA_NAMESPACE = CAIRN_CONFIG.metadataNamespace
 export const PROJECT_DIR = CAIRN_CONFIG.roots.project

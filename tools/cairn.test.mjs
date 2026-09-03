@@ -1,13 +1,13 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { tmpdir } from 'node:os'
 
 import {
   applyAdopt, applyPlan, applyUpdate, buildConfig, defaultOptions, digest, fileState, installationStatus,
-  migrateConfig, optionsFromConfig, outwardLinks, pinSpecLinks, planInstall, readLock, specUrl, staleShapes,
+  migrateConfig, optionsFromConfig, outwardLinks, pinSpecLinks, planInstall, readLock, sourceCommit, specUrl, staleShapes,
   PROTOCOL_RELEASE, REFERENCE_TOOLS
 } from './cairn.mjs'
 import { configErrors } from './cairn-config.mjs'
@@ -175,17 +175,35 @@ test('cairn status: a pristine, an edited and a missing kit file are told apart 
   }
 })
 
-test('cairn status: the decision is pure — pristine files that changed in the kit are written, edited ones kept, files that left the kit deleted only when pristine', () => {
-  const plan = { files: new Map([['a.md', Buffer.from('new a')], ['b.md', Buffer.from('b')], ['c.md', Buffer.from('c')]]) }
-  const lock = { release: '0.9', manifest: { 'a.md': digest('old a'), 'b.md': digest('b'), 'gone.md': digest('gone'), 'edited-gone.md': digest('x') } }
-  const tree = { 'a.md': 'old a', 'b.md': 'b', 'gone.md': 'gone', 'edited-gone.md': 'y' }
+test('cairn status: the decision is pure — portable files follow the kit, host files stay the adopter\'s', () => {
+  const plan = {
+    files: new Map([['a.md', Buffer.from('new a')], ['b.md', Buffer.from('b')], ['c.md', Buffer.from('c')], ['AGENTS.md', Buffer.from('new bootloader')], ['binding.md', Buffer.from('b')]]),
+    host: new Set(['AGENTS.md', 'binding.md'])
+  }
+  const lock = {
+    release: '0.9',
+    host: ['AGENTS.md', 'binding.md', 'docs/log.md'],
+    manifest: { 'a.md': digest('old a'), 'b.md': digest('b'), 'AGENTS.md': digest('old bootloader'), 'binding.md': digest('b'), 'gone.md': digest('gone'), 'edited-gone.md': digest('x'), 'docs/log.md': digest('log') }
+  }
+  const tree = { 'a.md': 'old a', 'b.md': 'b', 'AGENTS.md': 'old bootloader', 'binding.md': 'b', 'gone.md': 'gone', 'edited-gone.md': 'y', 'docs/log.md': 'log' }
   const stateOf = (path, recorded) => (tree[path] === undefined ? 'missing' : digest(tree[path]) === recorded ? 'pristine' : 'edited')
   const status = installationStatus(lock, plan, stateOf)
   assert.equal(status.installed, '0.9')
   assert.deepEqual(status.files.map((f) => [f.path, f.state, f.action]), [
-    ['a.md', 'pristine', 'write'], ['b.md', 'pristine', 'none'], ['c.md', 'missing', 'write']
+    ['a.md', 'pristine', 'write'],       // portable, pristine, template changed: rewritten
+    ['b.md', 'pristine', 'none'],
+    ['c.md', 'missing', 'write'],
+    ['AGENTS.md', 'pristine', 'review'], // host, pristine, template changed: the adopter's to review
+    ['binding.md', 'pristine', 'none']
   ])
-  assert.deepEqual(status.left.map((f) => [f.path, f.action]), [['gone.md', 'delete'], ['edited-gone.md', 'report']])
+  assert.deepEqual(status.left.map((f) => [f.path, f.action]), [
+    ['gone.md', 'delete'],          // portable and pristine: the kit's to delete
+    ['edited-gone.md', 'report'],
+    ['docs/log.md', 'report']       // a host file that left the kit is never deleted
+  ])
+  // A lock from before host files were named cannot tell, and reports everything that left.
+  const legacy = installationStatus({ ...lock, host: undefined }, plan, stateOf)
+  assert.deepEqual(legacy.left.map((f) => f.action), ['report', 'report', 'report'])
 })
 
 test('cairn update: rewrites pristine kit files, keeps edited ones, and writes the new lock', () => {
@@ -198,8 +216,12 @@ test('cairn update: rewrites pristine kit files, keeps edited ones, and writes t
     rmSync(join(dir, 'skills/cairn-unit/reference.md'))
     const plan = planInstall()
     plan.files.set('skills/cairn-open/SKILL.md', Buffer.from('a newer open skill\n'))
+    plan.files.set('AGENTS.md', Buffer.from('# a newer bootloader\n'))
     const result = applyUpdate(dir, plan, before)
     assert.ok(result.written.includes('skills/cairn-open/SKILL.md'), 'a pristine file the kit changed is rewritten')
+    assert.ok(!result.written.includes('AGENTS.md'), 'a host file is the adopter\'s even when pristine: reviewed, never rewritten')
+    assert.ok(result.status.files.some((f) => f.path === 'AGENTS.md' && f.action === 'review'))
+    assert.deepEqual(before.host.filter((h) => h === 'AGENTS.md'), ['AGENTS.md'], 'the lock names the host files')
     assert.ok(result.written.includes('skills/cairn-unit/reference.md'), 'a missing kit file is restored')
     assert.equal(readFileSync(join(dir, 'skills/cairn-code/SKILL.md'), 'utf8'), 'my own stance\n', 'an edited file is kept')
     assert.equal(readFileSync(join(dir, 'skills/cairn-open/SKILL.md'), 'utf8'), 'a newer open skill\n')
@@ -209,6 +231,56 @@ test('cairn update: rewrites pristine kit files, keeps edited ones, and writes t
     assert.notEqual(after.installedAt, before.installedAt)
   } finally {
     rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+/* ------------------------------------------------------------------ *
+ * the package — the command runs from the tarball, with no host configuration
+ * ------------------------------------------------------------------ */
+
+/** The package as npm would unpack it, placed inside another repository's
+ *  tree the way `node_modules` is: no cairn.config.json, no Git history of
+ *  its own, and an adopter's commit above it that must never leak into the
+ *  links the kit writes. */
+function packagedCommand() {
+  const adopter = target()
+  git(adopter, 'init', '-q', '-b', 'main')
+  writeFileSync(join(adopter, 'README.md'), 'the adopter\n')
+  commit(adopter, 'the adopter')
+  const pkg = join(adopter, 'node_modules', 'cairn-protocol')
+  const files = JSON.parse(readFileSync('package.json', 'utf8')).files
+  for (const entry of files) {
+    if (entry === 'tools/release.json') continue
+    const source = join(process.cwd(), entry)
+    if (!existsSync(source)) continue
+    const dest = join(pkg, entry.replace(/\/$/, ''))
+    mkdirSync(dirname(dest), { recursive: true })
+    cpSync(source, dest, { recursive: true })
+  }
+  writeFileSync(join(pkg, 'package.json'), readFileSync('package.json'))
+  return { adopter, pkg }
+}
+
+test('cairn: the packaged command runs where there is no host configuration, and pins the release it was stamped with', () => {
+  const { adopter, pkg } = packagedCommand()
+  try {
+    mkdirSync(join(pkg, 'tools'), { recursive: true })
+    writeFileSync(join(pkg, 'tools/release.json'), JSON.stringify({ release: PROTOCOL_RELEASE, commit: 'f'.repeat(40) }))
+    const dir = target()
+    try {
+      const output = execFileSync(process.execPath, [join(pkg, 'tools/cairn.mjs'), 'init', '--target', dir], { encoding: 'utf8', stdio: 'pipe' })
+      assert.match(output, /installed \d+ file\(s\)/)
+      assert.match(readFileSync(join(dir, 'AGENTS.md'), 'utf8'), new RegExp(`blob/${'f'.repeat(40)}/spec/`), 'links pin the stamped commit, not the adopter\'s')
+      assert.equal(readLock(dir).sourceCommit, 'f'.repeat(40))
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+    // Unstamped, inside the adopter's tree: the adopter's commit must not be taken for the kit's.
+    rmSync(join(pkg, 'tools/release.json'))
+    assert.equal(sourceCommit(pkg), 'unknown')
+    assert.equal(specUrl(sourceCommit(pkg)), 'https://github.com/sinlalune/cairn/blob/main/spec')
+  } finally {
+    rmSync(adopter, { recursive: true, force: true })
   }
 })
 

@@ -31,6 +31,11 @@ import { applyPlan, defaultOptions, planInstall } from './cairn.mjs'
 
 const CHECK = 'tools/cairn-check.mjs'
 
+/** The harness writes its records today: a record dated at authoring time
+ *  drifts from the commit that adds it as the calendar moves, and the
+ *  `record-date` advisory would be right to say so. */
+const TODAY = new Date().toISOString().slice(0, 10)
+
 /** Rules an adversarial fixture in this file demonstrates rejecting. */
 const COVERED = new Set()
 
@@ -111,7 +116,7 @@ const OPENING_SECTION = (digest) => `
 decision: accepted
 accepted_by: fixture-opener
 accepted_roles: [initiator, reviewer]
-accepted_at: 2026-09-01T09:00:00Z
+accepted_at: ${TODAY}T09:00:00Z
 scope_ref: ${RECORD}#definition-of-done
 scope_digest: ${digest}
 \`\`\`
@@ -136,7 +141,7 @@ type: Cairn Coding Path
 title: Fixture path
 description: A path record used by the adversarial fixtures.
 tags: [coding-path]
-timestamp: 2026-09-01T00:00:00Z
+timestamp: ${TODAY}T00:00:00Z
 cairn:
 ${body}
 ---
@@ -381,7 +386,7 @@ const CLOSING = ({ subject, base, digest, attested = [], disposition = [], verdi
   return `---
 type: Cairn Closing Record
 title: CP-FIXTURE-001 — closing of ${subject.slice(0, 7)}
-timestamp: 2026-09-01T18:00:00Z
+timestamp: ${TODAY}T18:00:00Z
 cairn:
   path: CP-FIXTURE-001
   branch: path/cp-fixture-001
@@ -389,7 +394,7 @@ cairn:
   base: ${base}
   accepted_by: fixture-closer
   accepted_roles: [reviewer]
-  accepted_at: 2026-09-01T18:00:00Z
+  accepted_at: ${TODAY}T18:00:00Z
   decision: accepted
   scope_ref: ${RECORD}#definition-of-done
   scope_digest: ${digest}
@@ -422,7 +427,7 @@ const closingFile = (subject) => `project/coding-paths/CP-FIXTURE-001/closing-${
 const STEP_RECORD = `---
 type: Cairn Coding Path Step
 title: 'CP-FIXTURE-001 S01 — the one constant'
-timestamp: 2026-09-01T00:00:00Z
+timestamp: ${TODAY}T00:00:00Z
 cairn:
   path: CP-FIXTURE-001
   step: S01
@@ -462,7 +467,7 @@ function readyRepository({ provisional = false, transport = 'pull-request' } = {
 
   // S01: source, its module note, and a widening discovered while working.
   write(dir, 'src/app.js', 'export const app = true\n')
-  write(dir, 'docs/modules/application.md', '---\ntype: Cairn Module Note\ntitle: Application\ndescription: The one area.\ntags: [module]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Application\n\nOne exported constant.\n')
+  write(dir, 'docs/modules/application.md', `---\ntype: Cairn Module Note\ntitle: Application\ndescription: The one area.\ntags: [module]\ntimestamp: ${TODAY}T00:00:00Z\n---\n\n# Application\n\nOne exported constant.\n`)
   const record = readFileSync(join(dir, RECORD), 'utf8')
     .replace('    - src/**\n', '    - src/**\n    - docs/modules/application.md\n')
   assert.ok(record.includes('    - docs/modules/application.md'), 'the harness must widen writes: while running')

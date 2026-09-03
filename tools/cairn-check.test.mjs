@@ -90,7 +90,9 @@ import {
   PROVISIONAL_TRAILER,
   WORK_UNIT_TYPES
 } from './cairn-check.mjs'
-import { CAIRN_CONFIG, slash } from './cairn-config.mjs'
+import { installedConfig, slash } from './cairn-config.mjs'
+
+const CAIRN_CONFIG = installedConfig()
 
 /* ------------------------------------------------------------------ *
  * The binding these tests run under. Nothing below names a host path that

@@ -7,13 +7,13 @@ timestamp: 2026-09-02T00:00:00Z
 cairn:
   id: CP-CAIRN-001
   route: full
-  status: ready
-  current_step: S08
+  status: running
+  current_step: S09
   base_commit: 43cfeb96670eba615567b967f7368f32b3d8a409
   branch: path/cp-cairn-001
   assigned_writer: cp-cairn-001-writer
   depends_on: []
-  subject_commit: 7c0e9ce64ec3bb8bb20f30596fb00e09510ac0b6
+  subject_commit: null
   resolution: null
   writes:
     - README.md
@@ -134,6 +134,7 @@ immutable original; the block above carries the same digest.
 - **[S06](./steps/S06.md)** — the `cairn` command of the `cairn-protocol` package: `init` from a kit of 26 files that links the specification at the pinned commit, `status` and `update` by lock digest, `adopt` for a lock-less installation, run on Atomik at `46bdd11`; this repository's lock rewritten; the path convention moved beside the execution protocol — COMPLETE
 - **[S07](./steps/S07.md)** — the four documentation layers: `manifesto.md` as the edited edition, `README.md` with the overview and three quick starts, and `site/`, the React Markdown renderer with Mermaid built from 74 documents and deployed to GitHub Pages from the trunk — COMPLETE
 - **[S08](./steps/S08.md)** — every budget target bound and measured by the tools; the greenfield pilot as a command and a test, green from install to done on both transports at two protocol files per unit; the version 1.0.0 and the lock rewritten — COMPLETE
+- **[S09](./steps/S09.md)** — the review of pull request #2 found four defects — the packaged command could not run, the links pinned the wrong commit, `update` could rewrite the adopter's files, the site lost anchors — the candidate is void, each is fixed with a test, and this commit is the next candidate — COMPLETE
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
@@ -142,7 +143,7 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 7c0e9ce64ec3bb8bb20f30596fb00e09510ac0b6 — the candidate C, the S08 commit, on origin/path/cp-cairn-001; this refresh is the administrative commit A
+commit : 7c0e9ce64ec3bb8bb20f30596fb00e09510ac0b6 — the S08 commit, the last completed unit on origin/path/cp-cairn-001; S09 is the commit that carries this refresh, and the next candidate
 unit   : 08
 base   : 43cfeb96670eba615567b967f7368f32b3d8a409
 trunk  : ca34010040daa836fe81004eb2f400f9a5c7511f — origin/main has not moved since registration
@@ -150,12 +151,11 @@ trunk  : ca34010040daa836fe81004eb2f400f9a5c7511f — origin/main has not moved 
 
 ### Next action
 
-The request from `path/cp-cairn-001` to `main` is open with the review as its
-description; the owner's approval is the closing acceptance, and the merge —
-a merge commit, never a squash — lands `C` with this administrative commit.
-Then the integrating unit on the trunk: `done`, `resolution: completed`, the
-live view, `project/log/2026-09-02-cp-cairn-001.md`, the tag `1.0.0`, the
-pilot rerun from the tag, and the owner's `npm publish` of `cairn-protocol`.
+Close again, on the S09 commit as the candidate: edit the description of
+pull request #2 to name it, make the administrative commit setting `ready`
+and `subject_commit`, and wait for the owner's approval and merge. Then the
+integrating unit on the trunk: `done`, the journal entry, the tag `1.0.0`,
+the pilot rerun from the tag, and the owner's `npm publish`.
 
 ### Blockers
 
@@ -196,6 +196,11 @@ None.
   tags; the source commit is exact and already on the forge.
 - Writing pages for the site that are not documents of the repository (S07)
   — a second copy that drifts; the site is a projection.
+- A module-level configuration constant with the missing file caught in the
+  command (S09) — every tool would pay the load on import.
+- Writing the source commit into `package.json` at publish time (S09) — a
+  manifest rewritten by a script is one nobody trusts; the stamp is its own
+  file.
 
 ### Reading order
 

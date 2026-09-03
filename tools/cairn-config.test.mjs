@@ -5,13 +5,15 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import {
-  CAIRN_CONFIG,
+  installedConfig,
   SUPPORTED_CONFIG_VERSION,
   configErrors,
   loadConfig,
   metadataOf,
   slash
 } from './cairn-config.mjs'
+
+const CAIRN_CONFIG = installedConfig()
 
 test('cairn-config: the installed host binding is schema-valid and explicit', () => {
   assert.deepEqual(configErrors(CAIRN_CONFIG), [])

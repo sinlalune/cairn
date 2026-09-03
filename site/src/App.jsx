@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import bundle from './content.json'
+import { headingText, parseRoute, slug } from './route.mjs'
 
 /** Mermaid is heavy and most pages carry no diagram, so it is loaded the
  *  first time one renders, never up front. */
@@ -77,11 +78,13 @@ function Mermaid({ code }) {
   return <div className="mermaid" dangerouslySetInnerHTML={{ __html: svg }} />
 }
 
-function Document({ path }) {
+function Document({ path, fragment }) {
   const text = bundle.files[path]
   if (!text) return <article><h1>Not here</h1><p>No document at <code>{path}</code>. <a href="#/README.md">Start again</a>.</p></article>
   const { body } = frontmatter(text)
+  const heading = (Tag) => ({ children }) => <Tag id={slug(headingText(children))}>{children}</Tag>
   const components = useMemo(() => ({
+    h1: heading('h1'), h2: heading('h2'), h3: heading('h3'), h4: heading('h4'), h5: heading('h5'), h6: heading('h6'),
     a: ({ href, children }) => {
       const link = resolveLink(href, path)
       return <a href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noreferrer' : undefined}>{children}</a>
@@ -92,7 +95,12 @@ function Document({ path }) {
       return <code className={className} {...rest}>{children}</code>
     }
   }), [path])
-  useEffect(() => { window.scrollTo(0, 0) }, [path])
+  // After the document renders: the requested heading, or the top.
+  useEffect(() => {
+    const target = fragment ? document.getElementById(fragment) : null
+    if (target) target.scrollIntoView()
+    else window.scrollTo(0, 0)
+  }, [path, fragment])
   return (
     <article>
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>{body}</ReactMarkdown>
@@ -104,7 +112,7 @@ function Document({ path }) {
 }
 
 function useRoute() {
-  const read = () => decodeURIComponent(window.location.hash.replace(/^#\/?/, '').split('#')[0]) || 'README.md'
+  const read = () => parseRoute(window.location.hash)
   const [route, setRoute] = useState(read)
   useEffect(() => {
     const onChange = () => setRoute(read())
@@ -115,7 +123,7 @@ function useRoute() {
 }
 
 export default function App() {
-  const route = useRoute()
+  const { path: route, fragment } = useRoute()
   const files = Object.keys(bundle.files)
   const nav = useMemo(() => navigation(files), [files.length])
   const [open, setOpen] = useState(false)
@@ -138,7 +146,7 @@ export default function App() {
           </section>
         ))}
       </nav>
-      <main><Document path={route} /></main>
+      <main><Document path={route} fragment={fragment} /></main>
     </div>
   )
 }

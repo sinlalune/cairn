@@ -79,15 +79,36 @@ export const SKILLS = 'skills'
 /** Portable text the kit LINKS rather than copies. */
 export const PORTABLE_DOCS = 'spec'
 
-/** The commit this kit was cut from: the source repository's HEAD when it can
- *  be read, the commit recorded in the package otherwise, and `main` — the
- *  moving trunk, stated as such — when neither is known. */
+/** The commit this kit was cut from. A published package carries it in
+ *  `tools/release.json`, stamped by `prepack`; the protocol's own repository
+ *  reads its HEAD, but only when this directory IS that repository — asking
+ *  Git from inside an adopter's `node_modules` walks up to the adopter's
+ *  commit, and a link pinned there resolves to nothing. `unknown` otherwise,
+ *  and `specUrl` says `main` for it, the moving trunk stated as such. */
+export const RELEASE_FILE = join(SOURCE_ROOT, 'tools/release.json')
+
 export function sourceCommit(root = SOURCE_ROOT) {
-  try {
-    return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
-  } catch {
-    return PACKAGE.cairn?.commit ?? 'unknown'
+  const stamped = join(root, 'tools/release.json')
+  if (existsSync(stamped)) {
+    const release = JSON.parse(readFileSync(stamped, 'utf8'))
+    if (/^[0-9a-f]{40,64}$/.test(release.commit ?? '')) return release.commit
   }
+  try {
+    const options = { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
+    const top = execFileSync('git', ['rev-parse', '--show-toplevel'], options).trim()
+    if (resolve(top) !== resolve(root)) return 'unknown'
+    return execFileSync('git', ['rev-parse', 'HEAD'], options).trim()
+  } catch {
+    return 'unknown'
+  }
+}
+
+/** Written by `prepack`, so the tarball knows which commit it was cut from. */
+export function stampRelease(root = SOURCE_ROOT) {
+  const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim()
+  const release = { release: PROTOCOL_RELEASE, commit, stampedAt: new Date().toISOString() }
+  writeFileSync(join(root, 'tools/release.json'), `${JSON.stringify(release, null, 2)}\n`)
+  return release
 }
 
 export function specUrl(commit) {
@@ -550,7 +571,9 @@ function generateView(target) {
 
 /** The manifest digests the kit's OWN bytes for every planned file, whether
  *  or not the tree still holds them: that is what lets `status` tell an edit
- *  from an installation. The generated view is recorded as written. */
+ *  from an installation. The generated view is recorded as written, and the
+ *  host files are named, so a later update knows which files are the
+ *  adopter's even after they have left the kit. */
 export function lockFor(plan, target) {
   const manifest = {}
   for (const [path, content] of [...plan.files].sort(([a], [b]) => a.localeCompare(b))) {
@@ -558,7 +581,13 @@ export function lockFor(plan, target) {
   }
   const view = `${plan.config.roots.project}/coding-paths/ACTIVE.md`
   if (existsSync(join(target, view))) manifest[view] = digest(readFileSync(join(target, view)))
-  return { release: PROTOCOL_RELEASE, sourceCommit: plan.sourceCommit, installedAt: new Date().toISOString(), manifest }
+  return {
+    release: PROTOCOL_RELEASE,
+    sourceCommit: plan.sourceCommit,
+    installedAt: new Date().toISOString(),
+    host: [...plan.host].sort(),
+    manifest
+  }
 }
 
 export function writeLock(target, plan) {
@@ -637,25 +666,40 @@ export function fileState(target, path, recorded) {
 }
 
 /** What `status` reports, and what `update` would do. Pure over the lock, the
- *  plan and a reader of the tree, so it is testable on a synthetic tree. */
+ *  plan and a reader of the tree, so it is testable on a synthetic tree.
+ *
+ *  Portable files are the kit's: a pristine one whose template changed is
+ *  rewritten, an edited one is kept and named, a missing one is restored, and
+ *  one that left the kit is deleted when pristine. Host files are the
+ *  adopter's from day one, pristine or not: they are written only when
+ *  missing, REVIEWED — named, never rewritten — when their template changed,
+ *  and never deleted. A lock from before host files were named treats every
+ *  file that left the kit as one to report, because it cannot tell. */
 export function installationStatus(lock, plan, stateOf) {
   const files = []
   // The live view is generated, never compared with the placeholder the plan
   // carries: it is rewritten by its generator at every update, and reported
   // only when it is gone.
   const view = plan.config ? `${plan.config.roots.project}/coding-paths/ACTIVE.md` : null
+  const host = plan.host ?? new Set()
   for (const [path, content] of plan.files) {
     const recorded = lock.manifest[path]
     const state = recorded === undefined ? (stateOf(path, digest(content)) === 'missing' ? 'missing' : 'unmanaged') : stateOf(path, recorded)
     const current = path === view || digest(content) === recorded
-    files.push({ path, state, action: state === 'edited' || state === 'unmanaged' ? 'keep' : (state === 'missing' || !current) ? 'write' : 'none' })
+    let action = 'none'
+    if (state === 'missing') action = 'write'
+    else if (state === 'edited' || state === 'unmanaged') action = 'keep'
+    else if (!current) action = host.has(path) ? 'review' : 'write'
+    files.push({ path, state, action })
   }
   const left = []
+  const knownHost = Array.isArray(lock.host) ? new Set(lock.host) : null
   for (const [path, recorded] of Object.entries(lock.manifest)) {
     if (plan.files.has(path)) continue
     const state = stateOf(path, recorded)
     if (state === 'missing') continue
-    left.push({ path, state, action: state === 'pristine' ? 'delete' : 'report' })
+    const deletable = state === 'pristine' && knownHost !== null && !knownHost.has(path)
+    left.push({ path, state, action: deletable ? 'delete' : 'report' })
   }
   return { installed: lock.release, available: PROTOCOL_RELEASE, files, left }
 }
@@ -668,8 +712,9 @@ function describeStatus(status) {
     `kit files: ${Object.entries(counts).map(([state, n]) => `${n} ${state}`).join(', ')}`
   ]
   for (const file of status.files.filter((f) => f.action === 'write')) lines.push(`  update would write   ${file.path} (${file.state})`)
+  for (const file of status.files.filter((f) => f.action === 'review')) lines.push(`  update would keep    ${file.path} — yours, and the kit's template changed; review it against the kit's`)
   for (const file of status.files.filter((f) => f.state === 'edited')) lines.push(`  update would keep    ${file.path} — edited here; review it against the kit's`)
-  for (const file of status.left) lines.push(`  update would ${file.action === 'delete' ? 'delete ' : 'report '} ${file.path} — no longer part of the kit${file.action === 'report' ? ', and edited here' : ''}`)
+  for (const file of status.left) lines.push(`  update would ${file.action === 'delete' ? 'delete ' : 'report '} ${file.path} — no longer part of the kit${file.action === 'report' ? (file.state === 'pristine' ? ', and yours to delete' : ', and edited here') : ''}`)
   return lines.join('\n')
 }
 
@@ -832,6 +877,11 @@ function main(argv) {
     console.log(`cairn — ${dryRun ? 'would update' : 'updated'} to release ${PROTOCOL_RELEASE}: ${result.written.length} written, ${result.deleted.length} deleted`)
     return
   }
+  if (command === 'stamp') {
+    const release = stampRelease()
+    console.log(`cairn — stamped tools/release.json at ${release.release} from ${release.commit.slice(0, 7)}`)
+    return
+  }
   if (command === 'adopt') {
     const result = applyAdopt(target, { dryRun })
     console.log(`cairn — ${dryRun ? 'would adopt' : 'adopted'} ${target} at release ${PROTOCOL_RELEASE}: ${result.written.length} written, ${result.kept.length} host files kept`)
@@ -840,7 +890,7 @@ function main(argv) {
     if (!dryRun) console.log('next — run npm run cairn-check, read its findings, and commit the adoption as one unit')
     return
   }
-  throw new Error('usage: cairn <init|status|update|adopt> [--target <dir>] [options]')
+  throw new Error('usage: cairn <init|status|update|adopt> [--target <dir>] [options]; `stamp` is the package\'s own, run by prepack')
 }
 
 if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('/cairn')) {

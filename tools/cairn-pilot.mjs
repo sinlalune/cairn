@@ -32,6 +32,7 @@ import { fileURLToPath } from 'node:url'
 import { applyPlan, defaultOptions, planInstall } from './cairn.mjs'
 
 const CHECK = 'tools/cairn-check.mjs'
+const TODAY = new Date().toISOString().slice(0, 10)
 const PATH_ID = 'CP-PILOT-001'
 const BRANCH = 'path/cp-pilot-001'
 const RECORD = `project/coding-paths/${PATH_ID}/index.md`
@@ -99,7 +100,7 @@ type: Cairn Coding Path
 title: ${PATH_ID} — the pilot's one constant
 description: One exported constant, so the protocol's cost can be measured against the smallest change.
 tags: [coding-path]
-timestamp: 2026-09-02T00:00:00Z
+timestamp: ${TODAY}T00:00:00Z
 cairn:
   id: ${PATH_ID}
   route: lightweight
@@ -136,7 +137,7 @@ The application exports one constant, and the path that delivers it is closed on
 decision: accepted
 accepted_by: pilot-owner
 accepted_roles: [initiator, reviewer]
-accepted_at: 2026-09-02T09:00:00Z
+accepted_at: ${TODAY}T09:00:00Z
 scope_ref: ${RECORD}#definition-of-done
 scope_digest: ${digest}
 \`\`\`
@@ -190,7 +191,7 @@ npm run cairn-check
 const STEP_RECORD = `---
 type: Cairn Coding Path Step
 title: '${PATH_ID} S01 — the constant and its note'
-timestamp: 2026-09-02T00:00:00Z
+timestamp: ${TODAY}T00:00:00Z
 cairn:
   path: ${PATH_ID}
   step: S01
@@ -229,7 +230,7 @@ cairn-check : pass
 const closing = ({ subject, base, digest }) => `---
 type: Cairn Closing Record
 title: ${PATH_ID} — closing of ${subject.slice(0, 7)}
-timestamp: 2026-09-02T10:00:00Z
+timestamp: ${TODAY}T10:00:00Z
 cairn:
   path: ${PATH_ID}
   branch: ${BRANCH}
@@ -237,7 +238,7 @@ cairn:
   base: ${base}
   accepted_by: pilot-reviewer
   accepted_roles: [reviewer, integrator]
-  accepted_at: 2026-09-02T10:00:00Z
+  accepted_at: ${TODAY}T10:00:00Z
   decision: accepted
   scope_ref: ${RECORD}#definition-of-done
   scope_digest: ${digest}
@@ -274,7 +275,7 @@ Candidate accepted for administrative closure and exact integration.
 const journal = ({ subject, merged }) => `---
 type: Cairn Journal Entry
 title: ${PATH_ID} — the pilot's one constant, integrated
-timestamp: 2026-09-02T11:00:00Z
+timestamp: ${TODAY}T11:00:00Z
 cairn:
   path: ${PATH_ID}
   subject_commit: ${subject}
@@ -372,10 +373,10 @@ export function runPilot({ transport = 'pull-request', keep = false } = {}) {
     const merged = git(dir, 'rev-parse', 'HEAD')
     write(dir, RECORD, readFileSync(join(dir, RECORD), 'utf8').replace('  status: ready\n', '  status: done\n').replace('  resolution: null\n', '  resolution: completed\n'))
     node(dir, 'tools/cairn-active.mjs')
-    write(dir, `project/log/2026-09-02-${PATH_ID.toLowerCase()}.md`, journal({ subject: candidate, merged }))
+    write(dir, `project/log/${TODAY}-${PATH_ID.toLowerCase()}.md`, journal({ subject: candidate, merged }))
     const beforeDone = gate(dir)
     if (!beforeDone.ok) throw new Error(`pilot: the integrating unit failed its gate — ${beforeDone.blocking.join(', ')}`)
-    const integrating = commit(dir, `Integrate ${PATH_ID}`, [RECORD, 'project/coding-paths/ACTIVE.md', `project/log/2026-09-02-${PATH_ID.toLowerCase()}.md`])
+    const integrating = commit(dir, `Integrate ${PATH_ID}`, [RECORD, 'project/coding-paths/ACTIVE.md', `project/log/${TODAY}-${PATH_ID.toLowerCase()}.md`])
     git(dir, 'push', '-q', 'origin', 'main')
     if (git(dir, 'merge-base', '--is-ancestor', candidate, 'origin/main') !== '') throw new Error('pilot: the candidate is not reachable from the remote trunk')
     stage('done', true, integrating)

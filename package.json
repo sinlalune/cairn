@@ -18,12 +18,14 @@
     "tools/cairn-config.schema.json",
     "tools/cairn-active.mjs",
     "tools/cairn-audit.mjs",
+    "tools/release.json",
     "skills/"
   ],
   "engines": {
     "node": ">=20"
   },
   "scripts": {
+    "prepack": "node tools/cairn.mjs stamp",
     "cairn": "node tools/cairn.mjs",
     "cairn-check": "node tools/cairn-check.mjs",
     "cairn-active": "node tools/cairn-active.mjs",
