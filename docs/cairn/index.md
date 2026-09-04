@@ -12,3 +12,5 @@ timestamp: 2026-09-02T00:00:00Z
 - [Project note](./cairn-project-note-2026-09-02.md) — what the protocol must become.
 - [Manifesto convergence](./cairn-manifesto-convergence-2026-09-02.md) — the 0.2 protocol measured against the manifesto and the state of the art; section 4 is the shape of 1.0 and every checkbox is an owner ruling.
 - [Specification](../../spec/index.md) — moved to the repository root by CP-CAIRN-001 S01 and written on the six stages of the chronology.
+- [Crumbz post-mortem](./crumbz-postmortem-2026-09-03.md) — the first adopter's CP-001 and CP-002, run by Gemini 3.8 on the Antigravity harness: what held, what did not, and what it asks of 1.1.
+- [Crumbz post-mortem, Codex](./crumbz-postmortem-codex-2026-09-03.md) — the value-board idea from research note through CP-003, CP-004 and the checker-repair path CP-005, run by Codex: what held, where closure broke, and what it asks of 1.1.
