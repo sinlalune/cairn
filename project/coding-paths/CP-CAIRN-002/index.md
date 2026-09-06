@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-002
   route: full
   status: running
-  current_step: S05
+  current_step: S06
   base_commit: 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
   branch: path/cp-cairn-002
   assigned_writer: cp-cairn-002-writer
@@ -152,30 +152,31 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - **[S03](./steps/S03.md)** — theme 2 as four records: ADR-002 the checkboxes stay and the seal is checked at every transition (R10; R11 refused), ADR-003 two live paths on the same files (R12), ADR-004 the checker reads what it did not (R09, R13 to R17), ADR-005 one run per commit that can land (R07).
 - **[S04](./steps/S04.md)** — themes 3 and 4 as five records: ADR-006 what closing leaves behind (R23, R24), ADR-007 a framework writes into the bootloader (R21), ADR-008 housekeeping with no choice in it (R18, R19, R20, R22, R28, R29, R38), ADR-009 what the unit skill tells the agent (R25, R26, R27), ADR-010 the module note describes now (R39, R30).
 - **[S05](./steps/S05.md)** — themes 5 and 6 as four records: ADR-011 the adopter's documentation plane (R31, R34, R35), ADR-012 a page a newcomer reads first (R32), ADR-013 a local pointer to the protocol (R33), ADR-014 two tools of 1.1 (R36, R37). Every ticked line of the rulings note is now named by one record.
-- **S06** — not started; its file is linked when it is written
+- **[S06](./steps/S06.md)** — the architecture page `docs/architecture/01-cairn-1-1.md`, promoted from the two notes through ADR-001 to ADR-014 and stating what 1.1 removes; the roadmap register with the 1.0 and 1.1 milestones and the five coding paths of 1.1, each *no path yet*, the installer's row gone.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : e2da1b769d5043bf2608e367d8ee2d03184c82af — S04, unit 04, on origin/path/cp-cairn-002, CI run 34042894787 green; S05's own commit follows it and is named here by S06
-unit   : 05 (S05, pushed)
+commit : 77dade74110c5afb198ee492cb2fdace97efce09 — S05, unit 05, on origin/path/cp-cairn-002, CI run 34046418841 green; S06's own commit follows it and is named here by the administrative commit
+unit   : 06 (S06, pushed)
 base   : 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
 trunk  : ec1e53502005142a117e8eeed0b8ae709cd95dd9 — origin/main after registration; unchanged since
 ```
 
 ### Next action
 
-Run S06 of the plan: the architecture page for Cairn 1.1 under
-`docs/architecture/`, promoted from the two notes at their pinned blob
-ids, naming every one of ADR-001 to ADR-014 where the page relies on it and
-stating what 1.1 removes from 1.0; `docs/architecture/index.md` lists it.
-Then the roadmap register in `project/coding-paths/index.md`: the 1.1
-milestone and the coding paths that build it, each with a path id or *no
-path yet*, the installer's row gone, and the replacement of the stale ADR
-citations named as work. Before writing, check the second definition-of-done
-item line by line: R01 to R39 each named by exactly one record.
+Close the path with the `cairn-close` skill: fetch and merge `origin/main`
+in, run the gates bare on the result, take its object id as candidate `C`,
+run `npm run cairn-audit -- --subject <C>` and open the pull request from
+`path/cp-cairn-002` to `main` with that description, the four coherence
+questions answered, the advisories disposed, and the owner's acceptance
+checkbox (ADR-001, decision 3) unticked. The owner reads the fourteen
+records and the page, ticks the box; then the administrative commit
+(`ready`, `subject_commit: C`, the live view, this checkpoint at `C`), the
+owner merges after the request's run is green, the integrating unit and
+the journal entry land on the trunk, and the worktree is removed.
 
 ### Blockers
 
