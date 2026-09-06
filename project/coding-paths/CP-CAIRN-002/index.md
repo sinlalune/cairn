@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-002
   route: full
   status: running
-  current_step: S04
+  current_step: S05
   base_commit: 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
   branch: path/cp-cairn-002
   assigned_writer: cp-cairn-002-writer
@@ -151,27 +151,31 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - **[S02](./steps/S02.md)** — the reservation of the eight cited numbers dropped on the owner's word: records count from ADR-001 with no gaps, and the stale citations are replaced by the paths of 1.1; the plan's remaining items shift to S03 to S06.
 - **[S03](./steps/S03.md)** — theme 2 as four records: ADR-002 the checkboxes stay and the seal is checked at every transition (R10; R11 refused), ADR-003 two live paths on the same files (R12), ADR-004 the checker reads what it did not (R09, R13 to R17), ADR-005 one run per commit that can land (R07).
 - **[S04](./steps/S04.md)** — themes 3 and 4 as five records: ADR-006 what closing leaves behind (R23, R24), ADR-007 a framework writes into the bootloader (R21), ADR-008 housekeeping with no choice in it (R18, R19, R20, R22, R28, R29, R38), ADR-009 what the unit skill tells the agent (R25, R26, R27), ADR-010 the module note describes now (R39, R30).
-- **S05** — not started; its file is linked when it is written
+- **[S05](./steps/S05.md)** — themes 5 and 6 as four records: ADR-011 the adopter's documentation plane (R31, R34, R35), ADR-012 a page a newcomer reads first (R32), ADR-013 a local pointer to the protocol (R33), ADR-014 two tools of 1.1 (R36, R37). Every ticked line of the rulings note is now named by one record.
+- **S06** — not started; its file is linked when it is written
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 6c0d85f09c9e5640e034ebaca2d8142419aa0208 — S03, unit 03, on origin/path/cp-cairn-002, CI run 34041012956 green; S04's own commit follows it and is named here by S05
-unit   : 04 (S04, pushed)
+commit : e2da1b769d5043bf2608e367d8ee2d03184c82af — S04, unit 04, on origin/path/cp-cairn-002, CI run 34042894787 green; S05's own commit follows it and is named here by S06
+unit   : 05 (S05, pushed)
 base   : 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
 trunk  : ec1e53502005142a117e8eeed0b8ae709cd95dd9 — origin/main after registration; unchanged since
 ```
 
 ### Next action
 
-Run S05 of the plan: themes 5 and 6 of the rulings note, the documentation
-plane and the tools — R31 to R37: `docs/inputs`, the concept wiki in three,
-the readable page per product surface, the local pointer to the protocol,
-proactive concept notes, `cairn-postmortem` on a red run, `cairn-test`.
-Group by owner question as before; ADR-008 already says R37 belongs to the
-tooling record. Add every record to `docs/adr/index.md`.
+Run S06 of the plan: the architecture page for Cairn 1.1 under
+`docs/architecture/`, promoted from the two notes at their pinned blob
+ids, naming every one of ADR-001 to ADR-014 where the page relies on it and
+stating what 1.1 removes from 1.0; `docs/architecture/index.md` lists it.
+Then the roadmap register in `project/coding-paths/index.md`: the 1.1
+milestone and the coding paths that build it, each with a path id or *no
+path yet*, the installer's row gone, and the replacement of the stale ADR
+citations named as work. Before writing, check the second definition-of-done
+item line by line: R01 to R39 each named by exactly one record.
 
 ### Blockers
 
