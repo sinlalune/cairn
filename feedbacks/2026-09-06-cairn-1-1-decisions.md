@@ -279,20 +279,37 @@ command. What is left for a person is the judgement.
 
 ## H. What 1.1 removes
 
-### Q19. What should go away?
+### Q19. Four things that could simply go away
 
-The manifesto's opportunity: *always be open to simpler workflows*. The
-audit found four things that cost time on Crumbz and may not need to exist.
-Tick any you want 1.1 to study for removal; leave bare what stays.
+The manifesto says: *always be open to simpler workflows*. The audit found
+four mechanisms that cost time on Crumbz. Each is explained here as it
+works today, then what removing it would mean. Tick the ones you want
+removed; leave bare the ones that stay.
 
-- [ ] **The plan pull request for a sole owner.** You register your own
-  plans; the request is a round-trip to yourself.
-- [ ] **The second automatic run.** Every commit is checked twice, once on
-  the push and once on the request; one green and one red confused two
-  merges.
-- [ ] **The outcome checkboxes.** Same as Q7's first option.
-- [ ] **The module note's running log.** Each path appends its outcome to
-  "Current State"; the journal already holds that history.
+- [ ] **The plan pull request.** Today: when the agent starts a coding
+  path, it writes the plan, opens a pull request containing only that plan,
+  and waits for you to click merge before writing any code. You are the only
+  person in the project, so you are asking yourself for permission, and the
+  wait was up to thirteen hours. Removed: after you say yes in the chat, the
+  agent puts the plan on the main line directly and starts coding. *(This
+  is the same choice as Q1's second option.)*
+- [ ] **The double automatic check.** Today: GitHub runs the checker twice
+  on every commit, once when it is pushed and once because it is part of a
+  pull request. On CP-016 the first run was green, you merged, and the
+  second run came out red one minute later. Removed: one check per commit,
+  and you merge when that one is green.
+- [ ] **The outcome checkboxes.** Today: each plan's "Definition of done"
+  is a list with tick boxes. When you accept the plan, the tool takes a
+  fingerprint of that text; ticking a box changes the text and breaks the
+  fingerprint, so closing is blocked until the boxes are unticked. Agents
+  ticked them three times. Removed: a plain list, no boxes; "done" is said
+  at closing. *(Same as Q7's first option.)*
+- [ ] **The module note's history.** Today: `docs/modules/application.md`
+  should describe the application as it is now, but every path added a line
+  "step 3 did this, step 4 did that", so it became a forty-line history and
+  CP-016 had to add a note saying half of it is out of date. The journal
+  folder already records what each path did. Removed: the note describes
+  only the current state; history stays in the journal.
 
 ## Already decided on 06/09
 
