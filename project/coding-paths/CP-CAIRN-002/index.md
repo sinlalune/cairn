@@ -147,25 +147,28 @@ registration request. Amendments: none.
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
-- **S01** — not started; its file is linked when it is written
+- **[S01](./steps/S01.md)** — `docs/adr/` and `docs/architecture/` with their indexes, `docs/index.md` listing them, numbering settled from ADR-001 with the eight cited Atomik numbers reserved, and ADR-001 on how a sole owner opens and closes a path (R01, R02, R04, R05, R06, R08; R03 refused).
+- **S02** — not started; its file is linked when it is written
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — the trunk commit that adds this record, whose parent is base
-unit   : 0
+commit : ec1e53502005142a117e8eeed0b8ae709cd95dd9 — the registration commit, unit 0; S01's own commit follows it on the branch and is named here by S02
+unit   : 01 (S01, pushed)
 base   : 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
-trunk  : 885072cc786db4d4608ed2d92a1b51cf2ce78b4c — origin/main at registration
+trunk  : ec1e53502005142a117e8eeed0b8ae709cd95dd9 — origin/main after registration; unchanged since
 ```
 
 ### Next action
 
-Create the path branch and its worktree from the registration commit once it
-is on the remote trunk, publish the branch, then run S01 of the plan: the two
-folders with their indexes, and the first decision record, the one on how a
-sole owner's repository opens a path.
+Run S02 of the plan: theme 2 of the rulings note, what the checker reads —
+R09, R10, R12 to R17, with R11 refused and R07's single run per candidate.
+Decide first whether it is one record for the theme or one per changed
+predicate; each record names the rule as the conformance page names it and
+the fixture the ruling asks for, and links *promoted from* at the pinned
+blob ids as ADR-001 does. Add every new record to `docs/adr/index.md`.
 
 ### Blockers
 
@@ -180,17 +183,24 @@ None.
   the declaration is a control-plane change, and how a sole owner's
   repository registers on a forge whose ruleset requires a request is exactly
   what the first decision record must settle; the commit stays record and
-  view only, as the open skill says.
+  view only, as the open skill says. Settled in S01 by ADR-001 decision 1
+  and decision 6; the declaration itself is changed by the coding path that
+  implements the record.
 - Pinning the manifesto in `governs:` beside the two notes — every option on
   the decisions page already carries the manifesto's tag, and a third pin
   would widen the drift predicate over a document this path never contests;
   it is conditional reading instead.
 - One decision record per ruling line, thirty-seven files — a record states
   one choice, and the lines group into a dozen choices; a file per line is
-  the volume of records the manifesto's first threat names.
+  the volume of records the manifesto's first threat names. S01 wrote theme
+  1 as one record with seven numbered decisions.
 - Flipping the notes' `status: provisional` when the records land —
   promotion leaves the notes exactly as they were; the records point back
   to them, they do not rewrite them.
+- Landing records as `proposed` and flipping them at merge — the
+  administrative commit carries nothing but closure metadata, so the flip
+  would cost a unit; a record of a decision the owner already took lands
+  `accepted`, dated the decision.
 
 ### Reading order
 
@@ -199,6 +209,7 @@ None.
 3. `spec/index.md`, chapter 3 — what a promotion unit adds, amends, links and leaves alone.
 4. `spec/reference/repository-layout.md` — the shapes of `docs/adr/` and `docs/architecture/`.
 5. `project/coding-paths/CP-CAIRN-002/plan.md` — the order the records are written in.
+6. `docs/adr/ADR-001-sole-owner-opens-and-closes-a-path.md` — the shape every later record follows.
 
 ### Verify
 
