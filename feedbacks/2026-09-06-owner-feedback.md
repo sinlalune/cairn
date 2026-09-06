@@ -39,7 +39,7 @@ is named in the template or the brainstorm skill. What 1.1 needs to decide:
 one name, which plane, and one line in `cairn-brainstorm` saying the first
 session starts by reading it.
 
-**Owner's ruling, 2026-09-06.** docs/inputs
+**Owner's ruling, 2026-09-06.** `docs/inputs`
 
 ### 2. Promotion path didn't produce any functional documentation.
 
@@ -93,7 +93,7 @@ borrowed terms could live under `spec/concepts/borrowed/` or be dropped in
 favour of links. Both are cheap; the choice is which split the owner means,
 to confirm before 1.1 touches either folder.
 
-**Owner's ruling, 2026-09-06.** Project side : docs/concepts/cairn (when the user ask an explanation about a cairn term), docs/concepts/<project> when project specific terms, docs/concepts/learning when external knowledge (coding, hardware, IA, anything)
+**Owner's ruling, 2026-09-06.** Project side : `docs/concepts/cairn` (when the user ask an explanation about a cairn term), `docs/concepts/<project>` when project specific terms, `docs/concepts/learning` when external knowledge (coding, hardware, IA, anything)
 the perfect scenario is that even in the chat session, the agent recognize complex abstraction and pro actively create note a make referece to it in addition to a constant synthethic and pedagogical approach
 
 ## Page: "cairn | post mortem"
