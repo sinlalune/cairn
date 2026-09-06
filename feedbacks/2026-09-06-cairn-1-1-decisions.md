@@ -57,7 +57,7 @@ within a minute nothing went wrong.
 - [ ] **Yes, and skip the request.** *(simplest, native)* You are the only
   owner, so the agent records the plan directly on the main line without a
   pull request; you review the plan with the finished work instead.
-- [ ] **No.** *(as today)* The agent stops and tells you it is waiting for
+- [x] **No.** *(as today)* The agent stops and tells you it is waiting for
   your go-ahead, and does nothing on that path until you give it.
 
 ### Q2. Is your review of the plan a formal step?
@@ -66,7 +66,7 @@ On Crumbz you often read the plan request, asked for changes, and the agent
 amended the accepted scope. That worked well but nothing in the protocol
 says it should happen.
 
-- [ ] **Yes.** *(one sentence in a skill)* "The owner reviews the plan" is
+- [x] **Yes.** *(one sentence in a skill)* "The owner reviews the plan" is
   a named step; the agent expects it and records your changes as an
   amendment.
 - [ ] **No.** *(simplest)* Keep it informal.
@@ -79,7 +79,7 @@ Nothing in the lifecycle records that you used what was built. The agent
 runs the tests and its own checks; you merged one closing request 29
 seconds after it was opened.
 
-- [ ] **Always.** *(adds a step)* Before the merge, you open the app and
+- [x] **Always.** *(adds a step)* Before the merge, you open the app and
   try the change, and you tick a box in the pull request that only you may
   tick.
 - [ ] **When it is visible.** *(adds a step, narrower)* Only for changes
@@ -99,7 +99,7 @@ merge" is the only trace.
 - [ ] **A merge from your terminal.** *(native)* You integrate from your
   own machine with a Git command instead of GitHub's button, and that
   command records the acceptance.
-- [ ] **The merge click is enough.** *(simplest)* Keep it as it is.
+- [x] **The merge click is enough.** *(simplest)* Keep it as it is.
 
 ### Q5. Should you be told to wait for the automatic check before merging?
 
@@ -107,7 +107,7 @@ Twice a path was merged before its automatic check had finished, and the
 check then failed. GitHub on the free private plan cannot be made to block
 this, and the tool currently claims it can.
 
-- [ ] **Yes.** *(one sentence, plus a warning the tool prints)* The
+- [x] **Yes.** *(one sentence, plus a warning the tool prints)* The
   closing instructions say "merge only after the check on the final commit
   is green", and the tool tells you when GitHub is not enforcing it.
 - [ ] **No.** *(simplest)* You will watch for it yourself.
@@ -117,7 +117,7 @@ this, and the tool currently claims it can.
 Six early paths on Crumbz went from "running" straight to "done" without
 the final bookkeeping commit that seals what was accepted.
 
-- [ ] **No.** *(adds a rule)* The tool refuses; the sequence must be
+- [x] **No.** *(adds a rule)* The tool refuses; the sequence must be
   followed.
 - [ ] **Yes, with a warning.** *(lighter)* Allowed, but reported.
 - [ ] **Drop the formality on pull requests.** *(simplest, to be studied)*
@@ -136,7 +136,7 @@ very end.
 
 - [ ] **Remove the checkboxes.** *(simplest)* Outcomes are a plain list;
   completion is stated in the closing record and the journal.
-- [ ] **Keep them, and catch every tick.** *(adds a rule)* The tool checks
+- [x] **Keep them, and catch every tick.** *(adds a rule)* The tool checks
   the seal at every stage, including the last one.
 
 ### Q8. Two paths on the same files at the same time
@@ -145,7 +145,7 @@ CP-016 was opened while CP-015 was running on the same files, dropped its
 declared dependency on 015, and finished first. 015 is now stranded with
 conflicts.
 
-- [ ] **Warn and require a choice.** *(adds a rule)* At the start, the
+- [x] **Warn and require a choice.** *(adds a rule)* At the start, the
   tool reports the overlap; the later path either declares it waits for the
   earlier one, or you write that you accept the race.
 - [ ] **Warn only.** *(adds a report, no rule)*
@@ -160,7 +160,7 @@ wrote a wrong value to satisfy it); a resume point left empty was accepted;
 a rule counted other paths' work as this path's; three repairs to the tool
 live only in Crumbz's copy. These are corrections, not choices.
 
-- [ ] **Yes, all of them, in 1.1.** *(corrections, no new rule)*
+- [x] **Yes, all of them, in 1.1.** *(corrections, no new rule)*
 - [ ] **Fix or delete.** *(simplest)* Each blind spot is first asked
   whether the rule that has it should exist at all; a rule that misreads and
   guards little is removed rather than repaired.
@@ -174,7 +174,7 @@ Crumbz has forty-five branches; GitHub keeps every one. The protocol wants
 the work branches kept as history and says nothing about the temporary ones
 (plan requests, integration requests).
 
-- [ ] **Delete the temporary ones, keep the work branches** until the path
+- [x] **Delete the temporary ones, keep the work branches** until the path
   is archived. *(one sentence in a skill)*
 - [ ] **Delete everything after merge.** *(native: one GitHub setting)*
 - [ ] **Keep everything.** *(as today)*
@@ -184,7 +184,7 @@ the work branches kept as history and says nothing about the temporary ones
 Each path works in its own folder on your disk. Seven folders of finished
 paths are still there; the agents left them for you.
 
-- [ ] **The agent removes it** as the last step of closing, and reports if
+- [x] **The agent removes it** as the last step of closing, and reports if
   it could not. *(native: the step already exists in the skill; it was
   skipped)*
 - [ ] **The agent lists them** and you remove them. *(adds a report)*
@@ -195,7 +195,7 @@ Next.js writes its own block of instructions into `AGENTS.md`, the file the
 kit owns, every time the dev server runs. Codex committed it; it is still
 there.
 
-- [ ] **Move it out.** *(one sentence in a skill)* The agent puts such
+- [x] **Move it out.** *(one sentence in a skill)* The agent puts such
   blocks in a separate file the kit does not own, and the entry file points
   at it.
 - [ ] **Ignore it.** *(simplest)* The block is never committed.
@@ -210,7 +210,7 @@ not exist and confused Codex; the tool's test command colliding with the
 product's; error messages that name the fault but not the remedy; the
 agent told to install dependencies before the first check.
 
-- [ ] **Do all of it in 1.1.**
+- [x] **Do all of it in 1.1.**
 - [ ] **Later.**
 
 ## E. What the agents are told
@@ -221,7 +221,7 @@ agent told to install dependencies before the first check.
 units past its accepted outcome because nothing asked "which outcome does
 this unit advance?"; a commit id was typed by hand once.
 
-- [ ] **Yes.** *(three sentences in the skills, no new check)* Define
+- [x] **Yes.** *(three sentences in the skills, no new check)* Define
   "repair" where the type is chosen, make each unit name the outcome it
   advances, and forbid hand-typed ids.
 - [ ] **Later.**
@@ -231,7 +231,7 @@ this unit advance?"; a commit id was typed by hand once.
 Crumbz has one module note for the whole application; every path appends
 to it and it now reads as a history. You asked whether it should split.
 
-- [ ] **Yes, split by main component**, and the agent proposes the split
+- [x] **Yes, split by main component**, and the agent proposes the split
   when one note is being touched by every path. *(the kit already allows
   several areas; this is a sentence in a skill)*
 - [ ] **No**, one note per application is fine. *(as today)*
@@ -246,7 +246,7 @@ page that says what Crumbz is and where to start.
 - [ ] **One product page.** *(one output named in the chronology)* Every
   promotion path must write or update a single readable page about the
   product, using the concept notes as its glossary.
-- [ ] **One page per product surface** (board, match lab, settled…).
+- [x] **One page per product surface** (board, match lab, settled…).
   *(more pages)*
 - [ ] **No.** *(as today)* Architecture and decisions are enough.
 
@@ -255,7 +255,7 @@ page that says what Crumbz is and where to start.
 Everything about Cairn in an adopter repository is a link to GitHub; nothing
 on disk says what the protocol is or which files belong to it.
 
-- [ ] **Yes.** *(one file against the kit's thirty-file budget)* The kit
+- [x] **Yes.** *(one file against the kit's thirty-file budget)* The kit
   installs a small `cairn/` folder with one page that names the release,
   links the chapters and the skills, and lists the files the kit owns.
 - [ ] **No.** *(as today)* The links are enough.
@@ -271,7 +271,7 @@ command. What is left for a person is the judgement.
   asks for it.
 - [ ] **Every time a path is finished**, attached to the journal entry.
   *(a new command, wired into closing)*
-- [ ] **Every time a check goes red**, so the incident is written while it
+- [x] **Every time a check goes red**, so the incident is written while it
   happens. *(a new command, wired into CI)*
 - [ ] **No new tool.** *(simplest)* The reading is a skill the agent
   follows, from the same Git and GitHub commands, when you ask for a
@@ -286,14 +286,14 @@ four mechanisms that cost time on Crumbz. Each is explained here as it
 works today, then what removing it would mean. Tick the ones you want
 removed; leave bare the ones that stay.
 
-- [ ] **The plan pull request.** Today: when the agent starts a coding
+- [x] **The plan pull request.** Today: when the agent starts a coding
   path, it writes the plan, opens a pull request containing only that plan,
   and waits for you to click merge before writing any code. You are the only
   person in the project, so you are asking yourself for permission, and the
   wait was up to thirteen hours. Removed: after you say yes in the chat, the
   agent puts the plan on the main line directly and starts coding. *(This
   is the same choice as Q1's second option.)*
-- [ ] **The double automatic check.** Today: GitHub runs the checker twice
+- [x] **The double automatic check.** Today: GitHub runs the checker twice
   on every commit, once when it is pushed and once because it is part of a
   pull request. On CP-016 the first run was green, you merged, and the
   second run came out red one minute later. Removed: one check per commit,
@@ -304,7 +304,7 @@ removed; leave bare the ones that stay.
   fingerprint, so closing is blocked until the boxes are unticked. Agents
   ticked them three times. Removed: a plain list, no boxes; "done" is said
   at closing. *(Same as Q7's first option.)*
-- [ ] **The module note's history.** Today: `docs/modules/application.md`
+- [x] **The module note's history.** Today: `docs/modules/application.md`
   should describe the application as it is now, but every path added a line
   "step 3 did this, step 4 did that", so it became a forty-line history and
   CP-016 had to add a note saying half of it is out of date. The journal
