@@ -15,11 +15,12 @@ Five notes in this folder read one adopter over three days and end with
 the same thing it appears once and names both. Where the owner has already
 ruled, the box is ticked and the ruling quoted.
 
-How to answer, as for the 1.0 convergence note: **a ticked box is a ruling
-for 1.1**. An unticked box with `later` after it is deferred to a named
-release; with `no` it is refused and stays refused. A box left bare is not
-decided, and the promotion path may not decide it. One line of the owner's
-own words may follow any ruling and outranks the proposal.
+**The owner does not rule here.** The owner answers the
+[decisions page](./2026-09-06-cairn-1-1-decisions.md), written as questions
+about how to work; each technical line below is driven by one of its
+questions and is ticked, marked `later` or `no` from that answer. A ticked
+box is a ruling for 1.1; a box left bare is not decided, and the promotion
+path may not decide it.
 
 Each line is a proposal, not a design. The design is the promotion path's
 work, in decision records and an architecture page bound to this note.
