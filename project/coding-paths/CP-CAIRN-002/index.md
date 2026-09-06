@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-002
   route: full
   status: running
-  current_step: S03
+  current_step: S04
   base_commit: 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
   branch: path/cp-cairn-002
   assigned_writer: cp-cairn-002-writer
@@ -150,28 +150,28 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - **[S01](./steps/S01.md)** — `docs/adr/` and `docs/architecture/` with their indexes, `docs/index.md` listing them, numbering settled from ADR-001 with the eight cited Atomik numbers reserved, and ADR-001 on how a sole owner opens and closes a path (R01, R02, R04, R05, R06, R08; R03 refused).
 - **[S02](./steps/S02.md)** — the reservation of the eight cited numbers dropped on the owner's word: records count from ADR-001 with no gaps, and the stale citations are replaced by the paths of 1.1; the plan's remaining items shift to S03 to S06.
 - **[S03](./steps/S03.md)** — theme 2 as four records: ADR-002 the checkboxes stay and the seal is checked at every transition (R10; R11 refused), ADR-003 two live paths on the same files (R12), ADR-004 the checker reads what it did not (R09, R13 to R17), ADR-005 one run per commit that can land (R07).
-- **S04** — not started; its file is linked when it is written
+- **[S04](./steps/S04.md)** — themes 3 and 4 as five records: ADR-006 what closing leaves behind (R23, R24), ADR-007 a framework writes into the bootloader (R21), ADR-008 housekeeping with no choice in it (R18, R19, R20, R22, R28, R29, R38), ADR-009 what the unit skill tells the agent (R25, R26, R27), ADR-010 the module note describes now (R39, R30).
+- **S05** — not started; its file is linked when it is written
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : e3b07ac1206707db5f38da550e3e7c933392e57c — S02, unit 02, on origin/path/cp-cairn-002, CI run 34038804789 green; S03's own commit follows it and is named here by S04
-unit   : 03 (S03, pushed)
+commit : 6c0d85f09c9e5640e034ebaca2d8142419aa0208 — S03, unit 03, on origin/path/cp-cairn-002, CI run 34041012956 green; S04's own commit follows it and is named here by S05
+unit   : 04 (S04, pushed)
 base   : 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
 trunk  : ec1e53502005142a117e8eeed0b8ae709cd95dd9 — origin/main after registration; unchanged since
 ```
 
 ### Next action
 
-Run S04 of the plan: themes 3 and 4 of the rulings note, records and
-skills — R18 to R30, R38 and R39: what a path record, a journal entry, a
-module note and a request may carry, and the sentences the skills gain;
-the module note's history (the fourth removal of Q19) is made here. Group
-by choice as S03 did, one record per owner question where the question is
-one choice; add every record to `docs/adr/index.md` with *promoted from*
-links at the pinned blob ids.
+Run S05 of the plan: themes 5 and 6 of the rulings note, the documentation
+plane and the tools — R31 to R37: `docs/inputs`, the concept wiki in three,
+the readable page per product surface, the local pointer to the protocol,
+proactive concept notes, `cairn-postmortem` on a red run, `cairn-test`.
+Group by owner question as before; ADR-008 already says R37 belongs to the
+tooling record. Add every record to `docs/adr/index.md`.
 
 ### Blockers
 
