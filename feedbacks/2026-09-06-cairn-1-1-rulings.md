@@ -1,7 +1,7 @@
 ---
 type: Cairn Learning Note
 title: Cairn 1.1 — the rulings
-description: Every ask the five adopter notes make of 1.1, one checkbox line each, grouped by theme and de-duplicated, with the owner's two rulings of 2026-09-06 already recorded; the owner ticks what 1.1 takes, writes "later" or "no" beside what it does not, and the promotion path that follows is bound to this note.
+description: Every ask the five adopter notes make of 1.1, one checkbox line each, grouped by theme and de-duplicated, with the owner's three rulings of 2026-09-06 already recorded; the owner ticks what 1.1 takes, writes "later" or "no" beside what it does not, and the promotion path that follows is bound to this note.
 tags: [cairn, rulings, 1.1, adopter, crumbz, learning]
 timestamp: 2026-09-06T15:00:00Z
 cairn:
@@ -110,10 +110,11 @@ audit of 09-06, **O** the owner's feedback of 09-06.
   bootloader is kit-owned; a block a framework writes into it goes to a file
   the kit does not own, or is ignored, and the skill says which. *(C, A;
   the Next.js block is still on the Crumbz trunk.)*
-- [ ] **R22 — The journal template loses its duplicate `path:` key and the
-  roadmap register becomes reportable.** `cairn-active` reports a register
-  still carrying the installer's row. *(G, A; sixteen paths, placeholder
-  row untouched.)*
+- [ ] **R22 — The journal template loses its duplicate `path:` key.**
+  *(G, A; copied forward into all fifteen Crumbz entries.)*
+- [ ] **R38 — The roadmap register becomes reportable.** `cairn-active`
+  reports a register still carrying the installer's row. *(G, A; sixteen
+  paths, placeholder row untouched.)*
 - [ ] **R23 — Transport branches are deleted on merge; `path/*` stays until
   the path is archived.** *(O; forty-five branches on Crumbz.)*
 - [ ] **R24 — Closure cleanup gets a predicate or a hand-off.** The close
@@ -163,11 +164,15 @@ audit of 09-06, **O** the owner's feedback of 09-06.
   > `docs/concepts/<project>` when project specific terms,
   > `docs/concepts/learning` when external knowledge (coding, hardware, IA,
   > anything)
-- [ ] **R35 — The agent writes concept notes proactively.** In any session,
+- [x] **R35 — The agent writes concept notes proactively.** In any session,
   when a complex abstraction is explained, the agent creates the concept
   note in the right folder and links it, with a constant synthetic and
-  pedagogical approach; the `cairn-code` or a new skill says so. *(O, the
-  second half of the item-4 ruling, not yet a ruling on the shape.)*
+  pedagogical approach. Which skill carries the instruction is the
+  promotion path's design. *(O, the second half of the item-4 ruling.)*
+  > Owner's ruling, 2026-09-06: the perfect scenario is that even in the
+  > chat session, the agent recognize complex abstraction and pro actively
+  > create note a make referece to it in addition to a constant synthethic
+  > and pedagogical approach
 
 ## 6. Tooling
 
