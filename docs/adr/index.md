@@ -30,12 +30,14 @@ the day of the decision; the pull request that lands it is its review.
 
 ## Numbering
 
-This repository's own records start at `ADR-001` and count up. The
-specification and the tools cite records of the protocol's earlier
-repository by number — ADR-011, ADR-012, ADR-013, ADR-017, ADR-018,
-ADR-020, ADR-021 and ADR-022 — where the reasoning behind a rule lives
-there. Those numbers are reserved: they are never reissued here, so a
-citation keeps pointing at the decision it was written for.
+This repository's own records start at `ADR-001` and count up, with no
+gaps. The specification, the conformance page and the checker's comments
+still cite decision numbers from the repository the protocol was built in
+before this one (ADR-017, ADR-020, ADR-022 and a few others); those records
+were never brought over, so the citations point at nothing here. No number
+is reserved for them. Each citation is replaced by the reason itself, or by
+a record of this folder, when a coding path of 1.1 edits the file that
+carries it; the roadmap register names that work.
 
 ## Records
 

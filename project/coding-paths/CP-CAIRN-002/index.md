@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-002
   route: full
   status: running
-  current_step: S01
+  current_step: S02
   base_commit: 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
   branch: path/cp-cairn-002
   assigned_writer: cp-cairn-002-writer
@@ -148,22 +148,23 @@ registration request. Amendments: none.
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
 - **[S01](./steps/S01.md)** — `docs/adr/` and `docs/architecture/` with their indexes, `docs/index.md` listing them, numbering settled from ADR-001 with the eight cited Atomik numbers reserved, and ADR-001 on how a sole owner opens and closes a path (R01, R02, R04, R05, R06, R08; R03 refused).
-- **S02** — not started; its file is linked when it is written
+- **[S02](./steps/S02.md)** — the reservation of the eight cited numbers dropped on the owner's word: records count from ADR-001 with no gaps, and the stale citations are replaced by the paths of 1.1; the plan's remaining items shift to S03 to S06.
+- **S03** — not started; its file is linked when it is written
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : ec1e53502005142a117e8eeed0b8ae709cd95dd9 — the registration commit, unit 0; S01's own commit follows it on the branch and is named here by S02
-unit   : 01 (S01, pushed)
+commit : 5f5babd8093f964bb9be59709d6b3996742d902d — S01, unit 01, on origin/path/cp-cairn-002, CI run 34038471164 green; S02's own commit follows it and is named here by S03
+unit   : 02 (S02, pushed)
 base   : 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
 trunk  : ec1e53502005142a117e8eeed0b8ae709cd95dd9 — origin/main after registration; unchanged since
 ```
 
 ### Next action
 
-Run S02 of the plan: theme 2 of the rulings note, what the checker reads —
+Run S03 of the plan: theme 2 of the rulings note, what the checker reads —
 R09, R10, R12 to R17, with R11 refused and R07's single run per candidate.
 Decide first whether it is one record for the theme or one per changed
 predicate; each record names the rule as the conformance page names it and
@@ -197,6 +198,11 @@ None.
 - Flipping the notes' `status: provisional` when the records land —
   promotion leaves the notes exactly as they were; the records point back
   to them, they do not rewrite them.
+- Reserving the eight decision numbers the specification and tools cite
+  from the earlier repository, so they could never be reissued here — done
+  in S01, dropped in S02 on the owner's word: it kept a foreign numbering
+  alive to protect citations that point at nothing; the paths of 1.1
+  replace the citations instead.
 - Landing records as `proposed` and flipping them at merge — the
   administrative commit carries nothing but closure metadata, so the flip
   would cost a unit; a record of a decision the owner already took lands
