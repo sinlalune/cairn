@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-002
   route: full
   status: running
-  current_step: S02
+  current_step: S03
   base_commit: 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
   branch: path/cp-cairn-002
   assigned_writer: cp-cairn-002-writer
@@ -149,27 +149,29 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 
 - **[S01](./steps/S01.md)** — `docs/adr/` and `docs/architecture/` with their indexes, `docs/index.md` listing them, numbering settled from ADR-001 with the eight cited Atomik numbers reserved, and ADR-001 on how a sole owner opens and closes a path (R01, R02, R04, R05, R06, R08; R03 refused).
 - **[S02](./steps/S02.md)** — the reservation of the eight cited numbers dropped on the owner's word: records count from ADR-001 with no gaps, and the stale citations are replaced by the paths of 1.1; the plan's remaining items shift to S03 to S06.
-- **S03** — not started; its file is linked when it is written
+- **[S03](./steps/S03.md)** — theme 2 as four records: ADR-002 the checkboxes stay and the seal is checked at every transition (R10; R11 refused), ADR-003 two live paths on the same files (R12), ADR-004 the checker reads what it did not (R09, R13 to R17), ADR-005 one run per commit that can land (R07).
+- **S04** — not started; its file is linked when it is written
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 5f5babd8093f964bb9be59709d6b3996742d902d — S01, unit 01, on origin/path/cp-cairn-002, CI run 34038471164 green; S02's own commit follows it and is named here by S03
-unit   : 02 (S02, pushed)
+commit : e3b07ac1206707db5f38da550e3e7c933392e57c — S02, unit 02, on origin/path/cp-cairn-002, CI run 34038804789 green; S03's own commit follows it and is named here by S04
+unit   : 03 (S03, pushed)
 base   : 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
 trunk  : ec1e53502005142a117e8eeed0b8ae709cd95dd9 — origin/main after registration; unchanged since
 ```
 
 ### Next action
 
-Run S03 of the plan: theme 2 of the rulings note, what the checker reads —
-R09, R10, R12 to R17, with R11 refused and R07's single run per candidate.
-Decide first whether it is one record for the theme or one per changed
-predicate; each record names the rule as the conformance page names it and
-the fixture the ruling asks for, and links *promoted from* at the pinned
-blob ids as ADR-001 does. Add every new record to `docs/adr/index.md`.
+Run S04 of the plan: themes 3 and 4 of the rulings note, records and
+skills — R18 to R30, R38 and R39: what a path record, a journal entry, a
+module note and a request may carry, and the sentences the skills gain;
+the module note's history (the fourth removal of Q19) is made here. Group
+by choice as S03 did, one record per owner question where the question is
+one choice; add every record to `docs/adr/index.md` with *promoted from*
+links at the pinned blob ids.
 
 ### Blockers
 
