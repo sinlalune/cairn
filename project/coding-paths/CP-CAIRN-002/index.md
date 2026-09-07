@@ -7,13 +7,13 @@ timestamp: 2026-09-06T00:00:00Z
 cairn:
   id: CP-CAIRN-002
   route: full
-  status: running
+  status: ready
   current_step: S08
   base_commit: 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
   branch: path/cp-cairn-002
   assigned_writer: cp-cairn-002-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: d24500fc4ff743b923740d39c7f7efeb83882aff
   resolution: null
   writes:
     - docs/adr/**
@@ -161,21 +161,20 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 8227063e39b1af117fa325125b9a32bfc545b838 — S07, unit 07, on origin/path/cp-cairn-002, both runs green; the second candidate, voided by the owner's ruling on the box; S08's own commit follows it and is the third candidate
-unit   : 08 (S08, pushed)
+commit : d24500fc4ff743b923740d39c7f7efeb83882aff — S08, unit 08, candidate C, on origin/path/cp-cairn-002 with its runs green; this record is the one administrative commit after it
+unit   : 08 (S08, the candidate)
 base   : 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
-trunk  : ec1e53502005142a117e8eeed0b8ae709cd95dd9 — origin/main after registration; unchanged since
+trunk  : ec1e53502005142a117e8eeed0b8ae709cd95dd9 — origin/main, contained in C
 ```
 
 ### Next action
 
-Close on the third candidate: S08's commit is `C` once its gates and its
-run are green. Rewrite the description of pull request #8 for it with no
-owner's box, push the administrative commit (`ready`, `subject_commit: C`,
-the live view, this checkpoint at `C`), read the request's run green, and
-hand the candidate to the owner to read and merge as a merge commit. Then
-the integrating unit and the journal entry on the trunk, and the worktree
-removed.
+The owner reads the architecture page and the records, then merges pull
+request #8 as a merge commit once its run on this commit is green. Then,
+from a clean trunk checkout: `status: done`, `resolution: completed`, the
+live view, one journal entry `project/log/2026-09-07-cp-cairn-002.md`,
+one commit; prove `d24500f` reachable from `origin/main`; remove the
+clean secondary worktree from the primary checkout, keep the branch.
 
 ### Blockers
 
