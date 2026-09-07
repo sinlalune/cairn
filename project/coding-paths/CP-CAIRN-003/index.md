@@ -162,34 +162,30 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
 - **[S01](./steps/S01.md)** — ADR-016, the coding stance: the kit points at Ponytail at tag `v4.9.0` and `cairn-code` keeps only Cairn's own (Q2), the self-review in the five tags (Q1), two lines on secrets and errors (Q4), the ladder and correctness as the only criteria of any reader (Q5), no size for a unit (Q3); nine options refused with their tags.
 - **[S02](./steps/S02.md)** — ADR-017, the review movement: five movements, the writer's own agent in a fresh context given only the diff and the two criteria, a `#### Review` section the blocking rule `review` requires (Q6, Q7, the owner's words quoted, the manifesto's test weighed); ADR-018, two sentences of the cycle: the failing test first when behaviour changes, the request answering the definition of done item by item (Q8, Q9).
-- **S03** — not started; its file is linked when it is written
+- **[S03](./steps/S03.md)** — ADR-019, an area is a folder of the tree: the main component of ADR-010 is a folder and its note describes it (Q10), the architecture page says which way dependencies point (Q11), a path names its areas and a whole root says why (Q12); the owner's question on Crumbz's one note answered in the record; the kit found to have no architecture template.
+- **S04** — not started; its file is linked when it is written
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : c8fd3506cbdd374f9bcd780c232a3a493cb9b067 — S01, unit 01, on origin/path/cp-cairn-003 with its run green; S02's own commit follows it and is named here by S03
-unit   : 02 (S02, pushed)
+commit : 73af327d3e533ab96c0872dad1fab76d916e2e09 — S02, unit 02, on origin/path/cp-cairn-003 with its run green; S03's own commit follows it and is named here by S04
+unit   : 03 (S03, pushed)
 base   : 7997b7608bf34ceecfbcf85e5ad32c0187230e5d
 trunk  : 011b8fc2c6cc4de750c8d67052d56ff707f0f464 — origin/main after registration; unchanged since
 ```
 
 ### Next action
 
-Run S03 of the plan with `cairn-unit`: ADR-019, areas and the
-architecture page — Q10 to Q12 of the decisions page and research note 3
-at blob `945a201e0ab317426179a2def661fe63b343669d`. An area is a folder of
-the tree; the architecture template asks for the direction of dependencies
-in one sentence; the open skill asks which area a path writes in and a
-path that needs a whole source root says why. Build on ADR-010 decision 2,
-which already splits an area every path touches by main component; name
-`cairn-open` step 1, the architecture template in `tools/cairn.mjs`, and
-`spec/reference/configuration.md`. The owner asked in the chat of
-2026-09-07 whether Crumbz's single note would change: say in the record
-that the split is ADR-010 decision 2's and that Q12's refused advisory was
-the only check that would have flagged a path writing a whole root. Add
-the record to `docs/adr/index.md`.
+Run S04 of the plan with `cairn-unit`: ADR-020, the one edge and the one
+writer, confirmed — Q13 to Q15 of the decisions page and research note 4
+at blob `a52ac0eca6c1ce963d913239943a9468b47f7a95`. The edge lives in the
+record only; a path has one writer and a helper agent inside the writer's
+session is the writer, one sentence in the unit skill; the register carries
+no edge between milestones. A record of what was weighed and kept, as
+ADR-008 was; it builds on ADR-003. Run the review movement on the diff as
+S02 and S03 did. Add the record to `docs/adr/index.md`.
 
 ### Blockers
 
@@ -210,7 +206,7 @@ None.
 2. `project/brainstorm/2026-09-07-coding-guidelines-decisions.md@48112c310e1c127b0265ed63c8255bb0377264fa` — the fifteen answers and the table of what each drives.
 3. `docs/architecture/01-cairn-1-1.md@87a601e95c26375679a58f9e3dfdb4b657f47508` — the page this path amends.
 4. `docs/adr/ADR-008` and `ADR-009` — the shape of a record that keeps or refuses, and one that adds sentences.
-5. `docs/adr/ADR-016-the-coding-stance-absorbs-ponytail.md` and `docs/adr/ADR-017-the-review-movement.md` — the shape the records of this path take; `docs/adr/ADR-010-the-module-note-describes-now.md` decision 2, which ADR-019 builds on.
+5. `docs/adr/ADR-016-the-coding-stance-absorbs-ponytail.md` and `docs/adr/ADR-017-the-review-movement.md` — the shape the records of this path take; `docs/adr/ADR-003-two-live-paths-on-the-same-files.md`, which ADR-020 builds on.
 6. `project/coding-paths/CP-CAIRN-003/plan.md`, then the research note of the unit being written.
 
 ### Verify
