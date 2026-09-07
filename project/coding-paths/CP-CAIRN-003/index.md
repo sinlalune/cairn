@@ -164,37 +164,34 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 - **[S02](./steps/S02.md)** — ADR-017, the review movement: five movements, the writer's own agent in a fresh context given only the diff and the two criteria, a `#### Review` section the blocking rule `review` requires (Q6, Q7, the owner's words quoted, the manifesto's test weighed); ADR-018, two sentences of the cycle: the failing test first when behaviour changes, the request answering the definition of done item by item (Q8, Q9).
 - **[S03](./steps/S03.md)** — ADR-019, an area is a folder of the tree: the main component of ADR-010 is a folder and its note describes it (Q10), the architecture page says which way dependencies point (Q11), a path names its areas and a whole root says why (Q12); the owner's question on Crumbz's one note answered in the record; the kit found to have no architecture template.
 - **[S04](./steps/S04.md)** — ADR-020, the one edge and the one writer, confirmed: the edge lives in the record only (Q13), a helper agent inside the writer's session is the writer, one sentence in the unit skill (Q14), the register carries no edge between milestones (Q15); every ticked answer Q1 to Q15 is now named by one record.
-- **S05** — not started; its file is linked when it is written
+- **[S05](./steps/S05.md)** — the 1.1 architecture page amended with ADR-016 to ADR-020, each added sentence naming its record and marked *since 2026-09-07*, promoted-from links to the six notes at their pinned blob ids, no 1.1 record superseded; the architecture index refreshed; the register's rows 1 to 4 widened with the records and surfaces, the audit tool placed in row 3, no path opened.
+- **S06** — not started; its file is linked when it is written
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : bf34516aae99c32c5faa9327e17759c0dc7656fd — S03, unit 03, on origin/path/cp-cairn-003 with its run green; S04's own commit follows it and is named here by S05
-unit   : 04 (S04, pushed)
+commit : d917bd3f565587be7f36eccaa7335f5973b63760 — S04, unit 04, on origin/path/cp-cairn-003 with its run green; S05's own commit follows it and is named here by S06
+unit   : 05 (S05, pushed)
 base   : 7997b7608bf34ceecfbcf85e5ad32c0187230e5d
 trunk  : 011b8fc2c6cc4de750c8d67052d56ff707f0f464 — origin/main after registration; unchanged since
 ```
 
 ### Next action
 
-Run S05 of the plan with `cairn-unit`: amend
-`docs/architecture/01-cairn-1-1.md` so that it states, naming the record
-behind each sentence, the five movements of a unit and what the checker
-reads in a step record (ADR-017), what the coding stance is and where it
-comes from (ADR-016), what an area is and what the architecture page must
-say of dependencies (ADR-019), the two sentences of the cycle (ADR-018)
-and the one writer (ADR-020); add *promoted from* links to the six notes
-at the blob ids pinned in this record's `governs:`; say that no 1.1 record
-is superseded; do not rewrite anything to look as if it had always been
-so. Refresh `docs/architecture/index.md`. Widen the register's rows in
-`project/coding-paths/index.md`: row 1 with ADR-016 d2 to d4, ADR-017 d1
-and d2 (skill, chapter, template), ADR-018, ADR-019 d1 and d3, ADR-020 d2;
-row 2 with ADR-017 d2 (the rule `review`, its fixture, the catalogue);
-row 4 with ADR-016 d1 (the kit's pinned dependency) and ADR-019 d2; and
-place `tools/cairn-audit.mjs` (ADR-018 d2) in a row — it is in none
-today. No new path, no path opened. Run the review movement on the diff.
+Run S06 with `cairn-close`: fetch and merge `origin/main` into
+`path/cp-cairn-003` (never rebase), confirm no provisional commit in the
+range, push, run every gate bare on that exact commit — it is `C` — and
+print the request's description with `npm run cairn-audit -- --subject <C>`.
+Open the pull request from `path/cp-cairn-003` to `main` with that
+description, its coherence section opening with one line per item of the
+definition of done as ADR-018 decision 2 asks, each naming the unit and the
+page; answer the four coherence questions; list the advisories at `C`, or
+*none*. The owner reads the five records, the amended page and the
+register before the merge; the merge is the acceptance. Then the
+administrative commit, `ready` and `subject_commit`, after the request's
+run is green.
 
 ### Blockers
 

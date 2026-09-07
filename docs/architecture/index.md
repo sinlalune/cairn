@@ -3,7 +3,7 @@ type: Cairn Folder Index
 title: Architecture
 description: Accepted architecture: what a system is as a whole, its boundaries, responsibilities, constraints and major flows, each page naming the decision records it relies on.
 tags: [index, cairn, architecture]
-timestamp: 2026-09-06T00:00:00Z
+timestamp: 2026-09-07T00:00:00Z
 ---
 
 # Architecture
@@ -21,4 +21,4 @@ say what is implemented today.
 
 ## Pages
 
-- [01 — Cairn 1.1, a repository run by a sole owner with agents](./01-cairn-1-1.md) — accepted 2026-09-07; how a path opens, runs and closes when one owner works with agents, what the checker reads at each transition, what the documentation plane holds and where, which tools exist, and what 1.1 removes from 1.0; promoted from the decisions page and the rulings note through ADR-001 to ADR-015.
+- [01 — Cairn 1.1, a repository run by a sole owner with agents](./01-cairn-1-1.md) — accepted 2026-09-07; how a path opens, runs and closes when one owner works with agents, what the checker reads at each transition, what the documentation plane holds and where, which tools exist, and what 1.1 removes from 1.0; promoted from the decisions page and the rulings note through ADR-001 to ADR-015; amended 2026-09-07 with the coding guidelines — the five movements of a unit, the stance from Ponytail, an area as a folder, the two sentences of the cycle — through ADR-016 to ADR-020, promoted from the coding-guidelines decisions page and its four research notes.
