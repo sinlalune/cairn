@@ -17,3 +17,4 @@ leaves it exactly as it was. Git keeps the folder's history.
 
 - [Coding guidelines — the brief for the research session](./2026-09-07-coding-guidelines.md) — the owner's ask of 2026-09-07: where Cairn stands on the coding stance, the step cycle, component slicing and the graph flow, and what the research session must produce before the next promotion path.
 - [The coding stance — what the guides say and what Crumbz wrote](./2026-09-07-coding-stance-research.md) — research note 1 of 4: Ponytail v4.9.0 and the vendors' guides against `cairn-code`, ten Crumbz units read against the ladder, the tree counted at the tip, five questions for the owner.
+- [The coding step cycle — the unit against the cycles of 2026](./2026-09-07-step-cycle-research.md) — research note 2 of 4: Spec Kit v1.0.4, OpenSpec v1.12.0, the vendors' plan and review features and Kent Beck's loop beside the four movements; what a second reader found on Crumbz; four questions for the owner.
