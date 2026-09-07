@@ -18,26 +18,27 @@ comes last because it names every record.
 1. **S01 — the folders and the first decision.** `docs/adr/index.md`,
    `docs/architecture/index.md`, the two folders listed in `docs/index.md`.
    Decide the numbering of this repository's own records: it starts at
-   `ADR-001`; the Atomik records the specification cites, ADR-020 to
-   ADR-022, are named where they are cited and never reissued. Then the
+   `ADR-001`, with no gaps; the citations of an earlier repository's records
+   in the specification and the tools reserve nothing and are replaced by
+   the paths of 1.1 (settled in S02, on the owner's word). Then the
    first record, theme 1 — how a sole owner's repository opens and closes a
    path: R01, R02, R04, R05, R06, R08, with R03 refused; the record settles
    what this registration met in practice, a trunk whose ruleset requires a
    request and the `transport.registration` declaration that says otherwise.
-2. **S02 — what the checker reads.** Theme 2, R09, R10 and R12 to R17, with
+2. **S03 — what the checker reads.** Theme 2, R09, R10 and R12 to R17, with
    R11 refused and R07's single run per candidate: one record per changed
    predicate or one for the theme, each naming the rule as the conformance
    page names it and the fixture the ruling asks for.
-3. **S03 — records and skills.** Themes 3 and 4, R18 to R30, R38 and R39:
+3. **S04 — records and skills.** Themes 3 and 4, R18 to R30, R38 and R39:
    what a path record, a journal entry, a module note and a request may
    carry, and the sentences the skills gain. The three Q19 removals that are
    not R01 — the double check and the module note's history — are made here
-   and in S02.
-4. **S04 — the documentation plane and the tools.** Themes 5 and 6, R31 to
+   and in S03.
+4. **S05 — the documentation plane and the tools.** Themes 5 and 6, R31 to
    R37: `docs/inputs`, the concept wiki in three, the readable page per
    product surface, the local pointer to the protocol, proactive concept
    notes, `cairn-postmortem` on a red run, `cairn-test`.
-5. **S05 — the architecture page and the roadmap.** One page for Cairn 1.1
+5. **S06 — the architecture page and the roadmap.** One page for Cairn 1.1
    under `docs/architecture/`, promoted from the two notes, naming every
    record and stating what 1.1 removes; the roadmap register names the
    milestone and the coding paths that build it. Merge the trunk in, produce

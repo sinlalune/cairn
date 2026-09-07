@@ -7,13 +7,13 @@ timestamp: 2026-09-06T00:00:00Z
 cairn:
   id: CP-CAIRN-002
   route: full
-  status: running
-  current_step: S01
+  status: ready
+  current_step: S08
   base_commit: 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
   branch: path/cp-cairn-002
   assigned_writer: cp-cairn-002-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: d24500fc4ff743b923740d39c7f7efeb83882aff
   resolution: null
   writes:
     - docs/adr/**
@@ -147,25 +147,34 @@ registration request. Amendments: none.
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
-- **S01** — not started; its file is linked when it is written
+- **[S01](./steps/S01.md)** — `docs/adr/` and `docs/architecture/` with their indexes, `docs/index.md` listing them, numbering settled from ADR-001 with the eight cited Atomik numbers reserved, and ADR-001 on how a sole owner opens and closes a path (R01, R02, R04, R05, R06, R08; R03 refused).
+- **[S02](./steps/S02.md)** — the reservation of the eight cited numbers dropped on the owner's word: records count from ADR-001 with no gaps, and the stale citations are replaced by the paths of 1.1; the plan's remaining items shift to S03 to S06.
+- **[S03](./steps/S03.md)** — theme 2 as four records: ADR-002 the checkboxes stay and the seal is checked at every transition (R10; R11 refused), ADR-003 two live paths on the same files (R12), ADR-004 the checker reads what it did not (R09, R13 to R17), ADR-005 one run per commit that can land (R07).
+- **[S04](./steps/S04.md)** — themes 3 and 4 as five records: ADR-006 what closing leaves behind (R23, R24), ADR-007 a framework writes into the bootloader (R21), ADR-008 housekeeping with no choice in it (R18, R19, R20, R22, R28, R29, R38), ADR-009 what the unit skill tells the agent (R25, R26, R27), ADR-010 the module note describes now (R39, R30).
+- **[S05](./steps/S05.md)** — themes 5 and 6 as four records: ADR-011 the adopter's documentation plane (R31, R34, R35), ADR-012 a page a newcomer reads first (R32), ADR-013 a local pointer to the protocol (R33), ADR-014 two tools of 1.1 (R36, R37). Every ticked line of the rulings note is now named by one record.
+- **[S06](./steps/S06.md)** — the architecture page `docs/architecture/01-cairn-1-1.md`, promoted from the two notes through ADR-001 to ADR-014 and stating what 1.1 removes; the roadmap register with the 1.0 and 1.1 milestones and the five coding paths of 1.1, each *no path yet*, the installer's row gone.
+- **[S07](./steps/S07.md)** — the review of the first candidate answered: ADR-015 on how a release reaches an edited file; ADR-011, ADR-013 and ADR-014 amended for the kit's count under thirty and the fixture suite that stays in this repository; the page and the roadmap updated.
+- **[S08](./steps/S08.md)** — the owner dropped the acceptance box at this path's closure: ADR-001 decision 3 is the owner's try before the merge, a step in the close skill and nothing in the request; the page, ADR-015 and the roadmap follow.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — the trunk commit that adds this record, whose parent is base
-unit   : 0
+commit : d24500fc4ff743b923740d39c7f7efeb83882aff — S08, unit 08, candidate C, on origin/path/cp-cairn-002 with its runs green; this record is the one administrative commit after it
+unit   : 08 (S08, the candidate)
 base   : 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
-trunk  : 885072cc786db4d4608ed2d92a1b51cf2ce78b4c — origin/main at registration
+trunk  : ec1e53502005142a117e8eeed0b8ae709cd95dd9 — origin/main, contained in C
 ```
 
 ### Next action
 
-Create the path branch and its worktree from the registration commit once it
-is on the remote trunk, publish the branch, then run S01 of the plan: the two
-folders with their indexes, and the first decision record, the one on how a
-sole owner's repository opens a path.
+The owner reads the architecture page and the records, then merges pull
+request #8 as a merge commit once its run on this commit is green. Then,
+from a clean trunk checkout: `status: done`, `resolution: completed`, the
+live view, one journal entry `project/log/2026-09-07-cp-cairn-002.md`,
+one commit; prove `d24500f` reachable from `origin/main`; remove the
+clean secondary worktree from the primary checkout, keep the branch.
 
 ### Blockers
 
@@ -180,17 +189,34 @@ None.
   the declaration is a control-plane change, and how a sole owner's
   repository registers on a forge whose ruleset requires a request is exactly
   what the first decision record must settle; the commit stays record and
-  view only, as the open skill says.
+  view only, as the open skill says. Settled in S01 by ADR-001 decision 1
+  and decision 6; the declaration itself is changed by the coding path that
+  implements the record.
 - Pinning the manifesto in `governs:` beside the two notes — every option on
   the decisions page already carries the manifesto's tag, and a third pin
   would widen the drift predicate over a document this path never contests;
   it is conditional reading instead.
 - One decision record per ruling line, thirty-seven files — a record states
   one choice, and the lines group into a dozen choices; a file per line is
-  the volume of records the manifesto's first threat names.
+  the volume of records the manifesto's first threat names. S01 wrote theme
+  1 as one record with seven numbered decisions.
 - Flipping the notes' `status: provisional` when the records land —
   promotion leaves the notes exactly as they were; the records point back
   to them, they do not rewrite them.
+- Reserving the eight decision numbers the specification and tools cite
+  from the earlier repository, so they could never be reissued here — done
+  in S01, dropped in S02 on the owner's word: it kept a foreign numbering
+  alive to protect citations that point at nothing; the paths of 1.1
+  replace the citations instead.
+- Closing on the first candidate with the review's three findings
+  answered in the request only — a finding that a record cannot reach the
+  adopter it was written for is a finding about the record, and chapter 3
+  says a challenge is a new record and an amended page; `C` was voided
+  and S07 wrote them.
+- Landing records as `proposed` and flipping them at merge — the
+  administrative commit carries nothing but closure metadata, so the flip
+  would cost a unit; a record of a decision the owner already took lands
+  `accepted`, dated the decision.
 
 ### Reading order
 
@@ -199,6 +225,7 @@ None.
 3. `spec/index.md`, chapter 3 — what a promotion unit adds, amends, links and leaves alone.
 4. `spec/reference/repository-layout.md` — the shapes of `docs/adr/` and `docs/architecture/`.
 5. `project/coding-paths/CP-CAIRN-002/plan.md` — the order the records are written in.
+6. `docs/adr/ADR-001-sole-owner-opens-and-closes-a-path.md` — the shape every later record follows.
 
 ### Verify
 
