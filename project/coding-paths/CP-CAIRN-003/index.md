@@ -7,13 +7,13 @@ timestamp: 2026-09-07T00:00:00Z
 cairn:
   id: CP-CAIRN-003
   route: full
-  status: ready
-  current_step: S05
+  status: running
+  current_step: S06
   base_commit: 7997b7608bf34ceecfbcf85e5ad32c0187230e5d
   branch: path/cp-cairn-003
   assigned_writer: cp-cairn-003-writer
   depends_on: []
-  subject_commit: 72198b183ab9b5e639cab51e35b80cb82635c8fd
+  subject_commit: null
   resolution: null
   writes:
     - docs/adr/**
@@ -165,40 +165,50 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 - **[S03](./steps/S03.md)** — ADR-019, an area is a folder of the tree: the main component of ADR-010 is a folder and its note describes it (Q10), the architecture page says which way dependencies point (Q11), a path names its areas and a whole root says why (Q12); the owner's question on Crumbz's one note answered in the record; the kit found to have no architecture template.
 - **[S04](./steps/S04.md)** — ADR-020, the one edge and the one writer, confirmed: the edge lives in the record only (Q13), a helper agent inside the writer's session is the writer, one sentence in the unit skill (Q14), the register carries no edge between milestones (Q15); every ticked answer Q1 to Q15 is now named by one record.
 - **[S05](./steps/S05.md)** — the 1.1 architecture page amended with ADR-016 to ADR-020, each added sentence naming its record and marked *since 2026-09-07*, promoted-from links to the six notes at their pinned blob ids, no 1.1 record superseded; the architecture index refreshed; the register's rows 1 to 4 widened with the records and surfaces, the audit tool placed in row 3, no path opened.
-- **S06** — no step: there is no closure step (ADR-008, decision 1); the candidate `C` is S05's commit, reviewed in pull request #10.
+- **[S06](./steps/S06.md)** — repair: the administrative commit `b09f492` after the first candidate `72198b1` moved `current_step`, the acceptance rule refused it, and it was pushed with the gate's exit code hidden behind an echo; the path returns to `running`, this unit is the second candidate, and a correct administrative commit follows it.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 72198b183ab9b5e639cab51e35b80cb82635c8fd — S05, unit 05, candidate C, on origin/path/cp-cairn-003 with its run green; this record is the one administrative commit after it
-unit   : 05 (S05, the candidate)
+commit : 72198b183ab9b5e639cab51e35b80cb82635c8fd — S05, unit 05, the last green unit on origin/path/cp-cairn-003; b09f492 follows it on the remote as the refused administrative commit that S06 supersedes, and S06's own commit follows that
+unit   : 06 (S06, the repair, pushed)
 base   : 7997b7608bf34ceecfbcf85e5ad32c0187230e5d
-trunk  : 011b8fc2c6cc4de750c8d67052d56ff707f0f464 — origin/main, contained in C
+trunk  : 011b8fc2c6cc4de750c8d67052d56ff707f0f464 — origin/main, contained in the branch
 ```
 
 ### Next action
 
-The owner reads the five records `docs/adr/ADR-016` to `ADR-020`, the
-amended page `docs/architecture/01-cairn-1-1.md` and the register
-`project/coding-paths/index.md` at `C`, then merges pull request #10 as a
-merge commit once its `cairn-check` run is green: the merge is the closing
-acceptance. Then the integrating unit from a clean trunk checkout
-(`../cairn-main`): `status: done`, `resolution: completed`,
-`subject_commit` kept, the live view regenerated, one journal entry under
-`project/log/2026-09-07-cp-cairn-003.md` with `cairn.path: CP-CAIRN-003`,
-landed on `main` directly as a sole owner's trunk commit (ADR-001); prove
-`C` reachable from `origin/main`; remove the clean worktree
-`../cairn-cp-cairn-003` from another checkout, without force, and report
-a failure to remove as its own outcome. The branch `path/cp-cairn-003`
-stays.
+The second candidate `C₂` is S06's own commit. Make the one administrative
+commit after it with `cairn-close` step 4, moving only `status: ready` and
+`subject_commit: C₂` in the frontmatter, the checkpoint in this section,
+and the live view — never `current_step` — and read the gate's exit code
+bare before and after committing. Rewrite the description of pull request
+#10 for `C₂`, naming the review of `72198b1` it supersedes. Then the owner
+reads the five records `docs/adr/ADR-016` to `ADR-020`, the amended page
+`docs/architecture/01-cairn-1-1.md` and the register
+`project/coding-paths/index.md`, and merges the request as a merge commit
+once its run is green: the merge is the closing acceptance. Then the
+integrating unit from a clean trunk checkout (`../cairn-main`): `status:
+done`, `resolution: completed`, `subject_commit` kept, the live view, one
+journal entry `project/log/2026-09-07-cp-cairn-003.md` with `cairn.path:
+CP-CAIRN-003`, landed on `main` directly (ADR-001); prove `C₂` reachable
+from `origin/main`; remove the clean worktree `../cairn-cp-cairn-003` from
+another checkout without force, reporting a failure as its own outcome.
 
 ### Blockers
 
 None.
 
 ### Tried and rejected
+
+- Moving `current_step` in the administrative commit — refused by the
+  acceptance rule, which lets only `status` and `subject_commit` move at
+  `ready`; S06 repairs it. A unit sets `current_step`; a closure never does.
+- Chaining a gate with `; echo` — the echo's exit code replaces the gate's,
+  which is the pipeline fault `AGENTS.md` names; S06 was pushed that way
+  once and never again.
 
 - A sixth coding path for the new records — paths 1, 2 and 4 of the 1.1
   register already own the skills, the checker and the kit; the register's
