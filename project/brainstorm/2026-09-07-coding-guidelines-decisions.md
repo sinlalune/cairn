@@ -142,7 +142,7 @@ side".*
 ### Q6. Who reads the diff before you merge it?
 
 The only reader that found defects on Crumbz was a bot on the closing
-request: nine findings on three requests, each answered by a unit and a
+request: nine findings on three requests, five of them answered by a unit and a
 new candidate, until its quota ran out. Your own read was once twenty
 seconds.
 
