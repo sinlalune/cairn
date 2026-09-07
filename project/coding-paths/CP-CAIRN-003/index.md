@@ -160,24 +160,31 @@ also said the units will run in a fresh session. Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
-- **S01** — not started
+- **[S01](./steps/S01.md)** — ADR-016, the coding stance: the kit points at Ponytail at tag `v4.9.0` and `cairn-code` keeps only Cairn's own (Q2), the self-review in the five tags (Q1), two lines on secrets and errors (Q4), the ladder and correctness as the only criteria of any reader (Q5), no size for a unit (Q3); nine options refused with their tags.
+- **S02** — not started; its file is linked when it is written
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — the trunk commit that adds this record, whose parent is base
-unit   : 0
+commit : 011b8fc2c6cc4de750c8d67052d56ff707f0f464 — the registration commit, unit 0; S01's own commit follows it on the branch and is named here by S02
+unit   : 01 (S01, pushed)
 base   : 7997b7608bf34ceecfbcf85e5ad32c0187230e5d
-trunk  : 7997b7608bf34ceecfbcf85e5ad32c0187230e5d — origin/main at registration
+trunk  : 011b8fc2c6cc4de750c8d67052d56ff707f0f464 — origin/main after registration; unchanged since
 ```
 
 ### Next action
 
-In a fresh session, from the worktree `../cairn-cp-cairn-003` on branch
-`path/cp-cairn-003`: run S01 of the plan with `cairn-unit` — ADR-016, the
-coding stance, from Q1 to Q5 of the decisions page and research note 1.
+Run S02 of the plan with `cairn-unit`: ADR-017, the review movement, and
+ADR-018, two sentences of the cycle — Q6 to Q9 of the decisions page and
+research note 2 at blob `65e7a2a96a4046af05f67a4e06ff9328fe03068f`. Read
+`docs/cairn/manifesto.md` first: Q7 keeps an option tagged *adds a rule*,
+and ADR-017 must say what the manifesto's test weighed. Quote the owner's
+two sentences under Q6; name the rule, the fixture, `skills/cairn-unit`,
+`skills/cairn-close`, `spec/reference/path-template.md` and the request
+template; hand the reader the criterion of ADR-016 decision 4 and add none.
+Add both records to `docs/adr/index.md`.
 
 ### Blockers
 
@@ -198,7 +205,8 @@ None.
 2. `project/brainstorm/2026-09-07-coding-guidelines-decisions.md@48112c310e1c127b0265ed63c8255bb0377264fa` — the fifteen answers and the table of what each drives.
 3. `docs/architecture/01-cairn-1-1.md@87a601e95c26375679a58f9e3dfdb4b657f47508` — the page this path amends.
 4. `docs/adr/ADR-008` and `ADR-009` — the shape of a record that keeps or refuses, and one that adds sentences.
-5. `project/coding-paths/CP-CAIRN-003/plan.md`, then the research note of the unit being written.
+5. `docs/adr/ADR-016-the-coding-stance-absorbs-ponytail.md` — the shape the records of this path take, and decision 4, which ADR-017 builds on.
+6. `project/coding-paths/CP-CAIRN-003/plan.md`, then the research note of the unit being written.
 
 ### Verify
 

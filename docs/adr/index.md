@@ -3,7 +3,7 @@ type: Cairn Folder Index
 title: Decision records
 description: One file per durable decision about the protocol or its repository, with a stable id, a status and a date; the folder's history is Git's.
 tags: [index, cairn, adr]
-timestamp: 2026-09-06T00:00:00Z
+timestamp: 2026-09-07T00:00:00Z
 ---
 
 # Decision records
@@ -56,3 +56,4 @@ carries it; the roadmap register names that work.
 - [ADR-013 — a local pointer to the protocol](./ADR-013-a-local-pointer-to-the-protocol.md) — accepted 2026-09-06; the kit installs `cairn/README.md` naming the release, linking the chapters and skills, listing the files the kit owns; the kit reaches its thirty-file budget exactly. Ruling R33.
 - [ADR-014 — two tools of 1.1](./ADR-014-two-tools-of-1-1.md) — accepted 2026-09-06; `cairn-postmortem` prints the mechanical reading on a red run and on demand, and the kit's self-test is `cairn-test` so adopters keep `npm test`. Rulings R36, R37.
 - [ADR-015 — a release reaches an edited file](./ADR-015-a-release-reaches-an-edited-file.md) — accepted 2026-09-07; `update` rewrites a pristine file whoever owns it, never rewrites an edited one but prints what the release changes in it and lists it on the pointer page, and takes the release's version of a named file on request. Raised by the review of this path's first candidate; promotes no ruling of its own.
+- [ADR-016 — the coding stance absorbs Ponytail and keeps Cairn's own](./ADR-016-the-coding-stance-absorbs-ponytail.md) — accepted 2026-09-07; the kit points at Ponytail at tag `v4.9.0` for the ladder and the review and `cairn-code` keeps only Cairn's own, the self-review speaks in the five tags, two lines on secrets and errors, the ladder and correctness are the only criteria of any reader, a unit has no size. Decisions Q1 to Q5 of the coding-guidelines page; nine options refused, three of them rules.
