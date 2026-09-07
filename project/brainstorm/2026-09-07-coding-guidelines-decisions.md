@@ -42,11 +42,12 @@ When two options would both work, the manifesto leans to the first three.
 ## What the notes found, in five lines
 
 - The coding stance was installed before Crumbz's first unit, is cited by
-  none of seventy-one steps, and its ladder was skipped in seven of ten
-  units read; the two clean units were the two whose self-review named a
+  none of seventy-one steps, and its ladder was skipped in seven of the
+  nine units read in full; the two clean units were the two whose self-review named a
   rejection. Ponytail, the skill it was cut from, gained three rules since.
-- The unit's four movements match every cycle in use; what every cycle
-  has and the unit lacks is a reader of the diff who did not write it. The
+- The unit's four movements match every cycle in use; what the agent
+  products and Kent Beck have and the unit lacks is a reader of the diff
+  who did not write it; the two spec toolkits lack one too. The
   one bot that read three Crumbz requests found nine correctness defects
   the self-reviews had not.
 - Crumbz's tree is sliced by layer, its stated boundaries hold, and the

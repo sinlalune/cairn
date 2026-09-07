@@ -1,7 +1,7 @@
 ---
 type: Cairn Research Note
 title: The coding stance — what the guides say and what Crumbz wrote
-description: Research note 1 of 4 for the coding guidelines — Ponytail at v4.9.0 and the vendors' own guides read against skills/cairn-code, ten Crumbz units from six paths and three agents read line by line against the decision ladder, the whole tree counted at the trunk tip, and the questions the owner must answer before anything here becomes a ruling.
+description: Research note 1 of 4 for the coding guidelines — Ponytail at v4.9.0 and the vendors' own guides read against skills/cairn-code, nine Crumbz units from six paths and three agents read line by line against the decision ladder and a tenth by its stat, the whole tree counted at the trunk tip, and the questions the owner must answer before anything here becomes a ruling.
 tags: [cairn, research, coding-guidelines, coding-stance, ponytail, crumbz]
 timestamp: 2026-09-07T12:00:00Z
 cairn:
@@ -111,7 +111,8 @@ features".
 Where they agree: the instruction file is short and says only what the
 default gets wrong; every change carries a check the agent runs itself;
 fix the cause, not the symptom; a task is small enough to describe in a
-sentence; a reviewer who did not write the diff reads it. None of them
+sentence; and, in the three guides that speak of review — Anthropic,
+OpenAI, GitHub — a reviewer who did not write the diff reads it. None of them
 says a word about naming or comments beyond "differs from defaults", and
 only OpenAI and GitHub mention secrets, both as "never in the file".
 
@@ -140,9 +141,9 @@ only OpenAI and GitHub mention secrets, both as "never in the file".
 The stance was in every Crumbz tree from the first unit:
 `skills/cairn-code/SKILL.md` landed in the install commit at 10:23 on
 2026-09-03, CP-001 S01 at 11:18. No step record of the seventy-one under
-`project/coding-paths/` names the skill, the ladder or any rung. Ten
+`project/coding-paths/` names the skill, the ladder or any rung. Nine
 units were read in full, chosen for spread: six paths, three agents, the
-first day and the last, the smallest and the largest; one more, 002 S04,
+first day and the last, the smallest and the largest; a tenth, 002 S04,
 was read by its step and diff stat only because it is 1,084 lines of diff
 and its shape was already clear.
 
@@ -159,10 +160,12 @@ and its shape was already clear.
 | 014 S01 `d5e4a17` the score once finished | Claude | +132 / −14 | the plan ends "Nothing else."; the self-review: "Rejected a `description` field on the score type: it was already there" — rung 2 said out loud; `storedScores` replaces an inline loop; the tests assert the refusals (zeros are not a draw, in play has no result); the replay reads both archived payload shapes because both exist in the archive — the real flow read first. Nothing to cut |
 | 016 S05 `3fa4668` status and history windows | Claude | +61 / −11 | **Rung 2 inside one unit**: seven live status codes listed inline in `defaultGameDay` and the same codes again as keys of a seventeen-entry label map ten lines below. **Refused**: a `showStatus` boolean prop on a row component; a test that mocks the ORM and asserts the exact `where` clause of the first call. The step has no three-line shape and a "Next action" section the template does not have |
 
-Counted: in seven of ten units at least one rung was skipped; rung 2 —
+Counted: of the nine units read in full, seven had at least one rung
+skipped; rung 2 —
 already in the codebase — is the one skipped most, six times, twice by
-the agent whose self-review names rung 2 in prose. Two units, 004 S01 and
-014 S01, had nothing to cut. The self-review was where the ladder lived
+the agent whose self-review names rung 2 in prose. Two had nothing to cut in
+their logic: 004 S01, whose only finding is two exported types nobody
+imports, and 014 S01. The self-review was where the ladder lived
 when it lived anywhere: no step names it, but the two clean units are the
 two whose self-review says what was rejected and why.
 
@@ -208,7 +211,7 @@ Gemini records suggests the skill was ever read.
 
 1. **The stance is present and inoperative.** It was installed before the
    first unit, is cited by none of seventy-one steps, and the code skipped
-   its rungs in seven of ten units read. The text is not the problem: the
+   its rungs in seven of the nine units read in full. The text is not the problem: the
    ladder Ponytail ships today is the ladder Cairn ships. What Ponytail has
    and Cairn lacks is the moment the ladder is *applied* — a review pass
    with five tags and a net-lines line — and the self-review is the only
@@ -246,8 +249,8 @@ Gemini records suggests the skill was ever read.
 
 - Whether a second reader of the diff is wanted at all, and who: that is
   the step-cycle note's question, and this note only records that a
-  fresh-context review is the one thing all five guides share and Cairn
-  lacks.
+  fresh-context review is what the three vendor guides that speak of
+  review share and Cairn lacks.
 - Whether the forty-nine dead exports and the four copies are a slicing
   problem — files that do not know each other — rather than a stance
   problem; the slicing note reads the tree.

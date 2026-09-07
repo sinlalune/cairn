@@ -21,7 +21,7 @@ suffices after CP-016. Nothing here is a ruling.
 
 | Source | Pinned | Why it is a source |
 | :-- | :-- | :-- |
-| Beads, `steveyegge/beads` | release `v1.2.2` of 2026-08-15; `README.md` read at `main` on 2026-09-07; about 27,000 stars | the graph tracker the convergence audit weighed on 2026-09-02 |
+| Beads, `steveyegge/beads` | release `v1.2.2` of 2026-08-15, tag at `8ed120b`; `README.md` read at that tag on 2026-09-07; about 27,000 stars | the graph tracker the convergence audit weighed on 2026-09-02 |
 | GitHub, *Adding sub-issues* | <https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/adding-sub-issues>, read 2026-09-07 | the forge's native hierarchy |
 | GitHub, *Creating issue dependencies* | <https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/creating-issue-dependencies>, read 2026-09-07 | the forge's native edge |
 | Anthropic, *Best practices for Claude Code* | <https://code.claude.com/docs/en/best-practices>, read 2026-09-07 | `/batch`, agent teams, the Writer/Reviewer pair |
@@ -38,10 +38,11 @@ agents: hash ids, dependency edges, `ready` work computed from the graph,
 a database beside the code", and ruled "A graph is not necessary; one edge
 is." At `v1.2.2` Beads is no longer Git-backed. Its README's first line is
 "Distributed graph issue tracker for AI agents, powered by Dolt", a
-version-controlled SQL database that "runs in-process, data lives in
-`.beads/embeddeddolt/`, single writer", synced by `bd dolt push` against
-"`refs/dolt/data` on your git remote"; "`.beads/issues.jsonl` is an export
-for viewers and interchange, not the source of truth or a backup." The
+version-controlled SQL database: "Dolt runs in-process — no external
+server needed. Data lives in `.beads/embeddeddolt/`. Single-writer only";
+cross-machine sync is "`bd dolt push` and `bd dolt pull` against
+`refs/dolt/data`; `.beads/issues.jsonl` is an export for viewers and
+interchange, not the source of truth or a full database". The
 shape the audit warned about became the whole product. What it keeps that
 Cairn weighed: `bd ready`, "List tasks with no open blockers"; `bd dep add
 <child> <parent>` for "blocks, related, parent-child"; hierarchical ids for

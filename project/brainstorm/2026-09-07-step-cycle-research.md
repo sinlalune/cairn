@@ -121,10 +121,11 @@ so a unit's verdict is the writer's own bare gate.
 | bind what is merged | — | archive | — | — | the merge | — | `C` by id, the digest, the base, `ready` then `done` |
 | deviate honestly | converge appends | update anything anytime | — | — | — | — | a superseding acceptance; `repair` for a violation |
 
-What every cycle has and the unit lacks is one thing: **a reader of the
-diff who did not write it, before the merge**. Claude Code, Codex and
-Copilot each ship it as one command or one setting; Beck is the reader
-himself. Cairn's self-review is written by the writer in the same context
+What the agent products and Beck have, and the unit lacks, is one thing:
+**a reader of the diff who did not write it, before the merge**. Claude
+Code, Codex and Copilot each ship it as one command or one setting; Beck
+is the reader himself. Spec Kit and OpenSpec have no such reader either:
+their commands read the artefacts, not the code. Cairn's self-review is written by the writer in the same context
 as the change, and the owner's read of the request is a read of a
 description the writer drafted.
 
@@ -198,8 +199,9 @@ was written for.
 
 1. **The unit is the right shape and it has no second reader.** Its four
    movements match every cycle's; its record and its candidate exceed
-   them. The one thing all five sources share and Cairn lacks is a fresh
-   context reading the diff before the merge, and Crumbz shows the cost:
+   them. What the three agent products and Beck share, and the two spec
+   toolkits and Cairn lack, is a fresh context reading the diff before
+   the merge, and Crumbz shows the cost:
    nine correctness findings on three requests by the one bot that read
    them, none caught by a self-review that was otherwise honest. The 1.1
    page says a sole owner "reviews their own requests"; the products say
