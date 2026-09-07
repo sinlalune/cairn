@@ -7,13 +7,13 @@ timestamp: 2026-09-07T00:00:00Z
 cairn:
   id: CP-CAIRN-003
   route: full
-  status: running
-  current_step: S01
+  status: ready
+  current_step: S05
   base_commit: 7997b7608bf34ceecfbcf85e5ad32c0187230e5d
   branch: path/cp-cairn-003
   assigned_writer: cp-cairn-003-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 72198b183ab9b5e639cab51e35b80cb82635c8fd
   resolution: null
   writes:
     - docs/adr/**
@@ -165,33 +165,34 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 - **[S03](./steps/S03.md)** — ADR-019, an area is a folder of the tree: the main component of ADR-010 is a folder and its note describes it (Q10), the architecture page says which way dependencies point (Q11), a path names its areas and a whole root says why (Q12); the owner's question on Crumbz's one note answered in the record; the kit found to have no architecture template.
 - **[S04](./steps/S04.md)** — ADR-020, the one edge and the one writer, confirmed: the edge lives in the record only (Q13), a helper agent inside the writer's session is the writer, one sentence in the unit skill (Q14), the register carries no edge between milestones (Q15); every ticked answer Q1 to Q15 is now named by one record.
 - **[S05](./steps/S05.md)** — the 1.1 architecture page amended with ADR-016 to ADR-020, each added sentence naming its record and marked *since 2026-09-07*, promoted-from links to the six notes at their pinned blob ids, no 1.1 record superseded; the architecture index refreshed; the register's rows 1 to 4 widened with the records and surfaces, the audit tool placed in row 3, no path opened.
-- **S06** — not started; its file is linked when it is written
+- **S06** — no step: there is no closure step (ADR-008, decision 1); the candidate `C` is S05's commit, reviewed in pull request #10.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : d917bd3f565587be7f36eccaa7335f5973b63760 — S04, unit 04, on origin/path/cp-cairn-003 with its run green; S05's own commit follows it and is named here by S06
-unit   : 05 (S05, pushed)
+commit : 72198b183ab9b5e639cab51e35b80cb82635c8fd — S05, unit 05, candidate C, on origin/path/cp-cairn-003 with its run green; this record is the one administrative commit after it
+unit   : 05 (S05, the candidate)
 base   : 7997b7608bf34ceecfbcf85e5ad32c0187230e5d
-trunk  : 011b8fc2c6cc4de750c8d67052d56ff707f0f464 — origin/main after registration; unchanged since
+trunk  : 011b8fc2c6cc4de750c8d67052d56ff707f0f464 — origin/main, contained in C
 ```
 
 ### Next action
 
-Run S06 with `cairn-close`: fetch and merge `origin/main` into
-`path/cp-cairn-003` (never rebase), confirm no provisional commit in the
-range, push, run every gate bare on that exact commit — it is `C` — and
-print the request's description with `npm run cairn-audit -- --subject <C>`.
-Open the pull request from `path/cp-cairn-003` to `main` with that
-description, its coherence section opening with one line per item of the
-definition of done as ADR-018 decision 2 asks, each naming the unit and the
-page; answer the four coherence questions; list the advisories at `C`, or
-*none*. The owner reads the five records, the amended page and the
-register before the merge; the merge is the acceptance. Then the
-administrative commit, `ready` and `subject_commit`, after the request's
-run is green.
+The owner reads the five records `docs/adr/ADR-016` to `ADR-020`, the
+amended page `docs/architecture/01-cairn-1-1.md` and the register
+`project/coding-paths/index.md` at `C`, then merges pull request #10 as a
+merge commit once its `cairn-check` run is green: the merge is the closing
+acceptance. Then the integrating unit from a clean trunk checkout
+(`../cairn-main`): `status: done`, `resolution: completed`,
+`subject_commit` kept, the live view regenerated, one journal entry under
+`project/log/2026-09-07-cp-cairn-003.md` with `cairn.path: CP-CAIRN-003`,
+landed on `main` directly as a sole owner's trunk commit (ADR-001); prove
+`C` reachable from `origin/main`; remove the clean worktree
+`../cairn-cp-cairn-003` from another checkout, without force, and report
+a failure to remove as its own outcome. The branch `path/cp-cairn-003`
+stays.
 
 ### Blockers
 
