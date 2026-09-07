@@ -94,8 +94,8 @@ it bare, and opens the request from the path branch with the review as
 its description: the candidate, its base, the digest, the four coherence
 questions, the advisories with their dispositions. There is no closure
 step and no step file for the review (ADR-008, decision 1). The owner
-tries the result — for documents, reads the pages — and ticks the one box
-in the request that only the owner ticks (ADR-001, decision 3). The
+tries the result — for documents, reads the pages — before the merge; that
+is a named step, and nothing is ticked for it (ADR-001, decision 3). The
 administrative commit follows: `ready`, `subject_commit`, the live view,
 the checkpoint, nothing else, never under a provisional trailer (ADR-008,
 decision 3).
@@ -161,7 +161,7 @@ and the site that projects it (ADR-012).
 | :-- | :-- | :-- |
 | `cairn-check` | the blocking and advisory rules on the exact commit, with a profile line that says what the forge does not enforce | 1.0; ADR-001 d6 |
 | `cairn-active` | the live view of running paths; reports a roadmap register still carrying the installer's row | 1.0; ADR-008 d5 |
-| `cairn-audit` | the request's description for one candidate, with the owner's box unticked | 1.0; ADR-001 d3 |
+| `cairn-audit` | the request's description for one candidate | 1.0 |
 | `cairn-postmortem` | for one path or the repository, the mechanical reading the adopter notes did by hand; run by the workflow when the gate goes red, into the run's log and onto the request, and on demand | ADR-014 d1 |
 | `cairn-test` | this repository's fixture suite for the tools, run by this repository's workflow before the checker and proven at each release; the kit installs no suite and names no test script, so `npm test` stays the adopter's | ADR-014 d2 |
 | `cairn` | `init`, `status`, `update`, `adopt`, as in 1.0; installs the pointer page and the three concept folders; `update` rewrites every pristine file, prints what the release changes in an edited one and lists it on the pointer page, and takes the release's version of a named file on request | 1.0; ADR-011, ADR-013, ADR-015 |

@@ -1,7 +1,7 @@
 ---
 type: Cairn Decision Record
 title: ADR-015 — a release reaches an edited file
-description: How a new release reaches a repository that installed an earlier one — a pristine file is rewritten whether the kit or the host owns it, an edited file is never rewritten but the update prints what the release changes in it and the pointer page lists it, and the owner can take the release's version of a named file. Raised by the review of CP-CAIRN-002's candidate; it makes ADR-001, ADR-004, ADR-005, ADR-011, ADR-013 and ADR-014 reach the first adopter.
+description: How a new release reaches a repository that installed an earlier one — a pristine file is rewritten whether the kit or the host owns it, an edited file is never rewritten but the update prints what the release changes in it and the pointer page lists it, and the owner can take the release's version of a named file. Raised by the review of CP-CAIRN-002's candidate; it makes ADR-004, ADR-005, ADR-011, ADR-013 and ADR-014 reach the first adopter.
 tags: [cairn, adr, 1.1, kit, update, migration]
 timestamp: 2026-09-07T00:00:00Z
 adr:
@@ -38,8 +38,7 @@ the adopter edited them or not.
 Under that policy a repository that installed 1.0 and runs `update` to
 1.1 receives none of: the workflow's trigger (ADR-005), its post-mortem
 step and package script (ADR-014), the bootloader's two lines (ADR-011
-decision 3, ADR-013), the request template's owner's box (ADR-001
-decision 3). And the first adopter's checker, edited three times to
+decision 3, ADR-013). And the first adopter's checker, edited three times to
 repair it, stays edited, so the three repairs coming upstream (ADR-004
 decision 6) would not reach the one repository that made them. The
 review of this path's candidate found it; the records above were written

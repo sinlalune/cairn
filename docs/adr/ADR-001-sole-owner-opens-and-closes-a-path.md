@@ -118,15 +118,20 @@ block.
 
 Promotes **R04**, from Q3.
 
-For every path, before the merge, the owner uses what was built and ticks
-one box in the request that only the owner ticks. The agent never ticks it,
-and the close skill says so. For a path whose product is documents, trying
-the result means reading the pages. The checker does not read the box: the
-forge holds it, as it holds the approval.
+For every path, before the merge, the owner uses what was built. That is
+a named step of closing, and the close skill says so: the writer's report
+of the candidate ends by handing it to the owner to try, and the merge
+comes after. For a path whose product is documents, trying the result
+means reading the pages.
 
-What this changes: `.github/pull_request_template.md` (kit-owned) gains
-the owner's box; `npm run cairn-audit` prints it unticked; the `cairn-close`
-skill, step 3, names the step.
+The rulings note wrote R04 with a checkbox in the request that only the
+owner ticks. On 2026-09-07, at this path's own closure, the owner dropped
+the box: *"I chose that because of the testing, not because of the
+tick."* The step is the trying; the merge click that follows records it
+(decision 4). Nothing is added to the request template, and no tool prints
+or reads a box.
+
+What this changes: the `cairn-close` skill, step 3, names the step.
 
 ### Decision 4 — the merge click is the closing acceptance
 
@@ -219,7 +224,6 @@ declaring `done` for a path whose branch never declared `ready`, refused.
   the post-mortem command of 1.1 is triggered by (R36, promoted later on
   this path).
 - The checker's transition table has one edge less, and one fixture more.
-- The kit's pull-request template gains one line the owner alone ticks.
 - The open and close skills gain three sentences and lose one sequence.
 - The fifteen Crumbz closures without a recorded approval, and this path's
   own registration with a `pull-request` declaration, are explained rather
@@ -234,7 +238,8 @@ is more control in the volume of tests and the complexity of workflows, and
 its measure is what is native to Git, GitHub and CI.
 
 - Q2 and Q5 are one sentence each in a skill, with no check behind them.
-- Q3 is a checkbox the forge already renders and stores; no check reads it.
+- Q3 is a sentence in the close skill; the box the note proposed was
+  dropped by the owner, so nothing is rendered, stored or read.
 - Q6 removes an edge from a table rather than adding a predicate; the
   fixture that proves it is the one test the change costs.
 
@@ -253,7 +258,7 @@ coding path can be opened from.
 | :-- | :-- | :-- |
 | 1 | the registration transport and the open skill | `cairn.config.json` `transport.registration`; `cairn-open` step 3 and reference; `binding.md` |
 | 2 | the open skill | `cairn-open` step 2 |
-| 3 | the request template, the audit's output, the close skill | `.github/pull_request_template.md`; `cairn-audit`; `cairn-close` step 3 |
+| 3 | the close skill | `cairn-close` step 3 |
 | 4 | nothing | — |
 | 5 | the close skill | `cairn-close` step 5 |
 | 6 | the checker's profile line | `tools/cairn-check.mjs`, obligation 8 of the configuration contract; concept `enforcement-profile` |

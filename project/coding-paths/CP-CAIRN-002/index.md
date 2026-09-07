@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-002
   route: full
   status: running
-  current_step: S07
+  current_step: S08
   base_commit: 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
   branch: path/cp-cairn-002
   assigned_writer: cp-cairn-002-writer
@@ -154,28 +154,28 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - **[S05](./steps/S05.md)** — themes 5 and 6 as four records: ADR-011 the adopter's documentation plane (R31, R34, R35), ADR-012 a page a newcomer reads first (R32), ADR-013 a local pointer to the protocol (R33), ADR-014 two tools of 1.1 (R36, R37). Every ticked line of the rulings note is now named by one record.
 - **[S06](./steps/S06.md)** — the architecture page `docs/architecture/01-cairn-1-1.md`, promoted from the two notes through ADR-001 to ADR-014 and stating what 1.1 removes; the roadmap register with the 1.0 and 1.1 milestones and the five coding paths of 1.1, each *no path yet*, the installer's row gone.
 - **[S07](./steps/S07.md)** — the review of the first candidate answered: ADR-015 on how a release reaches an edited file; ADR-011, ADR-013 and ADR-014 amended for the kit's count under thirty and the fixture suite that stays in this repository; the page and the roadmap updated.
+- **[S08](./steps/S08.md)** — the owner dropped the acceptance box at this path's closure: ADR-001 decision 3 is the owner's try before the merge, a step in the close skill and nothing in the request; the page, ADR-015 and the roadmap follow.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : d11f684116159e957151ec5d304409ea71041c20 — S06, unit 06, on origin/path/cp-cairn-002, CI run 34063828552 green; the first candidate, voided by its review; S07's own commit follows it and is the second candidate
-unit   : 07 (S07, pushed)
+commit : 8227063e39b1af117fa325125b9a32bfc545b838 — S07, unit 07, on origin/path/cp-cairn-002, both runs green; the second candidate, voided by the owner's ruling on the box; S08's own commit follows it and is the third candidate
+unit   : 08 (S08, pushed)
 base   : 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
 trunk  : ec1e53502005142a117e8eeed0b8ae709cd95dd9 — origin/main after registration; unchanged since
 ```
 
 ### Next action
 
-Close on the second candidate: S07's commit, which contains the trunk tip,
-is `C` once its gates and its run are green. Rewrite the description of
-pull request #8 for it with `npm run cairn-audit -- --subject <C>`, the
-coherence questions answered, the advisories disposed, the three review
-findings answered, and the owner's acceptance checkbox unticked. After
-the owner's tick: the administrative commit, the request's run read green,
-the owner's merge, the integrating unit and the journal entry on the
-trunk, the worktree removed.
+Close on the third candidate: S08's commit is `C` once its gates and its
+run are green. Rewrite the description of pull request #8 for it with no
+owner's box, push the administrative commit (`ready`, `subject_commit: C`,
+the live view, this checkpoint at `C`), read the request's run green, and
+hand the candidate to the owner to read and merge as a merge commit. Then
+the integrating unit and the journal entry on the trunk, and the worktree
+removed.
 
 ### Blockers
 
