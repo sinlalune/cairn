@@ -146,7 +146,7 @@ request: nine findings on three requests, five of them answered by a unit and a
 new candidate, until its quota ran out. Your own read was once twenty
 seconds.
 
-- [x] **The forge's reviewer, on every request.** *(native)* A review
+- [ ] **The forge's reviewer, on every request.** *(native)* A review
   bot on the request — the one you already have, the ChatGPT/Codex
   connector that read #21, #27 and #30 on Crumbz, or GitHub's own, Copilot
   code review; it comments, cannot approve, and the writer answers its
@@ -154,10 +154,16 @@ seconds.
   *Owner, 2026-09-07: "I use Claude in Claude Code, and I have a ChatGPT
   connector that reviews PRs; I never heard of Copilot." The bot is that
   connector.*
-- [ ] **The writer, in a fresh context, before the request.** *(native
+- [x] **The writer, in a fresh context, before the request.** *(native
   to the agent products; one sentence)* The writer runs its harness's
   review command in a fresh context and pastes the findings and what it
   did about them into the self-review.
+  *Owner, 2026-09-07, after reading that the forge's reviewer is a paid
+  plan and the connector is personal: "we need something agnostic of paid
+  plan but also from personal configuration." A fresh context of the
+  writer's own agent — a second session that sees only the diff and the
+  criteria — needs neither; with Q7 it runs at every unit, and a bot on
+  the request, where one exists, is a bonus the rule does not depend on.*
 - [ ] **Nobody new.** *(simplest, as today)* Your read and your try.
 
 ### Q7. Does the unit get a fifth movement?
