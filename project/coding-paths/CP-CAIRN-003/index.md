@@ -7,13 +7,13 @@ timestamp: 2026-09-07T00:00:00Z
 cairn:
   id: CP-CAIRN-003
   route: full
-  status: running
+  status: ready
   current_step: S06
   base_commit: 7997b7608bf34ceecfbcf85e5ad32c0187230e5d
   branch: path/cp-cairn-003
   assigned_writer: cp-cairn-003-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: e64a1d5d704a8a50a27b80b1ba03661cceaa3951
   resolution: null
   writes:
     - docs/adr/**
@@ -172,30 +172,27 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 72198b183ab9b5e639cab51e35b80cb82635c8fd — S05, unit 05, the last green unit on origin/path/cp-cairn-003; b09f492 follows it on the remote as the refused administrative commit that S06 supersedes, and S06's own commit follows that
-unit   : 06 (S06, the repair, pushed)
+commit : e64a1d5d704a8a50a27b80b1ba03661cceaa3951 — S06, unit 06, candidate C₂, on origin/path/cp-cairn-003 with its run green; this record is the one administrative commit after it
+unit   : 06 (S06, the candidate)
 base   : 7997b7608bf34ceecfbcf85e5ad32c0187230e5d
 trunk  : 011b8fc2c6cc4de750c8d67052d56ff707f0f464 — origin/main, contained in the branch
 ```
 
 ### Next action
 
-The second candidate `C₂` is S06's own commit. Make the one administrative
-commit after it with `cairn-close` step 4, moving only `status: ready` and
-`subject_commit: C₂` in the frontmatter, the checkpoint in this section,
-and the live view — never `current_step` — and read the gate's exit code
-bare before and after committing. Rewrite the description of pull request
-#10 for `C₂`, naming the review of `72198b1` it supersedes. Then the owner
-reads the five records `docs/adr/ADR-016` to `ADR-020`, the amended page
-`docs/architecture/01-cairn-1-1.md` and the register
-`project/coding-paths/index.md`, and merges the request as a merge commit
-once its run is green: the merge is the closing acceptance. Then the
-integrating unit from a clean trunk checkout (`../cairn-main`): `status:
-done`, `resolution: completed`, `subject_commit` kept, the live view, one
-journal entry `project/log/2026-09-07-cp-cairn-003.md` with `cairn.path:
-CP-CAIRN-003`, landed on `main` directly (ADR-001); prove `C₂` reachable
-from `origin/main`; remove the clean worktree `../cairn-cp-cairn-003` from
-another checkout without force, reporting a failure as its own outcome.
+The owner reads the five records `docs/adr/ADR-016` to `ADR-020`, the
+amended page `docs/architecture/01-cairn-1-1.md`, the register
+`project/coding-paths/index.md` and the repair step S06 at `C₂`, then
+merges pull request #10 as a merge commit once its `cairn-check` run is
+green: the merge is the closing acceptance. Then the integrating unit from
+a clean trunk checkout (`../cairn-main`): `status: done`, `resolution:
+completed`, `subject_commit` kept, the live view regenerated, one journal
+entry `project/log/2026-09-07-cp-cairn-003.md` with `cairn.path:
+CP-CAIRN-003`, landed on `main` directly as a sole owner's trunk commit
+(ADR-001); prove `C₂` reachable from `origin/main`; remove the clean
+worktree `../cairn-cp-cairn-003` from another checkout, without force,
+and report a failure to remove as its own outcome. The branch
+`path/cp-cairn-003` stays.
 
 ### Blockers
 
