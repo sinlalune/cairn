@@ -69,7 +69,7 @@ On Crumbz the two units with nothing to cut were the two whose
 self-review named a rejection; the rest wrote prose or nothing, and the
 same code was written twice by two agents a day apart.
 
-- [ ] **Yes, five tags.** *(one sentence; native to Ponytail)* The
+- [x] **Yes, five tags.** *(one sentence; native to Ponytail)* The
   self-review of every unit is one line per finding under `delete:`,
   `stdlib:`, `native:`, `yagni:`, `shrink:`, ending with the net line
   count or "Lean already", as Ponytail's review prints it.
@@ -88,7 +88,7 @@ swallows its own failure, a secret check active only in production.
 
 - [ ] **Take the three additions.** *(one sentence, three times)* Six
   lines added to `cairn-code`; nothing removed.
-- [ ] **Install Ponytail and keep only Cairn's own.** *(simplest, native:
+- [x] **Install Ponytail and keep only Cairn's own.** *(simplest, native:
   absorb the ecosystem)* The kit points at Ponytail at a pinned tag for
   the ladder and the review; `cairn-code` shrinks to what is Cairn's
   alone — deletion turned on the protocol, the test that never fires,
@@ -105,7 +105,7 @@ the shape the cap needs. Every guide bounds the task instead.
 - [ ] **The sentence rule.** *(one sentence; native to the vendors'
   guides)* A unit's plan is one sentence; a plan that needs two is two
   units. A structural change and a behavioural change never share a unit.
-- [ ] **No size.** *(simplest, as today)* The cap is the only bound.
+- [x] **No size.** *(simplest, as today)* The cap is the only bound.
 - [ ] **A number.** *(adds a rule)* An advisory when a unit's source diff
   exceeds a line count you pick.
 
@@ -115,7 +115,7 @@ The evidence: one runner that swallows its own failure, one secret check
 that only runs in production, no naming or formatting fault in ten units.
 Every guide says to leave the defaults alone on naming and formatting.
 
-- [ ] **Secrets and errors, one line each.** *(one sentence, twice)* No
+- [x] **Secrets and errors, one line each.** *(one sentence, twice)* No
   secret in code or in a record, rotate before redaction; an error is
   handled where data would be lost or a trust boundary crossed, and
   swallowed nowhere. Nothing on naming, comments or formatting.
@@ -128,7 +128,7 @@ Every guide says to leave the defaults alone on naming and formatting.
 
 Q6 below asks who reads it; this asks only what they read for.
 
-- [ ] **Yes.** *(one sentence)* Whoever reviews the diff — the writer in
+- [x] **Yes.** *(one sentence)* Whoever reviews the diff — the writer in
   a fresh context, a bot, you — is told to read it against the ladder and
   for correctness, nothing else, so that findings do not become new
   layers and defensive code.
@@ -146,9 +146,14 @@ request: nine findings on three requests, five of them answered by a unit and a
 new candidate, until its quota ran out. Your own read was once twenty
 seconds.
 
-- [ ] **The forge's reviewer, on every request.** *(native)* Copilot code
-  review turned on; it comments, cannot approve, and the writer answers
-  its findings before you try the result. One sentence in the close skill.
+- [x] **The forge's reviewer, on every request.** *(native)* A review
+  bot on the request — the one you already have, the ChatGPT/Codex
+  connector that read #21, #27 and #30 on Crumbz, or GitHub's own, Copilot
+  code review; it comments, cannot approve, and the writer answers its
+  findings before you try the result. One sentence in the close skill.
+  *Owner, 2026-09-07: "I use Claude in Claude Code, and I have a ChatGPT
+  connector that reviews PRs; I never heard of Copilot." The bot is that
+  connector.*
 - [ ] **The writer, in a fresh context, before the request.** *(native
   to the agent products; one sentence)* The writer runs its harness's
   review command in a fresh context and pastes the findings and what it
@@ -161,7 +166,7 @@ seconds.
   movements stay; the self-review is where a reviewer's findings, if Q6
   gives you one, are listed with what was done.
 - [ ] **No, and nothing changes.** *(simplest, as today)*
-- [ ] **Yes, a review movement the checker requires.** *(adds a rule)*
+- [x] **Yes, a review movement the checker requires.** *(adds a rule)*
 
 ### Q8. Does a change start with its failing test?
 
@@ -170,7 +175,7 @@ test; the units whose tests asserted a refusal were the clean ones.
 
 - [ ] **No.** *(simplest, as today)* Tests move with the change and assert
   the refusal; the order is the writer's.
-- [ ] **One sentence.** *(one sentence)* A unit that changes behaviour
+- [x] **One sentence.** *(one sentence)* A unit that changes behaviour
   writes the failing test first; a unit that changes only structure
   carries no new test and says so.
 - [ ] **A test-first movement.** *(adds a step)* The failing test is
@@ -183,7 +188,7 @@ boxes you tick, and on Crumbz nothing ticked was ever machine-read.
 
 - [ ] **No.** *(simplest, as today)* The plan names the item it advances
   and you read the request against the list.
-- [ ] **The request answers it item by item.** *(one sentence)* The
+- [x] **The request answers it item by item.** *(one sentence)* The
   coherence audit's first question becomes a line per item, each with the
   unit that advanced it and the command or page that shows it.
 - [ ] **Each item names its check.** *(adds a rule)* An item names a
@@ -204,7 +209,7 @@ held and the cost was one feature spread over four folders, written twice.
 - [ ] **A feature the product has.** *(one sentence; native to `areas`)*
   An area is something a user can name; its match patterns may cross
   folders; the note describes the feature end to end.
-- [ ] **A folder of the tree.** *(simplest, as today)* An area is a
+- [x] **A folder of the tree.** *(simplest, as today)* An area is a
   directory; the note describes the layer.
 - [ ] **The adopter's choice, unsaid.** *(as today)* ADR-010 stays as it
   is.
@@ -214,7 +219,7 @@ held and the cost was one feature spread over four folders, written twice.
 On Crumbz the direction was right and unwritten; two imports crossed a
 line the note names and nothing noticed.
 
-- [ ] **One sentence on the page.** *(one sentence in a template)* The
+- [x] **One sentence on the page.** *(one sentence in a template)* The
   architecture template asks for the direction in a sentence a reader can
   check against an import. No tool reads it.
 - [ ] **Nothing.** *(simplest, as today)*
@@ -227,7 +232,7 @@ line the note names and nothing noticed.
 Nine of sixteen Crumbz paths declared all of `src/`, and every overlap and
 every crossing hid behind it.
 
-- [ ] **The open skill asks for the area.** *(one sentence; as ADR-010
+- [x] **The open skill asks for the area.** *(one sentence; as ADR-010
   d2 already says)* A path names its areas and `writes:` is their
   patterns; a path that needs the whole root says why.
 - [ ] **Nothing.** *(simplest, as today)*
@@ -245,7 +250,7 @@ Today it is `depends_on` in the record and `unblocked` in the generated
 view. The forge can show the same edge as a `Blocked` badge on an issue.
 Beads, the graph tracker, moved from Git to a database this year.
 
-- [ ] **In the record only.** *(simplest, as today)* The 1.1 overlap
+- [x] **In the record only.** *(simplest, as today)* The 1.1 overlap
   advisory makes a missing edge visible.
 - [ ] **In the record, mirrored on a forge issue.** *(native, but a
   second copy)* Each path has an issue; the open skill sets `blocked by`
@@ -258,7 +263,7 @@ Beads, the graph tracker, moved from Git to a database this year.
 Nobody on Crumbz needed it; the products fan out into worktrees with one
 writer each; agent teams are experimental and off by default.
 
-- [ ] **No; a second agent opens a second path.** *(simplest, as today)*
+- [x] **No; a second agent opens a second path.** *(simplest, as today)*
   One path, one worktree, one writer; a helper agent inside the writer's
   session is the writer. One sentence says the last part.
 - [ ] **Yes, in the writer's session.** *(one sentence)* The writer may
@@ -272,7 +277,7 @@ writer each; agent teams are experimental and off by default.
 The 1.1 register orders five paths under one milestone; a second milestone
 would wait on the first in prose.
 
-- [ ] **No.** *(simplest, as today)* One milestone at a time; the order of
+- [x] **No.** *(simplest, as today)* One milestone at a time; the order of
   rows is the order.
 - [ ] **A `waits on` column.** *(one sentence in a template)* Read by
   nobody but you.
