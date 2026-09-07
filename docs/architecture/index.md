@@ -21,4 +21,4 @@ say what is implemented today.
 
 ## Pages
 
-- [01 — Cairn 1.1, a repository run by a sole owner with agents](./01-cairn-1-1.md) — accepted 2026-09-07; how a path opens, runs and closes when one owner works with agents, what the checker reads at each transition, what the documentation plane holds and where, which tools exist, and what 1.1 removes from 1.0; promoted from the decisions page and the rulings note through ADR-001 to ADR-014.
+- [01 — Cairn 1.1, a repository run by a sole owner with agents](./01-cairn-1-1.md) — accepted 2026-09-07; how a path opens, runs and closes when one owner works with agents, what the checker reads at each transition, what the documentation plane holds and where, which tools exist, and what 1.1 removes from 1.0; promoted from the decisions page and the rulings note through ADR-001 to ADR-015.

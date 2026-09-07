@@ -68,9 +68,16 @@ bootloader text, one line; the layout reference's tree.
 
 ## Consequences
 
-- One more kit file; with ADR-011's four the kit reaches thirty exactly,
-  and the budget on the conformance page holds without a gap. A further
-  kit file needs a removal first.
+- One more kit file. The kit holds twenty-six; ADR-011 adds three and this
+  record one, which is thirty, and the conformance page's target is
+  *under* thirty, so thirty is over it. The rule this record sets: the kit
+  of 1.1 ships with at most twenty-nine files, the post-mortem tool of
+  ADR-014 included, so the coding path that owns the kit removes two
+  files. The candidates it weighs first: `tools/cairn-config.schema.json`,
+  an editor aid the loader does not need since it validates the
+  configuration itself, and `project/index.md`, a one-paragraph index the
+  bootloader and the binding already cover. The path measures, removes,
+  and records the count on the conformance page as 1.0 did.
 - An adopter's reader, human or agent, has one page to open before any
   link leaves the repository.
 - The lock stays the tool's record; the page is its reading.
@@ -78,9 +85,10 @@ bootloader text, one line; the layout reference's tree.
 ## What the manifesto's test weighed
 
 One generated file, tagged so on the decisions page, against a budget the
-conformance page states. The record counts it and finds the budget met,
-not exceeded; the manifesto's *engagement* asks for this page more than
-its *leanest tree* argues against one file.
+conformance page states. The record counts it, finds the target crossed,
+and pays with two removals rather than by moving the target: a cap that
+binds is the one worth keeping. The manifesto's *engagement* asks for this
+page more than its *leanest tree* argues against one file.
 
 ## What implements this record
 

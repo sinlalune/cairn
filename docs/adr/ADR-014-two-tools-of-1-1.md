@@ -30,10 +30,13 @@ how long each request stayed open before the merge. The other half is
 judgement. The first half was read by hand five times in three days, from
 the same Git and forge commands.
 
-Separately, the kit's package script `test` runs the tools' own fixture
-suite, and the workflow runs it before the checker so a red suite gives no
-verdict. An adopter's product suite is also `npm test`: Crumbz deleted
-the workflow step to get its own tests back.
+Separately, this repository's package script `test` runs the tools' own
+fixture suite, and this repository's workflow runs it before the checker
+so a red suite gives no verdict. The kit installs the five tools and none
+of their tests, on purpose: the suite exercises this repository's
+fixtures. An adopter's `npm test` is its product suite, and the first
+adopter met a workflow step that ran it as if it were the kit's, and
+deleted the step.
 
 ## Decisions
 
@@ -61,30 +64,34 @@ Nothing is committed by the workflow: a branch has one writer, and the
 writer copies the reading into a learning note when the incident deserves
 one. On demand, the writer or the owner runs the same command by hand.
 
-What this changes: one new tool under `tools/`, with its test; one
-script in the kit's `package.json`; one step in
+What this changes: one new tool under `tools/`, with its test kept in
+this repository; one script in the kit's `package.json`; one step in
 `.github/workflows/cairn.yml`; the layout reference's table and the
 module note of the reference tools. The tool joins the kit's manifest,
-which is at its budget after ADR-011 and ADR-013: the coding path that
-adds it removes or merges one kit file first, and says which.
+counted in ADR-013's rule of at most twenty-nine files. An adopter that
+installed 1.0 receives the workflow step and the script through ADR-015.
 
-### Decision 2 — the kit's self-test is `cairn-test`
+### Decision 2 — the kit's self-test is `cairn-test`, and it stays here
 
 Promotes **R37**, from Q13.
 
-The kit's package script for the tools' fixture suite is `cairn-test`,
-beside `cairn-check`, `cairn-active` and `cairn-audit`. The workflow
-runs `npm run cairn-test` before the checker. `npm test` is the
-adopter's, and the kit neither writes nor reads it. The unit skill's verify
-step names `npm test` as the product's suite and nothing of the kit's:
-the kit's suite is the workflow's concern.
+The fixture suite of the tools is this repository's, run here as
+`npm run cairn-test` by this repository's workflow before the checker,
+and proven at each release against the exact tools the kit ships. The kit
+installs no suite and its workflow runs no test step, as today; the
+adopter's `npm test` is the adopter's, and neither the kit's
+`package.json` nor its workflow names it. The unit skill's verify step
+names `npm test` as the product's suite and says the kit's suite is not
+the adopter's concern.
 
-For the protocol's own repository, where the tools are the product, the
-two names point at one suite, and the bootloader's command list says so.
+This repository keeps `npm test` as an alias of `cairn-test` so the
+bootloader's command list stays true, and says so there.
 
-What this changes: `package.json` as the kit writes it and as this
-repository keeps it; `.github/workflows/cairn.yml`, one step's command;
-the bootloader's command list; the `cairn-unit` skill, step 4.
+What this changes: this repository's `package.json` and
+`.github/workflows/cairn.yml`, one script and one step's command; the
+bootloader's command list; the `cairn-unit` skill, step 4. The kit's
+package and workflow templates in `tools/cairn.mjs` do not change for
+this decision.
 
 ## Alternatives rejected
 
@@ -97,6 +104,11 @@ the bootloader's command list; the `cairn-unit` skill, step 4.
   tool written in prose.
 - **Committing the post-mortem from the workflow**: a second writer on a
   branch that has one.
+- **Installing the fixture suite so an adopter's workflow runs it**: the
+  suite exercises this repository's fixtures and would hand an adopter a
+  red run on the first command; eight more files against a budget that is
+  already crossed; and the tools an adopter runs are the tools the suite
+  proved at release.
 
 ## Consequences
 
@@ -104,9 +116,9 @@ the bootloader's command list; the `cairn-unit` skill, step 4.
   minute it happened.
 - The workflow has one more step that runs only on failure; a green run
   costs nothing more.
-- The kit's manifest needs one file removed or merged before the tool
-  enters it; the roadmap names the path that decides which.
-- Adopters keep `npm test`.
+- The kit's manifest reaches the count ADR-013 sets only after two
+  removals; the roadmap names the path that makes them.
+- Adopters keep `npm test`, and the kit never names it.
 
 ## What the manifesto's test weighed
 
@@ -114,12 +126,13 @@ Decision 1 keeps an option tagged *a new command, wired into CI*, against
 a *no new tool* option the manifesto would prefer. The record weighs it
 as: the tool replaces a manual reading that was done five times and will
 be done again; it judges nothing; and its trigger is the forge's own
-failure hook. The budget cost is real and is named, with the rule that a
-kit file must go for it. Decision 2 is a rename that removes a collision.
+failure hook. The budget cost is real and is counted in ADR-013. Decision 2 is a rename
+in this repository and a removal of a claim: the kit runs no suite it does
+not ship.
 
 ## What implements this record
 
 | Decision | Surface it changes | Named today as |
 | :-- | :-- | :-- |
 | 1 | a new tool and its test, the package script, the workflow, the module note | `tools/`; `package.json`; `.github/workflows/cairn.yml`; `docs/modules/application.md`; `spec/reference/repository-layout.md` |
-| 2 | the package script, the workflow, the bootloader, the unit skill | `package.json`; `.github/workflows/cairn.yml`; `AGENTS.md`; `cairn-unit` step 4 |
+| 2 | this repository's package script and workflow, the bootloader, the unit skill | `package.json`; `.github/workflows/cairn.yml`; `AGENTS.md`; `cairn-unit` step 4 |

@@ -74,8 +74,10 @@ terms — still never into Cairn's own wiki. The `concept-orphan` and
 protocol's own repository keeps its wiki where it is: it is the `cairn`
 scope itself.
 
-What this changes: `tools/cairn.mjs`, which installs three indexes where
-it installs one; `roots.concepts` in the installed configuration, now the
+What this changes: `tools/cairn.mjs`, which installs three folder indexes
+where it installs one root index, and the documentation index lists the
+three folders in place of a root index, so the count is two files more,
+not four; `roots.concepts` in the installed configuration, now the
 parent; `tools/cairn-check.mjs`, whose two concept rules read the root
 recursively; `spec/index.md` chapter 6, the scopes table; the layout
 reference.
@@ -116,9 +118,11 @@ already refuses a note nothing links.
 
 ## Consequences
 
-- The kit installs four more files: the inputs index and two more concept
-  indexes. With ADR-013's pointer that brings the kit to its thirty-file
-  budget exactly; the budget holds, with nothing to spare.
+- The kit installs three more files: the inputs index and two concept
+  indexes beyond the one it replaces. The kit holds twenty-six today; with
+  ADR-013's pointer that makes thirty, and the conformance page's target
+  is *under* thirty. ADR-013 states the rule and ADR-015 the count; the
+  coding path that owns the kit removes what the count requires.
 - A project's glossary grows in three places with three readers in mind,
   and the readable page of ADR-012 links into it.
 - The bootloader gains one rule and stays a pointer.
@@ -128,7 +132,7 @@ already refuses a note nothing links.
 The three rulings were the owner's before the page; the page records them.
 Decision 3 was the one design choice left to this path, and it chose one
 line in an existing file over a new skill. The kit's file budget is the
-cost, stated above.
+cost, stated above and settled in ADR-013.
 
 ## What implements this record
 

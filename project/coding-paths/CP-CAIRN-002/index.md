@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-002
   route: full
   status: running
-  current_step: S06
+  current_step: S07
   base_commit: 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
   branch: path/cp-cairn-002
   assigned_writer: cp-cairn-002-writer
@@ -153,30 +153,29 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - **[S04](./steps/S04.md)** — themes 3 and 4 as five records: ADR-006 what closing leaves behind (R23, R24), ADR-007 a framework writes into the bootloader (R21), ADR-008 housekeeping with no choice in it (R18, R19, R20, R22, R28, R29, R38), ADR-009 what the unit skill tells the agent (R25, R26, R27), ADR-010 the module note describes now (R39, R30).
 - **[S05](./steps/S05.md)** — themes 5 and 6 as four records: ADR-011 the adopter's documentation plane (R31, R34, R35), ADR-012 a page a newcomer reads first (R32), ADR-013 a local pointer to the protocol (R33), ADR-014 two tools of 1.1 (R36, R37). Every ticked line of the rulings note is now named by one record.
 - **[S06](./steps/S06.md)** — the architecture page `docs/architecture/01-cairn-1-1.md`, promoted from the two notes through ADR-001 to ADR-014 and stating what 1.1 removes; the roadmap register with the 1.0 and 1.1 milestones and the five coding paths of 1.1, each *no path yet*, the installer's row gone.
+- **[S07](./steps/S07.md)** — the review of the first candidate answered: ADR-015 on how a release reaches an edited file; ADR-011, ADR-013 and ADR-014 amended for the kit's count under thirty and the fixture suite that stays in this repository; the page and the roadmap updated.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 77dade74110c5afb198ee492cb2fdace97efce09 — S05, unit 05, on origin/path/cp-cairn-002, CI run 34046418841 green; S06's own commit follows it and is named here by the administrative commit
-unit   : 06 (S06, pushed)
+commit : d11f684116159e957151ec5d304409ea71041c20 — S06, unit 06, on origin/path/cp-cairn-002, CI run 34063828552 green; the first candidate, voided by its review; S07's own commit follows it and is the second candidate
+unit   : 07 (S07, pushed)
 base   : 885072cc786db4d4608ed2d92a1b51cf2ce78b4c
 trunk  : ec1e53502005142a117e8eeed0b8ae709cd95dd9 — origin/main after registration; unchanged since
 ```
 
 ### Next action
 
-Close the path with the `cairn-close` skill: fetch and merge `origin/main`
-in, run the gates bare on the result, take its object id as candidate `C`,
-run `npm run cairn-audit -- --subject <C>` and open the pull request from
-`path/cp-cairn-002` to `main` with that description, the four coherence
-questions answered, the advisories disposed, and the owner's acceptance
-checkbox (ADR-001, decision 3) unticked. The owner reads the fourteen
-records and the page, ticks the box; then the administrative commit
-(`ready`, `subject_commit: C`, the live view, this checkpoint at `C`), the
-owner merges after the request's run is green, the integrating unit and
-the journal entry land on the trunk, and the worktree is removed.
+Close on the second candidate: S07's commit, which contains the trunk tip,
+is `C` once its gates and its run are green. Rewrite the description of
+pull request #8 for it with `npm run cairn-audit -- --subject <C>`, the
+coherence questions answered, the advisories disposed, the three review
+findings answered, and the owner's acceptance checkbox unticked. After
+the owner's tick: the administrative commit, the request's run read green,
+the owner's merge, the integrating unit and the journal entry on the
+trunk, the worktree removed.
 
 ### Blockers
 
@@ -210,6 +209,11 @@ None.
   in S01, dropped in S02 on the owner's word: it kept a foreign numbering
   alive to protect citations that point at nothing; the paths of 1.1
   replace the citations instead.
+- Closing on the first candidate with the review's three findings
+  answered in the request only — a finding that a record cannot reach the
+  adopter it was written for is a finding about the record, and chapter 3
+  says a challenge is a new record and an amended page; `C` was voided
+  and S07 wrote them.
 - Landing records as `proposed` and flipping them at merge — the
   administrative commit carries nothing but closure metadata, so the flip
   would cost a unit; a record of a decision the owner already took lands

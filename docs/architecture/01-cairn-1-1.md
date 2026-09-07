@@ -12,8 +12,8 @@ timestamp: 2026-09-07T00:00:00Z
 [decisions page](../../feedbacks/2026-09-06-cairn-1-1-decisions.md) at blob
 `110cde972d683680bdeb713264a26fd8f9f44acd` and the
 [rulings note](../../feedbacks/2026-09-06-cairn-1-1-rulings.md) at blob
-`313f8ea18fe77d0fb6f641ac969989dc4d35a17f`, through the fourteen
-[decision records](../adr/index.md) ADR-001 to ADR-014. The notes stay
+`313f8ea18fe77d0fb6f641ac969989dc4d35a17f`, through the fifteen
+[decision records](../adr/index.md) ADR-001 to ADR-015. The notes stay
 exactly as they were. This page states what the records decide as one
 shape; where a sentence relies on a record, the record is named. Nothing
 here is implemented yet: the [roadmap register](../../project/coding-paths/index.md)
@@ -147,7 +147,7 @@ An adopter's `docs/` is installed with its shape and grows by promotion:
 | `docs/adr/` | one record per decision, counted from ADR-001 with no gaps | promotion units and paths that decide | 1.0, kept; numbering in the folder's index |
 | `docs/modules/` | one note per main component, current state only | implementation units | ADR-010 |
 | `docs/concepts/cairn`, `docs/concepts/<project>`, `docs/concepts/learning` | the protocol's terms as this project's reader needs them, the product's own terms, knowledge from outside | any session that explains an abstraction, by one line in the bootloader | ADR-011 d2, d3 |
-| `cairn/README.md` | the installed release, the six chapters and five skills at that release, the files the kit owns | the kit, at `init` and `update` | ADR-013 |
+| `cairn/README.md` | the installed release, the six chapters and five skills at that release, the files the kit owns, and the edited files the last update could not rewrite | the kit, at `init` and `update` | ADR-013; ADR-015 d2 |
 | `project/coding-paths/index.md` | the roadmap register, every milestone with a path or *no path yet*; reported while it still carries the installer's row | the owner and the promotion paths | ADR-008 d5 |
 | `project/log/` | one journal entry per integration, the only history of what a path did | the integrating unit | 1.0, kept; ADR-010 d1 |
 
@@ -163,13 +163,14 @@ and the site that projects it (ADR-012).
 | `cairn-active` | the live view of running paths; reports a roadmap register still carrying the installer's row | 1.0; ADR-008 d5 |
 | `cairn-audit` | the request's description for one candidate, with the owner's box unticked | 1.0; ADR-001 d3 |
 | `cairn-postmortem` | for one path or the repository, the mechanical reading the adopter notes did by hand; run by the workflow when the gate goes red, into the run's log and onto the request, and on demand | ADR-014 d1 |
-| `cairn-test` | the kit's own fixture suite, run by the workflow before the checker; `npm test` stays the adopter's | ADR-014 d2 |
-| `cairn` | `init`, `status`, `update`, `adopt`, as in 1.0; installs the pointer page and the three concept folders | 1.0; ADR-011, ADR-013 |
+| `cairn-test` | this repository's fixture suite for the tools, run by this repository's workflow before the checker and proven at each release; the kit installs no suite and names no test script, so `npm test` stays the adopter's | ADR-014 d2 |
+| `cairn` | `init`, `status`, `update`, `adopt`, as in 1.0; installs the pointer page and the three concept folders; `update` rewrites every pristine file, prints what the release changes in an edited one and lists it on the pointer page, and takes the release's version of a named file on request | 1.0; ADR-011, ADR-013, ADR-015 |
 | the workflow | one job, one run per commit that can land: the request's run for a candidate, the trunk's run for a registration and an integration | ADR-005 |
 
-The kit reaches its thirty-file budget with the pointer page and the three
-indexes; the post-mortem tool enters it only when one kit file has been
-removed or merged (ADR-013, ADR-014).
+The kit of 1.1 ships with at most twenty-nine files, the pointer page, the
+three indexes and the post-mortem tool included, which is two removals from
+what 1.0 installs plus these five (ADR-013, ADR-014). A repository that
+installed 1.0 receives all of this through `update` (ADR-015).
 
 ## What 1.1 removes from 1.0
 
