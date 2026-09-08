@@ -1,9 +1,9 @@
 ---
 type: Cairn Decision Record
 title: ADR-017 — the review movement
-description: A unit has five movements — plan, change, self-review, review, verify. The review is the writer's own agent in a fresh context that sees only the diff and the two criteria of ADR-016, and its findings with their dispositions are written into a section of the step record that the checker requires. Promotes Q6 and Q7 of the coding-guidelines decisions page; the one answer of the page that adds a rule.
+description: A unit has five movements — plan, change, self-review, review, verify. The review is the writer's own agent in a fresh context that sees only the diff and the two criteria of ADR-016, and its findings with their dispositions are written into a section of the step record that the checker requires; a fix is read once more, on its own lines, and not a third time. Promotes Q6 and Q7 of the coding-guidelines decisions page, the one answer of the page that adds a rule; decision 3 was raised by the request's reviewer and decided on 2026-09-08.
 tags: [cairn, adr, 1.1, work-unit, review, fresh-context, checker, skills]
-timestamp: 2026-09-07T00:00:00Z
+timestamp: 2026-09-08T00:00:00Z
 adr:
   id: ADR-017
   status: accepted
@@ -12,7 +12,7 @@ adr:
 
 # ADR-017 — the review movement
 
-Status: accepted · 2026-09-07 · written by CP-CAIRN-003, S02
+Status: accepted · 2026-09-07 · written by CP-CAIRN-003, S02; decision 3 added by S07 on 2026-09-08
 
 **Promoted from** the owner's
 [decisions page](../../project/brainstorm/2026-09-07-coding-guidelines-decisions.md)
@@ -39,7 +39,7 @@ own guide says why: a fresh context is not biased toward code it just
 wrote, and it must be told to flag only what affects correctness or the
 stated requirements, or it invents gaps.
 
-On Crumbz the only reader that found defects was a review bot on three
+On Crumbz the only reader that found defects was a bot on three
 closing requests: nine findings, all correctness — a round id serialised
 before conversion, a game day decided after the tile filter, duels resolved
 against stale links — on units whose self-review had honestly said what it
@@ -113,6 +113,27 @@ in the catalogue `tools/cairn-rules.mjs` writes into
 `tools/cairn-fixture.test.mjs` containing a merged trunk commit as ADR-004
 decision 4 requires, and its line in `tools/soundness.md`.
 
+### Decision 3 — a fix is read once more, and the loop is not
+
+Raised by the request's reviewer on 2026-09-08; the owner's choice, *once
+more, bounded* — one sentence.
+
+A finding fixed changes the diff, and the diff the fresh context read is
+then not the diff that is pushed: on this path's own units the fixes
+after each read went out unread. After the dispositions are written, the
+fresh context reads the fix once more — only the lines the fix changed,
+against the same two criteria, given nothing else — and a finding of that
+second read is dispositioned under the same section and not read a third
+time. The self-review is not repeated: its tagged lines are the writer's
+cut, made before the first read, and a fix that cuts more adds a line to
+them. Two reads by the fresh context bound the movement; a
+loop until a read finds nothing was the request's reviewer's proposal,
+refused below.
+
+What this changes: the `cairn-unit` skill, one sentence in the movement;
+`spec/reference/path-template.md`, whose review section shows the second
+read's lines under the first's. The rule `review` reads nothing more.
+
 ## Alternatives rejected
 
 - **Q6, the forge's reviewer on every request** (native): Copilot code
@@ -129,6 +150,15 @@ decision 4 requires, and its line in `tools/soundness.md`.
   decision 2 gives the self-review a shape of its own, the five tags, that
   a correctness finding does not fit.
 - **Q7, no, and nothing changes** (simplest, as today).
+- **Decision 3, once is enough** (simplest, as the record first stood):
+  the fix is the writer's, the gates verify it, the owner reads the
+  dispositions. Refused because the fix is where a unit's diff last
+  moves, and it would go out unread.
+- **Decision 3, until a read finds nothing** (adds ceremony): self-review
+  and review repeated after any fix until a pass leaves the diff
+  unchanged — the request's reviewer's proposal. Refused as unbounded, and
+  as the vendor's own warning: a reviewer told to find gaps will find
+  some.
 
 ## Consequences
 
@@ -163,7 +193,8 @@ maintain — which the owner asked for in as many words. And the rule reads
 one section in a file the checker already opens for the `cairn-unit`
 block; no tool, no workflow, no run is added. Against it stands the cost of
 one context per unit, accepted with the Crumbz evidence: nine correctness
-defects that reached three closing requests.
+defects that reached three closing requests. Decision 3 keeps the
+sentence over the loop.
 
 ## What implements this record
 
@@ -172,6 +203,7 @@ defects that reached three closing requests.
 | 1 | the unit skill | `cairn-unit`, the movement's sentence |
 | 2 | the unit skill, chapter 5, the concept, the step template | `cairn-unit`, the movement and the type table; `spec/index.md` §5; `spec/concepts/work-unit.md`; `spec/reference/path-template.md` |
 | 2 | the checker, its catalogue, its fixture | rule `review` in `tools/cairn-check.mjs`; `tools/cairn-rules.mjs` and `spec/reference/conformance.md`; `tools/cairn-fixture.test.mjs`; `tools/soundness.md` |
+| 3 | the unit skill, the step template | `cairn-unit`, the movement's sentence; `spec/reference/path-template.md` |
 
 The roadmap register names the coding paths of 1.1 that carry these: the
 skill, the chapter and the template in path 1, the rule and its fixture in

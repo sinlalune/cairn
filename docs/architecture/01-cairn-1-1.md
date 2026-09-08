@@ -90,7 +90,8 @@ it still moves as one commit, pushed at once. The review is the writer's
 own agent in a fresh context, given the diff and two criteria and nothing
 else; its findings, each with its disposition, are a `#### Review`
 section of the step record, which the checker requires (ADR-017,
-decisions 1 and 2). The
+decisions 1 and 2); a fix is read once more, on its own lines, and not a
+third time (ADR-017, decision 3). The
 two criteria of whoever reads a diff — that fresh context, a bot, the
 owner — are the decision ladder and correctness, nothing else (ADR-016,
 decision 4). The self-review before it is the writer's own, one line per
