@@ -1,8 +1,8 @@
 ---
 type: Cairn Architecture
 title: Cairn 1.1 — a repository run by a sole owner with agents
-description: What a Cairn 1.1 repository is as a whole — how a path opens, runs and closes when one owner works with agents, what the checker reads at each transition, what the documentation plane holds and where, which tools exist, and what 1.1 removes from 1.0 — naming the decision record behind every statement.
-tags: [cairn, architecture, 1.1, sole-owner]
+description: What a Cairn 1.1 repository is as a whole — how a path opens, runs and closes when one owner works with agents, what the checker reads at each transition, what the documentation plane holds and where, which tools exist, and what 1.1 removes from 1.0 — naming the decision record behind every statement; amended on 2026-09-07 with the coding guidelines, ADR-016 to ADR-020.
+tags: [cairn, architecture, 1.1, sole-owner, coding-guidelines]
 timestamp: 2026-09-07T00:00:00Z
 ---
 
@@ -18,6 +18,24 @@ exactly as they were. This page states what the records decide as one
 shape; where a sentence relies on a record, the record is named. Nothing
 here is implemented yet: the [roadmap register](../../project/coding-paths/index.md)
 names the coding paths that build it.
+
+**Amended on 2026-09-07** by the promotion of the coding guidelines,
+through the five records ADR-016 to ADR-020, from the owner's
+[coding-guidelines decisions page](../../project/brainstorm/2026-09-07-coding-guidelines-decisions.md)
+at blob `48112c310e1c127b0265ed63c8255bb0377264fa` and the four research
+notes it gathers — [the coding stance](../../project/brainstorm/2026-09-07-coding-stance-research.md)
+at blob `65987c7a2227b406c41198e6aa53460854ed24d8`,
+[the step cycle](../../project/brainstorm/2026-09-07-step-cycle-research.md)
+at blob `65e7a2a96a4046af05f67a4e06ff9328fe03068f`,
+[the component slicing](../../project/brainstorm/2026-09-07-component-slicing-research.md)
+at blob `945a201e0ab317426179a2def661fe63b343669d` and
+[the graph flow](../../project/brainstorm/2026-09-07-graph-flow-research.md)
+at blob `a52ac0eca6c1ce963d913239943a9468b47f7a95` — written from the
+[brief](../../project/brainstorm/2026-09-07-coding-guidelines.md) at blob
+`0c419931bc7bc6c812e1b84458685087b7047c19`. The six notes stay exactly as
+they were. No record of ADR-001 to ADR-015 is superseded: no answer of
+the page overturns one. A sentence the amendment adds is marked *since
+2026-09-07* where it changes what an earlier sentence of this page said.
 
 ## What 1.1 is for
 
@@ -66,11 +84,26 @@ first; the definition of done is never edited in place, ticks included
 
 ## How a path runs
 
-A unit is plan, change, self-review, verify, and it moves as one commit,
-pushed at once, as in 1.0. The plan names the definition-of-done item the
+A unit was plan, change, self-review, verify in 1.0; since 2026-09-07
+it has five movements — plan, change, self-review, review, verify — and
+it still moves as one commit, pushed at once. The review is the writer's
+own agent in a fresh context, given the diff and two criteria and nothing
+else; its findings, each with its disposition, are a `#### Review`
+section of the step record, which the checker requires (ADR-017,
+decisions 1 and 2); a fix is read once more, on its own lines, and not a
+third time (ADR-017, decision 3). The
+two criteria of whoever reads a diff — that fresh context, a bot, the
+owner — are the decision ladder and correctness, nothing else (ADR-016,
+decision 4). The self-review before it is the writer's own, one line per
+finding in Ponytail's five tags, ending with the net line count or *Lean
+already* (ADR-016, decision 2). The plan names the definition-of-done item the
 unit advances (ADR-009, decision 2); `repair` means a correction of a
 protocol violation that names it, and nothing else (ADR-009, decision 1);
 no object id in any record is typed by hand (ADR-009, decision 3). A
+unit that changes behaviour writes its failing test before the change; a
+unit that changes only structure carries no new test and says so
+(ADR-018, decision 1). A unit has no size; the three-line cap on its
+explanation is the only bound (ADR-016, decision 5). A
 fresh worktree installs its dependencies before the first gate, and every
 gate is read by its exit code (ADR-008, decision 7). A block a framework
 writes into the bootloader is moved to a file the kit does not own, never
@@ -81,19 +114,44 @@ forge no longer runs on pushes to path branches: one run per commit that
 can land (ADR-005). A writer who wants the forge on every unit opens the
 request as a draft at the first unit.
 
+The coding stance the writer takes during *change* comes, since
+2026-09-07, from Ponytail at a pinned tag: the decision ladder,
+read-the-real-flow first, deletion over addition, the root-cause rule,
+the floor under laziness, the check per non-trivial change, and the five
+tags of its review skill, which the self-review above speaks in. The
+`cairn-code` skill keeps only Cairn's own — deletion turned on the
+protocol, the test that never fires, the three-line step, absorbing the
+ecosystem — and two lines: no secret in code or in a record, and an error
+handled where data would be lost or a trust boundary crossed, swallowed
+nowhere (ADR-016, decisions 1 and 3).
+
+One path has one writer, and an agent the writer runs inside its own
+session — a subagent, a second context, the fresh reader — is the writer
+(ADR-020, decision 2). The edge between two paths is `depends_on` in the
+record and nothing else (ADR-020, decision 1).
+
 An implementation unit refreshes the module note of the area it changes
 to the current state, and adds no history to it; history is the journal's
 (ADR-010, decision 1). An area every path touches, or whose match covers
 every source file, is split by main component, and the open skill asks
-which area a path writes in (ADR-010, decision 2).
+which area a path writes in (ADR-010, decision 2). An area is a folder of
+the tree, and its note describes that folder (ADR-019, decision 1); a
+path names the areas it writes in, `writes:` is their patterns, and a
+path that needs a whole source root says why in its record (ADR-019,
+decision 3).
 
 ## How a path closes
 
 The writer merges the trunk in, produces candidate `C`, runs the gates on
 it bare, and opens the request from the path branch with the review as
 its description: the candidate, its base, the digest, the four coherence
-questions, the advisories with their dispositions. There is no closure
-step and no step file for the review (ADR-008, decision 1). The owner
+questions, the advisories with their dispositions — and, since
+2026-09-07, opening the coherence section, one line per item of the
+definition of done, each naming the unit that advanced it and the
+command or page that shows it (ADR-018, decision 2). There is no closure
+step and no step file for the review (ADR-008, decision 1) — the closing
+review, that is; the unit's review of ADR-017 is a section of the unit's
+own step. The owner
 tries the result — for documents, reads the pages — before the merge; that
 is a named step, and nothing is ticked for it (ADR-001, decision 3). The
 administrative commit follows: `ready`, `subject_commit`, the live view,
@@ -124,6 +182,7 @@ The checker is the same tool, reading more.
 | registration on the trunk | the record's schema and route; the registration commit is the trunk commit in which `status` became `running`, and `base_commit` its parent, a draft landed earlier notwithstanding; the trunk's own run judges the commit after it lands | ADR-004 d1; ADR-001 d1 |
 | registration and every unit | two live paths whose `writes:` intersect, as the advisory `writes-overlap`, silent under `depends_on` | ADR-003 |
 | every unit on the branch | the `cairn-unit` block; a running path's checkpoint names a remote commit once it has a unit; the scope digest of the definition of done, whatever the status | ADR-004 d2; ADR-002 d1 |
+| every unit on the branch, since 2026-09-07 | the current unit's step record carries a `#### Review` section that is not empty, as the blocking rule `review`; the section's content is the owner's to read | ADR-017 d2 |
 | every run, any ref | the branch resolved as the local ref, else `HEAD` on the request head, else the remote-tracking ref; range rules reading only this path's records; the profile line naming what the forge does not enforce | ADR-004 d5, d3; ADR-001 d6 |
 | the request's run at `C` and at `ready` | trunk containment, no provisional commit, the closure surface, the digest, drift since the base; the one administrative commit after `C` | 1.0, kept; ADR-008 d3 |
 | the integrating unit on the trunk | the digest again; one commit for one path, not a merge; a `ready` commit behind the `done`; the journal entry under `cairn.path` | ADR-002 d1; ADR-008 d2; ADR-001 d7; ADR-008 d4 |
@@ -143,7 +202,7 @@ An adopter's `docs/` is installed with its shape and grows by promotion:
 | :-- | :-- | :-- | :-- |
 | `docs/inputs/` | documents the owner had before the protocol, any format, unedited | the owner; read by the first session | ADR-011 d1 |
 | `docs/<surface>.md` | one readable page per product surface, the concept notes as its glossary | every promotion unit that changes what the surface does | ADR-012 |
-| `docs/architecture/` | pages like this one | promotion units | 1.0, kept |
+| `docs/architecture/` | pages like this one, each saying in one sentence which way dependencies point between the components it names | promotion units | 1.0, kept; ADR-019 d2 |
 | `docs/adr/` | one record per decision, counted from ADR-001 with no gaps | promotion units and paths that decide | 1.0, kept; numbering in the folder's index |
 | `docs/modules/` | one note per main component, current state only | implementation units | ADR-010 |
 | `docs/concepts/cairn`, `docs/concepts/<project>`, `docs/concepts/learning` | the protocol's terms as this project's reader needs them, the product's own terms, knowledge from outside | any session that explains an abstraction, by one line in the bootloader | ADR-011 d2, d3 |
@@ -161,10 +220,10 @@ and the site that projects it (ADR-012).
 | :-- | :-- | :-- |
 | `cairn-check` | the blocking and advisory rules on the exact commit, with a profile line that says what the forge does not enforce | 1.0; ADR-001 d6 |
 | `cairn-active` | the live view of running paths; reports a roadmap register still carrying the installer's row | 1.0; ADR-008 d5 |
-| `cairn-audit` | the request's description for one candidate | 1.0 |
+| `cairn-audit` | the request's description for one candidate, since 2026-09-07 with the definition of done item by item | 1.0; ADR-018 d2 |
 | `cairn-postmortem` | for one path or the repository, the mechanical reading the adopter notes did by hand; run by the workflow when the gate goes red, into the run's log and onto the request, and on demand | ADR-014 d1 |
 | `cairn-test` | this repository's fixture suite for the tools, run by this repository's workflow before the checker and proven at each release; the kit installs no suite and names no test script, so `npm test` stays the adopter's | ADR-014 d2 |
-| `cairn` | `init`, `status`, `update`, `adopt`, as in 1.0; installs the pointer page and the three concept folders; `update` rewrites every pristine file, prints what the release changes in an edited one and lists it on the pointer page, and takes the release's version of a named file on request | 1.0; ADR-011, ADR-013, ADR-015 |
+| `cairn` | `init`, `status`, `update`, `adopt`, as in 1.0; installs the pointer page and the three concept folders; `update` rewrites every pristine file, prints what the release changes in an edited one and lists it on the pointer page, and takes the release's version of a named file on request; since 2026-09-07 the kit names Ponytail at a pinned tag as a dependency it does not copy | 1.0; ADR-011, ADR-013, ADR-015; ADR-016 d1 |
 | the workflow | one job, one run per commit that can land: the request's run for a candidate, the trunk's run for a registration and an integration | ADR-005 |
 
 The kit of 1.1 ships with at most twenty-nine files, the pointer page, the

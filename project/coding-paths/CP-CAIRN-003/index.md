@@ -7,13 +7,13 @@ timestamp: 2026-09-07T00:00:00Z
 cairn:
   id: CP-CAIRN-003
   route: full
-  status: running
-  current_step: S01
+  status: ready
+  current_step: S07
   base_commit: 7997b7608bf34ceecfbcf85e5ad32c0187230e5d
   branch: path/cp-cairn-003
   assigned_writer: cp-cairn-003-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 1f1bcb4de0e35b3a0ff0c9f3bf915d7883b44a6a
   resolution: null
   writes:
     - docs/adr/**
@@ -160,30 +160,53 @@ also said the units will run in a fresh session. Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
-- **S01** — not started
+- **[S01](./steps/S01.md)** — ADR-016, the coding stance: the kit points at Ponytail at tag `v4.9.0` and `cairn-code` keeps only Cairn's own (Q2), the self-review in the five tags (Q1), two lines on secrets and errors (Q4), the ladder and correctness as the only criteria of any reader (Q5), no size for a unit (Q3); nine options refused with their tags.
+- **[S02](./steps/S02.md)** — ADR-017, the review movement: five movements, the writer's own agent in a fresh context given only the diff and the two criteria, a `#### Review` section the blocking rule `review` requires (Q6, Q7, the owner's words quoted, the manifesto's test weighed); ADR-018, two sentences of the cycle: the failing test first when behaviour changes, the request answering the definition of done item by item (Q8, Q9).
+- **[S03](./steps/S03.md)** — ADR-019, an area is a folder of the tree: the main component of ADR-010 is a folder and its note describes it (Q10), the architecture page says which way dependencies point (Q11), a path names its areas and a whole root says why (Q12); the owner's question on Crumbz's one note answered in the record; the kit found to have no architecture template.
+- **[S04](./steps/S04.md)** — ADR-020, the one edge and the one writer, confirmed: the edge lives in the record only (Q13), a helper agent inside the writer's session is the writer, one sentence in the unit skill (Q14), the register carries no edge between milestones (Q15); every ticked answer Q1 to Q15 is now named by one record.
+- **[S05](./steps/S05.md)** — the 1.1 architecture page amended with ADR-016 to ADR-020, each added sentence naming its record and marked *since 2026-09-07*, promoted-from links to the six notes at their pinned blob ids, no 1.1 record superseded; the architecture index refreshed; the register's rows 1 to 4 widened with the records and surfaces, the audit tool placed in row 3, no path opened.
+- **[S06](./steps/S06.md)** — repair: the administrative commit `b09f492` after the first candidate `72198b1` moved `current_step`, the acceptance rule refused it, and it was pushed with the gate's exit code hidden behind an echo; the path returns to `running`, this unit is the second candidate, and a correct administrative commit follows it.
+- **[S07](./steps/S07.md)** — the request reviewer's finding on ADR-017 answered: a fix is read once more, on its own lines, and not a third time — decision 3, the owner's choice of 2026-09-08 among three options; the page and the index follow; the third candidate.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — the trunk commit that adds this record, whose parent is base
-unit   : 0
+commit : 1f1bcb4de0e35b3a0ff0c9f3bf915d7883b44a6a — S07, unit 07, candidate C₃, on origin/path/cp-cairn-003 with its run green; this record is the one administrative commit after it
+unit   : 07 (S07, the candidate)
 base   : 7997b7608bf34ceecfbcf85e5ad32c0187230e5d
-trunk  : 7997b7608bf34ceecfbcf85e5ad32c0187230e5d — origin/main at registration
+trunk  : 011b8fc2c6cc4de750c8d67052d56ff707f0f464 — origin/main, contained in the branch
 ```
 
 ### Next action
 
-In a fresh session, from the worktree `../cairn-cp-cairn-003` on branch
-`path/cp-cairn-003`: run S01 of the plan with `cairn-unit` — ADR-016, the
-coding stance, from Q1 to Q5 of the decisions page and research note 1.
+The owner reads the five records `docs/adr/ADR-016` to `ADR-020`, the
+amended page `docs/architecture/01-cairn-1-1.md`, the register
+`project/coding-paths/index.md` and the steps S06 and S07 at `C₃`, then
+merges pull request #10 as a merge commit once its `cairn-check` run is
+green: the merge is the closing acceptance. Then the integrating unit from
+a clean trunk checkout (`../cairn-main`): `status: done`, `resolution:
+completed`, `subject_commit` kept, the live view regenerated, one journal
+entry `project/log/2026-09-08-cp-cairn-003.md` with `cairn.path:
+CP-CAIRN-003`, landed on `main` directly as a sole owner's trunk commit
+(ADR-001); prove `C₃` reachable from `origin/main`; remove the clean
+worktree `../cairn-cp-cairn-003` from another checkout, without force,
+and report a failure to remove as its own outcome. The branch
+`path/cp-cairn-003` stays.
 
 ### Blockers
 
 None.
 
 ### Tried and rejected
+
+- Moving `current_step` in the administrative commit — refused by the
+  acceptance rule, which lets only `status` and `subject_commit` move at
+  `ready`; S06 repairs it. A unit sets `current_step`; a closure never does.
+- Chaining a gate with `; echo` — the echo's exit code replaces the gate's,
+  which is the pipeline fault `AGENTS.md` names; S06 was pushed that way
+  once and never again.
 
 - A sixth coding path for the new records — paths 1, 2 and 4 of the 1.1
   register already own the skills, the checker and the kit; the register's
@@ -198,7 +221,8 @@ None.
 2. `project/brainstorm/2026-09-07-coding-guidelines-decisions.md@48112c310e1c127b0265ed63c8255bb0377264fa` — the fifteen answers and the table of what each drives.
 3. `docs/architecture/01-cairn-1-1.md@87a601e95c26375679a58f9e3dfdb4b657f47508` — the page this path amends.
 4. `docs/adr/ADR-008` and `ADR-009` — the shape of a record that keeps or refuses, and one that adds sentences.
-5. `project/coding-paths/CP-CAIRN-003/plan.md`, then the research note of the unit being written.
+5. `docs/adr/ADR-016-the-coding-stance-absorbs-ponytail.md` and `docs/adr/ADR-017-the-review-movement.md` — the shape the records of this path take; `docs/adr/ADR-003-two-live-paths-on-the-same-files.md`, which ADR-020 builds on.
+6. `project/coding-paths/CP-CAIRN-003/plan.md`, then the research note of the unit being written.
 
 ### Verify
 
