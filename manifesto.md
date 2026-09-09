@@ -14,7 +14,10 @@ cairn:
 *This is the edited edition of the owner's statement of 2026-09-02. It says
 what the original says, in cleaner sentences; the
 [verbatim original](./docs/cairn/manifesto.md) is kept beside the audit that
-applied it, and where the two differ, the original is the source.*
+applied it, and where the two differ, the original is the source. The
+section on pedagogy follows the owner's
+[statement of 2026-09-09](./docs/cairn/manifesto-pedagogy-2026-09-09.md),
+which extends the original's without editing it.*
 
 ## What defines the protocol
 
@@ -94,6 +97,40 @@ The protocol must establish a culture of sharing through pedagogy. Every
 written line — in the documentation, in the chat sessions, in the artefacts;
 everything written or generated — must be written with the intention of being
 effortlessly comprehensible.
+
+We write for two developers at once: the junior, eager to learn, who needs a
+structure framed to transcend themself; and the senior, who wants to save
+the most time possible, step back and relax, because they know we will
+always deliver just enough. Just enough means the right information at the
+right moment. The senior also knows that everything is documented: if they
+search, they will find. Nothing recorded is ever deleted. What is clearer
+for the junior wins the confidence of the senior, and guides the complete
+beginner.
+
+The content the protocol generates that is not code must help the user,
+beginner or not, through a fluid and slow interface that lets the brain
+catch up with the information, without being flooded by useless and complex
+abstractions. This works only if the information is structured and labelled
+correctly, in addition to great content. The senior's moments are the test
+of that surface: being clearly asked to test, being clearly prompted for a
+decision, being presented an incident they need to decide about — each in
+the chat, well signalled as what it is.
+
+The tone and the content of a chat session are pedagogical at any time,
+especially on the abstract concepts of the trade: Git, architecture design,
+system design, databases. When the user asks for an explanation, the
+explanation persists as a concept page — easily readable, structured, and
+chronological where the reader is learning a sequence. A pull request is
+pedagogical, synthetic, and a quick read.
+
+Learning is a session of its own: a dynamic exploration of what the user
+knows, through prompting or chat, that generates the user's own learning
+notes. It can be proposed during a coding session and started afterwards.
+
+The documentation serves three needs: learning — learning notes, big
+diagrams, use-case examples; onboarding, functional and technical — the
+project description, the architecture, the components, the workflows; and
+use — the user guide and the API documentation.
 
 ## The project
 

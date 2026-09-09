@@ -488,6 +488,11 @@ Every record stays; nothing says where to look.
   verbatim as a dated statement beside the original of 2026-09-02, which
   is a verbatim source and is never edited; the edited edition follows
   your statement; the four points above are what the draft covers.
+  *Owner, 2026-09-09: "write it yourself from my feedbacks notes." The
+  statement is
+  [`docs/cairn/manifesto-pedagogy-2026-09-09.md`](../docs/cairn/manifesto-pedagogy-2026-09-09.md),
+  developed from the four pages; the pages win where they differ; the
+  merge is the acceptance.*
 - [ ] **Yes, the draft as it stands.** The draft above becomes the edited
   edition's section only. The verbatim original is not touched, so the
   edition would say something the original does not, and where the two
