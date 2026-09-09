@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-004
   route: full
   status: running
-  current_step: S02
+  current_step: S03
   base_commit: 42927d633011b3f64d9d564fd0e14197980cbf4b
   branch: path/cp-cairn-004
   assigned_writer: cp-cairn-004-writer
@@ -181,14 +181,15 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
 - **[S01](./steps/S01.md)** — ADR-021, what a session writes for its reader: one line in the bootloader for the tone (P1), three plain lines before the ledger in the request and in the record's goal (P5), a question to the owner put in the chat and well signalled as what it is, in the owner's words (P6); five options refused, a file among them; the fresh read's twelve findings and the bounded second read's two, dispositioned in the step.
 - **[S02](./steps/S02.md)** — ADR-022, the learning note and the learning session: a learning note is a concept note with an order in `docs/concepts/learning` (P2), a sixth skill `cairn-learn` listed by the bootloader and the pointer page, the thirtieth kit file and the budget's target moved to *at most thirty* (P3), a unit writes the note, offers the session and parks it (P4); five options refused; the fresh read's nine findings and the second read's one, dispositioned in the step.
+- **[S03](./steps/S03.md)** — ADR-023, the pages a reader meets: the README above the surface pages (P7), a flow page as an architecture page of kind flow with a diagram and no new folder (P8), one diagram on the architecture page and one worked example first on the surface page (P9), no Cairn API page and the agent keeping the API documentation, in the owner's words (P10), nothing more on search (P11); eight options refused; the fresh read's eleven findings dispositioned, the second read clean.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 8ba022e5d142ea103a4f8f373cfad8a1c0a947a7 — S01, unit 01, on origin/path/cp-cairn-004 with its run green; S02 is the unit after it, named by S03 once pushed
-unit   : 2 (S02)
+commit : e6b8ae145fe160b31fd2fe136771d2663419ff0e — S02, unit 02, on origin/path/cp-cairn-004 with its run green; S03 is the unit after it, named by S04 once pushed
+unit   : 3 (S03)
 base   : 42927d633011b3f64d9d564fd0e14197980cbf4b
 trunk  : eca8384 — origin/main, the registration commit, contained in the branch
 ```
@@ -196,10 +197,11 @@ trunk  : eca8384 — origin/main, the registration commit, contained in the bran
 ### Next action
 
 From the worktree `../cairn-cp-cairn-004` on branch `path/cp-cairn-004`:
-run S03 of the plan with `cairn-unit` — ADR-023, the pages a reader
-meets, from P7 to P11 of the note, the owner's words under P10 quoted;
-read ADR-012 and ADR-019 for the surface page and the architecture page
-the record extends, and chapter 3 for the kinds of architecture page.
+run S04 of the plan with `cairn-unit` — the 1.1 architecture page
+amended in place with ADR-021 to ADR-023, marked *since 2026-09-09*, the
+architecture index refreshed, the register's rows 1, 3, 4 and 5 widened
+and its milestone row counting twenty-three records; the model is
+CP-CAIRN-003 S05.
 
 ### Blockers
 
@@ -223,7 +225,7 @@ None.
 2. `feedbacks/2026-09-08-owner-feedback-pedagogy.md@e9bd3e92aa7c6336f92e715140f744aeb8385d02` — the twelve answers and the table of what each drives.
 3. `docs/cairn/manifesto-pedagogy-2026-09-09.md@57d2e87a3caafab19ba36fa794d7ab342e2a87e1` — the statement.
 4. `docs/architecture/01-cairn-1-1.md@a76f420fc42ec211067ce5ddc897cde285a03227` — the page this path amends.
-5. `docs/adr/ADR-021` and `ADR-022` — the records of this path so far, whose shape the third follows; `ADR-010`, `ADR-012` and `ADR-019` — the records S03 extends.
+5. `docs/adr/ADR-021`, `ADR-022` and `ADR-023` — the three records of this path, which S04 states on the page; `project/coding-paths/CP-CAIRN-003/steps/S05.md` — the model for amending the page in place.
 6. `project/coding-paths/CP-CAIRN-004/plan.md`, then the section of the note the unit promotes.
 
 ### Verify
