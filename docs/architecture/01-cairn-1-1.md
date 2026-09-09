@@ -1,9 +1,9 @@
 ---
 type: Cairn Architecture
 title: Cairn 1.1 — a repository run by a sole owner with agents
-description: What a Cairn 1.1 repository is as a whole — how a path opens, runs and closes when one owner works with agents, what the checker reads at each transition, what the documentation plane holds and where, which tools exist, and what 1.1 removes from 1.0 — naming the decision record behind every statement; amended on 2026-09-07 with the coding guidelines, ADR-016 to ADR-020.
-tags: [cairn, architecture, 1.1, sole-owner, coding-guidelines]
-timestamp: 2026-09-07T00:00:00Z
+description: What a Cairn 1.1 repository is as a whole — how a path opens, runs and closes when one owner works with agents, what the checker reads at each transition, what the documentation plane holds and where, which tools exist, and what 1.1 removes from 1.0 — naming the decision record behind every statement; amended on 2026-09-07 with the coding guidelines, ADR-016 to ADR-020, and on 2026-09-09 with the pedagogy, ADR-021 to ADR-023.
+tags: [cairn, architecture, 1.1, sole-owner, coding-guidelines, pedagogy]
+timestamp: 2026-09-09T00:00:00Z
 ---
 
 # Cairn 1.1 — a repository run by a sole owner with agents
@@ -37,6 +37,22 @@ they were. No record of ADR-001 to ADR-015 is superseded: no answer of
 the page overturns one. A sentence the amendment adds is marked *since
 2026-09-07* where it changes what an earlier sentence of this page said.
 
+**Amended on 2026-09-09** by the promotion of the pedagogy, through the
+three records ADR-021 to ADR-023, from the owner's
+[pedagogy feedback](../../feedbacks/2026-09-08-owner-feedback-pedagogy.md)
+at blob `e9bd3e92aa7c6336f92e715140f744aeb8385d02` and
+the owner's [statement on the pedagogy](../cairn/manifesto-pedagogy-2026-09-09.md)
+at blob `57d2e87a3caafab19ba36fa794d7ab342e2a87e1`, which the
+[manifesto](../../manifesto.md)'s edited edition follows in its section
+*The pedagogy*. Both stay exactly as they were. One rule is superseded,
+stated in ADR-013 and repeated in ADR-014's consequences: that the kit
+ships with at most twenty-nine files — by ADR-022, on the owner's ruling
+that no fixed count is a rule;
+ADR-001, ADR-011, ADR-012, ADR-013, ADR-018 and ADR-019 otherwise gain a
+sentence or a clause where the records say so. A sentence this amendment adds is marked
+*since 2026-09-09* where it changes what an earlier sentence of this
+page said.
+
 ## What 1.1 is for
 
 Cairn 1.0 was cut from the [specification](../../spec/index.md) and
@@ -56,13 +72,38 @@ chronology and no shape of a record. It changes who gives the go-ahead and
 how, what the checker reads, what the skills say, and what an adopter's
 `docs/` holds from the first day.
 
+## The shape in one diagram
+
+```mermaid
+flowchart LR
+  Owner["the owner, in the chat"] -->|"yes; the try; the merge"| Agent["the agent, running the skills"]
+  Kit["the kit: bootloader, skills, tools"] --> Agent
+  Agent --> Record["the path record and its steps"]
+  Agent --> Branch["path/&lt;id&gt;, one worktree, one writer"]
+  Record --> Checker["cairn-check, bare, by exit code"]
+  Branch --> Checker
+  Checker --> Forge["the forge: one run per commit that can land"]
+  Forge --> Trunk["main: registration, candidate, integration"]
+  Trunk --> Docs["the documentation plane and the journal"]
+```
+
+Dependencies point one way, left to right: each node depends only on
+the nodes to its left, and the owner reads everything (ADR-019, decision
+2, for the sentence; ADR-023, decision 3, for the diagram).
+
 ## How a path opens
 
 The agent writes the path record — one folder, the definition of done as a
 list of checkboxes, the write surface, the governing documents pinned by
 blob id — and puts it to the owner. *The owner reviews the plan* is a
 named step; a change asked before the go-ahead is written into the record
-(ADR-001, decision 2). The owner's yes in the chat is the opening
+(ADR-001, decision 2). Since 2026-09-09 the record's goal opens with three
+plain lines — what the path does, why it is the least, what it does not
+do — because the goal is what the owner reads (ADR-021, decision 2), and
+the question is put in the chat, signalled as a decision before anything
+else: one opening line, what happened, two or three ways to go on each
+tagged by what it costs, and nothing further on the path until the answer
+(ADR-021, decision 3). The owner's yes in the chat is the opening
 acceptance: the agent writes it into the record with the owner as
 `accepted_by`, computes the digest with the checker, regenerates the live
 view, and lands the registration commit on the trunk directly. A sole
@@ -138,22 +179,45 @@ which area a path writes in (ADR-010, decision 2). An area is a folder of
 the tree, and its note describes that folder (ADR-019, decision 1); a
 path names the areas it writes in, `writes:` is their patterns, and a
 path that needs a whole source root says why in its record (ADR-019,
-decision 3).
+decision 3). Since 2026-09-09 an implementation unit that changes an API
+refreshes that API's documentation in the same unit, as it refreshes the
+module note (ADR-023, decision 4).
+
+A session — in a unit, in a brainstorm, or with no path open — explains
+for the reader who is learning: the plain meaning first, the failure it
+prevents, the shortest example, and it stops there; one line of the
+bootloader beside the concept-note line of ADR-011 (ADR-021, decision
+1). A unit that explains a complex abstraction writes the concept note,
+offers a learning session on it in one line of the chat, says so in its
+step, and goes on; nothing waits on the offer (ADR-022, decision 3). The
+session runs later, in its own context, under the sixth skill
+`cairn-learn`: it reads the concept folders, the surface page and the
+inputs, explores what the owner knows by prompting, and writes a learning
+note — a concept note with an order, in `docs/concepts/learning`, linking
+the concepts it rests on in sequence — and a concept note for every word
+it needed, linked from where the question came (ADR-022, decisions 1 and
+2).
 
 ## How a path closes
 
 The writer merges the trunk in, produces candidate `C`, runs the gates on
 it bare, and opens the request from the path branch with the review as
-its description: the candidate, its base, the digest, the four coherence
-questions, the advisories with their dispositions — and, since
-2026-09-07, opening the coherence section, one line per item of the
-definition of done, each naming the unit that advanced it and the
-command or page that shows it (ADR-018, decision 2). There is no closure
+its description: since 2026-09-09, three plain lines first — what the
+path did, why it is the least, what it does not do — and a link to the
+surface page it updated (ADR-021, decision 2); then, since 2026-09-07,
+one line per item of the definition of done, each naming the unit that
+advanced it and the command or page that shows it (ADR-018, decision 2);
+then the ledger — the candidate, its base, the digest, the four coherence
+questions, the advisories with their dispositions — which since
+2026-09-09 also asks whether the README lists a surface the path added
+(ADR-023, decision 1). There is no closure
 step and no step file for the review (ADR-008, decision 1) — the closing
 review, that is; the unit's review of ADR-017 is a section of the unit's
 own step. The owner
 tries the result — for documents, reads the pages — before the merge; that
-is a named step, and nothing is ticked for it (ADR-001, decision 3). The
+is a named step, and nothing is ticked for it (ADR-001, decision 3), and
+since 2026-09-09 the writer asks for it in the chat, signalled as a
+decision (ADR-021, decision 3). The
 administrative commit follows: `ready`, `subject_commit`, the live view,
 the checkpoint, nothing else, never under a provisional trailer (ADR-008,
 decision 3).
@@ -201,12 +265,14 @@ An adopter's `docs/` is installed with its shape and grows by promotion:
 | Where | What | Written by | Record |
 | :-- | :-- | :-- | :-- |
 | `docs/inputs/` | documents the owner had before the protocol, any format, unedited | the owner; read by the first session | ADR-011 d1 |
-| `docs/<surface>.md` | one readable page per product surface, the concept notes as its glossary | every promotion unit that changes what the surface does | ADR-012 |
-| `docs/architecture/` | pages like this one, each saying in one sentence which way dependencies point between the components it names | promotion units | 1.0, kept; ADR-019 d2 |
+| `README.md` | since 2026-09-09: what the project is in a paragraph, then the surface pages, one line each | the adopter; every promotion unit that adds a surface adds its line | ADR-023 d1 |
+| `docs/<surface>.md` | one readable page per product surface, the concept notes as its glossary; since 2026-09-09 it opens with one worked example and links the API documentation of an API surface | every promotion unit that changes what the surface does | ADR-012; ADR-023 d3, d4 |
+| `docs/architecture/` | pages like this one, each saying in one sentence which way dependencies point between the components it names and, since 2026-09-09, carrying one Mermaid diagram of them, and one page per flow that crosses components, an architecture page of kind *flow*, with its diagram | promotion units | 1.0, kept; ADR-019 d2; ADR-023 d2, d3 |
 | `docs/adr/` | one record per decision, counted from ADR-001 with no gaps | promotion units and paths that decide | 1.0, kept; numbering in the folder's index |
 | `docs/modules/` | one note per main component, current state only | implementation units | ADR-010 |
-| `docs/concepts/cairn`, `docs/concepts/<project>`, `docs/concepts/learning` | the protocol's terms as this project's reader needs them, the product's own terms, knowledge from outside | any session that explains an abstraction, by one line in the bootloader | ADR-011 d2, d3 |
-| `cairn/README.md` | the installed release, the six chapters and five skills at that release, the files the kit owns, and the edited files the last update could not rewrite | the kit, at `init` and `update` | ADR-013; ADR-015 d2 |
+| `docs/concepts/cairn`, `docs/concepts/<project>`, `docs/concepts/learning` | the protocol's terms as this project's reader needs them, the product's own terms, knowledge from outside — and, since 2026-09-09, in `learning`, learning notes: concept notes with an order | any session that explains an abstraction, by one line in the bootloader; learning notes by `cairn-learn` | ADR-011 d2, d3; ADR-022 d1, d2 |
+| the API documentation of an API surface | where the language's ecosystem puts it; the protocol names no page | implementation units that change the API, since 2026-09-09 | ADR-023 d4 |
+| `cairn/README.md` | the installed release, the six chapters and the skills at that release — five, six since 2026-09-09 — the files the kit owns, and the edited files the last update could not rewrite | the kit, at `init` and `update` | ADR-013; ADR-015 d2; ADR-022 d2 |
 | `project/coding-paths/index.md` | the roadmap register, every milestone with a path or *no path yet*; reported while it still carries the installer's row | the owner and the promotion paths | ADR-008 d5 |
 | `project/log/` | one journal entry per integration, the only history of what a path did | the integrating unit | 1.0, kept; ADR-010 d1 |
 
@@ -220,15 +286,19 @@ and the site that projects it (ADR-012).
 | :-- | :-- | :-- |
 | `cairn-check` | the blocking and advisory rules on the exact commit, with a profile line that says what the forge does not enforce | 1.0; ADR-001 d6 |
 | `cairn-active` | the live view of running paths; reports a roadmap register still carrying the installer's row | 1.0; ADR-008 d5 |
-| `cairn-audit` | the request's description for one candidate, since 2026-09-07 with the definition of done item by item | 1.0; ADR-018 d2 |
-| `cairn-postmortem` | for one path or the repository, the mechanical reading the adopter notes did by hand; run by the workflow when the gate goes red, into the run's log and onto the request, and on demand | ADR-014 d1 |
+| `cairn-audit` | the request's description for one candidate, since 2026-09-07 with the definition of done item by item, since 2026-09-09 opening with three plain lines and the surface link | 1.0; ADR-018 d2; ADR-021 d2 |
+| `cairn-postmortem` | for one path or the repository, the mechanical reading the adopter notes did by hand; run by the workflow when the gate goes red, into the run's log and onto the request, and on demand; since 2026-09-09 it prints the facts a question to the owner is built from | ADR-014 d1; ADR-021 d3 |
 | `cairn-test` | this repository's fixture suite for the tools, run by this repository's workflow before the checker and proven at each release; the kit installs no suite and names no test script, so `npm test` stays the adopter's | ADR-014 d2 |
-| `cairn` | `init`, `status`, `update`, `adopt`, as in 1.0; installs the pointer page and the three concept folders; `update` rewrites every pristine file, prints what the release changes in an edited one and lists it on the pointer page, and takes the release's version of a named file on request; since 2026-09-07 the kit names Ponytail at a pinned tag as a dependency it does not copy | 1.0; ADR-011, ADR-013, ADR-015; ADR-016 d1 |
+| `cairn` | `init`, `status`, `update`, `adopt`, as in 1.0; installs the pointer page and the three concept folders; `update` rewrites every pristine file, prints what the release changes in an edited one and lists it on the pointer page, and takes the release's version of a named file on request; since 2026-09-07 the kit names Ponytail at a pinned tag as a dependency it does not copy; since 2026-09-09 it installs six skills, the sixth `cairn-learn` | 1.0; ADR-011, ADR-013, ADR-015; ADR-016 d1; ADR-022 d2 |
 | the workflow | one job, one run per commit that can land: the request's run for a candidate, the trunk's run for a registration and an integration | ADR-005 |
 
-The kit of 1.1 ships with at most twenty-nine files, the pointer page, the
-three indexes and the post-mortem tool included, which is two removals from
-what 1.0 installs plus these five (ADR-013, ADR-014). A repository that
+The kit of 1.1 was to ship with at most twenty-nine files, the pointer
+page, the three indexes and the post-mortem tool included, which is two
+removals from what 1.0 installs plus these five (ADR-013, ADR-014); since
+2026-09-09 that count is no rule: the kit installs what has value, its
+file count is measured and reported by the release path and bounds
+nothing, and the two removals are made for their own reasons or not at
+all (ADR-022, decision 2). A repository that
 installed 1.0 receives all of this through `update` (ADR-015).
 
 ## What 1.1 removes from 1.0
@@ -251,6 +321,16 @@ installed 1.0 receives all of this through `update` (ADR-015).
 And what 1.1 keeps that the notes asked to remove: the checkboxes of the
 definition of done (ADR-002, decision 2), and the merge click as the whole
 of a sole owner's closing acceptance (ADR-001, decision 4).
+
+## Who the pedagogy writes for
+
+The statement of 2026-09-09 names the two readers every line above is
+written for: the junior who needs a frame and the senior who wants just
+enough — the right information at the right moment, everything else
+documented one link below and never deleted. The statement is the
+owner's, not a record; ADR-021 to ADR-023 carry what it asks of a
+session, a request and the documentation plane. Nothing of it enters the
+checker.
 
 ## What this page does not say
 
