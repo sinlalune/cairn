@@ -17,7 +17,7 @@ Every milestone is accounted for: it has a path, or it says it does not yet.
 | Milestone | Outcome | Paths | State |
 | :-- | :-- | :-- | :-- |
 | Cairn 1.0 — the protocol cut to its manifesto | the specification on the six stages, twenty-four rules, five skills, the kit and the `cairn` command, released 1.0.0 from this repository | [CP-CAIRN-001](./CP-CAIRN-001/index.md) | done 2026-09-03 |
-| Cairn 1.1 — what the first adopter taught | the twenty decision records of [the 1.1 architecture page](../../docs/architecture/01-cairn-1-1.md) — fifteen from the adopter's audits, five from the coding guidelines — implemented in the checker, the skills, the kit and the specification, and released 1.1.0 | [CP-CAIRN-002](./CP-CAIRN-002/index.md) and [CP-CAIRN-003](./CP-CAIRN-003/index.md) (the promotions), then the five coding paths below | running |
+| Cairn 1.1 — what the first adopter taught | the twenty decision records of [the 1.1 architecture page](../../docs/architecture/01-cairn-1-1.md) — fifteen from the adopter's audits, five from the coding guidelines — implemented in the checker, the skills, the kit and the specification, and released 1.1.0 | [CP-CAIRN-002](./CP-CAIRN-002/index.md), [CP-CAIRN-003](./CP-CAIRN-003/index.md) and [CP-CAIRN-004](./CP-CAIRN-004/index.md) (the promotions), then the five coding paths below | running |
 
 ### The coding paths of 1.1
 
