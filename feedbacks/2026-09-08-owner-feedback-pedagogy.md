@@ -58,8 +58,9 @@ The tone has no home. The manifesto says every written line must be
 effortlessly comprehensible, and that is the whole of what any file says
 about how an agent speaks. `cairn-code` is a stance for the change
 movement — read the real flow, the ladder, the three-line cap — and it
-governs code, not explanation. The bootloader has six absolute rules, all
-about paths. Nothing tells a session that an explanation of `rebase` to
+governs code, not explanation. The bootloader has five absolute rules
+today, all about paths, and ADR-011 adds a sixth on concept notes when
+coding path 4 lands it. Nothing tells a session that an explanation of `rebase` to
 this repository's owner is written for a reader who is learning it, or
 what that means in practice. The cheapest surface is the same one ADR-011
 chose: one sentence in the bootloader, beside the concept-note rule. The
@@ -483,12 +484,14 @@ Every record stays; nothing says where to look.
 
 ### P12. Does the manifesto's pedagogy section change?
 
-- [x] **Yes, in your words.** You rewrite the section of the verbatim
-  original; the edited edition follows; the four points above are what
-  the draft covers.
+- [x] **Yes, in your words.** You write the new section yourself, kept
+  verbatim as a dated statement beside the original of 2026-09-02, which
+  is a verbatim source and is never edited; the edited edition follows
+  your statement; the four points above are what the draft covers.
 - [ ] **Yes, the draft as it stands.** The draft above becomes the edited
-  edition's section, and the verbatim original gains the same paragraphs
-  under your name.
+  edition's section only. The verbatim original is not touched, so the
+  edition would say something the original does not, and where the two
+  differ the original is the source; that is the cost of this option.
 - [ ] **No.** The two sentences stay; the pages above become records and
   skills only.
 
@@ -508,7 +511,7 @@ exactly as they were; a change to the manifesto is the owner's own commit.
 | :-- | :-- | :-- | :-- |
 | P1 | one line in `AGENTS.md` as the kit writes it | a skill, the bootloader pointing at it, one kit file | nothing |
 | P2 | `docs/learning/` installed, a template under `spec/reference/`, chapter 6 | one paragraph of chapter 6 | one paragraph removed |
-| P3 | a skill, one kit file | one line in the bootloader | nothing |
+| P3 | a skill, one kit file; the bootloader's entry route and the pointer page of ADR-013, which both enumerate the five skills, name the sixth | one line in the bootloader | nothing |
 | P4 | one sentence in `cairn-unit` step 2 | nothing | — |
 | P5 | the request template, `cairn-audit`, the path template's plan | nothing | — |
 | P6 | one sentence in `cairn-open`, `cairn-close`, and the post-mortem output | nothing | — |
@@ -517,7 +520,7 @@ exactly as they were; a change to the manifesto is the owner's own commit.
 | P9 | the architecture and surface page templates | nothing | — |
 | P10 | one sentence in chapter 3 | a template | — |
 | P11 | the pointer page, the documentation index | nothing | — |
-| P12 | the owner's commit, then the edition | the edition and the original | nothing |
+| P12 | the owner's dated statement under `docs/cairn/`, then the edition | the edition only | nothing |
 
 ## What this note is waiting for
 
