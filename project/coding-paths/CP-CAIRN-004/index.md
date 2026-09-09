@@ -7,13 +7,13 @@ timestamp: 2026-09-09T00:00:00Z
 cairn:
   id: CP-CAIRN-004
   route: full
-  status: ready
-  current_step: S05
+  status: running
+  current_step: S06
   base_commit: 42927d633011b3f64d9d564fd0e14197980cbf4b
   branch: path/cp-cairn-004
   assigned_writer: cp-cairn-004-writer
   depends_on: []
-  subject_commit: 72f62d92c369b1bf4e36937c5daf41f1330e3f87
+  subject_commit: null
   resolution: null
   writes:
     - docs/adr/**
@@ -76,16 +76,18 @@ the last promotion before those paths open.
       this record, without rewriting anything to look as if it had always
       been so. ADR-011 is extended where the `learning` folder gains
       ordered notes and ADR-013 where the pointer page names a sixth
-      skill; no 1.1 record is superseded, and the page says so.
+      skill; one rule of 1.1 is superseded — the kit's file count,
+      stated in ADR-013 and repeated in ADR-014 — by ADR-022 on the
+      owner's ruling of 2026-09-09 that no fixed count is a rule; no
+      other record is superseded, and the page says so.
 - [ ] Where a decision record changes what an existing rule, skill,
       template, kit file or command does, it names that rule, skill,
       template, file or command as the conformance page, the skills and
       the kit name it today, so the coding path that implements it can be
       scoped from the record alone; the record of the sixth skill names
       the bootloader's entry route and the pointer page as the surfaces
-      that list it, and says how the kit's file budget of ADR-013 pays for
-      the file — a removal named, or the budget re-measured by the release
-      path.
+      that list it, and says that the kit's file count is measured and
+      reported, never a bound.
 - [ ] The roadmap register in `project/coding-paths/index.md` names, in
       the rows of the coding paths of 1.1, the new records each one
       implements and the surfaces they add — the skill, the sentences and
@@ -159,6 +161,25 @@ with two ways to go on, the first stating the amended item in substance
 owner answered *"choose for me"*, and the writer chose the first.
 Nothing else in the definition of done changed.
 
+```yaml
+decision: accepted
+accepted_by: sinlalune
+accepted_roles: [initiator, reviewer]
+accepted_at: 2026-09-09T11:55:44Z
+scope_ref: project/coding-paths/CP-CAIRN-004/index.md#definition-of-done
+scope_digest: sha256:0f209547f37806512e8d1838df46fb3bc6a8d206995504e6154b6585d51e4b73
+supersedes: sha256:5870740e8b79bbcbe53c85693a9f1999463d8e0fb2903acc36f1150e511e04cb
+```
+
+Second amendment of 2026-09-09, after the request's reviewer read the
+first candidate: ADR-013 sets a rule of at most twenty-nine kit files,
+and ADR-022 had moved the count to thirty while item 3 said no 1.1 record
+is superseded. The question was put to the owner in the chat with two
+ways to keep a fixed count, and the owner answered *"stop stupid fixed
+counters, just do what make sense and provide added value."* Items 3 and
+4 are amended accordingly. Nothing else in the definition of done
+changed.
+
 ## Documentation coverage
 
 ### Required
@@ -207,31 +228,30 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 - **[S03](./steps/S03.md)** — ADR-023, the pages a reader meets: the README above the surface pages (P7), a flow page as an architecture page of kind flow with a diagram and no new folder (P8), one diagram on the architecture page and one worked example first on the surface page (P9), no Cairn API page and the agent keeping the API documentation, in the owner's words (P10), nothing more on search (P11); eight options refused; the fresh read's eleven findings dispositioned, the second read clean.
 - **[S04](./steps/S04.md)** — the 1.1 architecture page amended in place with ADR-021 to ADR-023, each added sentence naming its record and marked *since 2026-09-09*, the two sources linked at their blob ids and the manifesto's edition named, six 1.1 records extended and none superseded, a closing section on the two readers; the architecture index refreshed; the register's rows 1, 3, 4 and 5 widened and the milestone row counting twenty-three records and three promotions, no path opened; the fresh read's eleven findings and the second read's two, dispositioned in the step.
 - **[S05](./steps/S05.md)** — item 6 of the definition of done amended before the candidate: the three notes byte-identical, the page the document the path amends; a second acceptance block superseding the first, the owner's *"choose for me"* quoted; the fresh read's five findings and the second read's three, dispositioned in the step. This unit's commit is the candidate.
+- **[S06](./steps/S06.md)** — the request reviewer's three findings on the first candidate answered: ADR-022 supersedes the kit's file-count rule of ADR-013 and ADR-014 on the owner's ruling that no fixed count is a rule, the count measured and never a bound; the learning note linked from outside the wiki, since `concept-orphan` counts no link from inside it; the 1.1 page carries the diagram it requires; items 3 and 4 of the definition of done amended by a third acceptance block; the fresh read's ten findings and the second read's two, dispositioned in the step. This unit's commit is the second candidate.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 72f62d92c369b1bf4e36937c5daf41f1330e3f87 — S05, unit 05, the candidate C, on origin/path/cp-cairn-004 with its run green; this record is the one administrative commit after it
-unit   : 5 (S05, the candidate)
+commit : 72f62d92c369b1bf4e36937c5daf41f1330e3f87 — S05, unit 05, the first candidate, void; its administrative commit c5abbad is void with it; S06 is the unit after them and the second candidate, named by the administrative commit once pushed
+unit   : 6 (S06, the second candidate)
 base   : 42927d633011b3f64d9d564fd0e14197980cbf4b
 trunk  : eca8384 — origin/main, the registration commit, contained in the branch
 ```
 
 ### Next action
 
-The owner reads the three records `docs/adr/ADR-021` to `ADR-023`, the
-amended page `docs/architecture/01-cairn-1-1.md`, the register and the
-step S05 at `C`, then merges pull request #13 as a merge commit once its
-`cairn-check` run is green: the merge is the closing acceptance. Then
-the integrating unit from a clean trunk checkout: `status: done`,
-`resolution: completed`, `subject_commit` kept, the live view
-regenerated, one journal entry `project/log/<date>-cp-cairn-004.md` with
-`cairn.path: CP-CAIRN-004`, landed on `main` directly (ADR-001); prove
-`C` reachable from `origin/main`; remove the clean worktree
-`../cairn-cp-cairn-004` from another checkout, without force. The branch
-`path/cp-cairn-004` stays.
+Rewrite pull request #13's description for the second candidate, then
+the one administrative commit — `ready`, `subject_commit`, the
+checkpoint, the live view. The owner reads the three records, the
+amended page, the register and the steps S05 and S06 at the candidate,
+then merges the request as a merge commit once its `cairn-check` run is
+green: the merge is the closing acceptance. Then the integrating unit
+from a clean trunk checkout, as the close skill says; prove the candidate
+reachable from `origin/main`; remove the clean worktree
+`../cairn-cp-cairn-004` without force. The branch stays.
 
 ### Blockers
 

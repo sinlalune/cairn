@@ -44,9 +44,12 @@ at blob `e9bd3e92aa7c6336f92e715140f744aeb8385d02` and
 the owner's [statement on the pedagogy](../cairn/manifesto-pedagogy-2026-09-09.md)
 at blob `57d2e87a3caafab19ba36fa794d7ab342e2a87e1`, which the
 [manifesto](../../manifesto.md)'s edited edition follows in its section
-*The pedagogy*. Both stay exactly as they were. No record of ADR-001 to
-ADR-020 is superseded; ADR-001, ADR-011, ADR-012, ADR-013, ADR-018 and
-ADR-019 gain a sentence or a clause where the records say so. A sentence this amendment adds is marked
+*The pedagogy*. Both stay exactly as they were. One rule is superseded,
+stated in ADR-013 and repeated in ADR-014's consequences: that the kit
+ships with at most twenty-nine files — by ADR-022, on the owner's ruling
+that no fixed count is a rule;
+ADR-001, ADR-011, ADR-012, ADR-013, ADR-018 and ADR-019 otherwise gain a
+sentence or a clause where the records say so. A sentence this amendment adds is marked
 *since 2026-09-09* where it changes what an earlier sentence of this
 page said.
 
@@ -68,6 +71,25 @@ as writers, GitHub as the forge, one workflow. It changes no stage of the
 chronology and no shape of a record. It changes who gives the go-ahead and
 how, what the checker reads, what the skills say, and what an adopter's
 `docs/` holds from the first day.
+
+## The shape in one diagram
+
+```mermaid
+flowchart LR
+  Owner["the owner, in the chat"] -->|"yes; the try; the merge"| Agent["the agent, running the skills"]
+  Kit["the kit: bootloader, skills, tools"] --> Agent
+  Agent --> Record["the path record and its steps"]
+  Agent --> Branch["path/&lt;id&gt;, one worktree, one writer"]
+  Record --> Checker["cairn-check, bare, by exit code"]
+  Branch --> Checker
+  Checker --> Forge["the forge: one run per commit that can land"]
+  Forge --> Trunk["main: registration, candidate, integration"]
+  Trunk --> Docs["the documentation plane and the journal"]
+```
+
+Dependencies point one way, left to right: each node depends only on
+the nodes to its left, and the owner reads everything (ADR-019, decision
+2, for the sentence; ADR-023, decision 3, for the diagram).
 
 ## How a path opens
 
@@ -273,9 +295,10 @@ and the site that projects it (ADR-012).
 The kit of 1.1 was to ship with at most twenty-nine files, the pointer
 page, the three indexes and the post-mortem tool included, which is two
 removals from what 1.0 installs plus these five (ADR-013, ADR-014); since
-2026-09-09 it ships thirty, and the
-budget's target moves from *under thirty* to *at most thirty*, measured
-by the release path (ADR-022, decision 2). A repository that
+2026-09-09 that count is no rule: the kit installs what has value, its
+file count is measured and reported by the release path and bounds
+nothing, and the two removals are made for their own reasons or not at
+all (ADR-022, decision 2). A repository that
 installed 1.0 receives all of this through `update` (ADR-015).
 
 ## What 1.1 removes from 1.0
