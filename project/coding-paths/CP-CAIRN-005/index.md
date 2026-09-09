@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-005
   route: full
   status: running
-  current_step: S01
+  current_step: S02
   base_commit: 1b955234563f9d5c86d7416852db2c19a03df2b0
   branch: path/cp-cairn-005
   assigned_writer: cp-cairn-005-writer
@@ -253,32 +253,39 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
   goal's three plain lines in step 1, the registration commit on the trunk
   directly and the `register/` sequence dropped from the reference —
   **complete**
-- **S02** — not started
+- [**S02**](./steps/S02.md) — the unit skill, chapter 5 and the work-unit
+  concept: five movements with the review between the self-review and
+  verify, the self-review in the five tags, the definition-of-done item
+  and `repair` in the plan, the failing test first, the API refreshed, the
+  concept note's offered session, the decision put to the owner, the
+  dependencies and the framework's block and the helper agent in step 0,
+  the reference's exit codes and provisional trailer, and the two
+  sentences whose records name `cairn-open` and `cairn-code` —
+  **complete**
+- **S03** — not started
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 8ee7bcbad56d9f58e8fa9151e5a1de5bc3d6276e — the registration commit on the trunk
-unit   : 0 — S01 is complete in the working tree; its commit id is recorded here by S02
+commit : 2114f610d35875d7b61adf3ea404e78c33f06d93 — S01, pushed, forge run green
+unit   : 1 — S02 is complete in the working tree; its commit id is recorded here by S03
 base   : 1b955234563f9d5c86d7416852db2c19a03df2b0
 trunk  : 1b955234563f9d5c86d7416852db2c19a03df2b0 — origin/main at registration
 ```
 
 ### Next action
 
-In a fresh session, from the worktree `../cairn-cp-cairn-005` on branch
-`path/cp-cairn-005`: run S02 of the plan with `cairn-unit` — the unit
-skill, chapter 5's *Advance one work unit at a time* and
-`spec/concepts/work-unit.md`, from ADR-017, ADR-016 decision 2, ADR-009,
-ADR-018 decision 1, ADR-008 decision 7, ADR-007, ADR-020 decision 2,
-ADR-021 decision 3, ADR-022 decision 3 and ADR-023 decision 4, at their
-tables. S01 wrote the shape of a question to the owner into `cairn-open`
-step 2 and cut the sentence that claimed the other skills share it: S02
-writes `cairn-unit`'s own one sentence on a decision a unit cannot make.
-Run the review movement on the unit's diff as CP-CAIRN-004's steps show,
-before the unit skill says so.
+From the worktree `../cairn-cp-cairn-005` on branch `path/cp-cairn-005`:
+run S03 of the plan with `cairn-unit` — the close skill, its reference
+and `.github/pull_request_template.md`, from ADR-008 decisions 1 and 3,
+ADR-021 decisions 2 and 3, ADR-018 decision 2, ADR-016 decision 4,
+ADR-001 decisions 3 to 5, ADR-023 decision 1, ADR-006 and ADR-014
+decision 2, at their tables. ADR-008 decision 3 is already written: S02
+put it in `skills/cairn-unit/reference.md`, the file its table names.
+The unit skill now describes the five movements, so S03 runs by it
+rather than by CP-CAIRN-004's example.
 
 ### Blockers
 
@@ -298,6 +305,10 @@ None.
   at its blob and named in the coverage instead.
 - Touching the checker for the `review` rule ADR-017 adds — path 2's;
   the skill says the section exists, and the rule follows.
+- Correcting `README.md`, whose line *plan, change, self-review, verify*
+  S02's five movements make false (S02's review) — the register gives the
+  README to path 5, and item 6 of the definition of done requires it
+  unchanged here. Path 5 owes that line.
 - Correcting the kit's default transport, or the binding row the kit
   generates, so that `cairn-open`'s direct push matches an adopter's
   declaration (S01's review) — `tools/cairn.mjs` is path 4's surface, and
@@ -310,7 +321,7 @@ None.
 2. `project/coding-paths/index.md@ae454f890aed4101f8ad8508d2b292ae2f501d73`, row 1.
 3. `docs/architecture/01-cairn-1-1.md@8190acfa186af205a8f1d4b35c3c0e684f11a9f3` — *How a path opens*, *runs* and *closes*.
 4. `project/coding-paths/CP-CAIRN-005/plan.md`, then the records the unit being written implements, at their tables.
-5. `project/coding-paths/CP-CAIRN-005/steps/S01.md` — the shape of a step with the review movement, as this path's steps are written, and what the open skill now says.
+5. `project/coding-paths/CP-CAIRN-005/steps/S02.md` — the shape of a step with the review movement, as this path's steps are written; `steps/S01.md` for what the open skill now says.
 
 ### Verify
 

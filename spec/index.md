@@ -359,20 +359,21 @@ complete without anyone maintaining it.
 ### Advance one work unit at a time
 
 A [work unit](./concepts/work-unit.md) is the smallest completed change Cairn
-recognises, and it has four movements, in order:
+recognises, and it has five movements, in order:
 
 ```text
 plan          what this unit will change, and what it deliberately will not
 change        the implementation or protocol artefact, with its tests
-self-review   read the diff as a reviewer would; what would you refuse?
+self-review   cut what the diff should not carry, one tagged line per finding
+review        a fresh context reads the diff against two criteria and no more
 verify        run every relevant gate bare, and record each verdict
 ```
 
-The plan and the self-review are short sections of the step record, not files.
-The stance a writer takes during *change* — does this need to exist, does the
-codebase already have it, what is the least code — is the protocol's coding
-skill, `cairn-code`, and a skill rather than a rule: a checker cannot judge
-simplicity, and pretending it can is how rules multiply.
+The plan, the self-review and the review are short sections of the step
+record, not files. The stance a writer takes during *change* — does this need
+to exist, does the codebase already have it, what is the least code — is the
+protocol's coding skill, `cairn-code`, and a skill rather than a rule: a
+checker cannot judge simplicity, and pretending it can is how rules multiply.
 
 Every unit declares a **type**, and the type fixes which parts move together:
 
@@ -384,9 +385,13 @@ Every unit declares a **type**, and the type fixes which parts move together:
 | `repair` | the corrective change, any superseding record owed, a step naming the violation |
 | `closure` | only the administrative closure surface |
 
+`repair` is for a violation of the protocol; a bug in the product is an
+`implementation` unit.
+
 Every unit ends with a step record carrying a fenced `cairn-unit` block —
 step, [ledger](./concepts/work-ledger.md) ordinal, type, and what verified it
-— and a refreshed resume section in `index.md`:
+— a `#### Review` section holding the findings of the review movement, each
+with its disposition, and a refreshed resume section in `index.md`:
 
 ````text
 ```cairn-unit
@@ -399,7 +404,9 @@ verified: cairn-check, test, build
 
 `unit` is an ordinal, not an object id, because the commit a unit produces does
 not exist while the unit is being written. Source changed without its tests, its
-documents and its step is not a completed unit.
+documents and its step is not a completed unit, and neither is a step record
+without its review section; a `closure` unit carries no step file and no
+review.
 
 #### Check before calling it complete
 

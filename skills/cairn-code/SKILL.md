@@ -51,8 +51,8 @@ behind no stated requirement, a record nothing reads, a folder with one file
 
 Explain a change in three lines or fewer: what it does, why it is the least,
 what it does not do. If the explanation needs more, the change is probably
-doing two things; split it into two units. In a step record, the plan and the
-self-review are those three lines twice.
+doing two things; split it into two units. In a step record the plan is those
+three lines; the self-review is the tagged lines `cairn-unit` names.
 
 ## Absorb the ecosystem
 

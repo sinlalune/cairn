@@ -35,9 +35,12 @@ parts MUST move together:
 | `repair` | the corrective change, a superseding record where one is owed, a step naming the violation |
 | `closure` | only the [administrative closure](./administrative-closure.md) surface |
 
-Every type requires the step record, the refreshed resume section, and a recorded
-verification result; no type may omit those. After any required inspection
-passes, the parts become one coherent commit and an immediate push.
+Every type but `closure`, which carries no step file, requires the step record
+and that step's review section: the findings a fresh context returned on the
+unit's diff, each with its disposition. Every type requires the refreshed
+resume section and a recorded verification result; no type may omit those.
+After any required inspection passes, the parts become one coherent commit and
+an immediate push.
 
 Work that is not yet complete is not a work unit. It is committed and pushed as
 a [provisional commit](./provisional-commit.md) instead of being held in a

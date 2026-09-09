@@ -84,9 +84,10 @@ git status --porcelain=v1        # must print nothing
 git rev-parse origin/main        # this is base_commit
 ```
 
-Set `status: running`, `base_commit` to that tip, `assigned_writer`, and
-regenerate the live view. Run the gate bare and read its exit code. Land one
-metadata-only commit — the record, the view, nothing else — on the trunk
+Set `status: running`, `base_commit` to that tip, and `assigned_writer`, then
+regenerate the live view. No object id a record carries is ever typed by hand,
+or edited to satisfy a refusal. Run the gate bare and read its exit code. Land
+one metadata-only commit — the record, the view, nothing else — on the trunk
 directly, then read the run it triggers there. The sequence is in
 [reference.md](./reference.md).
 
