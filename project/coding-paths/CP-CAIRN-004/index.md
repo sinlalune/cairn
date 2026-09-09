@@ -7,13 +7,13 @@ timestamp: 2026-09-09T00:00:00Z
 cairn:
   id: CP-CAIRN-004
   route: full
-  status: running
+  status: ready
   current_step: S06
   base_commit: 42927d633011b3f64d9d564fd0e14197980cbf4b
   branch: path/cp-cairn-004
   assigned_writer: cp-cairn-004-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 9eba6bac8b20d27f63bb7bac6a6c2eaa163050e0
   resolution: null
   writes:
     - docs/adr/**
@@ -235,23 +235,25 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 72f62d92c369b1bf4e36937c5daf41f1330e3f87 — S05, unit 05, the first candidate, void; its administrative commit c5abbad is void with it; S06 is the unit after them and the second candidate, named by the administrative commit once pushed
-unit   : 6 (S06, the second candidate)
+commit : 9eba6bac8b20d27f63bb7bac6a6c2eaa163050e0 — S06, unit 06, the second candidate, on origin/path/cp-cairn-004 with its run green; this record is the one administrative commit after it; the first candidate 72f62d9 and its administrative commit c5abbad are void
+unit   : 6 (S06, the candidate)
 base   : 42927d633011b3f64d9d564fd0e14197980cbf4b
 trunk  : eca8384 — origin/main, the registration commit, contained in the branch
 ```
 
 ### Next action
 
-Rewrite pull request #13's description for the second candidate, then
-the one administrative commit — `ready`, `subject_commit`, the
-checkpoint, the live view. The owner reads the three records, the
-amended page, the register and the steps S05 and S06 at the candidate,
-then merges the request as a merge commit once its `cairn-check` run is
-green: the merge is the closing acceptance. Then the integrating unit
-from a clean trunk checkout, as the close skill says; prove the candidate
-reachable from `origin/main`; remove the clean worktree
-`../cairn-cp-cairn-004` without force. The branch stays.
+The owner reads the three records `docs/adr/ADR-021` to `ADR-023`, the
+amended page `docs/architecture/01-cairn-1-1.md`, the register and the
+steps S05 and S06 at the candidate, then merges pull request #13 as a
+merge commit once its `cairn-check` run is green: the merge is the
+closing acceptance. Then the integrating unit from a clean trunk
+checkout: `status: done`, `resolution: completed`, `subject_commit`
+kept, the live view regenerated, one journal entry
+`project/log/<date>-cp-cairn-004.md` with `cairn.path: CP-CAIRN-004`,
+landed on `main` directly (ADR-001); prove the candidate reachable from
+`origin/main`; remove the clean worktree `../cairn-cp-cairn-004` from
+another checkout, without force. The branch `path/cp-cairn-004` stays.
 
 ### Blockers
 
