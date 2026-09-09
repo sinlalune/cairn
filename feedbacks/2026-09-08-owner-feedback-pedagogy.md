@@ -347,7 +347,7 @@ question in your own words; it wins.
 Today it is one sentence in the manifesto and nothing in any file a
 session reads.
 
-- [ ] **One line in the bootloader.** *(one sentence)* Beside *an
+- [x] **One line in the bootloader.** *(one sentence)* Beside *an
   abstraction explained persists as a concept note*: an explanation is
   written for the reader who is learning it — the plain meaning first,
   the failure it prevents, the shortest example — and stops there.
@@ -366,7 +366,7 @@ external knowledge, which is a different thing.
   `docs/learning/` with an index, a template beside the concept template,
   and chapter 6 pointing at both; the concept folder keeps its name and
   its meaning, and the two are told apart by their templates.
-- [ ] **Learning notes are concept notes with an order.** *(simplest)* No
+- [x] **Learning notes are concept notes with an order.** *(simplest)* No
   new root; a note that teaches a sequence goes to `docs/concepts/learning`
   and links the concepts it rests on, in order. Chapter 6's paragraph
   changes to say so.
@@ -375,7 +375,7 @@ external knowledge, which is a different thing.
 
 ### P3. Is a learning session a skill?
 
-- [ ] **Yes, a sixth skill.** *(adds a file)* `cairn-learn`: what it reads
+- [x] **Yes, a sixth skill.** *(adds a file)* `cairn-learn`: what it reads
   first (the concept folders, the surface page, the inputs), how it
   explores with you by prompting, what it writes (a learning note of P2,
   concept notes for every word it needed), and how it ends (the note
@@ -389,7 +389,7 @@ external knowledge, which is a different thing.
 
 ADR-011, decision 3, already writes the concept note in any session.
 
-- [ ] **Writes the note, offers the session, parks it.** *(one sentence)*
+- [x] **Writes the note, offers the session, parks it.** *(one sentence)*
   The unit writes the concept note, says in its step that a learning
   session was offered on it, and the session runs later in its own
   context — as chapter 6 parks research that arrives during a cycle.
@@ -401,7 +401,7 @@ ADR-011, decision 3, already writes the concept note in any session.
 The description is the checker's twin today; ADR-018 adds a line per
 item of the definition of done.
 
-- [ ] **Three plain lines first, then the ledger.** *(one sentence in a
+- [x] **Three plain lines first, then the ledger.** *(one sentence in a
   template)* The request template opens with what the path did, why it is
   the least, what it does not do, and a link to the surface page it
   updated; `cairn-audit` prints the placeholder; the ledger follows
@@ -421,13 +421,14 @@ thirty-four answers; no skill names the shape.
   else until you answer. The open and close skills and the post-mortem
   tool say so.
 - [ ] **Free prose.** *(simplest, as today)*
+- [x] Need to be in chat prompting, But well signaled as what it is
 
 ### P7. Is there one page above the surface pages?
 
 Q16 refused one product page *instead of* one page per surface. This asks
 about one short page *above* them.
 
-- [ ] **Yes, the README.** *(native)* The adopter's README says what the
+- [x] **Yes, the README.** *(native)* The adopter's README says what the
   project is in a paragraph and lists the surface pages; promotion units
   that add a surface add its line. The kit installs nothing; the close
   skill says the README lists the surfaces.
@@ -441,7 +442,7 @@ about one short page *above* them.
 The manifesto's chronology names *workflow* among the specification
 documents of a minimum product; chapter 3 names no such output.
 
-- [ ] **Yes, one per flow that crosses components.** *(one sentence in
+- [x] **Yes, one per flow that crosses components.** *(one sentence in
   chapter 3; a template)* How one thing moves end to end through the
   folders the architecture page names, with a diagram; refreshed by the
   promotion unit that changes the flow.
@@ -452,7 +453,7 @@ documents of a minimum product; chapter 3 names no such output.
 
 ### P9. Where do the big diagrams and the use-case examples go?
 
-- [ ] **In the pages 1.1 already names.** *(one sentence, twice; native)*
+- [x] **In the pages 1.1 already names.** *(one sentence, twice; native)*
   The architecture template asks for one Mermaid diagram of the components
   and the direction ADR-019 states; the surface page template asks for one
   worked example before anything else. The forge renders both.
@@ -467,6 +468,8 @@ documents of a minimum product; chapter 3 names no such output.
 - [ ] **A Cairn page.** *(adds a file)* The surface page of an API is the
   reference, written by hand by the promotion unit.
 
+=> Cairn does nothing, cairn ask the agent to create and maitain an api doc
+
 ### P11. Where does the senior search?
 
 Every record stays; nothing says where to look.
@@ -475,12 +478,12 @@ Every record stays; nothing says where to look.
   pointer page of ADR-013 and the documentation index say: what a path
   did is under `project/log/`, one entry per integration; what a word
   means is under `docs/concepts/`; why a thing is so is under `docs/adr/`.
-- [ ] **Nothing more.** *(simplest, as today)* The folders' indexes are
+- [x] **Nothing more.** *(simplest, as today)* The folders' indexes are
   the map.
 
 ### P12. Does the manifesto's pedagogy section change?
 
-- [ ] **Yes, in your words.** You rewrite the section of the verbatim
+- [x] **Yes, in your words.** You rewrite the section of the verbatim
   original; the edited edition follows; the four points above are what
   the draft covers.
 - [ ] **Yes, the draft as it stands.** The draft above becomes the edited
