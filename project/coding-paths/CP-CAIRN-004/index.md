@@ -7,13 +7,13 @@ timestamp: 2026-09-09T00:00:00Z
 cairn:
   id: CP-CAIRN-004
   route: full
-  status: running
+  status: ready
   current_step: S05
   base_commit: 42927d633011b3f64d9d564fd0e14197980cbf4b
   branch: path/cp-cairn-004
   assigned_writer: cp-cairn-004-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 72f62d92c369b1bf4e36937c5daf41f1330e3f87
   resolution: null
   writes:
     - docs/adr/**
@@ -213,21 +213,25 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 710236c8629202583d1e15ebe9139b4de8840a94 — S04, unit 04, on origin/path/cp-cairn-004 with its run green; S05 is the unit after it and the candidate C, named by the administrative commit once pushed
-unit   : 5 (S05)
+commit : 72f62d92c369b1bf4e36937c5daf41f1330e3f87 — S05, unit 05, the candidate C, on origin/path/cp-cairn-004 with its run green; this record is the one administrative commit after it
+unit   : 5 (S05, the candidate)
 base   : 42927d633011b3f64d9d564fd0e14197980cbf4b
 trunk  : eca8384 — origin/main, the registration commit, contained in the branch
 ```
 
 ### Next action
 
-From the worktree `../cairn-cp-cairn-004` on branch `path/cp-cairn-004`:
-Close with `cairn-close`: the trunk tip `eca8384` is contained in the
-branch; the gates ran bare on S05's commit, which is `C`; open the request from `path/cp-cairn-004` to `main` with three plain
-lines first, the definition of done item by item, then the ledger
-`cairn-audit` prints; then the one administrative commit — `ready`,
-`subject_commit`, the checkpoint, the live view — and the owner reads
-the three records and the page before the merge.
+The owner reads the three records `docs/adr/ADR-021` to `ADR-023`, the
+amended page `docs/architecture/01-cairn-1-1.md`, the register and the
+step S05 at `C`, then merges pull request #13 as a merge commit once its
+`cairn-check` run is green: the merge is the closing acceptance. Then
+the integrating unit from a clean trunk checkout: `status: done`,
+`resolution: completed`, `subject_commit` kept, the live view
+regenerated, one journal entry `project/log/<date>-cp-cairn-004.md` with
+`cairn.path: CP-CAIRN-004`, landed on `main` directly (ADR-001); prove
+`C` reachable from `origin/main`; remove the clean worktree
+`../cairn-cp-cairn-004` from another checkout, without force. The branch
+`path/cp-cairn-004` stays.
 
 ### Blockers
 
