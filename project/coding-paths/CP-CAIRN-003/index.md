@@ -7,14 +7,14 @@ timestamp: 2026-09-07T00:00:00Z
 cairn:
   id: CP-CAIRN-003
   route: full
-  status: ready
+  status: done
   current_step: S07
   base_commit: 7997b7608bf34ceecfbcf85e5ad32c0187230e5d
   branch: path/cp-cairn-003
   assigned_writer: cp-cairn-003-writer
   depends_on: []
   subject_commit: 1f1bcb4de0e35b3a0ff0c9f3bf915d7883b44a6a
-  resolution: null
+  resolution: completed
   writes:
     - docs/adr/**
     - docs/architecture/**
