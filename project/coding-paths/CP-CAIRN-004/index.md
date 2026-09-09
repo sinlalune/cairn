@@ -179,24 +179,26 @@ record lands on the trunk directly. Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
-- **S01** — not started
+- **[S01](./steps/S01.md)** — ADR-021, what a session writes for its reader: one line in the bootloader for the tone (P1), three plain lines before the ledger in the request and in the record's goal (P5), a question to the owner put in the chat and well signalled as what it is, in the owner's words (P6); five options refused, a file among them; the fresh read's twelve findings and the bounded second read's two, dispositioned in the step.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — the trunk commit that adds this record, whose parent is base
-unit   : 0
+commit : eca8384 — the registration commit on origin/main; S01 is the unit after it, named by S02 once pushed
+unit   : 1 (S01)
 base   : 42927d633011b3f64d9d564fd0e14197980cbf4b
-trunk  : 42927d633011b3f64d9d564fd0e14197980cbf4b — origin/main at registration
+trunk  : eca8384 — origin/main, the registration commit, contained in the branch
 ```
 
 ### Next action
 
 From the worktree `../cairn-cp-cairn-004` on branch `path/cp-cairn-004`:
-run S01 of the plan with `cairn-unit` — ADR-021, what a session writes
-for its reader, from P1, P5 and P6 of the note.
+run S02 of the plan with `cairn-unit` — ADR-022, the learning note, the
+learning session and its offer, from P2, P3 and P4 of the note; read the
+manifesto for P3, the one answer that adds a file, and ADR-013 and
+ADR-015 for the kit's budget the record must answer.
 
 ### Blockers
 
@@ -220,7 +222,7 @@ None.
 2. `feedbacks/2026-09-08-owner-feedback-pedagogy.md@e9bd3e92aa7c6336f92e715140f744aeb8385d02` — the twelve answers and the table of what each drives.
 3. `docs/cairn/manifesto-pedagogy-2026-09-09.md@57d2e87a3caafab19ba36fa794d7ab342e2a87e1` — the statement.
 4. `docs/architecture/01-cairn-1-1.md@a76f420fc42ec211067ce5ddc897cde285a03227` — the page this path amends.
-5. `docs/adr/ADR-011`, `ADR-016` and `ADR-020` — the records this path extends, and the shapes of a record that adds sentences and one that keeps.
+5. `docs/adr/ADR-021` — the first record of this path, whose shape the next two follow; `ADR-011`, `ADR-013` and `ADR-015` — the records S02 extends.
 6. `project/coding-paths/CP-CAIRN-004/plan.md`, then the section of the note the unit promotes.
 
 ### Verify

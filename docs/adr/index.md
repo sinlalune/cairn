@@ -3,7 +3,7 @@ type: Cairn Folder Index
 title: Decision records
 description: One file per durable decision about the protocol or its repository, with a stable id, a status and a date; the folder's history is Git's.
 tags: [index, cairn, adr]
-timestamp: 2026-09-07T00:00:00Z
+timestamp: 2026-09-09T00:00:00Z
 ---
 
 # Decision records
@@ -61,3 +61,4 @@ carries it; the roadmap register names that work.
 - [ADR-018 — two sentences of the cycle](./ADR-018-two-sentences-of-the-cycle.md) — accepted 2026-09-07; the failing test first when behaviour changes and no new test when only structure does; the request's description answers the definition of done item by item. Decisions Q8 and Q9; four options refused, a step and a rule among them.
 - [ADR-019 — an area is a folder of the tree](./ADR-019-an-area-is-a-folder-of-the-tree.md) — accepted 2026-09-07; the main component ADR-010 splits by is a folder and its note describes that folder, the architecture page says in one sentence which way dependencies point, a path names its areas and a whole source root says why. Decisions Q10 to Q12; six options refused, two of them rules, one of those refused twice.
 - [ADR-020 — the one edge and the one writer, confirmed](./ADR-020-the-one-edge-and-the-one-writer.md) — accepted 2026-09-07; the edge between paths lives in the record only, a helper agent inside the writer's session is the writer, the register carries no edge between milestones. Decisions Q13 to Q15, all kept as today, one sentence added; five options refused, a second copy, a tool and a shape among them.
+- [ADR-021 — what a session writes for its reader](./ADR-021-what-a-session-writes-for-its-reader.md) — accepted 2026-09-09; one line in the bootloader says an explanation is written for the reader who is learning it, the request's description and the record's goal open with three plain lines before the ledger, and a question to the owner is put in the chat and well signalled as what it is, in the owner's words. Decisions P1, P5 and P6 of the pedagogy feedback; five options refused, a file among them; no rule.
