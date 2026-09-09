@@ -34,15 +34,33 @@ one waits for, or `[]`), `writes` (the paths it expects to change, including
 its own folder), and `governs` (the documents it is bound by, each pinned as
 `path@<blob id>` from `git rev-parse HEAD:<path>`).
 
+Ask which **areas** the path writes in; `writes:` is their patterns, and the
+answer settles the two-area trigger above. A path that needs a whole source
+root says why in its record, and the owner reads that reason with the plan.
+When one area's note is touched by every path, or its match covers every
+source file, propose the split by main component in the record.
+
+Write the **goal** so that its first three lines are the three `cairn-code`
+asks of every change: what the path does, why it is the least, what it does
+not do.
+
 The **definition of done** is what acceptance binds. Write it as checkable
 outcomes, not activities.
 
-## 2. Record the opening acceptance
+## 2. The owner reviews the plan
 
-An authorised participant reviews the outcome, the route and its trigger, the
-definition of done, the surfaces and overlap, the exclusions and the initial
-writer. Then compute the digest with the code that will verify it — never by
-hand:
+Put the question in the chat, not in a file the owner must open, and signal it
+as a decision before anything else: one opening line saying a decision is
+needed and naming the path, then what happened, then two or three ways to go
+on, each tagged by what it costs. Do nothing further on the path until the
+answer.
+
+The owner reviews the outcome, the route and its trigger, the definition of
+done, the surfaces and overlap, the exclusions and the initial writer. A
+change asked for before the go-ahead is written into the record first.
+
+The go-ahead in the chat is the opening acceptance. Compute the digest with
+the code that will verify it — never by hand:
 
 ```bash
 node tools/cairn-check.mjs --scope-digest project/coding-paths/CP-EXAMPLE-001/index.md#definition-of-done
@@ -50,10 +68,10 @@ node tools/cairn-check.mjs --scope-digest project/coding-paths/CP-EXAMPLE-001/in
 
 Write the acceptance into `index.md` under `## Opening acceptance` as one YAML
 block: `decision: accepted`, `accepted_by`, `accepted_roles`, `accepted_at`
-(UTC), `scope_ref`, `scope_digest`. Below it, one sentence on what was
-reviewed and any amendment. Editing the definition of done after this
-invalidates the acceptance until a second block, naming the first with
-`supersedes:`, records the amendment.
+(UTC, the time of the go-ahead), `scope_ref`, `scope_digest`. Below it, one
+sentence on what was reviewed and any amendment. Editing the definition of
+done after this invalidates the acceptance until a second block, naming the
+first with `supersedes:`, records the amendment.
 
 ## 3. Register on the trunk
 
@@ -68,8 +86,9 @@ git rev-parse origin/main        # this is base_commit
 
 Set `status: running`, `base_commit` to that tip, `assigned_writer`, and
 regenerate the live view. Run the gate bare and read its exit code. Land one
-metadata-only commit — the record, the view, nothing else — through the
-declared transport. The sequence is in [reference.md](./reference.md).
+metadata-only commit — the record, the view, nothing else — on the trunk
+directly, then read the run it triggers there. The sequence is in
+[reference.md](./reference.md).
 
 ## 4. Create and publish the branch
 

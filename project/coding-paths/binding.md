@@ -25,6 +25,7 @@ paths, command names and runtime details. Portable protocol text never does.
 | remote | `origin` |
 | metadata namespace | `cairn` |
 | enforcement profile | `ci` |
+| registration transport | `manual-git` — the registration commit lands on the trunk directly |
 | integration transport | `pull-request` |
 | path-history policy | **forbidden** — a published branch is never rewritten |
 | path branch | `path/<lowercase-path-id>` |

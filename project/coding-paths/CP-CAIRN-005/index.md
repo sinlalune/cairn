@@ -246,15 +246,22 @@ Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
-- **S01** — not started
+- [**S01**](./steps/S01.md) — the open skill, the configuration and the
+  binding: `transport.registration: manual-git` declared and named in the
+  binding, the plan review as step 2 with the question in the chat and the
+  go-ahead as the acceptance, the areas and the whole-root reason and the
+  goal's three plain lines in step 1, the registration commit on the trunk
+  directly and the `register/` sequence dropped from the reference —
+  **complete**
+- **S02** — not started
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — the trunk commit that adds this record, whose parent is base
-unit   : 0
+commit : 8ee7bcbad56d9f58e8fa9151e5a1de5bc3d6276e — the registration commit on the trunk
+unit   : 0 — S01 is complete in the working tree; its commit id is recorded here by S02
 base   : 1b955234563f9d5c86d7416852db2c19a03df2b0
 trunk  : 1b955234563f9d5c86d7416852db2c19a03df2b0 — origin/main at registration
 ```
@@ -262,11 +269,16 @@ trunk  : 1b955234563f9d5c86d7416852db2c19a03df2b0 — origin/main at registratio
 ### Next action
 
 In a fresh session, from the worktree `../cairn-cp-cairn-005` on branch
-`path/cp-cairn-005`: run S01 of the plan with `cairn-unit` — the open
-skill, the configuration and the binding, from ADR-001 decisions 1 and
-2, ADR-010 decision 2, ADR-019 decision 3 and ADR-021 decisions 2 and 3,
-at their tables. Run the review movement on the unit's diff as
-CP-CAIRN-004's steps show, before the unit skill says so.
+`path/cp-cairn-005`: run S02 of the plan with `cairn-unit` — the unit
+skill, chapter 5's *Advance one work unit at a time* and
+`spec/concepts/work-unit.md`, from ADR-017, ADR-016 decision 2, ADR-009,
+ADR-018 decision 1, ADR-008 decision 7, ADR-007, ADR-020 decision 2,
+ADR-021 decision 3, ADR-022 decision 3 and ADR-023 decision 4, at their
+tables. S01 wrote the shape of a question to the owner into `cairn-open`
+step 2 and cut the sentence that claimed the other skills share it: S02
+writes `cairn-unit`'s own one sentence on a decision a unit cannot make.
+Run the review movement on the unit's diff as CP-CAIRN-004's steps show,
+before the unit skill says so.
 
 ### Blockers
 
@@ -286,6 +298,11 @@ None.
   at its blob and named in the coverage instead.
 - Touching the checker for the `review` rule ADR-017 adds — path 2's;
   the skill says the section exists, and the rule follows.
+- Correcting the kit's default transport, or the binding row the kit
+  generates, so that `cairn-open`'s direct push matches an adopter's
+  declaration (S01's review) — `tools/cairn.mjs` is path 4's surface, and
+  ADR-001 decision 1 orders the request sequence dropped and the default
+  kept; the tension is a superseding record's, not this path's.
 
 ### Reading order
 
@@ -293,7 +310,7 @@ None.
 2. `project/coding-paths/index.md@ae454f890aed4101f8ad8508d2b292ae2f501d73`, row 1.
 3. `docs/architecture/01-cairn-1-1.md@8190acfa186af205a8f1d4b35c3c0e684f11a9f3` — *How a path opens*, *runs* and *closes*.
 4. `project/coding-paths/CP-CAIRN-005/plan.md`, then the records the unit being written implements, at their tables.
-5. `project/coding-paths/CP-CAIRN-004/steps/S01.md` — the shape of a step with the review movement, as this path's steps are written.
+5. `project/coding-paths/CP-CAIRN-005/steps/S01.md` — the shape of a step with the review movement, as this path's steps are written, and what the open skill now says.
 
 ### Verify
 
