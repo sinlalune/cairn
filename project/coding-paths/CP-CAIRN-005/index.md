@@ -7,14 +7,14 @@ timestamp: 2026-09-09T00:00:00Z
 cairn:
   id: CP-CAIRN-005
   route: full
-  status: running
+  status: done
   current_step: S06
   base_commit: 1b955234563f9d5c86d7416852db2c19a03df2b0
   branch: path/cp-cairn-005
   assigned_writer: cp-cairn-005-writer
   depends_on: []
-  subject_commit: null
-  resolution: null
+  subject_commit: a0a3b0829e0562b0251ebb61b57e97b32ee34ddc
+  resolution: completed
   writes:
     - skills/**
     - AGENTS.md
@@ -294,23 +294,18 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : f6eabb0cd31aa5b1e5a931dc1e315b9b75797aab — S05, pushed, forge run green; void as a candidate
-unit   : 5 — S06 is complete in the working tree; its commit id is recorded here by S07
+commit : a0a3b0829e0562b0251ebb61b57e97b32ee34ddc — the candidate, merged as 9457cf6
+unit   : 6 — the last, S06
 base   : 1b955234563f9d5c86d7416852db2c19a03df2b0
-trunk  : 1b955234563f9d5c86d7416852db2c19a03df2b0 — origin/main at registration
+trunk  : 8ee7bcbad56d9f58e8fa9151e5a1de5bc3d6276e — origin/main at registration and at the merge
 ```
 
 ### Next action
 
-From the worktree `../cairn-cp-cairn-005` on branch `path/cp-cairn-005`:
-run S07 with `cairn-close`. `f6eabb0` is void — implementation changed
-after it — so produce the new candidate from S06's commit: merge
-`origin/main` in, run `cairn-check --base origin/main`,
-`cairn-active --check` and `npm test` bare on it, and update request #14's
-description to name the new `C`, to answer the reviewer's two findings,
-and to say that item 3's branch-deletion clause is now answered without a
-defect. The owner's try is asked again, in the chat, against the new
-commit.
+None. The path is done: candidate `a0a3b08` landed through request #14 as
+merge commit `9457cf6`, and this commit records it on the trunk with the
+journal entry. The worktree `../cairn-cp-cairn-005` is removed by the
+writer; `path/cp-cairn-005` stays until the path is archived.
 
 ### Blockers
 
