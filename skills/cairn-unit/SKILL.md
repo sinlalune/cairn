@@ -81,8 +81,8 @@ that apply to prose. Name any widening of `writes:` here.
 
 Hand the diff to a second context of your own agent — a fresh session, or a
 subagent, or your harness's own review command. Give it the diff and two
-criteria, the decision ladder and correctness, and nothing else: not the plan,
-not this conversation, not the step record.
+criteria — the decision ladder `cairn-code` points at, and correctness — and
+nothing else: not the plan, not this conversation, not the step record.
 
 Write what it returns into a `#### Review` section of the step, between the
 self-review and the verification: one line per finding with its disposition —

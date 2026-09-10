@@ -13,7 +13,8 @@ This file points; it does not carry project memory.
 4. `project/coding-paths/ACTIVE.md` — what is running now. It is
    generated; never hand-edit it.
 5. `skills/` — the procedures as Agent Skills: `cairn-brainstorm`,
-   `cairn-open`, `cairn-unit`, `cairn-close`, and the `cairn-code` stance.
+   `cairn-open`, `cairn-unit`, `cairn-close`, `cairn-learn`, and the
+   `cairn-code` stance.
 
 ## The mechanical contract
 

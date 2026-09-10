@@ -60,8 +60,8 @@ definition of done moved.
 ## 3. Obtain acceptance
 
 Whoever reads the diff — the owner, a bot on the request, a fresh context —
-reads it against the decision ladder and for correctness, and for nothing
-else.
+reads it against the decision ladder `cairn-code` points at and for
+correctness, and for nothing else.
 
 The owner tries the result before the merge; for a path whose product is
 documents, trying it means reading the pages. That is a step, not a
