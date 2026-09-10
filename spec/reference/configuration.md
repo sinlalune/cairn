@@ -97,13 +97,17 @@ parent-traversing, dot-segment, empty-segment, and backslash forms are rejected.
 | `roots.modules` | implemented-area notes | normalised repository-relative path |
 | `roots.concepts` | this repository's own one-idea wiki — the project scope; the protocol's wiki is read at the release, never written into | normalised repository-relative path |
 | `roots.source` | guarded source roots | non-empty path array |
-| `areas` | source pattern to module-note routing | ordered `{ name, match[], note }` entries; first matching entry wins |
+| `areas` | source pattern to module-note routing; an area is a folder under a source root, and its note describes that folder | ordered `{ name, match[], note }` entries, `match` being that folder's patterns, which a path writing in that area declares in its `writes:`; first matching entry wins |
 | `defaultRoute` | route a new-path generator writes and a missing-field diagnostic recommends | `lightweight \| full`; the resulting path record still declares it explicitly |
 | `checkpointRetentionRef` | ref prefix for [checkpoint retention](../concepts/checkpoint-retention.md), which the host's own tooling maintains — the reference checker does not read it | a ref prefix the remote accepts, or `null` where the repository forbids rewriting pushes instead |
 | `pathHistoryPolicy` | which conforming rewrite policy the host chose | `retained` with a ref prefix, or `forbidden` with a null prefix |
 | `scopeDigestAlgorithm` | digest used for [scope digests](../concepts/scope-digest.md) | a named algorithm; the digest is never abbreviated |
 | `transport` | how a registration and an accepted candidate reach the trunk, and where closing acceptance is recorded | `pull-request` — the default; the request is the record — or `manual-git` — a checked local merge, and one closing record in the path folder |
 | `migration` | finite exceptions for records predating installed predicates | three explicit path-id arrays; not a schema-version migration mechanism |
+
+A second `areas` entry is added when one area's note is touched by every path,
+or its `match` covers every source file: split by main component, one entry and
+one note per folder a reader can name in the tree.
 
 `checkpointRetentionRef: null` is a conforming value only when the repository
 also forbids rewriting pushes on path branches. It is not a way to opt out of

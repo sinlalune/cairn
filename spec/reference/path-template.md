@@ -60,14 +60,18 @@ cairn:
 
 ## Goal
 
-State the observable result, not the activity.
+State the observable result, not the activity. The first three lines are the
+three every change owes: what the path does, why it is the least, what it does
+not do — the owner reads them at the plan review.
 
 ## Definition of done
 
 This section is what `scope_ref` resolves to. Its
 [scope digest](../concepts/scope-digest.md) is recorded in the opening
 acceptance below and re-computed at closing; editing it after acceptance
-invalidates that acceptance until a scope amendment is recorded.
+invalidates that acceptance until a scope amendment is recorded. Ticks are
+never added: what a path completed is stated by the closing review and the
+journal entry, not by a box.
 
 - [ ] Product behaviour is implemented and covered by relevant tests.
 - [ ] Affected architecture, decisions and module notes are current.
@@ -194,7 +198,8 @@ cairn:
 
 #### Plan
 
-What this unit will change, and what it deliberately will not.
+What this unit will change, and what it deliberately will not, and the item of
+the definition of done it advances.
 
 #### Work
 
@@ -212,7 +217,19 @@ verified: cairn-check, test, build
 
 #### Self-review
 
-The diff read as a reviewer would: what would you refuse?
+- `delete:` <what the writer cut, one line per finding>
+- `shrink:` <…, under `delete:`, `stdlib:`, `native:`, `yagni:` or `shrink:`>
+- net: <N> lines — or *Lean already*
+
+#### Review
+
+First read, a fresh context given this unit's diff and the two criteria:
+
+- <finding> — **fixed** | **refused**, <reason> | **deferred** to <unit or path>
+
+Second read, a fresh context given only the diff of those fixes:
+
+- <finding> — <disposition>
 
 #### Verification
 

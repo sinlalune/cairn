@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-005
   route: full
   status: running
-  current_step: S04
+  current_step: S05
   base_commit: 1b955234563f9d5c86d7416852db2c19a03df2b0
   branch: path/cp-cairn-005
   assigned_writer: cp-cairn-005-writer
@@ -276,15 +276,21 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
   lines, pointing at Ponytail at `v4.9.0` for the ladder and the tags;
   `cairn-learn` written; `AGENTS.md` naming six skills; the unit and close
   skills saying where the ladder now lives — **complete**
-- **S05** — not started
+- [**S05**](./steps/S05.md) — the path template and the configuration
+  reference: the goal's three lines, the plan's item, the self-review in
+  the five tags, the `#### Review` section with both reads given a fresh
+  context, ticks never added; the `areas` row saying an area is a folder
+  and when a second entry is added; the open skill's two clauses —
+  **complete**
+- **S06** — not started
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 92ce74f5b36946ba13091a6a01adb754cc97e285 — S03, pushed, forge run green
-unit   : 3 — S04 is complete in the working tree; its commit id is recorded here by S05
+commit : db030f7212572a2f5c7cf4bddee030f3e74a1d59 — S04, pushed, forge run green
+unit   : 4 — S05 is complete in the working tree; its commit id is recorded here by S06
 base   : 1b955234563f9d5c86d7416852db2c19a03df2b0
 trunk  : 1b955234563f9d5c86d7416852db2c19a03df2b0 — origin/main at registration
 ```
@@ -292,16 +298,15 @@ trunk  : 1b955234563f9d5c86d7416852db2c19a03df2b0 — origin/main at registratio
 ### Next action
 
 From the worktree `../cairn-cp-cairn-005` on branch `path/cp-cairn-005`:
-run S05 of the plan with `cairn-unit` — `spec/reference/path-template.md`
-showing the goal's three plain lines, the step's self-review in the five
-tags, the `#### Review` section with the second read's lines under the
-first's, and the amendment as a second acceptance block that never edits
-the definition of done in place; and `spec/reference/configuration.md`
-saying an area is a folder of the tree and `writes:` is the named areas'
-patterns. From ADR-021 decision 2, ADR-016 decision 2, ADR-017 (all
-three), ADR-002 decision 2, ADR-019 decisions 1 and 3 and ADR-009
-decision 2, at their tables. Then the register's row 1 gains this path's
-id and nothing else — item 7 allows that edit and no other.
+run S06, the candidate, with `cairn-close`. Merge `origin/main` in, run
+`cairn-check`, `cairn-active --check` and `npm test` bare on that commit,
+push it, and open the request with the description in the order S03 wrote
+into the close skill — three plain lines and the surface link, the
+definition of done item by item, then the ledger `cairn-audit` prints.
+Two items are answered less a clause and one is answered by a file the
+item does not name; *tried and rejected* below says which and why, and
+the description says the same. The owner reads the six skills and the two
+references before the merge, asked for in the chat as a decision.
 
 ### Blockers
 
@@ -325,6 +330,18 @@ None.
   S02's five movements make false (S02's review) — the register gives the
   README to path 5, and item 6 of the definition of done requires it
   unchanged here. Path 5 owes that line.
+- Answering item 6's clause *`writes:` is the named areas' patterns* from
+  the open skill alone (S05) — ADR-019 decision 3's table names
+  `cairn-open` step 1 and no other file, but the item names the
+  configuration reference. The `areas` row carries it too, stated in the
+  direction that is true: a path writing in an area declares that area's
+  patterns. The item is answered as sealed.
+- Writing *never edited in place* into the two files that describe the
+  definition of done (S05) — ADR-002 decision 2's own sentence reads that
+  way, and it is false here: `72f62d9` amended CP-CAIRN-004's item 6 by
+  editing it and recording a second acceptance block with the new digest,
+  which is the mechanism working. Both files say only that ticks are never
+  added; the amendment sentence each already carried says the rest.
 - Writing this repository's `AGENTS.md` under row 1 rather than row 4
   (S04) — the register gives `AGENTS.md` to row 4, and item 5 of the
   definition of done gives the six-skill line to this path. The line is
@@ -352,7 +369,7 @@ None.
 2. `project/coding-paths/index.md@ae454f890aed4101f8ad8508d2b292ae2f501d73`, row 1.
 3. `docs/architecture/01-cairn-1-1.md@8190acfa186af205a8f1d4b35c3c0e684f11a9f3` — *How a path opens*, *runs* and *closes*.
 4. `project/coding-paths/CP-CAIRN-005/plan.md`, then the records the unit being written implements, at their tables.
-5. `project/coding-paths/CP-CAIRN-005/steps/S04.md` — the shape of a step with the review movement, as this path's steps are written; `steps/S01.md` to `steps/S03.md` for what the open, unit and close skills now say.
+5. `spec/reference/path-template.md` — the step shape this path's own steps now follow; `steps/S01.md` to `steps/S05.md` for what each surface says and for the three answers that diverge from their items.
 
 ### Verify
 

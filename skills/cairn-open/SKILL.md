@@ -34,7 +34,8 @@ one waits for, or `[]`), `writes` (the paths it expects to change, including
 its own folder), and `governs` (the documents it is bound by, each pinned as
 `path@<blob id>` from `git rev-parse HEAD:<path>`).
 
-Ask which **areas** the path writes in; `writes:` is their patterns, and the
+Ask which **areas** the path writes in — an area is a folder under a source
+root, and its note describes that folder. `writes:` is their patterns, and the
 answer settles the two-area trigger above. A path that needs a whole source
 root says why in its record, and the owner reads that reason with the plan.
 When one area's note is touched by every path, or its match covers every
@@ -45,7 +46,8 @@ asks of every change: what the path does, why it is the least, what it does
 not do.
 
 The **definition of done** is what acceptance binds. Write it as checkable
-outcomes, not activities.
+outcomes, not activities. Ticks are never added to it: what a path completed
+is stated by the closing review and the journal entry.
 
 ## 2. The owner reviews the plan
 
