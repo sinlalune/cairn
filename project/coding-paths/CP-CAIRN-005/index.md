@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-005
   route: full
   status: running
-  current_step: S05
+  current_step: S06
   base_commit: 1b955234563f9d5c86d7416852db2c19a03df2b0
   branch: path/cp-cairn-005
   assigned_writer: cp-cairn-005-writer
@@ -282,15 +282,20 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
   context, ticks never added; the `areas` row saying an area is a folder
   and when a second entry is added; the open skill's two clauses —
   **complete**
-- **S06** — not started
+- [**S06**](./steps/S06.md) — the request reviewer's two findings: the
+  branch-deletion glob anchored to the exact path id, so closing a path
+  can no longer delete a running one's branch; the unconditional direct
+  push confirmed as the record's disposition, with the reviewer's evidence
+  added to it — **complete**
+- **S07** — not started
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : db030f7212572a2f5c7cf4bddee030f3e74a1d59 — S04, pushed, forge run green
-unit   : 4 — S05 is complete in the working tree; its commit id is recorded here by S06
+commit : f6eabb0cd31aa5b1e5a931dc1e315b9b75797aab — S05, pushed, forge run green; void as a candidate
+unit   : 5 — S06 is complete in the working tree; its commit id is recorded here by S07
 base   : 1b955234563f9d5c86d7416852db2c19a03df2b0
 trunk  : 1b955234563f9d5c86d7416852db2c19a03df2b0 — origin/main at registration
 ```
@@ -298,15 +303,14 @@ trunk  : 1b955234563f9d5c86d7416852db2c19a03df2b0 — origin/main at registratio
 ### Next action
 
 From the worktree `../cairn-cp-cairn-005` on branch `path/cp-cairn-005`:
-run S06, the candidate, with `cairn-close`. Merge `origin/main` in, run
-`cairn-check`, `cairn-active --check` and `npm test` bare on that commit,
-push it, and open the request with the description in the order S03 wrote
-into the close skill — three plain lines and the surface link, the
-definition of done item by item, then the ledger `cairn-audit` prints.
-Two items are answered less a clause and one is answered by a file the
-item does not name; *tried and rejected* below says which and why, and
-the description says the same. The owner reads the six skills and the two
-references before the merge, asked for in the chat as a decision.
+run S07 with `cairn-close`. `f6eabb0` is void — implementation changed
+after it — so produce the new candidate from S06's commit: merge
+`origin/main` in, run `cairn-check --base origin/main`,
+`cairn-active --check` and `npm test` bare on it, and update request #14's
+description to name the new `C`, to answer the reviewer's two findings,
+and to say that item 3's branch-deletion clause is now answered without a
+defect. The owner's try is asked again, in the chat, against the new
+commit.
 
 ### Blockers
 
@@ -357,11 +361,20 @@ None.
   workflow step and a package script, all path 3's; decision 2 is the
   two-suites sentence, written in the unit skill. The item is answered
   less that clause, and honouring it needs a record, not an edit here.
-- Correcting the kit's default transport, or the binding row the kit
-  generates, so that `cairn-open`'s direct push matches an adopter's
-  declaration (S01's review) — `tools/cairn.mjs` is path 4's surface, and
-  ADR-001 decision 1 orders the request sequence dropped and the default
-  kept; the tension is a superseding record's, not this path's.
+- Correcting the kit's default transport, or restoring the reference's
+  `pull-request` sequence, so that `cairn-open`'s direct push matches an
+  adopter's declaration (S01's review; confirmed by the request reviewer
+  on #14 and by S06) — `tools/cairn.mjs` is path 4's surface, and ADR-001
+  decision 1 orders the request sequence dropped and the default kept;
+  the tension is a superseding record's, not this path's. The reviewer
+  put the cost of it plainly: the kit's default is `pull-request` and
+  `package.json` ships `skills/`, so an adopter on the default reads an
+  instruction a protected trunk refuses and an unprotected trunk obeys,
+  bypassing the request and its check. S06 wrote the fork and reverted it
+  when the review named the contradiction. Whichever later path takes it,
+  the record is incoherent rather than merely wrong: it keeps the kit's
+  default at `pull-request` and removes the skill's `pull-request`
+  sequence in the same decision.
 
 ### Reading order
 

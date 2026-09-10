@@ -117,7 +117,7 @@ git merge-base --is-ancestor HEAD origin/main
 ## Delete the transport's branches
 
 ```bash
-git branch -r --list 'origin/*cp-example-001*' --format='%(refname:strip=3)'
+git branch -r --list 'origin/*/cp-example-001' --format='%(refname:strip=3)'
 git push origin --delete <each name printed that is not path/cp-example-001>
 ```
 
