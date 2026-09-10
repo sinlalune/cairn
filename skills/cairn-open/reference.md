@@ -29,20 +29,7 @@ git rev-parse HEAD^
 ```
 
 The printed parent must equal `base_commit`. No product implementation belongs
-in this commit.
-
-**On `pull-request` transport** push it to a registration branch and open a
-request to the trunk; the gate runs on it like any other, and nothing requires
-the new path to already exist on the trunk:
-
-```bash
-git switch -c register/cp-example-001
-git push -u origin register/cp-example-001
-```
-
-Once merged, fetch the trunk and branch from the registration commit.
-
-**On `manual-git`** push the trunk directly:
+in this commit. Push it to the trunk directly:
 
 ```bash
 git push origin HEAD:main

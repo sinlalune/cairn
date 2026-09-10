@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-005
   route: full
   status: running
-  current_step: S01
+  current_step: S06
   base_commit: 1b955234563f9d5c86d7416852db2c19a03df2b0
   branch: path/cp-cairn-005
   assigned_writer: cp-cairn-005-writer
@@ -17,6 +17,7 @@ cairn:
   resolution: null
   writes:
     - skills/**
+    - AGENTS.md
     - spec/index.md
     - spec/concepts/work-unit.md
     - spec/reference/path-template.md
@@ -246,27 +247,70 @@ Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
-- **S01** — not started
+- [**S01**](./steps/S01.md) — the open skill, the configuration and the
+  binding: `transport.registration: manual-git` declared and named in the
+  binding, the plan review as step 2 with the question in the chat and the
+  go-ahead as the acceptance, the areas and the whole-root reason and the
+  goal's three plain lines in step 1, the registration commit on the trunk
+  directly and the `register/` sequence dropped from the reference —
+  **complete**
+- [**S02**](./steps/S02.md) — the unit skill, chapter 5 and the work-unit
+  concept: five movements with the review between the self-review and
+  verify, the self-review in the five tags, the definition-of-done item
+  and `repair` in the plan, the failing test first, the API refreshed, the
+  concept note's offered session, the decision put to the owner, the
+  dependencies and the framework's block and the helper agent in step 0,
+  the reference's exit codes and provisional trailer, and the two
+  sentences whose records name `cairn-open` and `cairn-code` —
+  **complete**
+- [**S03**](./steps/S03.md) — the close skill and the request template:
+  no closure step, the description's order with the three lines and the
+  surface link and the definition of done item by item, the README
+  question, the two criteria, the owner's try asked in the chat, the merge
+  click, the green run on the exact commit, the transport's branches
+  deleted and the worktree removed by the writer; the template reordered;
+  the unit skill's suite sentence and its `closure` row — **complete**
+- [**S04**](./steps/S04.md) — the stance cut to Cairn's own, and the sixth
+  skill: `cairn-code` reduced to deletion turned on the protocol, the test
+  that never fires, the three-line cap, absorbing the ecosystem and the two
+  lines, pointing at Ponytail at `v4.9.0` for the ladder and the tags;
+  `cairn-learn` written; `AGENTS.md` naming six skills; the unit and close
+  skills saying where the ladder now lives — **complete**
+- [**S05**](./steps/S05.md) — the path template and the configuration
+  reference: the goal's three lines, the plan's item, the self-review in
+  the five tags, the `#### Review` section with both reads given a fresh
+  context, ticks never added; the `areas` row saying an area is a folder
+  and when a second entry is added; the open skill's two clauses —
+  **complete**
+- [**S06**](./steps/S06.md) — the request reviewer's two findings: the
+  branch-deletion glob anchored to the exact path id, so closing a path
+  can no longer delete a running one's branch; the unconditional direct
+  push confirmed as the record's disposition, with the reviewer's evidence
+  added to it — **complete**
+- **S07** — not started
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — the trunk commit that adds this record, whose parent is base
-unit   : 0
+commit : f6eabb0cd31aa5b1e5a931dc1e315b9b75797aab — S05, pushed, forge run green; void as a candidate
+unit   : 5 — S06 is complete in the working tree; its commit id is recorded here by S07
 base   : 1b955234563f9d5c86d7416852db2c19a03df2b0
 trunk  : 1b955234563f9d5c86d7416852db2c19a03df2b0 — origin/main at registration
 ```
 
 ### Next action
 
-In a fresh session, from the worktree `../cairn-cp-cairn-005` on branch
-`path/cp-cairn-005`: run S01 of the plan with `cairn-unit` — the open
-skill, the configuration and the binding, from ADR-001 decisions 1 and
-2, ADR-010 decision 2, ADR-019 decision 3 and ADR-021 decisions 2 and 3,
-at their tables. Run the review movement on the unit's diff as
-CP-CAIRN-004's steps show, before the unit skill says so.
+From the worktree `../cairn-cp-cairn-005` on branch `path/cp-cairn-005`:
+run S07 with `cairn-close`. `f6eabb0` is void — implementation changed
+after it — so produce the new candidate from S06's commit: merge
+`origin/main` in, run `cairn-check --base origin/main`,
+`cairn-active --check` and `npm test` bare on it, and update request #14's
+description to name the new `C`, to answer the reviewer's two findings,
+and to say that item 3's branch-deletion clause is now answered without a
+defect. The owner's try is asked again, in the chat, against the new
+commit.
 
 ### Blockers
 
@@ -286,6 +330,51 @@ None.
   at its blob and named in the coverage instead.
 - Touching the checker for the `review` rule ADR-017 adds — path 2's;
   the skill says the section exists, and the rule follows.
+- Correcting `README.md`, whose line *plan, change, self-review, verify*
+  S02's five movements make false (S02's review) — the register gives the
+  README to path 5, and item 6 of the definition of done requires it
+  unchanged here. Path 5 owes that line.
+- Answering item 6's clause *`writes:` is the named areas' patterns* from
+  the open skill alone (S05) — ADR-019 decision 3's table names
+  `cairn-open` step 1 and no other file, but the item names the
+  configuration reference. The `areas` row carries it too, stated in the
+  direction that is true: a path writing in an area declares that area's
+  patterns. The item is answered as sealed.
+- Writing *never edited in place* into the two files that describe the
+  definition of done (S05) — ADR-002 decision 2's own sentence reads that
+  way, and it is false here: `72f62d9` amended CP-CAIRN-004's item 6 by
+  editing it and recording a second acceptance block with the new digest,
+  which is the mechanism working. Both files say only that ticks are never
+  added; the amendment sentence each already carried says the rest.
+- Writing this repository's `AGENTS.md` under row 1 rather than row 4
+  (S04) — the register gives `AGENTS.md` to row 4, and item 5 of the
+  definition of done gives the six-skill line to this path. The line is
+  written here, because acceptance binds the item and a bootloader listing
+  five skills beside six is wrong on landing; item 7 forbids the register
+  edit that would settle it, so path 4 finds the item made and owes only
+  the kit's bootloader text in `tools/cairn.mjs`, with ADR-021 decision 1's
+  tone line and ADR-011 decision 3's concept-note line, neither of which
+  this repository's bootloader carries yet.
+- Writing the close skill's sentence for item 3's last clause, *a red
+  run's post-mortem is read before the next unit* (S03) — no record
+  decides it. ADR-014 decision 1 puts the post-mortem in a tool, a
+  workflow step and a package script, all path 3's; decision 2 is the
+  two-suites sentence, written in the unit skill. The item is answered
+  less that clause, and honouring it needs a record, not an edit here.
+- Correcting the kit's default transport, or restoring the reference's
+  `pull-request` sequence, so that `cairn-open`'s direct push matches an
+  adopter's declaration (S01's review; confirmed by the request reviewer
+  on #14 and by S06) — `tools/cairn.mjs` is path 4's surface, and ADR-001
+  decision 1 orders the request sequence dropped and the default kept;
+  the tension is a superseding record's, not this path's. The reviewer
+  put the cost of it plainly: the kit's default is `pull-request` and
+  `package.json` ships `skills/`, so an adopter on the default reads an
+  instruction a protected trunk refuses and an unprotected trunk obeys,
+  bypassing the request and its check. S06 wrote the fork and reverted it
+  when the review named the contradiction. Whichever later path takes it,
+  the record is incoherent rather than merely wrong: it keeps the kit's
+  default at `pull-request` and removes the skill's `pull-request`
+  sequence in the same decision.
 
 ### Reading order
 
@@ -293,7 +382,7 @@ None.
 2. `project/coding-paths/index.md@ae454f890aed4101f8ad8508d2b292ae2f501d73`, row 1.
 3. `docs/architecture/01-cairn-1-1.md@8190acfa186af205a8f1d4b35c3c0e684f11a9f3` — *How a path opens*, *runs* and *closes*.
 4. `project/coding-paths/CP-CAIRN-005/plan.md`, then the records the unit being written implements, at their tables.
-5. `project/coding-paths/CP-CAIRN-004/steps/S01.md` — the shape of a step with the review movement, as this path's steps are written.
+5. `spec/reference/path-template.md` — the step shape this path's own steps now follow; `steps/S01.md` to `steps/S05.md` for what each surface says and for the three answers that diverge from their items.
 
 ### Verify
 

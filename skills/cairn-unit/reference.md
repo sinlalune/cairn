@@ -23,8 +23,10 @@ git fetch origin path/cp-example-001
 git merge-base --is-ancestor HEAD origin/path/cp-example-001
 ```
 
-The final command must exit zero before the step is called complete. On a
-no-rewrite host that is the whole of it: the commit keeps its object id for
+Read each gate's exit code, never its output: a gate that died with *command
+not found* prints nothing a filter would catch, and an empty result reads as a
+pass. The final command must exit zero before the step is called complete. On
+a no-rewrite host that is the whole of it: the commit keeps its object id for
 the life of the path, so the branch keeps every checkpoint reachable.
 
 ## Reach a current base
@@ -54,6 +56,9 @@ Present that exact object id for inspection. A provisional commit is never
 reported as a completed checkpoint, never named as a resume point, and never
 proposed as a candidate. On a no-rewrite host it stays in the history; the
 completed unit's own commit supersedes it.
+
+Nothing of the administrative closure — `ready`, `subject_commit`, the closing
+record on `manual-git` — is ever pushed under that trailer.
 
 ## Report partial outcomes precisely
 

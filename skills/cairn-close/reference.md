@@ -13,12 +13,13 @@ git rev-parse origin/main        # this is T
 git merge origin/main
 ```
 
-Resolve conflicts and commit the merge. Finish any final implementation, then:
+Resolve conflicts and commit the merge. Work that remains is a work unit, run
+with `cairn-unit` before closing starts again.
 
 ```bash
 git log origin/main..HEAD --grep='Cairn-Provisional' --oneline   # must print nothing
-git commit -m "CP-EXAMPLE-001: final implementation candidate"  # if changes remain
-git rev-parse HEAD                                              # this is C
+git status --porcelain=v1                                         # must print nothing
+git rev-parse HEAD                                               # this is C
 git push origin path/cp-example-001
 npm run cairn-check -- --base origin/main
 npm test
@@ -32,9 +33,9 @@ node tools/cairn-check.mjs --scope-digest project/coding-paths/CP-EXAMPLE-001/in
 npm run cairn-check -- --base origin/main   # the advisories to disposition
 ```
 
-**`pull-request`**: the first command prints the request's description. Open
-the request from `path/cp-example-001` to `main`, paste and fill it. The
-approval is the acceptance.
+**`pull-request`**: the first command prints the ledger half of the
+description. Open the request from `path/cp-example-001` to `main`, paste and
+fill it. The approval is the acceptance.
 
 **`manual-git`**: the first command scaffolds
 `project/coding-paths/CP-EXAMPLE-001/closing-<C>.md`. Fill every field, the
@@ -113,6 +114,13 @@ git fetch origin main
 git merge-base --is-ancestor HEAD origin/main
 ```
 
+## Delete the transport's branches
+
+```bash
+git branch -r --list 'origin/*/cp-example-001' --format='%(refname:strip=3)'
+git push origin --delete <each name printed that is not path/cp-example-001>
+```
+
 ## Remove the secondary worktree safely
 
 From another checkout:
@@ -125,7 +133,7 @@ git worktree list --porcelain
 test ! -e /exact/path/to/repo-cp-example-001
 ```
 
-No `--force`; never the primary checkout. The path branch may stay.
+No `--force`; never the primary checkout.
 
 ## Report partial outcomes precisely
 
