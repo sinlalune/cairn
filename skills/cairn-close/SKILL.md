@@ -19,20 +19,34 @@ both are in [reference.md](./reference.md).
 
 Fetch the trunk and **merge it in** — never rebase a published branch. The
 branch now contains the trunk tip, which is what serializes the merge without
-an integrator. Confirm no provisional commit remains in the range, push, and
-run every check bare against exactly this commit. Its full object id is `C`.
+an integrator. `C` is the last unit's commit with the trunk merged in: closing
+adds no implementation commit of its own, and work that remains is a work
+unit. Confirm no
+provisional commit remains in the range, push, and run every check bare
+against exactly this commit. Its full object id is `C`.
 
 ## 2. Write the review
+
+The review is the request's description. No unit and no step file carries it,
+and there is no closure step.
 
 ```bash
 npm run cairn-audit -- --subject <C>
 ```
 
-On `pull-request` this prints the request's description: the candidate, its
-base `T` (the trunk tip you merged in), the scope digest line, the four
-coherence questions, the advisories raised at `C` with a disposition each —
-fixed, accepted, or deferred to a named owner and follow-up — and the roles.
-Open the request from the path branch to the trunk and fill it in.
+The description is read in one order. Three plain lines first — what the path
+did, why it is the least, what it does not do — and a link to the page a
+newcomer reads for the surface it changed. Then one line per item of the
+definition of done, in the record's order, each naming the unit that advanced
+it and the command or page that shows it done; nothing is ticked, and the record's own checkboxes
+stay as they are. Then the ledger the command prints: the candidate, its base
+`T` (the trunk tip you merged in), the scope digest line, the four coherence
+questions, the advisories raised at `C` with a disposition each — fixed,
+accepted, or deferred to a named owner and follow-up — and the roles.
+
+Ask, with the coherence questions, whether the README lists a surface this
+path added. On `pull-request` open the request from the path branch to the
+trunk and fill it in.
 
 On `manual-git` the same command scaffolds `closing-<C>.md` in the path
 folder. Fill it: reviewer, roles, UTC time, the re-computed digest, one entry
@@ -45,11 +59,21 @@ definition of done moved.
 
 ## 3. Obtain acceptance
 
+Whoever reads the diff — the owner, a bot on the request, a fresh context —
+reads it against the decision ladder and for correctness, and for nothing
+else.
+
+The owner tries the result before the merge; for a path whose product is
+documents, trying it means reading the pages. That is a step, not a
+checkbox: ask for it in the chat, signalled as a decision, and add nothing to
+the request for it.
+
 An authorised reviewer's approval of the request — or the closing record's
 acceptance fields — binds three things: the result `C`, the scope digest, and
 the base `T`. On the `full` route the reviewer answers the coherence questions
 explicitly, and a control-plane change needs an approval that is not the
-writer's own.
+writer's own. Where one owner holds every role, that approval is the merge
+click, and no other shape is added for it.
 
 ## 4. The administrative commit
 
@@ -67,18 +91,22 @@ trunk delta since `T` touches nothing in `writes:` ∪ `governs:`. On
 `pull-request` the request's own check runs it. If it fails, return to
 `running`, merge the new tip in, and repeat from step 1.
 
-The request merges with `cairn-check` as its one required check, as a merge
-commit — never a squash, so the commit that lands is the commit that was
-checked. Then the integrating unit, from a clean trunk checkout: `status:
-done`, `resolution: completed`, the live view, and one journal entry under
-`project/log/`. On `manual-git` the integrating unit is the `--no-ff` merge
+The request merges with `cairn-check`, its one required check, read green on
+the exact commit that will land, as a merge commit — never a squash, so the
+commit that lands is the commit that was checked. Then the integrating unit, from a clean trunk checkout:
+`status: done`, `resolution: completed`, the live view, and one journal entry
+under `project/log/`. On `manual-git` the integrating unit is the `--no-ff` merge
 itself, carrying those edits. A path branch never claims `done`.
 
 ## 6. Prove it, then clean up
 
-Fetch the trunk and prove `C` reachable from it. From another checkout, remove
-the exact secondary worktree only if it is Git-clean, never with force, never
-the primary checkout. The path branch stays. If integration is proved and
+Fetch the trunk and prove `C` reachable from it. Delete every branch the
+transport made for this path; `path/<id>` is not one of them and stays on the
+remote until the path is archived.
+
+You remove the worktree, as the last step of closing and before the report:
+from another checkout, the exact secondary worktree, only if it is Git-clean,
+never with force, never the primary checkout. If integration is proved and
 cleanup is not, report the two separately.
 
 ## What you must not do

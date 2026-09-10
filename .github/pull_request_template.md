@@ -1,9 +1,22 @@
 <!-- Cairn closing review. On pull-request transport this description IS the
 coherence review of one exact candidate and the approval IS the closing
-acceptance. `npm run cairn-audit` prints this shape filled in for the current
-candidate. The checker proves the candidate, its closure surface, the opening
+acceptance. `npm run cairn-audit` prints the ledger below, from `## Candidate`
+down, filled in for the current candidate; the two sections above it are yours
+to write. The checker proves the candidate, its closure surface, the opening
 digest and the trunk drift from Git; it reads none of the text below, which is
 what the approver reads. -->
+
+## What this path did
+
+- <what the path did>
+- <why it is the least>
+- <what it does not do>
+
+Surface: <the page a newcomer reads for the surface this path changed, or the README section>
+
+## Definition of done, item by item
+
+- item 1 — advanced by <unit> — shown by <command or page>
 
 ## Candidate
 

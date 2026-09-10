@@ -30,9 +30,9 @@ it, and never commit it in place or widen `writes:` to hold it.
 
 ## 1. Plan
 
-Write, in the new step file `steps/S<NN>.md`, what this unit will change and
-what it deliberately will not, and name the item of the definition of done it
-advances. A unit that advances none is the signal to stop: amend the scope
+Write, in the new step file `steps/S<NN>.md` — every type but `closure` has
+one — what this unit will change and what it deliberately will not, and name
+the item of the definition of done it advances. A unit that advances none is the signal to stop: amend the scope
 with a superseding acceptance, or open another path.
 
 Name the unit's **type** — it fixes what must move together:
@@ -43,7 +43,7 @@ Name the unit's **type** — it fixes what must move together:
 | `documentation` | the documents and their indexes, the step |
 | `decision` | the decision record, every document it amends, the step |
 | `repair` | the corrective change, any superseding record owed, a step naming the violation |
-| `closure` | only the administrative closure surface |
+| `closure` | only the administrative closure surface, and no step file |
 
 `repair` is for a violation of the protocol; a bug in the product is an
 `implementation` unit.
@@ -104,6 +104,9 @@ Run every relevant gate **bare** so the exit code is the verdict:
 npm run cairn-check
 npm test
 ```
+
+`npm test` is this product's own suite. The suite that proves the kit itself
+is the protocol repository's, not an adopter's concern.
 
 Then finish the step record with its `cairn-unit` block — step, ordinal, type,
 what verified it — and refresh the **resume section** of `index.md`: the
