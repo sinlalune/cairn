@@ -73,27 +73,30 @@ test('cairn-rules: emitted table rows have exact 5 columns and no unescaped inne
 })
 
 /* ------------------------------------------------------------------ *
- * The 1.0 inventory. Roughly thirty-nine names became twenty-four: nineteen
- * that block and five that only report. A change to this list is a change
- * to the protocol's enforcement and is made on purpose, in a unit that
- * regenerates the catalogue and rewrites the matrix row.
+ * The inventory as it stands. Cairn 1.0 cut roughly thirty-nine names to
+ * twenty-four; 1.1 adds to that set record by record, and `writes-overlap`
+ * is ADR-003's. A change to these lists is a change to the protocol's
+ * enforcement and is made on purpose, in a unit that regenerates the
+ * catalogue and rewrites the matrix row.
  * ------------------------------------------------------------------ */
 
-const BLOCKING_1_0 = [
+const BLOCKING_RULES = [
   'acceptance', 'acceptance-drift', 'branch-path', 'concept-orphan', 'derived-view',
   'journal-entry', 'links', 'path-history', 'provisional', 'rebase', 'record-integrity',
   'registration', 'registration-base', 'route', 'schema', 'scope-digest', 'scope-drift',
   'transition', 'work-unit'
 ]
-const ADVISORY_ONLY_1_0 = ['concept-growth', 'decision-drift', 'record-date', 'redaction', 'remote-checkpoint']
+const ADVISORY_ONLY_RULES = [
+  'concept-growth', 'decision-drift', 'record-date', 'redaction', 'remote-checkpoint',
+  'writes-overlap'
+]
 
-test('cairn-rules: the checker implements the Cairn 1.0 rule set and nothing else', () => {
+test('cairn-rules: the checker implements the declared rule set and nothing else', () => {
   const rules = extractRules(readFileSync(CHECK, 'utf8'))
   const names = [...new Set(rules.map((r) => r.name))].sort()
   const blocking = [...new Set(rules.filter((r) => r.level === 'blocking').map((r) => r.name))].sort()
-  assert.deepEqual(blocking, BLOCKING_1_0)
-  assert.deepEqual(names.filter((n) => !blocking.includes(n)), ADVISORY_ONLY_1_0)
-  assert.equal(names.length, 24)
+  assert.deepEqual(blocking, BLOCKING_RULES)
+  assert.deepEqual(names.filter((n) => !blocking.includes(n)), ADVISORY_ONLY_RULES)
   // The names the cut retired must stay retired, whatever a comment says.
   for (const gone of [
     'checkpoint-retention', 'migration-debt', 'ledger-size', 'brief-schema', 'base-parity',
@@ -102,11 +105,11 @@ test('cairn-rules: the checker implements the Cairn 1.0 rule set and nothing els
   ]) assert.ok(!names.includes(gone), `${gone} was retired or folded and must not be re-emitted`)
 })
 
-test('cairn-rules: every 1.0 rule has metadata, and no metadata names a rule that is gone', () => {
-  const names = new Set([...BLOCKING_1_0, ...ADVISORY_ONLY_1_0])
+test('cairn-rules: every rule has metadata, and no metadata names a rule that is gone', () => {
+  const names = new Set([...BLOCKING_RULES, ...ADVISORY_ONLY_RULES])
   for (const name of names) assert.ok(RULE_METADATA[name], `${name} has no catalogue metadata`)
   for (const name of Object.keys(RULE_METADATA)) assert.ok(names.has(name), `${name} has metadata but no rule`)
-  assert.deepEqual(Object.keys(RULES_OUTSIDE_CONFORMANCE), [], 'every 1.0 rule stands behind a stated requirement')
+  assert.deepEqual(Object.keys(RULES_OUTSIDE_CONFORMANCE), [], 'every rule stands behind a stated requirement')
   for (const name of names) assert.ok(RULE_CONFORMANCE[name], `${name} stands behind no conformance row`)
 })
 

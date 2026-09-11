@@ -620,6 +620,11 @@ export function transitionErrors(previous, current, onPathBranch = false) {
   return errors
 }
 
+/** `depends_on:` as a list, whatever the record carries. */
+function dependsOn(front) {
+  return Array.isArray(front?.depends_on) ? front.depends_on : []
+}
+
 /** A dependency names a path this repository knows. `depends_on:` is the one
  *  edge Cairn keeps between paths, and an edge to nothing is a claim the live
  *  view cannot project: the path would wait forever on a name. */
@@ -627,7 +632,7 @@ export function dependencyFindings(paths) {
   const known = new Set(paths.map((path) => String(path.front?.id ?? '')).filter(Boolean))
   const findings = []
   for (const path of paths) {
-    for (const id of Array.isArray(path.front?.depends_on) ? path.front.depends_on : []) {
+    for (const id of dependsOn(path.front)) {
       if (!known.has(String(id))) {
         findings.push(`${path.file}: depends_on names ${id}, which no path record declares`)
       }
@@ -640,7 +645,7 @@ export function dependencyFindings(paths) {
  *  archived as completed. A dependency in any other state — or one the corpus
  *  does not know — is still waited on. Pure, shared with the live view. */
 export function unmetDependencies(front, statuses) {
-  const deps = Array.isArray(front?.depends_on) ? front.depends_on : []
+  const deps = dependsOn(front)
   return deps.filter((id) => {
     const dep = statuses.get(String(id))
     if (!dep) return true
@@ -1090,6 +1095,79 @@ export function globToRegExp(pattern) {
 
 export function matchesAny(file, patterns) {
   return patterns.some((pattern) => globToRegExp(pattern).test(file))
+}
+
+/** Two declared surfaces MEET when some file matches both patterns.
+ *
+ *  Filling each pattern's wildcards to make one concrete file and offering it
+ *  to the other is the obvious shortcut and it is wrong in both directions:
+ *  `spec/**\/*.md` and `spec/reference/**` both name
+ *  `spec/reference/conformance.md`, and `docs/*.md` and `docs/adr-*` both name
+ *  `docs/adr-1.md`, yet no single filling of either satisfies the other. One
+ *  filling can only line up a prefix with a prefix.
+ *
+ *  It is the same problem at two scales — `**` over segments, `*` over
+ *  characters — so it is one function: walk both sides together, and where a
+ *  wildcard stands, try consuming nothing and try consuming one token.
+ *
+ *  `**` is read here as zero or more whole SEGMENTS, which is what a `writes:`
+ *  means by it. `globToRegExp`, which decides whether a FILE is in a surface,
+ *  compiles `**` to `.*` and lets it span part of a segment, so the two
+ *  readings disagree at the edges in both directions: `a/**\/x.md` takes in
+ *  `a/a/ax.md` there and not here, and `a/**` meets `a` here and not there.
+ *  On patterns without `**` they agree exactly, which the suite sweeps.
+ */
+export function patternsMeet(a, b) {
+  return tokensMeet(String(a).split('/'), String(b).split('/'), '**', segmentsMeet)
+}
+
+const segmentsMeet = (a, b) => tokensMeet([...a], [...b], '*', (x, y) => x === y)
+
+/** Memoised on the pair of positions: a wildcard branches two ways at every
+ *  one of them, and without this a pattern of a dozen `**` takes seconds. */
+function tokensMeet(a, b, wild, leafMeets) {
+  const seen = new Map()
+  const meet = (i, j) => {
+    const key = i * (b.length + 1) + j
+    if (seen.has(key)) return seen.get(key)
+    let answer
+    if (i === a.length) answer = b.slice(j).every((token) => token === wild)
+    else if (j === b.length) answer = a.slice(i).every((token) => token === wild)
+    else if (a[i] === wild) answer = meet(i + 1, j) || meet(i, j + 1)
+    else if (b[j] === wild) answer = meet(i, j + 1) || meet(i + 1, j)
+    else answer = leafMeets(a[i], b[j]) && meet(i + 1, j + 1)
+    seen.set(key, answer)
+    return answer
+  }
+  return meet(0, 0)
+}
+
+/** ADR-003: pairs of live paths whose declared surfaces meet, each with the
+ *  patterns that meet — silent when either declares `depends_on` the other,
+ *  because the live view then shows one waiting on the other rather than
+ *  racing it. On the adopter this was declared in prose under a coherence
+ *  question, where no rule reads. */
+export function writesOverlaps(paths) {
+  // The statuses that may own a path branch ARE the live ones: `draft` has not
+  // started and `done`/`archived` have finished, so neither holds a surface.
+  const liveOnes = paths.filter((path) => PATH_BRANCH_STATUSES.includes(path.front?.status))
+  const declares = (path, id) => dependsOn(path.front).map(String).includes(id)
+  const found = []
+  for (let i = 0; i < liveOnes.length; i += 1) {
+    for (let j = i + 1; j < liveOnes.length; j += 1) {
+      const [a, b] = [liveOnes[i], liveOnes[j]]
+      const [idA, idB] = [String(a.front?.id ?? ''), String(b.front?.id ?? '')]
+      if (declares(a, idB) || declares(b, idA)) continue
+      const patterns = new Set()
+      for (const one of a.writes ?? []) {
+        for (const other of b.writes ?? []) {
+          if (patternsMeet(one, other)) patterns.add(one === other ? one : `${one} ∩ ${other}`)
+        }
+      }
+      if (patterns.size) found.push({ paths: [idA, idB], patterns: [...patterns] })
+    }
+  }
+  return found
 }
 
 /** The paths in `git status --porcelain -z` output.
@@ -1984,30 +2062,60 @@ export function evaluate({
   // definition of done moved after it was accepted, on either transport. On
   // `manual-git` the closing record re-states the digest it re-computed at C,
   // and must agree with the opening.
-  if (onPath && match && CLOSED_STATUSES.includes(match.front.status)) {
-    const id = String(match.front.id ?? '')
-    const record = pullRequest ? null : closureFor?.(id)
+  //
+  // ADR-002 decision 1 widened the guard. It used to read a CLOSED status on
+  // the path's OWN branch, so a tick inside an integrating commit on the trunk
+  // was never judged — which is how two Crumbz paths reached `done` ticked,
+  // under green runs — and a tick between two units survived until closure.
+  // The seal is now judged wherever the record changes, whatever its status,
+  // and still at closure on the branch as before.
+  const sealed = paths.filter((path) =>
+    stateChanged.includes(path.file) ||
+    (onPath && path === match && CLOSED_STATUSES.includes(path.front?.status)))
+  for (const path of sealed) {
+    const closing = onPath && path === match && CLOSED_STATUSES.includes(path.front?.status)
+    const id = String(path.front?.id ?? '')
+    const record = closing && !pullRequest ? closureFor?.(id) : null
     const exempt = migrationExempt.has(id)
     const opening = openingRecordFor?.(id)
     const expected = scopeDigestFor?.(opening?.scope_ref)
 
     if (!opening?.scope_digest) {
-      add(exempt ? 'advisory' : 'blocking', 'scope-digest',
-        `the opening acceptance for ${id} carries no scope_digest${exempt ? ' (grandfathered: this path predates the rule)' : ' — a scope accepted without a digest is bound to nothing'}`)
+      // A record carrying no acceptance yet — a draft, or a registration
+      // landing in this same change — is bound to nothing YET. That is only a
+      // fault once the path is closing, which is where the rule always asked.
+      if (closing) {
+        add(exempt ? 'advisory' : 'blocking', 'scope-digest',
+          `the opening acceptance for ${id} carries no scope_digest${exempt ? ' (grandfathered: this path predates the rule)' : ' — a scope accepted without a digest is bound to nothing'}`)
+      }
     } else if (expected === undefined) {
       add('blocking', 'scope-digest',
         `cannot resolve ${opening.scope_ref ?? 'the scope_ref'} for ${id} — a scope that cannot be read cannot be shown unchanged`,
         'inconclusive')
     } else if (expected === null) {
       add('blocking', 'scope-digest',
-        `${opening.scope_ref} names no section in ${match.file} — acceptance must point at text that exists`)
+        `${opening.scope_ref} names no section for ${id} — acceptance must point at text that exists`)
     } else if (opening.scope_digest !== expected) {
       add('blocking', 'scope-digest',
-        `the definition of done moved after acceptance: the opening acceptance says ${opening.scope_digest}, ${match.file} now digests to ${expected} — restore the accepted text or record a scope amendment`)
+        `the definition of done moved after acceptance: the opening acceptance says ${opening.scope_digest}, ${path.file} now digests to ${expected} — restore the accepted text or record a scope amendment`)
     } else if (record && record.scope_digest !== opening.scope_digest) {
       add(exempt ? 'advisory' : 'blocking', 'scope-digest',
         `the closing record for ${id} says ${record.scope_digest ?? 'nothing'} where the opening acceptance says ${opening.scope_digest} — closure re-computes the digest at the candidate and must find the accepted text${exempt ? ' (grandfathered: this path predates the rule)' : ''}`)
     }
+  }
+
+  // 9a. two live paths on the same files --------------------------------
+  // Advisory, because whether two paths may race on a file is the owner's
+  // call and the record is where the call is written. Reported for the pairs
+  // THIS run belongs to — the registration of the later path, and every unit
+  // of either — rather than for every pair in the corpus on every run.
+  const currentId = match?.front?.id == null ? null : String(match.front.id)
+  const involved = (id) => id === currentId ||
+    paths.some((path) => String(path.front?.id ?? '') === id && stateChanged.includes(path.file))
+  for (const overlap of writesOverlaps(paths)) {
+    if (!overlap.paths.some(involved)) continue
+    add('advisory', 'writes-overlap',
+      `${overlap.paths.join(' and ')} are both live and declare surfaces that meet: ${overlap.patterns.join(', ')} — declare depends_on from the path that should wait, and this goes quiet; or accept the race in one sentence of that path's opening acceptance, and dispose of this advisory in the closing review, because nothing reads that sentence and it stays visible until one of the two closes`)
   }
 
   // 9b. closure moves fields, not files (`closure-surface` in 0.2) --------
@@ -2289,8 +2397,12 @@ function pathRegistrationBaseState(trunkRef, branch, paths) {
  *  closing record to exist, and `remote-checkpoint` at A is about the closure
  *  commit's own push state — the documented order commits A, runs the gate,
  *  then pushes, so it fires at every honest closure (greenfield pilot,
- *  2026-09-01). Both stay visible; neither is disposed. */
-export const CLOSURE_RAISED_ADVISORIES = new Set(['acceptance', 'remote-checkpoint'])
+ *  2026-09-01). `writes-overlap` is here for a third reason: its value turns
+ *  on OTHER path records' current status, so it can appear between the
+ *  candidate and the closure without one line of this path's tree changing,
+ *  and the subset check would then report an attestation as incomplete when
+ *  nothing about the work moved. All three stay visible; none is disposed. */
+export const CLOSURE_RAISED_ADVISORIES = new Set(['acceptance', 'remote-checkpoint', 'writes-overlap'])
 
 /** The records the lifecycle itself requires a path to write outside its
  *  folder — its journal entry. They are outputs of the protocol, not of the work, so a

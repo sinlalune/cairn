@@ -82,6 +82,7 @@ export const RULE_CONFORMANCE = {
   'registration-base': 'Registration on the remote trunk before implementation',
   'schema': 'The path record, its declaration and its opening acceptance',
   'scope-drift': 'Two declared surfaces, widened in the same unit',
+  'writes-overlap': 'One path: one record, one branch, one worktree, one writer',
   'route': 'The route, its triggers and one-way escalation',
   'work-unit': 'A typed work unit, coherent in one commit',
   'remote-checkpoint': 'Every completed unit pushed as a remote checkpoint',
@@ -145,8 +146,12 @@ export const RULE_METADATA = {
     enforcing: 'redactionMarkers(stripCode(text)) => redaction record exists'
   },
   'scope-digest': {
-    condition: 'The definition of done no longer digests to what the opening acceptance accepted, the opening carries no digest, or on manual-git the closing record disagrees with the opening',
-    enforcing: 'scopeDigest(resolveScopeSection(pathRecord, opening.scope_ref)) === opening.scope_digest (=== closing.scope_digest on manual-git)'
+    condition: 'The definition of done no longer digests to what the opening acceptance accepted — judged for every path record this run sees changed, whatever its status (ADR-002 d1) — or, on a closing path, the opening carries no digest, or on manual-git the closing record disagrees with the opening',
+    enforcing: 'scopeDigest(resolveScopeSection(pathRecord, opening.scope_ref)) === opening.scope_digest, for every path record in the comparison and the branch\'s own closed path (=== closing.scope_digest on manual-git)'
+  },
+  'writes-overlap': {
+    condition: 'Two live paths declare writes: patterns that meet, and neither declares depends_on the other; reported on the runs those paths own — the later one\'s registration, and every unit of either',
+    enforcing: 'writesOverlaps(paths) over running | blocked | ready, patternsMeet(a, b) by probe'
   },
   'acceptance-drift': {
     condition: 'The trunk moved inside the path\'s declared writes: or governs: since the base the candidate was read against — the merge-base of the branch and the trunk',

@@ -158,9 +158,9 @@ Exercise one rule.
 ${opening ? OPENING_SECTION(opening) : ''}`
 }
 
-function scopeDigest(dir) {
+function scopeDigest(dir, record = RECORD) {
   return execFileSync(process.execPath,
-    [CHECK, '--scope-digest', `${RECORD}#definition-of-done`],
+    [CHECK, '--scope-digest', `${record}#definition-of-done`],
     { cwd: dir, encoding: 'utf8', stdio: 'pipe' }).trim()
 }
 
@@ -355,6 +355,126 @@ pathFixture('a trunk commit taking a path from running to done with no ready com
   writeAcceptedRecord(dir, { status: 'done', subject_commit: candidate, resolution: 'completed' })
   regenerateView(dir)
 }, { checkout: false })
+
+/* ADR-002 decision 1. The seal used to be judged only for a closed path on
+ * its OWN branch, so a box ticked inside the integrating commit on the trunk
+ * was never read: two adopter paths reached `done` ticked, under green runs.
+ * The fixture is that commit — `done` declared and a box ticked in one change
+ * on the trunk. Its history carries a second path's merged unit because
+ * ADR-004 decision 4 requires that of every blocking fixture: a rule proved
+ * only against a single-path history is not proved against the repository it
+ * runs in. It changes nothing about THIS rule's verdict, and that is the
+ * point of the requirement rather than an argument against it. */
+pathFixture('a box ticked in the integrating commit on the trunk', 'scope-digest', (dir) => {
+  git(dir, 'checkout', '-q', '-b', 'path/cp-fixture-002')
+  write(dir, 'docs/other-path-seal.md',
+    '---\ntype: Note\ntitle: A unit of another path\ndescription: x\ntags: [x]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Another path\n')
+  commit(dir, 'CP-FIXTURE-002 S01: a second path completes a unit')
+  git(dir, 'checkout', '-q', 'main')
+  git(dir, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture',
+    'merge', '-q', '--no-ff', '-m', 'Merge CP-FIXTURE-002 into the trunk', 'path/cp-fixture-002')
+
+  // The record reaches `done` and the box is ticked in the same change, which
+  // is exactly what the two adopter paths did.
+  const candidate = git(dir, 'rev-parse', 'HEAD').trim()
+  writeAcceptedRecord(dir, { status: 'done', subject_commit: candidate, resolution: 'completed' })
+  const ticked = readFileSync(join(dir, RECORD), 'utf8').replace('- [ ] The rule fires.', '- [x] The rule fires.')
+  assert.ok(ticked.includes('- [x]'), 'the harness must tick the box for this fixture to mean anything')
+  write(dir, RECORD, ticked)
+  regenerateView(dir)
+}, { checkout: false })
+
+/* ADR-003, the two fixtures the record asks for: the overlap raised, and the
+ * overlap silenced by `depends_on`. Advisory, so the assertion is that it is
+ * REPORTED and does not block — a rule that blocked here would make the owner
+ * edit a declaration to say what one sentence can say. */
+const SECOND_RECORD = 'project/coding-paths/CP-FIXTURE-002/index.md'
+
+const SECOND_PATH = (base, dependsOn, opening = null) => `---
+type: Cairn Coding Path
+title: The second path
+description: A second live path declaring a surface that meets the first's.
+tags: [coding-path]
+timestamp: ${TODAY}T00:00:00Z
+cairn:
+  id: CP-FIXTURE-002
+  route: lightweight
+  status: running
+  current_step: S01
+  base_commit: ${base}
+  branch: path/cp-fixture-002
+  depends_on: [${dependsOn}]
+  writes:
+    - src/**
+---
+
+# CP-FIXTURE-002 — the second path
+
+## Goal
+
+Declare a surface that meets CP-FIXTURE-001's.
+
+## Definition of done
+
+- [ ] The overlap is reported.
+${opening ? `
+## Opening acceptance
+
+\`\`\`yaml
+decision: accepted
+accepted_by: fixture-opener
+accepted_roles: [initiator, reviewer]
+accepted_at: ${TODAY}T09:00:00Z
+scope_ref: ${SECOND_RECORD}#definition-of-done
+scope_digest: ${opening}
+\`\`\`
+` : ''}`
+
+/** Two registered, accepted, LIVE paths declaring the same surface. Both are
+ *  fully formed: a second record without its own opening acceptance makes the
+ *  repository blocking-red under `schema`, and a fixture that blocks for an
+ *  unrelated reason proves nothing about the rule it names. */
+function overlapRepository(dependsOn) {
+  const dir = pathRepository({ checkout: false, record: { writes: '\n    - src/**' } })
+  const base = git(dir, 'rev-parse', 'HEAD').trim()
+  write(dir, SECOND_RECORD, SECOND_PATH(base, dependsOn))
+  write(dir, SECOND_RECORD, SECOND_PATH(base, dependsOn, scopeDigest(dir, SECOND_RECORD)))
+  regenerateView(dir)
+  return dir
+}
+
+test('adversarial (advisory): writes-overlap — two live paths declaring the same surface', () => {
+  const dir = overlapRepository('')
+  try {
+    const found = check(dir)
+    assert.deepEqual(blocking(found), [],
+      `the two-path baseline must be green, or this fixture proves nothing about writes-overlap: ${describe(found)}`)
+    assert.ok(advisory(found).includes('writes-overlap'),
+      `writes-overlap was not reported — advisories were: ${advisory(found).join(', ') || 'none'}`)
+  } finally {
+    cleanup(dir)
+  }
+})
+
+test('adversarial (advisory): writes-overlap — silent when the waiting path declares depends_on', () => {
+  const dir = overlapRepository('CP-FIXTURE-001')
+  try {
+    const found = check(dir)
+    assert.deepEqual(blocking(found), [], `the baseline must be green: ${describe(found)}`)
+    assert.ok(!advisory(found).includes('writes-overlap'),
+      `the second path waits on the first, so nothing races — advisories were: ${advisory(found).join(', ')}`)
+    // The control: the SAME repository with the declaration dropped does raise
+    // it. Without this the test passes over a rule that reports nothing at all,
+    // and dropping `depends_on` while the other path is live is the shape the
+    // adopter's CP-016 took.
+    const base = git(dir, 'rev-parse', 'HEAD').trim()
+    write(dir, SECOND_RECORD, SECOND_PATH(base, '', scopeDigest(dir, SECOND_RECORD)))
+    assert.ok(advisory(check(dir)).includes('writes-overlap'),
+      'dropping depends_on while the other path is live is the overlap reappearing')
+  } finally {
+    cleanup(dir)
+  }
+})
 
 pathFixture('a file written outside the declared surface, with the declaration unchanged', 'scope-drift', (dir) => {
   write(dir, 'lib/outside.js', 'export const outside = true\n')

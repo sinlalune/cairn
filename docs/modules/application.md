@@ -36,7 +36,7 @@ index stays under its word budget.
 
 ## The rules
 
-The checker implements twenty-four rules — nineteen blocking, five advisory —
+The checker implements twenty-five rules — nineteen blocking, six advisory —
 inventoried on the [conformance page](../../spec/reference/conformance.md),
 which also records where every 0.2 name went. One invocation form remains:
 `cairn-check [--base <ref>] [--branch <name>] [--json]`, and on a path branch

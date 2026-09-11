@@ -98,6 +98,25 @@ return readdirSync(SESSION_DIR).some((file) => file.includes(id))
 The comment states the sentence. The code asks a filename question. Every path
 satisfied it from the moment it opened.
 
+One rule reverses this on purpose. `writes-overlap` asks two paths what they
+*declared* they would write, because the fact — which files each will actually
+touch — does not exist yet at the registration where the answer is useful. A
+predicate about the future has only declarations to read, and this one is
+broader than the fact in one direction and narrower in the other: two surfaces
+can meet on a pattern and never meet on a file, and a path can write outside
+its declaration, where `scope-drift` catches it. That is the whole reason the
+rule reports rather than blocks, and why its finding names the patterns that
+meet rather than files it cannot know.
+
+Its own first draft showed the second failure in miniature. Deciding whether
+two patterns can name a common file looks like a job for the matcher already
+in the file: fill each pattern's wildcards, and offer the result to the other.
+That answers NO for `spec/**/*.md` and `spec/reference/**`, which both name
+`spec/reference/conformance.md`, because no single filling of either satisfies
+the other — a rule that agreed too easily, in the one shape the note says to
+expect. It is decided segment by segment now, with `**` tried at every length
+it can take.
+
 **4. A stated requirement with no predicate is listed as unenforced.** The
 conformance page is where that is said. An unenforced requirement and an
 unsound gate are indistinguishable from inside a green run — both are a passing

@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-006
   route: full
   status: running
-  current_step: S02
+  current_step: S03
   base_commit: 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
   branch: path/cp-cairn-006
   assigned_writer: cp-cairn-006-writer
@@ -270,15 +270,22 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
   `trunkIntegration` escape gone, so a trunk commit taking a path from
   `running` to `done` is refused and the refusal names its remedy, proved on
   the shape path 1's own closing took — **complete**
-- **S03** — not started
+- [**S03**](./steps/S03.md) — the seal everywhere, and two paths on the same
+  files: `scope-digest` judged for every path record the run's comparison sees
+  changed, whatever its status, with a box ticked in an integrating commit as
+  its fixture; the advisory `writes-overlap`, naming both live paths and the
+  patterns that meet, silent under `depends_on`, with the overlap raised and
+  the overlap silenced as its two fixtures; the catalogue, the matrix and the
+  soundness note carrying it — **complete**
+- **S04** — not started
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 2a83c159c39797c894a12b152685d17b30a36368 — S01, the two debts and two records; S02's own commit is named here by S03
-unit   : 1 — S01
+commit : 9ebed6dec3964c387c64109dec87495ae0cac4a5 — S02, the profile line and the transition; S03's own commit is named here by S04
+unit   : 2 — S02
 base   : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
 trunk  : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8 — origin/main at registration
 ```
@@ -286,15 +293,17 @@ trunk  : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8 — origin/main at registratio
 ### Next action
 
 From the worktree `../cairn-cp-cairn-006` on branch `path/cp-cairn-006`:
-run S03 of the plan with `cairn-unit` — the seal everywhere, and two
-paths on the same files. ADR-002 decision 1: the scope digest of the
-definition of done judged at every transition and on every ref — a unit
-on the branch, the candidate, `ready`, the integrating commit — against
-the acceptance block in force, whatever the status; a fixture ticks a box
-at `done` and is refused. ADR-003: the advisory `writes-overlap`, naming
-both paths and the patterns that meet, raised at registration and at
-every unit, silent when the later path declares `depends_on` the earlier;
-the catalogue and the soundness note carry it. Type `implementation`; the
+run S04 of the plan with `cairn-unit` — what the checker reads. ADR-004
+decisions 1, 2, 3 and 5: the registration commit is the trunk commit in
+which `status` became `running` and `base_commit` its parent, a draft
+landed earlier notwithstanding; a running path whose record carries a
+`cairn-unit` block names a checkpoint that exists on the remote; every
+range rule reads only this path's records; the branch is resolved as the
+local ref, else `HEAD` on the request head, else the remote-tracking ref,
+and the detached-checkout advisory says which was used. Decision 6: the
+three repairs the adopter made in its own checker — same-branch step
+supersession, chronological path-scoped provisional resolution,
+detached-checkout evidence — come upstream. Type `implementation`; the
 failing test comes first. Run the review movement on the unit's diff as
 the unit skill says.
 
@@ -304,6 +313,23 @@ None.
 
 ### Tried and rejected
 
+- Re-reading a committed tick on the trunk in a later run (S03) — off a path
+  branch the comparison is the working tree unless `--base` is given, so
+  `scope-digest` catches a tick in the integrating commit as that commit is
+  made and a trunk CI run given no base does not re-read it. Widening that
+  comparison changes what every changed-file rule sees on the trunk, which is
+  ADR-004 decision 3's territory in S04, not this unit's. The matrix row says
+  what the rule reads.
+- Writing ADR-003's sentence into `cairn-open` step 1, where the record names
+  it (S03) — `skills/**` is row 1's surface, path 1 is done, and item 10 of
+  the definition of done requires `skills/` unchanged here. The skill's owner
+  review already lists *the surfaces and overlap*; what it does not say is the
+  two answers — declare `depends_on`, or accept the race in one sentence.
+  No open path owns that sentence; the closing review should say so.
+- Correcting `README.md`, which still says the checker runs twenty-four rules
+  and nineteen of them block (S03's second review) — the README is outside
+  this path's `writes:` and item 10 requires it unchanged; row 5 of the
+  register owns it, beside the line path 1's journal already left there.
 - Mapping `GITHUB_TOKEN` into the checker's step of
   `.github/workflows/cairn.yml` (S02) — without it the profile line reads
   *forge not read* on every CI run, which is the `ci` profile ADR-001

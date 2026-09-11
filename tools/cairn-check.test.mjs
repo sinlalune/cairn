@@ -74,6 +74,8 @@ import {
   readForge,
   githubRequest,
   profileLine,
+  patternsMeet,
+  writesOverlaps,
   isVerbatimRelocation,
   preservesAppendOnlyRecord,
   recordOriginFromFollowLog,
@@ -195,6 +197,11 @@ const run = (changed, branch, paths = [A_PATH], extra = {}) =>
       forbiddenFiles: []
     }),
     openingRecordFor: () => OPENING,
+    // A healthy repository: the definition of done digests to what its
+    // acceptance accepted. Since ADR-002 decision 1 the seal is judged
+    // wherever the record changes, so every run over a changed record reads
+    // this, not only a closing one.
+    scopeDigestFor: () => OPENING.scope_digest,
     previousPaths: new Map(paths.map((path) => [path.file, path.front])),
     immutableMutations: [],
     ...extra
@@ -653,6 +660,28 @@ test('one actor on both acceptances is recorded as an acceptance advisory, not f
   assert.ok(CLOSURE_RAISED_ADVISORIES.has('acceptance'))
 })
 
+test('a closing path is not asked to have attested an overlap another record caused', () => {
+  // `writes-overlap` turns on OTHER path records' current status, so it can
+  // appear between the candidate and the closure without one line of this
+  // path's tree changing. Folded into the attested set, the subset check
+  // reported the attestation incomplete — a blocking finding whose stated
+  // reason was false — so the advisory is one the closure may raise.
+  const ready = readyPath()
+  const racer = live('CP-RACE', [SRC])   // the same file A_PATH declares
+  const found = run([ready.file], 'path/cp-ex-010', [ready, racer], {
+    ...MANUAL,
+    previousPaths: new Map([[ready.file, A_PATH.front]]),
+    closureFor: () => digested(),
+    scopeDigestFor: () => 'sha256:abc',
+    migrationExempt: new Set()
+  })
+  assert.ok(messages(found, 'writes-overlap', 'advisory').length > 0,
+    'the fixture must actually raise the overlap, or this proves nothing')
+  assert.deepEqual(
+    messages(found, 'acceptance', 'blocking').filter((m) => /writes-overlap/.test(m)), [],
+    'the closure must not be refused for an advisory another record caused')
+})
+
 test('two different actors raise no collapse finding', () => {
   const ready = readyPath()
   const found = run([ready.file], 'path/cp-ex-010', [ready], {
@@ -1106,6 +1135,196 @@ test('a decision record needs a frontmatter block, a known status and an ISO dat
   assert.equal(bad.length, 2)
   assert.match(bad[0], /outside the vocabulary/)
   assert.match(bad[1], /ISO date/)
+})
+
+/* ------------------------------------------------------------------ *
+ * scope-digest — the seal at every transition, ADR-002 decision 1
+ * ------------------------------------------------------------------ */
+
+test('the seal is judged on the trunk, where the integrating commit ticks the box', () => {
+  // Two Crumbz paths were ticked inside their integrating commits and both
+  // runs were green: the guard read a CLOSED status on the path's OWN branch,
+  // and the trunk is neither.
+  const done = {
+    ...A_PATH,
+    front: { ...A_PATH.front, status: 'done', subject_commit: CANDIDATE, resolution: 'completed' }
+  }
+  const moved = run([done.file], 'main', [done], {
+    stateChanged: [done.file],
+    scopeDigestFor: () => 'sha256:moved',
+    journalEntries: [{ path: done.front.id }]
+  })
+  assert.ok(messages(moved, 'scope-digest', 'blocking').some((m) => /definition of done moved after acceptance/.test(m)),
+    `the trunk must judge the seal — findings were ${JSON.stringify(messages(moved, 'scope-digest', 'blocking'))}`)
+})
+
+test('the seal is judged at a unit, long before the path is closing', () => {
+  const moved = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], {
+    stateChanged: [A_PATH.file],
+    scopeDigestFor: () => 'sha256:moved'
+  })
+  assert.ok(messages(moved, 'scope-digest', 'blocking').some((m) => /definition of done moved after acceptance/.test(m)),
+    `a running path's own unit must judge the seal — findings were ${JSON.stringify(messages(moved, 'scope-digest', 'blocking'))}`)
+})
+
+test('a running path is not held to a closing record, whatever is lying in its folder', () => {
+  // The closing-record comparison belongs to closure. Judging a running path
+  // against a stale `closing-*.md` would refuse a unit for a file the unit
+  // has nothing to do with.
+  const found = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], {
+    ...MANUAL,
+    stateChanged: [A_PATH.file],
+    closureFor: (id) => ({ ...acceptedRecord(id), scope_digest: 'sha256:stale' })
+  })
+  assert.deepEqual(messages(found, 'scope-digest', 'blocking'), [])
+})
+
+test('a closing path is judged even when its record is not in this change', () => {
+  // The fallback that keeps today's reading: with no trunk to compare against,
+  // the changed set is the working tree, and a committed record is not in it.
+  const ready = { ...A_PATH, front: { ...A_PATH.front, status: 'ready', subject_commit: CANDIDATE } }
+  const found = run([], 'path/cp-ex-010', [ready], {
+    stateChanged: [],
+    scopeDigestFor: () => 'sha256:moved'
+  })
+  assert.ok(messages(found, 'scope-digest', 'blocking').some((m) => /definition of done moved after acceptance/.test(m)),
+    `findings were ${JSON.stringify(messages(found, 'scope-digest', 'blocking'))}`)
+})
+
+test('a record with no acceptance yet is bound to nothing yet, not in breach', () => {
+  // A draft, or a registration landing in this same change, has no opening
+  // block to digest against. Only a closing path owes one.
+  const draft = { ...A_PATH, front: { ...A_PATH.front, status: 'draft' } }
+  const found = run([draft.file], 'main', [draft], {
+    stateChanged: [draft.file],
+    openingRecordFor: () => null
+  })
+  assert.deepEqual(messages(found, 'scope-digest', 'blocking'), [])
+})
+
+/* ------------------------------------------------------------------ *
+ * writes-overlap — two live paths on the same files, ADR-003
+ * ------------------------------------------------------------------ */
+
+test('two declared patterns meet when some file matches both', () => {
+  const meet = (a, b) => {
+    assert.equal(patternsMeet(a, b), patternsMeet(b, a), `${a} / ${b}: the answer must not depend on the order`)
+    return patternsMeet(a, b)
+  }
+  assert.ok(meet('tools/**', 'tools/cairn-check.mjs'))
+  assert.ok(meet('docs/**', 'docs/adr/**'))
+  assert.ok(meet('spec/**/*.md', 'spec/reference/conformance.md'))
+  assert.ok(meet('tools/*.mjs', 'tools/**'))
+  assert.ok(meet('docs/index.md', 'docs/index.md'))
+  // `**` spans any number of segments, zero included. Filling each pattern's
+  // wildcards once and offering the result to the other answers NO for every
+  // pair below, though each names a file both patterns match — which is why
+  // the decision is made segment by segment.
+  assert.ok(meet('spec/**/*.md', 'spec/reference/**'), 'spec/reference/conformance.md is in both')
+  assert.ok(meet('docs/**/*.md', 'docs/adr/**'), 'docs/adr/ADR-001.md is in both')
+  assert.ok(meet('src/**', '**/*.mjs'), 'src/a.mjs is in both')
+  assert.ok(meet('project/**/index.md', 'project/coding-paths/**'), 'project/coding-paths/index.md is in both')
+  // `**` is zero or more whole segments here, which is what a `writes:` means
+  // by it and is not quite what `globToRegExp` does with it — see below.
+  assert.ok(meet('a/**', 'a'), '`**` matching zero segments is still a match')
+  // Two literals of different depth name no common file.
+  assert.ok(!meet('a/b', 'a/b/c'))
+  // One filling per segment lines a prefix up with a prefix and nothing else:
+  // both of these name `docs/adr-1.md`.
+  assert.ok(meet('docs/*.md', 'docs/adr-*'))
+
+  assert.ok(!meet('tools/**', 'docs/**'))
+  assert.ok(!meet('tools/*.mjs', 'tools/*.md'))
+  assert.ok(!meet('docs/adr/**', 'docs/modules/**'))
+  assert.ok(!meet('spec/index.md', 'spec/reference/conformance.md'))
+  assert.ok(!meet('spec/**/*.md', 'tools/**'))
+})
+
+/** The guarantee worth sweeping rather than sampling: on patterns without
+ *  `**`, deciding that two surfaces meet agrees exactly with deciding that
+ *  some file is in both, by the same matcher `scope-drift` uses. `**` is the
+ *  one place the two readings part, and the comment on `patternsMeet` says
+ *  where. */
+test('without `**`, two surfaces meet exactly when some file is in both', () => {
+  const alphabet = ['a', 'b', 'ax.md', 'x.md', 'y.mjs']
+  const files = []
+  for (const one of alphabet) {
+    files.push(one)
+    for (const two of alphabet) {
+      files.push(`${one}/${two}`)
+      for (const three of alphabet) files.push(`${one}/${two}/${three}`)
+    }
+  }
+  const segments = ['a', 'b', '*', 'x.md', '*.md', 'a*', '*.mjs']
+  const patterns = []
+  for (const one of segments) {
+    patterns.push(one)
+    for (const two of segments) {
+      patterns.push(`${one}/${two}`)
+      for (const three of segments) patterns.push(`${one}/${two}/${three}`)
+    }
+  }
+  const disagreements = []
+  for (const one of patterns) {
+    for (const two of patterns) {
+      const shared = files.some((file) => globToRegExp(one).test(file) && globToRegExp(two).test(file))
+      if (shared && !patternsMeet(one, two)) disagreements.push(`${one} ∩ ${two}: a file is in both and they do not meet`)
+    }
+  }
+  assert.deepEqual(disagreements.slice(0, 5), [])
+})
+
+const live = (id, writes, extra = {}) => ({
+  file: `${PATH_DIR}/${id}.md`,
+  front: { id, route: 'lightweight', status: 'running', base_commit: '70f7e27', branch: `path/${id.toLowerCase()}`, ...extra },
+  writes
+})
+
+test('two live paths whose surfaces meet are named, with the patterns that meet', () => {
+  const found = writesOverlaps([live('CP-A', ['tools/**', 'docs/adr/**']), live('CP-B', ['tools/cairn-check.mjs'])])
+  assert.equal(found.length, 1)
+  assert.deepEqual(found[0].paths, ['CP-A', 'CP-B'])
+  assert.deepEqual(found[0].patterns, ['tools/** ∩ tools/cairn-check.mjs'])
+  // Two paths declaring the SAME pattern name it once, not against itself.
+  assert.deepEqual(
+    writesOverlaps([live('CP-A', ['src/**']), live('CP-B', ['src/**'])])[0].patterns,
+    ['src/**'])
+})
+
+test('the overlap is silent when either path declares depends_on the other', () => {
+  const a = live('CP-A', ['tools/**'])
+  const b = live('CP-B', ['tools/**'], { depends_on: ['CP-A'] })
+  assert.deepEqual(writesOverlaps([a, b]), [])
+  // and it reappears when the declaration is dropped while the earlier path
+  // is still live, which is the shape CP-016 took on the adopter.
+  assert.equal(writesOverlaps([a, { ...b, front: { ...b.front, depends_on: [] } }]).length, 1)
+})
+
+test('a path that is not live is not raced with', () => {
+  const a = live('CP-A', ['tools/**'])
+  for (const status of ['draft', 'done', 'archived']) {
+    assert.deepEqual(writesOverlaps([a, live('CP-B', ['tools/**'], { status })]), [],
+      `a ${status} path holds no surface`)
+  }
+  for (const status of ['running', 'blocked', 'ready']) {
+    assert.equal(writesOverlaps([a, live('CP-B', ['tools/**'], { status })]).length, 1,
+      `a ${status} path is live`)
+  }
+})
+
+test('the overlap is reported on a run that belongs to one of the two paths', () => {
+  const a = live('CP-A', ['tools/**'])
+  const b = live('CP-B', ['tools/cairn-check.mjs'])
+  const onA = run([a.file], 'path/cp-a', [a, b], { stateChanged: [] })
+  assert.ok(messages(onA, 'writes-overlap', 'advisory').some((m) => /CP-A/.test(m) && /CP-B/.test(m)),
+    `advisories were ${JSON.stringify(messages(onA, 'writes-overlap', 'advisory'))}`)
+  assert.deepEqual(messages(onA, 'writes-overlap', 'blocking'), [], 'the overlap is the owner\'s call, so it never blocks')
+  // At the later path's registration, on the trunk, its record is the change.
+  const atRegistration = run([b.file], 'main', [a, b], { stateChanged: [b.file] })
+  assert.ok(messages(atRegistration, 'writes-overlap', 'advisory').length === 1)
+  // A run belonging to neither says nothing about them.
+  const elsewhere = run([], 'main', [a, b], { stateChanged: [] })
+  assert.deepEqual(messages(elsewhere, 'writes-overlap', 'advisory'), [])
 })
 
 /* ------------------------------------------------------------------ *
