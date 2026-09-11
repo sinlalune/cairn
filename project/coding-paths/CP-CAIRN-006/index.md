@@ -1,0 +1,308 @@
+---
+type: Cairn Coding Path
+title: Coding path 2 of 1.1 — the checker reads what it did not
+description: The second implementation path of Cairn 1.1, row 2 of the roadmap register. The checker gains the profile line, the refusal of running-to-done without a ready commit, the seal at every transition, the writes-overlap advisory, the six corrections of ADR-004, one commit for one path, one journal key, refusals that name the remedy, and the review rule; and it opens by settling the two debts path 1 left — ADR-001 decision 1's incoherent kit default, and the reading of a red run's post-mortem — with two decision records before any rule is written.
+tags: [coding-path, implementation, cairn-1.1, checker, rules]
+timestamp: 2026-09-11T00:00:00Z
+cairn:
+  id: CP-CAIRN-006
+  route: full
+  status: running
+  current_step: S01
+  base_commit: 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
+  branch: path/cp-cairn-006
+  assigned_writer: cp-cairn-006-writer
+  depends_on: []
+  subject_commit: null
+  resolution: null
+  writes:
+    - tools/cairn-check.mjs
+    - tools/cairn-rules.mjs
+    - tools/cairn-check.test.mjs
+    - tools/cairn-rules.test.mjs
+    - tools/cairn-fixture.test.mjs
+    - tools/soundness.md
+    - spec/reference/conformance.md
+    - docs/modules/application.md
+    - docs/adr/**
+    - docs/architecture/01-cairn-1-1.md
+    - docs/architecture/index.md
+    - project/coding-paths/index.md
+    - project/coding-paths/CP-CAIRN-006/**
+  governs:
+    - docs/architecture/01-cairn-1-1.md@8190acfa186af205a8f1d4b35c3c0e684f11a9f3
+    - project/log/2026-09-10-cp-cairn-005.md@b69c03fcc0e62be72f4c7bdb288f38dbdc41be8e
+    - docs/adr/ADR-001-sole-owner-opens-and-closes-a-path.md@c1feab4c345806f5d014b4677924a707ab9aaace
+    - docs/adr/ADR-002-the-checkboxes-stay-and-the-seal-is-checked-everywhere.md@e81fde2a0c5043cdba1c8226f997ac9bf600acca
+    - docs/adr/ADR-003-two-live-paths-on-the-same-files.md@2cb434e7e87842bd936f1d6c395fa3716d948af5
+    - docs/adr/ADR-004-the-checker-reads-what-it-did-not.md@d3cfd7d9f01de54c342d755b0b20b8c65c92fb67
+    - docs/adr/ADR-008-housekeeping-with-no-choice-in-it.md@c4accd293ec3d2d546bd5e86c232c08406c357d4
+    - docs/adr/ADR-014-two-tools-of-1-1.md@f27627d460a3d8494866df8bb4c256be0a18f540
+    - docs/adr/ADR-017-the-review-movement.md@00be46249d9f3e1a7aa5ed1432c023b7a14fd696
+---
+
+# CP-CAIRN-006 — the checker reads what it did not
+
+## Goal
+
+This path makes the checker refuse what the records of 1.1 refuse and
+report what they report, and it settles the two debts path 1 left before
+it writes a rule. It is the least because every rule it adds stands
+behind a record already accepted, every fixture is the one adversarial
+case ADR-004 asks for, and the two debts are closed by two records in
+one unit rather than reopened in the chat. It does not touch the skills,
+the workflow, the post-mortem tool, the kit's installer, the chapters,
+the README or the site: those are paths 1, 3, 4 and 5.
+
+**The two debts, and how this path resolves them.** Path 1's
+[journal entry](../../log/2026-09-10-cp-cairn-005.md) names them.
+First, ADR-001 decision 1 is incoherent: it keeps the kit's installed
+default at `transport.registration: pull-request` while deleting the
+skill's pull-request sequence, so an adopter installing the kit today
+gets a skill that pushes the registration commit to the trunk against
+a configuration that says otherwise. Second, path 1's definition of
+done said *a red run's post-mortem is read before the next unit* and no
+record decides it. Both are decisions, and chapter 3 says a challenge
+to the vision is a superseding record and a page amended to match; so
+this path's first unit is a `decision` unit that writes two records —
+ADR-024, superseding the clause of ADR-001 decision 1 on the kit's
+default so that a 1.1 repository is installed with `manual-git`
+registration, the value the protocol's *what 1.1 removes* already
+implies, with `pull-request` kept only as a value a 1.0 repository
+declares until it updates; and ADR-025, deciding that the post-mortem
+the workflow puts on a request after a red run is read by the writer
+before the next unit, one sentence the unit skill gains when path 3
+builds the tool — amends the 1.1 page to match, and names in the
+register's rows 3 and 4 the surfaces each record changes. The checker
+this path builds reads the transport the record settles: the profile
+line of ADR-001 decision 6 names the declared transports beside what the
+forge does not enforce. Nothing of the kit's default is changed here;
+path 4 changes it from ADR-024.
+
+Row 2 of the [roadmap register](../index.md) scopes the rest, and the
+[1.1 page](../../../docs/architecture/01-cairn-1-1.md), section *What the
+checker reads at each transition*, states what every rule must read. The
+decisions it implements: the profile line and the refusal of `running`
+to `done` without a `ready` commit (ADR-001 decisions 6 and 7); the
+seal judged at every transition on every ref (ADR-002 decision 1); two
+live paths on the same files (ADR-003); the registration commit as the
+activation, a running path's remote checkpoint, path-scoped range rules,
+a trunk merge in every blocking fixture, the branch resolved from where
+the checker stands, the three Crumbz repairs upstream (ADR-004
+decisions 1 to 6); one commit for one path, one journal key, refusals
+that name the remedy (ADR-008 decisions 2, 4 and 6); the `review` rule
+(ADR-017 decision 2). And the checker's own case: the closing of path 1
+took the trunk from `running` to `done` in one commit on the edge
+this path removes, and that real shape is the fixture the refusal is
+proved against, as ADR-004 decision 4 asks. The history is not tidied.
+
+## Definition of done
+
+- [ ] Two decision records, ADR-024 and ADR-025, exist in the layout's
+      shape, *promoted from* path 1's journal entry at the blob id pinned
+      in this record: ADR-024 supersedes, and names, the clause of ADR-001
+      decision 1 on the kit's installed default, so that a repository
+      installed at 1.1 declares `transport.registration: manual-git`,
+      the value `pull-request` staying in the configuration's schema for
+      a 1.0 repository until `update` reaches its configuration, and
+      the skills as path 1 left them are coherent with the default;
+      ADR-025 decides that a red run's post-mortem, put on the request by
+      the workflow ADR-014 decision 1 names, is read by the writer before
+      the next unit, and names the unit skill's sentence as path 3's; the
+      1.1 page is amended to match, marked *since 2026-09-11*, with a
+      *promoted from* link to the journal entry; the index of `docs/adr/`
+      lists both with no gap after ADR-023; the register's rows 3 and 4
+      name the records and the surfaces each changes.
+- [ ] Every run of `cairn-check` prints a profile line saying what the
+      forge does not enforce on this repository — the owner's bypass of
+      the trunk's ruleset, a required check the free plan cannot make
+      block a merge — and the transports the configuration declares
+      (ADR-001 decision 6); the line is printed on the `ci` and `local`
+      profiles alike and is not a finding.
+- [ ] A trunk commit that takes a path from `running` to `done` with no
+      `ready` commit behind it is refused by `transition`, and the
+      refusal names the remedy — declare `ready` on the branch first
+      (ADR-001 decision 7, ADR-008 decision 6); the fixture that proves it
+      is the shape path 1's closing took, and the `trunkIntegration`
+      exception in `transitionErrors` is gone.
+- [ ] The scope digest of the definition of done is judged at every
+      transition and on every ref — a unit on the branch, the candidate,
+      `ready`, the integrating commit — against the acceptance block in
+      force, whatever the status (ADR-002 decision 1); a fixture ticks a
+      box at `done` and is refused.
+- [ ] A registration, and every unit, of a path whose `writes:` meets a
+      live path's raises the advisory `writes-overlap`, naming both paths
+      and the patterns that meet, and is silent when the later path
+      declares `depends_on` the earlier (ADR-003); the catalogue and the
+      soundness note carry it.
+- [ ] The checker reads as ADR-004 decides: the registration commit is
+      the trunk commit in which `status` became `running` and
+      `base_commit` its parent, a draft landed earlier notwithstanding
+      (decision 1); a running path whose record carries a `cairn-unit`
+      block names a checkpoint that exists on the remote (decision 2);
+      every range rule reads only this path's records (decision 3); the
+      branch is resolved as the local ref, else `HEAD` on the request
+      head, else the remote-tracking ref, and the detached-checkout
+      advisory says which was used (decision 5); the same-branch step
+      supersession, the chronological path-scoped provisional resolution
+      and the detached-checkout evidence the adopter repaired in its own
+      checker are the kit's (decision 6).
+- [ ] The integrating commit is one commit for one path — a commit that
+      is a merge object carrying the edit, or that takes two paths to
+      `done`, is refused (ADR-008 decision 2); the journal entry is read
+      under the one key `cairn.path`, and the message that named two is
+      gone (decision 4); every blocking refusal's message names the
+      remedy in one sentence (decision 6).
+- [ ] The blocking rule `review` exists: the step record of a path's
+      current unit carries a `#### Review` section that is not empty,
+      `closure` excepted, and the section's content is not read
+      (ADR-017 decision 2); its fixture, its catalogue entry on the
+      conformance page and its soundness line exist.
+- [ ] Every blocking rule's fixture contains a merged trunk commit
+      carrying another path's completed unit, so that a rule passing on a
+      single-path history alone is not proved (ADR-004 decision 4); the
+      fixture suite passes; the catalogue on the conformance page and its
+      linkage are regenerated and every rule stands behind a stated
+      requirement.
+- [ ] The citations of an earlier repository's records under `tools/`
+      are replaced by this repository's, and `docs/modules/application.md`
+      describes the tools as they are at the candidate, with no history.
+- [ ] Nothing under `skills/`, `.github/`, `tools/cairn.mjs`,
+      `tools/cairn-audit.mjs`, `tools/cairn-active.mjs`, `spec/index.md`,
+      `README.md` or `site/` changes; the nine governing documents are
+      byte-identical at the candidate to what they are at `base_commit`,
+      except the 1.1 page, which S01 amends in place and marked.
+- [ ] Every completed step has one self-contained step record naming the
+      definition-of-done item it advances, a refreshed resume section, one
+      commit, a remote checkpoint, a self-review in the five tags and a
+      `#### Review` section carrying the fresh-context read of its diff
+      with each finding's disposition and the bounded second read.
+- [ ] The final candidate contains the trunk tip, is checked bare, and is
+      reviewed in the pull request's description in the order the template
+      gives — three plain lines and the surface link, the definition of
+      done item by item, the ledger; the administrative commit declaring
+      `ready` and `subject_commit` is on the branch before the owner is
+      asked to merge; the owner tries the checker before the merge, and
+      the merge is the acceptance.
+- [ ] The exact candidate lands through the pull request, the trunk
+      records done with one journal entry, the remote result is proved,
+      and the clean secondary worktree is removed by the writer, or the
+      failure to remove it is reported.
+
+## Opening acceptance
+
+```yaml
+decision: accepted
+accepted_by: sinlalune
+accepted_roles: [initiator, reviewer]
+accepted_at: 2026-09-11T09:33:25Z
+scope_ref: project/coding-paths/CP-CAIRN-006/index.md#definition-of-done
+scope_digest: sha256:63676e6f692a3fc7847aecfe8584d24251cbdb27abced31c1e91572d2d7d4319
+```
+
+Reviewed in the chat of 2026-09-11: route `full` because the path
+changes the checker, a control-plane surface, and writes two decision
+records; the definition of done above; writes limited to the checker,
+the rules, the fixtures and tests, the soundness note, the conformance
+page, the tools' module note, the decision records, the 1.1 page and
+its index, the register's rows and this folder, with no overlap because
+no other path runs; the skills, the workflow, the other tools, the
+chapters, the README and the site excluded from change; governed by the
+1.1 page, path 1's journal entry and seven records at their blob ids on
+`main`; initial writer `cp-cairn-006-writer`. The owner read the plan —
+the two debts settled by two records in the first unit, ADR-024 toward
+`manual-git` as the 1.1 default, the page as the one governed document
+the path amends — and gave the go-ahead in the chat with the word "yes";
+that go-ahead is this acceptance, and the record lands on the trunk
+directly. The owner said the units run in a fresh session. Amendments:
+none.
+
+## Documentation coverage
+
+### Required
+
+- `project/log/2026-09-10-cp-cairn-005.md` at its pinned blob — the
+  two debts, in path 1's own words, the source S01 promotes.
+- `docs/architecture/01-cairn-1-1.md` at its pinned blob — *What the
+  checker reads at each transition*, the table every rule is read
+  against.
+- The seven records pinned in `governs:` — each unit reads the
+  decisions its rule implements, at their *What implements this record*
+  tables.
+- `spec/reference/conformance.md` — the catalogue and the linkage as
+  they stand, regenerated at the end.
+
+### Conditional
+
+- `docs/cairn/manifesto.md` — read whenever a rule would refuse more than
+  its record names; the first threat is more control.
+- `spec/index.md` chapter 5, *The lifecycle is a statement of fact* and
+  *Close one exact candidate* — the requirements the rules stand behind;
+  read, never written.
+- `skills/cairn-open`, `cairn-unit`, `cairn-close` as path 1 left them
+  — the procedures the refusals must name as remedies.
+- `tools/cairn.mjs` — read so that ADR-024 names the default it changes
+  by today's name; never written.
+
+### Deliberately excluded
+
+- `skills/**`, `.github/workflows/**`, `tools/cairn.mjs`,
+  `tools/cairn-audit.mjs`, `tools/cairn-active.mjs`, `tools/cairn-postmortem.mjs`,
+  `spec/index.md`, `README.md`, `site/**` — paths 1, 3, 4 and 5.
+- The kit's installed default — ADR-024 decides it; path 4 changes it.
+
+## Steps
+
+Forward steps live in [`plan.md`](./plan.md) until they are executed.
+
+- **S01** — not started
+
+## Resume
+
+### Checkpoint
+
+```text
+commit : the registration commit — the trunk commit that adds this record, whose parent is base
+unit   : 0
+base   : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
+trunk  : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8 — origin/main at registration
+```
+
+### Next action
+
+In a fresh session, from the worktree `../cairn-cp-cairn-006` on branch
+`path/cp-cairn-006`: run S01 of the plan with `cairn-unit` — the two
+debts, two records: ADR-024 superseding the kit-default clause of ADR-001
+decision 1, ADR-025 on the reading of a red run's post-mortem, the 1.1
+page amended in place and marked *since 2026-09-11*, the two indexes, the
+register's rows 3 and 4. Type `decision`. Run the review movement on the
+unit's diff as the unit skill says.
+
+### Blockers
+
+None.
+
+### Tried and rejected
+
+- Reopening the two debts in the chat — path 1 already ruled them out of
+  its scope and named the remedy, a superseding record; asking again is
+  the thing path 1's journal asks not to do.
+- A separate decision path for the two records — one unit of this path
+  writes them, because the checker reads the transport ADR-024 settles
+  and the fixture of ADR-001 decision 7 is path 1's own closing.
+- Pinning the register in `governs:` — a write surface, as in path 1.
+
+### Reading order
+
+1. `AGENTS.md`, then `skills/cairn-unit/SKILL.md` as path 1 left it.
+2. `project/log/2026-09-10-cp-cairn-005.md` at its pinned blob — the debts.
+3. `docs/architecture/01-cairn-1-1.md` at its pinned blob — *What the checker reads at each transition*.
+4. `project/coding-paths/CP-CAIRN-006/plan.md`, then the records the unit implements, at their tables.
+5. `tools/soundness.md` and `spec/reference/conformance.md` — where a rule is named and linked.
+
+### Verify
+
+```bash
+npm run cairn-check
+npm test
+```
