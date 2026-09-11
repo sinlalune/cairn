@@ -502,6 +502,170 @@ fixture('a registration whose base_commit is not the registration parent', 'regi
   git(dir, 'checkout', '-q', '-b', 'path/cp-fixture-001')
 })
 
+/* ADR-004 decision 1. The adopter's CP-016 landed as a draft through one
+ * request and went `running` through a second; judged against the DRAFT's
+ * parent, the only way to a green gate was to rewrite `base_commit` to a value
+ * the specification's own definition calls false, and the trunk carries it. */
+test('adversarial: registration-base — a branch forked from the draft, not from the activation', () => {
+  const dir = repository()
+  try {
+    const draftParent = git(dir, 'rev-parse', 'HEAD').trim()
+    write(dir, RECORD, PATH_RECORD({ status: 'draft', base_commit: draftParent }))
+    commit(dir, 'land CP-FIXTURE-001 as a draft')
+    const activationParent = git(dir, 'rev-parse', 'HEAD').trim()
+
+    // Activated by a later trunk commit. THAT commit's parent is the base.
+    writeAcceptedRecord(dir, { base_commit: activationParent })
+    regenerateView(dir)
+    commit(dir, 'activate CP-FIXTURE-001')
+    git(dir, 'checkout', '-q', '-b', 'path/cp-fixture-001')
+    assert.deepEqual(blocking(check(dir)), [],
+      'a base pinned to the activation parent is the registration base')
+
+    // And the converse: the draft's parent, which is what the old reading
+    // demanded, is now the mismatch it always was.
+    write(dir, RECORD, readFileSync(join(dir, RECORD), 'utf8')
+      .replace(`base_commit: ${activationParent}`, `base_commit: ${draftParent}`))
+    assert.ok(blocking(check(dir)).includes('registration-base'),
+      `the draft's parent is not the base — blocking findings were: ${describe(check(dir))}`)
+  } finally {
+    cleanup(dir)
+  }
+})
+
+/* The shape ADR-004 decision 1 was written for: the adopter's record "landed
+ * as a draft through one request and went `running` through a second". The
+ * activation arrives on the trunk as a merge, and `base_commit` is what the
+ * REGISTRANT could pin when they authored the record — the trunk tip they saw,
+ * which is the parent of the commit that declared `running`. Reading the
+ * merge's first parent instead demands the trunk state at the merge, a commit
+ * nobody can know in advance, and refuses a registration that did everything
+ * the convention asks. */
+test('adversarial: registration-base — an activation that reached the trunk through a merge', () => {
+  const dir = repository()
+  try {
+    const draftParent = git(dir, 'rev-parse', 'HEAD').trim()
+    write(dir, RECORD, PATH_RECORD({ status: 'draft', base_commit: draftParent }))
+    commit(dir, 'land CP-FIXTURE-001 as a draft')
+
+    git(dir, 'checkout', '-q', '-b', 'register/cp-fixture-001')
+    const pinned = git(dir, 'rev-parse', 'HEAD').trim()
+    writeAcceptedRecord(dir, { base_commit: pinned })
+    commit(dir, 'activate CP-FIXTURE-001')
+
+    // The trunk moves while the request waits, which is the whole point: the
+    // registrant pinned what they saw and cannot pin what the trunk becomes.
+    git(dir, 'checkout', '-q', 'main')
+    write(dir, 'docs/meanwhile.md', '---\ntype: Note\ntitle: Meanwhile\ndescription: x\ntags: [x]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Meanwhile\n')
+    commit(dir, 'the trunk moves while the request waits')
+    const trunkAtMerge = git(dir, 'rev-parse', 'HEAD').trim()
+    assert.notEqual(pinned, trunkAtMerge, 'the trunk must have moved, or this fixture proves nothing')
+
+    git(dir, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture',
+      'merge', '-q', '--no-ff', '-m', 'Merge the activation of CP-FIXTURE-001', 'register/cp-fixture-001')
+    regenerateView(dir)
+    commit(dir, 'regenerate the live view')
+    git(dir, 'checkout', '-q', '-b', 'path/cp-fixture-001')
+
+    assert.deepEqual(blocking(check(dir)), [],
+      `the parent of the commit that declared running is the base: ${describe(check(dir))}`)
+  } finally {
+    cleanup(dir)
+  }
+})
+
+/* Both record shapes, because the draft and the activation can sit under
+ * different names: a record born flat and sliced into its folder when it was
+ * activated (ADR-020 decision 4's shape) has its `running` declaration in
+ * `<id>/index.md` and its history under `<id>.md`. Following one name alone
+ * found no activation and asked for a fetch that could never help. */
+test('adversarial: registration-base — a record whose draft and activation sit under different names', () => {
+  const dir = repository()
+  const flat = 'project/coding-paths/CP-FIXTURE-001.md'
+  try {
+    // Born in its folder as a draft, then migrated to the flat shape and
+    // activated there. `<id>/index.md` carries only the draft, so a reader
+    // following that one name finds no activation and asks for a fetch that
+    // can never help.
+    write(dir, RECORD, PATH_RECORD({ status: 'draft', base_commit: git(dir, 'rev-parse', 'HEAD').trim() }))
+    commit(dir, 'land CP-FIXTURE-001 in its folder, as a draft')
+    const activationParent = git(dir, 'rev-parse', 'HEAD').trim()
+
+    git(dir, 'rm', '-q', RECORD)
+    write(dir, flat, PATH_RECORD({ base_commit: activationParent }))
+    write(dir, flat, PATH_RECORD({ base_commit: activationParent, opening: scopeDigest(dir, flat) }))
+    regenerateView(dir)
+    commit(dir, 'migrate CP-FIXTURE-001 to the flat shape and activate it')
+    git(dir, 'checkout', '-q', '-b', 'path/cp-fixture-001')
+
+    assert.deepEqual(blocking(check(dir)), [],
+      `the activation is found under the other shape: ${describe(check(dir))}`)
+  } finally {
+    cleanup(dir)
+  }
+})
+
+/* ADR-004 decision 2: fifteen adopter units left the checkpoint `unpinned`,
+ * so neither path could be resumed cold from its own record. */
+pathFixture('a running path with a completed unit and no checkpoint', 'work-unit', (dir) => {
+  write(dir, STEP, STEP_RECORD)
+  appendFileSync(join(dir, RECORD), '\n## Resume\n\n### Checkpoint\n\n```text\ncommit : unpinned\nunit   : 1\n```\n')
+})
+
+/* ADR-004 decision 5, and repair 007 of decision 6. Every `pull_request` run
+ * of the installed workflow is a detached checkout of the request head, on
+ * purpose, so the exact commit is judged. Reading `@{upstream}` — which is
+ * HEAD's, and a detached HEAD has none — reported "no upstream" on the one run
+ * that is the merge gate, while the push run on the same commit passed. */
+test('adversarial: remote-checkpoint — a detached request head is judged, not skipped and not compared with itself', () => {
+  const dir = publishedRepository()
+  const detach = () => {
+    git(dir, 'checkout', '-q', '--detach')
+    git(dir, 'branch', '-q', '-D', 'path/cp-fixture-001')
+    // The workflow names the branch through the forge; the checkout cannot.
+    return check(dir, '--branch', 'path/cp-fixture-001')
+  }
+  try {
+    assert.deepEqual(blocking(check(dir)), [], `the published baseline must be green: ${describe(check(dir))}`)
+
+    // A published branch, detached: nothing is outstanding, and the advisory
+    // that used to fire here read `@{upstream}`, which a detached HEAD has not.
+    const clean = detach()
+    assert.deepEqual(blocking(clean), [],
+      `a detached request head is the shape the workflow produces: ${describe(clean)}`)
+    assert.ok(!advisory(clean).includes('remote-checkpoint'),
+      `the remote holds this commit — advisories were: ${advisory(clean).join(', ')}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+/* The half that tells the two resolutions apart. Reading the remote-tracking
+ * ref in a detached checkout compares it with itself, so everything is
+ * tautologically green: an unpushed commit reads as published, and — the
+ * finding that matters — a REWRITTEN published commit passes the one run that
+ * is the merge gate. HEAD is the request head, and the request head is what
+ * the gate must judge. */
+test('adversarial: path-history — a rewritten published commit, judged on a detached request head', () => {
+  const dir = publishedRepository()
+  try {
+    write(dir, 'docs/pushed.md', '---\ntype: Note\ntitle: Pushed\ndescription: x\ntags: [x]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Pushed\n')
+    commit(dir, 'CP-FIXTURE-001: a unit that was published')
+    git(dir, 'push', '-q', 'origin', 'path/cp-fixture-001')
+    git(dir, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture', 'commit', '--amend', '-qm', 'rewritten in place')
+    assert.ok(blocking(check(dir)).includes('path-history'),
+      `the rewrite is refused on the branch: ${describe(check(dir))}`)
+
+    git(dir, 'checkout', '-q', '--detach')
+    git(dir, 'branch', '-q', '-D', 'path/cp-fixture-001')
+    const detached = check(dir, '--branch', 'path/cp-fixture-001')
+    assert.ok(blocking(detached).includes('path-history'),
+      `and refused on the request head, which is the merge gate: ${describe(detached)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
 pathFixture('a path reaching done on the trunk with no journal entry', 'journal-entry', (dir) => {
   const base = git(dir, 'rev-parse', 'HEAD').trim()
   writeAcceptedRecord(dir, { base_commit: base, status: 'done', subject_commit: base, resolution: 'completed' })

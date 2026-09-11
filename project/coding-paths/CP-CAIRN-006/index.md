@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-006
   route: full
   status: running
-  current_step: S03
+  current_step: S04
   base_commit: 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
   branch: path/cp-cairn-006
   assigned_writer: cp-cairn-006-writer
@@ -277,15 +277,22 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
   patterns that meet, silent under `depends_on`, with the overlap raised and
   the overlap silenced as its two fixtures; the catalogue, the matrix and the
   soundness note carrying it — **complete**
-- **S04** — not started
+- [**S04**](./steps/S04.md) — which commit, which branch, which checkpoint:
+  the registration commit read as the commit in which the record became
+  `running`, over both record shapes; a
+  running path with a completed unit required to name an object id in its
+  checkpoint; the branch's tip resolved as the local ref, else `HEAD` when the
+  checkout is detached, else the remote-tracking ref, so a detached request
+  head is judged and never compared with itself — **complete**
+- **S05** — not started
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 9ebed6dec3964c387c64109dec87495ae0cac4a5 — S02, the profile line and the transition; S03's own commit is named here by S04
-unit   : 2 — S02
+commit : 860382d2985cd22d0ccdf267bf57e0615cafdc3d — S03, the seal everywhere and two paths on the same files; S04's own commit is named here by S05
+unit   : 3 — S03
 base   : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
 trunk  : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8 — origin/main at registration
 ```
@@ -293,19 +300,22 @@ trunk  : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8 — origin/main at registratio
 ### Next action
 
 From the worktree `../cairn-cp-cairn-006` on branch `path/cp-cairn-006`:
-run S04 of the plan with `cairn-unit` — what the checker reads. ADR-004
-decisions 1, 2, 3 and 5: the registration commit is the trunk commit in
-which `status` became `running` and `base_commit` its parent, a draft
-landed earlier notwithstanding; a running path whose record carries a
-`cairn-unit` block names a checkpoint that exists on the remote; every
-range rule reads only this path's records; the branch is resolved as the
-local ref, else `HEAD` on the request head, else the remote-tracking ref,
-and the detached-checkout advisory says which was used. Decision 6: the
-three repairs the adopter made in its own checker — same-branch step
-supersession, chronological path-scoped provisional resolution,
-detached-checkout evidence — come upstream. Type `implementation`; the
-failing test comes first. Run the review movement on the unit's diff as
-the unit skill says.
+run S05 of the plan with `cairn-unit` — what a range means. ADR-004
+decision 3: on a no-rewrite host the range from base to candidate always
+carries trunk history, so every rule that walks it reads only this path's
+own records as evidence about this path; `provisional`,
+`record-integrity` and `record-date` are each read against that sentence
+and corrected where needed, and the conformance page states it once.
+Repair 006 of decision 6: a provisional commit is resolved by a later
+commit of the same path that adds a valid completed step, and by nothing
+else — the 1.0 rule is a timeless grep where its own reference describes
+it chronologically. Repair 005: a repair step may supersede an invalid
+step on the same branch by binding the blob it replaces and the blob it
+adds, so the earlier step stays append-only and the correction is a new
+step. Note that the shape a writer declares a supersession in has no home
+in this path's surfaces — see *Tried and rejected*. Type
+`implementation`; the failing test comes first. Run the review movement
+on the unit's diff as the unit skill says.
 
 ### Blockers
 
@@ -313,6 +323,29 @@ None.
 
 ### Tried and rejected
 
+- Running ADR-004's six corrections as the single unit the plan named (S04) —
+  they are two subjects and could not be explained in three lines, which is
+  the signal `cairn-code` gives for splitting. Decisions 1, 2 and 5 resolve an
+  identity; decision 3 with repairs 005 and 006 is what a range may be read as
+  evidence of. [`plan.md`](./plan.md) is amended, the later steps shift by
+  one, and the definition of done is untouched — item 6 is advanced by both
+  units.
+- Amending `spec/concepts/trunk-registration.md`, which ADR-004 decision 1
+  says *may* gain a sentence (S04) — it is outside this path's `writes:` and
+  outside row 2 of the register. The conformance matrix and the catalogue say
+  what the rule reads.
+- Where a writer declares a same-branch step supersession (S05's subject,
+  raised at S04) — repair 005 needs a declared shape, and the surfaces that
+  would carry it for a writer are `spec/reference/path-template.md` and the
+  `cairn-unit` skill, both row 1's and both excluded by item 10. S05 writes
+  the checker's reading and states the shape on the conformance page; the
+  closing review should say that the template and the skill still owe the
+  writer's half.
+- Deleting `const head = resolved.ref` in favour of `HEAD`, which no fixture
+  can tell apart (S04's review) — wherever `remote-checkpoint` fires the two
+  coincide, so the suite cannot stage the difference; the expression is right
+  where they diverge, and correct code is not deleted to satisfy a mutation
+  the suite cannot express.
 - Re-reading a committed tick on the trunk in a later run (S03) — off a path
   branch the comparison is the working tree unless `--base` is given, so
   `scope-digest` catches a tick in the integrating commit as that commit is

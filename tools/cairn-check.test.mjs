@@ -76,6 +76,9 @@ import {
   profileLine,
   patternsMeet,
   writesOverlaps,
+  activationCommit,
+  checkpointCommit,
+  resolveBranchRef,
   isVerbatimRelocation,
   preservesAppendOnlyRecord,
   recordOriginFromFollowLog,
@@ -1135,6 +1138,86 @@ test('a decision record needs a frontmatter block, a known status and an ISO dat
   assert.equal(bad.length, 2)
   assert.match(bad[0], /outside the vocabulary/)
   assert.match(bad[1], /ISO date/)
+})
+
+/* ------------------------------------------------------------------ *
+ * ADR-004 — which commit, which branch, which checkpoint
+ * ------------------------------------------------------------------ */
+
+test('the registration commit is the one where the record became running, not the one that added it', () => {
+  // The adopter's CP-016 landed as a draft through one request and went
+  // `running` through a second. Judged against the draft's parent, the only
+  // way to a green gate was to rewrite `base_commit` to a value the
+  // specification's own definition calls false — and the trunk carries it.
+  const [draft, activation, later] = ['a', 'b', 'c'].map((c) => c.repeat(40))
+  const asked = []
+  const statusAt = (commit) => {
+    asked.push(commit)
+    return { [draft]: 'draft', [activation]: 'running', [later]: 'running' }[commit]
+  }
+  assert.equal(activationCommit([draft, activation, later], statusAt), activation)
+  // And it stops there: each status is a `git show`, and the commits after the
+  // activation answer nothing.
+  assert.deepEqual(asked, [draft, activation])
+  // Born running: the commit that adds it is the activation.
+  assert.equal(activationCommit([draft], () => 'running'), draft)
+  // Still a draft, or a commit where the record cannot be read: there is no
+  // registration commit to judge, and the rule says so as inconclusive.
+  assert.equal(activationCommit([draft], () => 'draft'), null)
+  assert.equal(activationCommit([draft], () => undefined), null)
+  assert.equal(activationCommit([], () => 'running'), null)
+})
+
+test('a running path that has completed a unit names an object id in its checkpoint', () => {
+  const section = (commit) => `## Resume\n\n### Checkpoint\n\n\`\`\`text\ncommit : ${commit}\nunit   : 2\n\`\`\`\n`
+  assert.equal(checkpointCommit(section('a'.repeat(40))), 'a'.repeat(40))
+  assert.equal(checkpointCommit(section(`${'a'.repeat(40)} — S02, what it established`)), 'a'.repeat(40))
+  // The three shapes fifteen adopter units left behind.
+  assert.equal(checkpointCommit(section('unpinned')), null)
+  assert.equal(checkpointCommit(section('')), null)
+  assert.equal(checkpointCommit('# A record with no resume section\n'), null)
+})
+
+test('a unit is not complete while the record cannot be resumed from', () => {
+  const withUnit = { ...A_PATH, front: { ...A_PATH.front, current_step: 'S01' } }
+  const found = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: [{ step: 'S01', unit: '01', type: 'implementation', verified: 'test' }],
+    checkpointFor: () => null
+  })
+  assert.ok(messages(found, 'work-unit', 'blocking').some((m) => /checkpoint/.test(m)),
+    `findings were ${JSON.stringify(messages(found, 'work-unit', 'blocking'))}`)
+  const pinned = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: [{ step: 'S01', unit: '01', type: 'implementation', verified: 'test' }],
+    checkpointFor: () => 'a'.repeat(40)
+  })
+  assert.deepEqual(messages(pinned, 'work-unit', 'blocking').filter((m) => /checkpoint/.test(m)), [])
+  // Before the first unit there is nothing to have pushed.
+  const noUnits = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: [], checkpointFor: () => null
+  })
+  assert.deepEqual(messages(noUnits, 'work-unit', 'blocking').filter((m) => /checkpoint/.test(m)), [])
+})
+
+test('the branch history is resolved from where the checker stands, in ADR-004\'s order', () => {
+  const branch = 'path/cp-ex-010'
+  const tracking = `${REMOTE}/${branch}`
+  const resolve = (present, detached = false) => resolveBranchRef({
+    branch, remote: REMOTE, detached, refExists: (ref) => present.includes(ref)
+  })
+  // The local ref first: it is the branch this checkout writes, and it wins
+  // even where the remote-tracking ref also exists.
+  assert.deepEqual(resolve([branch]), { ref: branch, source: 'local' })
+  assert.deepEqual(resolve([branch, tracking]), { ref: branch, source: 'local' })
+  // Then HEAD, when the checkout is detached — the request head, which is the
+  // commit the gate must judge. Taking the remote-tracking ref here would
+  // compare it with itself, and a rewritten published commit then passes the
+  // one run that is the merge gate.
+  assert.deepEqual(resolve([tracking], true), { ref: 'HEAD', source: 'head' })
+  assert.deepEqual(resolve([], true), { ref: 'HEAD', source: 'head' })
+  // Then the remote-tracking ref: HEAD is some other branch, so it is not
+  // evidence about this one.
+  assert.deepEqual(resolve([tracking]), { ref: tracking, source: 'remote-tracking' })
+  assert.deepEqual(resolve([]), { ref: 'HEAD', source: 'head' })
 })
 
 /* ------------------------------------------------------------------ *

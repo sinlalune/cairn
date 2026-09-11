@@ -49,7 +49,10 @@ is what the workflow's own runs say until the token is mapped into the step.
 None of it is a finding: the remedy for a gap is a setting, and no failure of
 the read reaches an exit code. The configuration is schema 2. The checker reads
 a path's opening acceptance from the record's own `## Opening acceptance`
-block, validates `depends_on:`, and knows two routes; the live-view generator
+block, its checkpoint from the resume section, the registration commit as the
+trunk commit in which the record became `running`, and the branch's tip from the
+local ref, else `HEAD` when the checkout is detached, else the remote-tracking
+ref; it validates `depends_on:` and knows two routes; the live-view generator
 marks each live path unblocked or names what it waits on. Closure follows the
 configured transport: on `pull-request` the checker proves the candidate, its
 closure surface, the opening digest and the trunk drift from Git and reads no

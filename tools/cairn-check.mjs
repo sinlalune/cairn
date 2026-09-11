@@ -625,6 +625,48 @@ function dependsOn(front) {
   return Array.isArray(front?.depends_on) ? front.depends_on : []
 }
 
+/** ADR-004 decision 1: the registration commit is the trunk commit in which
+ *  the record's status became `running` — not the one that first added the
+ *  file. A record may land as a `draft` and be activated later, and judging
+ *  the draft's parent demanded a `base_commit` the work never forked from.
+ *  The adopter answered that demand by rewriting the field, which is how the
+ *  trunk came to carry a value the specification's own definition calls false.
+ *
+ *  `commits` is the record's trunk history, oldest first; `statusAt` reads the
+ *  status the record declared in one of them, and each read is a `git show`,
+ *  so the search stops at the activation. */
+export function activationCommit(commits, statusAt) {
+  return commits.find((commit) => statusAt(commit) === 'running') ?? null
+}
+
+/** The commit a record's resume section names as its checkpoint, or `null`
+ *  when it names none — `unpinned`, empty, or anything that is not an object
+ *  id. Fifteen adopter units left it `unpinned`, so neither path could be
+ *  resumed cold from its own record, which is the one thing the section is
+ *  for (ADR-004 decision 2). */
+export function checkpointCommit(text) {
+  const section = resolveScopeSection(String(text ?? ''), '#checkpoint')
+  const commit = /^\s*commit\s*:\s*(\S+)/m.exec(section ?? '')?.[1]
+  return commit && isObjectId(commit) ? commit : null
+}
+
+/** ADR-004 decision 5: which ref carries this branch's history, from where the
+ *  checker stands. A `pull_request` run of the installed workflow is a
+ *  detached checkout of the request head, on purpose — so there is no local
+ *  ref and no upstream, and a rule that reads either found nothing on the one
+ *  run that is the merge gate. */
+export function resolveBranchRef({ branch, remote = REMOTE, detached = false, refExists = () => false }) {
+  if (refExists(branch)) return { ref: branch, source: 'local' }
+  // HEAD second, and only when the checkout is detached: that is the request
+  // head, and it is the commit the gate must judge. Preferring the
+  // remote-tracking ref here compares it with itself, so a rewritten published
+  // commit passed the one run that is the merge gate.
+  if (detached) return { ref: 'HEAD', source: 'head' }
+  const tracking = `${remote}/${branch}`
+  if (refExists(tracking)) return { ref: tracking, source: 'remote-tracking' }
+  return { ref: 'HEAD', source: 'head' }
+}
+
 /** A dependency names a path this repository knows. `depends_on:` is the one
  *  edge Cairn keeps between paths, and an edge to nothing is a claim the live
  *  view cannot project: the path would wait forever on a name. */
@@ -1609,6 +1651,7 @@ export function evaluate({
   registrationState,
   registrationBaseState = 'match',
   remoteCheckpoint,
+  checkpointFor,
   closureFor,
   closureStateFor,
   previousPaths = new Map(),
@@ -1706,12 +1749,18 @@ export function evaluate({
   // online recovery point and a host-visible push event. This is
   // ADVISORY: a final ref can reveal that HEAD is unpublished now, but cannot
   // prove whether older commits were pushed one-by-one or later as a batch.
+  // Each of these names the ref it read: "no upstream" and "read from the
+  // remote-tracking ref" are the two answers a detached request-head checkout
+  // can give, and they mean opposite things (ADR-004 decision 5).
+  const readFrom = remoteCheckpoint?.branchRef
+    ? ` (read from ${remoteCheckpoint.branchRef.ref}, the ${remoteCheckpoint.branchRef.source} ref)`
+    : ''
   if (onPath && remoteCheckpoint?.state === 'missing') {
     add('advisory', 'remote-checkpoint',
-      `branch "${branch}" has no upstream — push every commit and set ${REMOTE}/${branch} as upstream before reporting the step complete`)
+      `branch "${branch}" has no upstream and ${REMOTE}/${branch} does not exist${readFrom} — push every commit and set ${REMOTE}/${branch} as upstream before reporting the step complete`)
   } else if (onPath && remoteCheckpoint?.state === 'unpushed') {
     add('advisory', 'remote-checkpoint',
-      `HEAD is not contained in ${remoteCheckpoint.upstream} — push this commit before reporting the step complete or offering an ordinary fresh-session handoff`)
+      `the branch tip is not contained in ${remoteCheckpoint.upstream}${readFrom} — push this commit before reporting the step complete or offering an ordinary fresh-session handoff`)
   }
 
   // 2b. a published path branch is not rewritten (ADR-022) ------------------
@@ -1727,7 +1776,7 @@ export function evaluate({
   // ref is present to compare against.
   if (rewritingForbidden && onPath && remoteCheckpoint?.diverged) {
     add('blocking', 'path-history',
-      `${remoteCheckpoint.upstream} is not an ancestor of HEAD, so a published commit was rewritten — this host declares pathHistoryPolicy: forbidden, under which a path branch is never rebased, amended, soft-reset or force-pushed once published. ` +
+      `${remoteCheckpoint.upstream} is not an ancestor of ${remoteCheckpoint.branchRef?.ref ?? 'the branch tip'}, so a published commit was rewritten — this host declares pathHistoryPolicy: forbidden, under which a path branch is never rebased, amended, soft-reset or force-pushed once published. ` +
       'Recover the published tip and merge the trunk in rather than rebasing onto it; if the divergence is a concurrent push, this branch has more than one writer, which the path convention forbids')
   }
 
@@ -2029,6 +2078,17 @@ export function evaluate({
       for (const error of workUnitErrors(unit)) {
         add('blocking', 'work-unit', `${match.file}: ${error}`)
       }
+    }
+
+    // ADR-004 decision 2. The checkpoint is a claim of the unit, so it is
+    // judged where the unit's other claims are. A record that declares
+    // `running` and has completed a unit but names no commit cannot be
+    // resumed cold from itself, which is the one thing the section is for —
+    // fifteen adopter units left it `unpinned` and nobody found out until a
+    // path had to be picked up in a new session.
+    if (match.front?.status === 'running' && workUnits.length > 0 && checkpointFor && !checkpointFor(match.file)) {
+      add('blocking', 'work-unit',
+        `${match.file} declares running with ${workUnits.length} completed unit(s) and names no checkpoint — write the last commit the remote holds into the resume section's \`commit :\`, as a full object id`)
     }
   }
 
@@ -2357,19 +2417,6 @@ function previousPathStates(paths, ref) {
   return states
 }
 
-/** `base_commit` is not merely any ancestor. It names the trunk state just
- * before registration, so it must resolve to the first parent of the commit
- * that introduced this path declaration on the trunk. */
-/** Where this record's declaration lives on the trunk, in either shape, or null.
- *  Looked up by the declared id for the same reason `pathRegistrationState` is:
- *  a record's history is not erased by moving the file that carries it. */
-function declarationOnTrunk(trunkRef, id) {
-  for (const candidate of [`${PATH_DIR}/${id}.md`, `${PATH_DIR}/${id}/index.md`]) {
-    if (gitOrNull(['log', '-1', '--format=%H', trunkRef, '--', candidate])) return candidate
-  }
-  return null
-}
-
 function pathRegistrationBaseState(trunkRef, branch, paths) {
   if (!isPathBranch(branch)) return null
   const match = paths.find((path) => path.front?.branch === branch)
@@ -2378,12 +2425,36 @@ function pathRegistrationBaseState(trunkRef, branch, paths) {
   if (LEGACY_UNREGISTERED_PATHS.has(id)) return 'grandfathered'
   if (!gitOrNull(['rev-parse', '--verify', trunkRef])) return null
 
-  const onTrunk = declarationOnTrunk(trunkRef, id)
-  if (!onTrunk) return null
-  const additions = gitOrNull([
-    'log', '--diff-filter=A', '--format=%H', '--reverse', trunkRef, '--', onTrunk
-  ])
-  const registration = additions?.split('\n').filter(Boolean)[0]
+  // `base_commit` is not merely any ancestor: it names the trunk state just
+  // before registration, so it must resolve to the parent of the commit that
+  // declared this path `running`. Both record shapes are read, by the declared
+  // id, for the same reason `pathRegistrationState` reads both — a record's
+  // history is not erased by moving the file that carries it.
+  const shapes = [`${PATH_DIR}/${id}.md`, `${PATH_DIR}/${id}/index.md`]
+  // Every commit reachable from the trunk that touched the record, oldest
+  // first, in either shape.
+  //
+  // Not only the one that ADDED it: a record may land as a draft and be
+  // activated later (ADR-004 decision 1). Both shapes, because a record landed
+  // flat and sliced into a folder when it was activated has its draft under
+  // one name and its activation under the other.
+  //
+  // NOT `--first-parent`. On a `pull-request` registration transport the
+  // activation reaches the trunk as a merge, and that merge's first parent is
+  // the trunk AT THE MERGE — a commit the registrant could not have pinned,
+  // because the trunk may move between authoring the record and merging it.
+  // The commit that declared `running` is the one whose parent is the base the
+  // work forks from, which is what `base_commit` names.
+  const touching = gitOrNull(['log', '--format=%H', '--reverse', trunkRef, '--', ...shapes])
+  const commits = touching?.split('\n').filter(Boolean) ?? []
+  const statusAt = (commit) => {
+    for (const shape of shapes) {
+      const text = gitOrNull(['show', `${commit}:${shape}`])
+      if (text != null) return metadataOf(readFrontmatter(text)?.data)?.status
+    }
+    return undefined
+  }
+  const registration = activationCommit(commits, statusAt)
   if (!registration) return null
   const parent = gitOrNull(['rev-parse', `${registration}^`])
   const declared = gitOrNull(['rev-parse', match.front.base_commit])
@@ -2794,12 +2865,28 @@ function headCarriesProvisionalTrailer() {
 function pathRemoteCheckpoint(branch) {
   if (!isPathBranch(branch)) return null
 
-  let upstream
-  try {
-    upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{upstream}'])
-  } catch {
-    return { state: 'missing', upstream: null }
-  }
+  // ADR-004 decision 5. `@{upstream}` is HEAD's upstream, and a detached
+  // request-head checkout — which is what the installed workflow produces on
+  // every `pull_request` event, on purpose — has none. Reading it alone
+  // reported "no upstream" on the one run that is the merge gate. Resolve the
+  // branch's own ref instead: the local one, else the remote-tracking one,
+  // else HEAD.
+  const refExists = (ref) => gitOrNull(['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]) != null
+  const resolved = resolveBranchRef({
+    branch,
+    detached: gitOrNull(['symbolic-ref', '--short', '-q', 'HEAD']) == null,
+    refExists
+  })
+  // THE BRANCH'S upstream, not HEAD's. `@{upstream}` alone is HEAD's, so
+  // standing on the trunk while naming a path branch compared that branch's
+  // tip with `origin/<trunk>` — which reported a published commit as rewritten
+  // on a repository where nothing was. A detached checkout has no configured
+  // upstream at all, and there the remote-tracking ref answers the same
+  // question.
+  const tracking = `${REMOTE}/${branch}`
+  const upstream = gitOrNull(['rev-parse', '--abbrev-ref', '--symbolic-full-name', `${branch}@{upstream}`]) ??
+    (refExists(tracking) ? tracking : null)
+  if (!upstream) return { state: 'missing', upstream: null, branchRef: resolved }
 
   const ancestor = (a, b) => {
     try {
@@ -2820,8 +2907,9 @@ function pathRemoteCheckpoint(branch) {
   // longer in this branch's history: a rebase, an amend, a soft-reset fold, or
   // a force-push. That is exactly what ADR-022 forbids, and unlike the policy
   // field itself it is a fact a local checkout can read.
-  if (ancestor('HEAD', upstream)) return { state: 'published', upstream, diverged: false }
-  return { state: 'unpushed', upstream, diverged: !ancestor(upstream, 'HEAD') }
+  const head = resolved.ref
+  if (ancestor(head, upstream)) return { state: 'published', upstream, diverged: false, branchRef: resolved }
+  return { state: 'unpushed', upstream, diverged: !ancestor(upstream, head), branchRef: resolved }
 }
 
 /**
@@ -3212,6 +3300,7 @@ async function main() {
       registrationState: pathRegistrationState(trunkRef, branch, paths),
       registrationBaseState: pathRegistrationBaseState(trunkRef, branch, paths),
       remoteCheckpoint: pathRemoteCheckpoint(branch),
+      checkpointFor: (file) => checkpointCommit(readFileSync(join(REPO, file), 'utf8')),
       closureFor: (id, subject) => closingRecord(id, subject, paths),
       closureStateFor: pathClosureState,
       previousPaths: previousPathStates(paths, previousRef),

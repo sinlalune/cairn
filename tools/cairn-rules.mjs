@@ -158,8 +158,8 @@ export const RULE_METADATA = {
     enforcing: 'acceptanceDrift(git diff --name-only $(git merge-base <trunk> HEAD) <trunk>, writes, governs) — never trunk === base'
   },
   'work-unit': {
-    condition: 'A changed path record carries no `cairn-unit` block for its current step, a block declares an unknown type, or source changed without a module note and the path record moving with it (the area-precise note is advisory)',
-    enforcing: 'parseWorkUnits(record) => workUnitErrors(unit) over WORK_UNIT_TYPES; touched(source roots) => touched(modules root) && touched(PATH_DIR); areaOf(file) => changed.includes(note) (advisory)'
+    condition: 'A changed path record carries no `cairn-unit` block for its current step, a block declares an unknown type, a running record with a completed unit names no object id in its checkpoint (ADR-004 d2), or source changed without a module note and the path record moving with it (the area-precise note is advisory)',
+    enforcing: 'parseWorkUnits(record) => workUnitErrors(unit) over WORK_UNIT_TYPES; status running && units > 0 => checkpointCommit(record); touched(source roots) => touched(modules root) && touched(PATH_DIR); areaOf(file) => changed.includes(note) (advisory)'
   },
   'provisional': {
     condition: 'A proposed candidate still contains commits marked Cairn-Provisional, or HEAD is itself provisional',
@@ -186,12 +186,12 @@ export const RULE_METADATA = {
     enforcing: "pathRegistrationState() === 'missing' (blocking) or declared migration exception (advisory)"
   },
   'registration-base': {
-    condition: 'Path base_commit cannot be proved to equal the registration commit parent',
-    enforcing: "pathRegistrationBaseState() === 'mismatch' | null"
+    condition: 'Path base_commit cannot be proved to equal the parent of the registration commit — the commit in which the record became running, in either record shape, a draft landed earlier notwithstanding (ADR-004 d1)',
+    enforcing: "pathRegistrationBaseState() === 'mismatch' | null, over activationCommit(the record's history reachable from the trunk)"
   },
   'remote-checkpoint': {
-    condition: 'Local path HEAD not present on upstream tracking branch',
-    enforcing: "pathRemoteCheckpoint(branch).state === 'missing' | 'unpushed'"
+    condition: 'The path branch\'s tip is not present on its upstream tracking branch',
+    enforcing: "pathRemoteCheckpoint(branch).state === 'missing' | 'unpushed', over resolveBranchRef(branch) — the local ref, else HEAD when detached, else the remote-tracking ref — against <branch>@{upstream} (ADR-004 d5)"
   },
   'path-history': {
     condition: 'A published path commit was rewritten while this host forbids rewriting (ADR-022)',
