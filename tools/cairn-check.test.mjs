@@ -76,7 +76,7 @@ import {
   profileLine,
   patternsMeet,
   writesOverlaps,
-  activationCommit,
+  statusCommit,
   checkpointCommit,
   resolveBranchRef,
   unresolvedProvisional,
@@ -1160,17 +1160,17 @@ test('the registration commit is the one where the record became running, not th
     asked.push(commit)
     return { [draft]: 'draft', [activation]: 'running', [later]: 'running' }[commit]
   }
-  assert.equal(activationCommit([draft, activation, later], statusAt), activation)
+  assert.equal(statusCommit([draft, activation, later], statusAt), activation)
   // And it stops there: each status is a `git show`, and the commits after the
   // activation answer nothing.
   assert.deepEqual(asked, [draft, activation])
   // Born running: the commit that adds it is the activation.
-  assert.equal(activationCommit([draft], () => 'running'), draft)
+  assert.equal(statusCommit([draft], () => 'running'), draft)
   // Still a draft, or a commit where the record cannot be read: there is no
   // registration commit to judge, and the rule says so as inconclusive.
-  assert.equal(activationCommit([draft], () => 'draft'), null)
-  assert.equal(activationCommit([draft], () => undefined), null)
-  assert.equal(activationCommit([], () => 'running'), null)
+  assert.equal(statusCommit([draft], () => 'draft'), null)
+  assert.equal(statusCommit([draft], () => undefined), null)
+  assert.equal(statusCommit([], () => 'running'), null)
 })
 
 test('a running path that has completed a unit names an object id in its checkpoint', () => {
@@ -1346,6 +1346,101 @@ test('a step record edited on the branch is answered by a later step that binds 
   // And with no claim at all the rule is what it was.
   const bare = run([step], 'path/cp-ex-010', [A_PATH], { immutableMutations: [step] })
   assert.ok(rules(bare, 'blocking').includes('record-integrity'))
+})
+
+/* ------------------------------------------------------------------ *
+ * ADR-008 decisions 2 and 4 — one commit for one path, one key
+ * ------------------------------------------------------------------ */
+
+test('the commit a record reached a status in is the first that declares it', () => {
+  const [draft, running, done] = ['a', 'b', 'c'].map((c) => c.repeat(40))
+  const statusAt = (commit) => ({ [draft]: 'draft', [running]: 'running', [done]: 'done' })[commit]
+  assert.equal(statusCommit([draft, running, done], statusAt), running, 'running by default, as registration reads it')
+  assert.equal(statusCommit([draft, running, done], statusAt, 'done'), done)
+  assert.equal(statusCommit([draft, running], statusAt, 'done'), null)
+})
+
+test('the integrating commit is one commit for one path', () => {
+  // On the adopter one request recorded two integrations, and one integrating
+  // unit was a merge commit that brought the trunk in and edited the record in
+  // the same object. Nothing read either shape.
+  const done = (id, file) => ({
+    file,
+    front: { id, route: 'lightweight', status: 'done', resolution: 'completed', subject_commit: CANDIDATE },
+    writes: []
+  })
+  const first = done('CP-EX-010', `${PATH_DIR}/CP-EX-010.md`)
+  const second = done('CP-EX-011', `${PATH_DIR}/CP-EX-011.md`)
+  const integrating = {
+    stateChanged: [first.file, second.file],
+    previousPaths: new Map([
+      [first.file, { ...first.front, status: 'ready' }],
+      [second.file, { ...second.front, status: 'ready' }]
+    ]),
+    journalEntries: [{ path: 'CP-EX-010' }, { path: 'CP-EX-011' }]
+  }
+
+  const inOneCommit = 'f'.repeat(40)
+  const two = run([first.file, second.file], 'main', [first, second], {
+    ...integrating,
+    integrationStateFor: () => ({ commit: inOneCommit, merge: false, readyBehind: true })
+  })
+  assert.ok(messages(two, 'acceptance', 'blocking')
+    .some((m) => new RegExp(`CP-EX-010, CP-EX-011 reach done in ${inOneCommit}`).test(m)),
+    `findings were ${JSON.stringify(messages(two, 'acceptance', 'blocking'))}`)
+
+  // Two arrivals in one COMPARISON, each in its own commit, is an ordinary
+  // request spanning two integrations — and refusing it would tell the author
+  // to do what they did.
+  const apart = run([first.file, second.file], 'main', [first, second], {
+    ...integrating,
+    integrationStateFor: (file) => ({ commit: file === first.file ? 'a'.repeat(40) : 'b'.repeat(40), merge: false, readyBehind: true })
+  })
+  assert.deepEqual(messages(apart, 'acceptance', 'blocking'), [])
+
+  // One path, and the commit that records it is not a merge object.
+  const one = run([first.file], 'main', [first], {
+    ...integrating,
+    stateChanged: [first.file],
+    previousPaths: new Map([[first.file, { ...first.front, status: 'ready' }]]),
+    integrationStateFor: () => ({ commit: 'f'.repeat(40), merge: false })
+  })
+  assert.deepEqual(messages(one, 'acceptance', 'blocking'), [])
+
+  // The same arrival, carried by a merge object.
+  const merged = run([first.file], 'main', [first], {
+    ...integrating,
+    stateChanged: [first.file],
+    previousPaths: new Map([[first.file, { ...first.front, status: 'ready' }]]),
+    integrationStateFor: () => ({ commit: 'f'.repeat(40), merge: true })
+  })
+  assert.ok(messages(merged, 'acceptance', 'blocking').some((m) => /merge/.test(m)),
+    `findings were ${JSON.stringify(messages(merged, 'acceptance', 'blocking'))}`)
+
+  // A record that was already done is not arriving, and is nobody's
+  // integrating commit.
+  const settled = run([first.file], 'main', [first], {
+    ...integrating,
+    stateChanged: [first.file],
+    previousPaths: new Map([[first.file, first.front]]),
+    integrationStateFor: () => ({ commit: 'f'.repeat(40), merge: true })
+  })
+  assert.deepEqual(messages(settled, 'acceptance', 'blocking'), [])
+})
+
+test('the journal entry is asked for under the key it is written with', () => {
+  const done = {
+    ...A_PATH,
+    front: { ...A_PATH.front, status: 'done', resolution: 'completed', subject_commit: CANDIDATE }
+  }
+  const found = run([done.file], 'main', [done], {
+    stateChanged: [done.file],
+    previousPaths: new Map([[done.file, { ...done.front, status: 'ready' }]]),
+    journalEntries: []
+  })
+  const message = messages(found, 'journal-entry', 'blocking')[0] ?? ''
+  assert.match(message, new RegExp(`${METADATA_NAMESPACE}\\.path: ${done.front.id}`),
+    'the fifteen adopter entries carry a top-level `path:` too, copied forward from a message that named one')
 })
 
 /* ------------------------------------------------------------------ *
@@ -1736,10 +1831,16 @@ test('a trunk commit cannot take a path from running to done without a ready com
   const errors = transitionErrors(A_PATH.front, done, false)
   assert.ok(errors.some((e) => /running → done is not allowed/.test(e)),
     `the trunk edge must be refused — got ${JSON.stringify(errors)}`)
-  assert.ok(errors.some((e) => /declare `ready` on the branch first/.test(e)),
-    `the refusal must name its remedy — got ${JSON.stringify(errors)}`)
+  assert.ok(errors.some((e) => /the branch declares `ready` in the administrative commit/.test(e) &&
+    /the trunk records `done` in a commit of its own after the merge/.test(e)),
+    `the refusal must name its remedy, whichever half is missing — got ${JSON.stringify(errors)}`)
   // The edge it replaces stays open: an integrating commit records ready → done.
   assert.deepEqual(transitionErrors({ ...A_PATH.front, status: 'ready', subject_commit: CANDIDATE }, done, false), [])
+  // And the same integration read from an integrating request, whose range
+  // holds the merge as well: the endpoints say running → done, while the
+  // `ready` the branch declared is a commit inside the range. The record's
+  // sentence is "with no ready commit behind it" (ADR-008 decision 2).
+  assert.deepEqual(transitionErrors(A_PATH.front, done, false, true), [])
 })
 
 test('a path branch claiming done is blocked', () => {

@@ -109,7 +109,7 @@ const STEP = 'project/coding-paths/CP-FIXTURE-001/steps/S01.md'
 
 /** The opening acceptance a record carries inline, bound to the digest of the
  *  definition of done as it stands when the record is registered. */
-const OPENING_SECTION = (digest) => `
+const OPENING_SECTION = (digest, record = RECORD) => `
 ## Opening acceptance
 
 \`\`\`yaml
@@ -117,13 +117,13 @@ decision: accepted
 accepted_by: fixture-opener
 accepted_roles: [initiator, reviewer]
 accepted_at: ${TODAY}T09:00:00Z
-scope_ref: ${RECORD}#definition-of-done
+scope_ref: ${record}#definition-of-done
 scope_digest: ${digest}
 \`\`\`
 `
 
 const PATH_RECORD = (overrides = {}) => {
-  const { opening = null, ...rest } = overrides
+  const { opening = null, record = RECORD, ...rest } = overrides
   const fields = {
     id: 'CP-FIXTURE-001',
     route: 'lightweight',
@@ -146,7 +146,7 @@ cairn:
 ${body}
 ---
 
-# CP-FIXTURE-001 — Fixture path
+# ${fields.id} — Fixture path
 
 ## Goal
 
@@ -155,7 +155,7 @@ Exercise one rule.
 ## Definition of done
 
 - [ ] The rule fires.
-${opening ? OPENING_SECTION(opening) : ''}`
+${opening ? OPENING_SECTION(opening, record) : ''}`
 }
 
 function scopeDigest(dir, record = RECORD) {
@@ -168,8 +168,9 @@ function scopeDigest(dir, record = RECORD) {
  *  the digest the first write produced. The definition of done sits above the
  *  acceptance, so the second write leaves the digested text unchanged. */
 function writeAcceptedRecord(dir, fields) {
-  write(dir, RECORD, PATH_RECORD(fields))
-  write(dir, RECORD, PATH_RECORD({ ...fields, opening: scopeDigest(dir) }))
+  const record = fields.record ?? RECORD
+  write(dir, record, PATH_RECORD(fields))
+  write(dir, record, PATH_RECORD({ ...fields, opening: scopeDigest(dir, record) }))
 }
 
 /** A green repository with one registered path, checked out on its branch.
@@ -947,6 +948,185 @@ test('adversarial: provisional — a candidate whose range still carries a Cairn
     const found = check(dir)
     assert.deepEqual(blocking(found), ['provisional'], describe(found))
     assert.ok(advisory(found).includes('provisional'), 'HEAD is that draft, and is reported as one')
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+/* ------------------------------------------------------------------ *
+ * The integrating commit — ADR-008 decisions 2 and 4
+ * ------------------------------------------------------------------ */
+
+const JOURNAL_ENTRY = (id) => `---
+type: Cairn Journal Entry
+title: ${id} — integrated
+timestamp: ${TODAY}T00:00:00Z
+cairn:
+  path: ${id}
+  outcome: completed
+---
+
+# ${id}
+
+Integrated by the fixture.
+`
+
+/** The record edits an integrating commit carries: `done`, the resolution, the
+ *  journal entry, and the regenerated view. */
+function recordDone(dir, { record = RECORD, id = 'CP-FIXTURE-001' } = {}) {
+  write(dir, record,
+    readFileSync(join(dir, record), 'utf8')
+      .replace('  status: ready\n', '  status: done\n  resolution: completed\n'))
+  write(dir, `project/log/${TODAY}-${id.toLowerCase()}.md`, JOURNAL_ENTRY(id))
+  regenerateView(dir)
+}
+
+/** A real repository at the moment the integrating commit is being made: the
+ *  administrative commit pushed, the candidate landed on the trunk through a
+ *  `--no-ff` merge, and `done` recorded — in one commit of its own, or, when
+ *  `mergeCarriesTheEdit`, inside the merge object itself, which is the shape
+ *  the adopter produced twice. */
+function integratedRepository({ shape = 'one commit for one path' } = {}) {
+  const { dir } = readyRepository()
+  if (shape === 'done on the branch') {
+    // The record is taken to `done` on the branch itself, so the merge is
+    // TREESAME to it and a walk that follows the branch side never sees the
+    // merge at all — the arrival looks like an ordinary commit while the only
+    // thing that put it on the trunk is the merge object.
+    recordDone(dir)
+    commit(dir, 'Close CP-FIXTURE-001, and call it done')
+  } else {
+    commit(dir, 'Close CP-FIXTURE-001')
+  }
+  git(dir, 'push', '-q', 'origin', 'path/cp-fixture-001')
+  git(dir, 'checkout', '-q', 'main')
+  const trunkBefore = git(dir, 'rev-parse', 'HEAD').trim()
+  if (shape === 'merge carries the edit') {
+    git(dir, 'merge', '--no-ff', '--no-commit', 'path/cp-fixture-001')
+    recordDone(dir)
+    commit(dir, 'Integrate CP-FIXTURE-001')
+  } else {
+    git(dir, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture',
+      'merge', '-q', '--no-ff', '-m', 'Merge request #1', 'path/cp-fixture-001')
+    if (shape !== 'done on the branch') {
+      recordDone(dir)
+      commit(dir, 'Integrate CP-FIXTURE-001')
+    }
+  }
+  return { dir, trunkBefore }
+}
+
+test('the integrating commit is one commit for one path, and the honest shape is green', () => {
+  const { dir, trunkBefore } = integratedRepository()
+  try {
+    // The integrating request's own run: the trunk as it was, against the
+    // commit that would land.
+    const found = check(dir, '--base', trunkBefore)
+    assert.deepEqual(blocking(found), [],
+      `an integration made as one commit for one path must be green: ${describe(found)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+test('adversarial: acceptance — the integrating commit is a merge object carrying the edit', () => {
+  COVERED.add('acceptance')
+  const { dir, trunkBefore } = integratedRepository({ shape: 'merge carries the edit' })
+  try {
+    const found = check(dir, '--base', trunkBefore)
+    assert.ok(blocking(found).includes('acceptance'), `findings were ${describe(found)}`)
+    assert.ok(found.findings.some((f) => f.rule === 'acceptance' && /merge object/.test(f.message)),
+      `the refusal must name the shape: ${describe(found)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+test('adversarial: acceptance — the merge itself is the arrival, because the branch called it done', () => {
+  COVERED.add('acceptance')
+  const { dir, trunkBefore } = integratedRepository({ shape: 'done on the branch' })
+  try {
+    const found = check(dir, '--base', trunkBefore)
+    assert.ok(found.findings.some((f) => f.rule === 'acceptance' && /merge object/.test(f.message)),
+      `a walk that follows the branch side reports an ordinary commit here: ${describe(found)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+const SECOND = 'project/coding-paths/CP-SECOND-003.md'
+
+/** A second closed path waiting on the trunk for its own integration. */
+function writeSecondReadyPath(dir, landed) {
+  writeAcceptedRecord(dir, {
+    record: SECOND,
+    id: 'CP-SECOND-003',
+    status: 'ready',
+    branch: 'path/cp-second-003',
+    base_commit: landed,
+    subject_commit: landed
+  })
+}
+
+/** Two closed paths on one trunk, integrated in one commit or in two. The
+ *  difference between the two fixtures is that `and`, and nothing else. */
+function twoIntegrations(dir, { inOneCommit }) {
+  commit(dir, 'Close CP-FIXTURE-001')
+  git(dir, 'push', '-q', 'origin', 'path/cp-fixture-001')
+  git(dir, 'checkout', '-q', 'main')
+  writeSecondReadyPath(dir, git(dir, 'rev-parse', 'HEAD').trim())
+  commit(dir, 'CP-SECOND-003 is ready')
+  const trunkBefore = git(dir, 'rev-parse', 'HEAD').trim()
+
+  git(dir, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture',
+    'merge', '-q', '--no-ff', '-m', 'Merge request #1', 'path/cp-fixture-001')
+  recordDone(dir)
+  if (!inOneCommit) commit(dir, 'Integrate CP-FIXTURE-001')
+  recordDone(dir, { record: SECOND, id: 'CP-SECOND-003' })
+  commit(dir, inOneCommit ? 'Integrate both' : 'Integrate CP-SECOND-003')
+  return trunkBefore
+}
+
+test('adversarial: acceptance — one commit takes two paths to done', () => {
+  COVERED.add('acceptance')
+  const { dir } = readyRepository()
+  try {
+    const trunkBefore = twoIntegrations(dir, { inOneCommit: true })
+    const found = check(dir, '--base', trunkBefore)
+    assert.ok(blocking(found).includes('acceptance'), `findings were ${describe(found)}`)
+    assert.ok(found.findings.some((f) => f.rule === 'acceptance' &&
+      /CP-FIXTURE-001, CP-SECOND-003 reach done in [0-9a-f]{40}/.test(f.message)),
+      `the refusal must name both paths and the commit: ${describe(found)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+test('a request that spans two honest integrations is not two paths in one commit', () => {
+  // The refusal is about one COMMIT recording two integrations. A range that
+  // happens to contain two of them, each made on its own, is an ordinary
+  // request — and refusing it would tell the author to do what they did.
+  const { dir } = readyRepository()
+  try {
+    const trunkBefore = twoIntegrations(dir, { inOneCommit: false })
+    const found = check(dir, '--base', trunkBefore)
+    assert.deepEqual(blocking(found), [], `two honest integrations must be green: ${describe(found)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+test('the journal entry is asked for under the key it is written with', () => {
+  // Every one of the fifteen adopter entries carries a top-level `path:` as
+  // well as the namespaced one, copied forward from the first — because the
+  // message asked for the key the checker does not read.
+  const { dir, trunkBefore } = integratedRepository()
+  try {
+    rmSync(join(dir, `project/log/${TODAY}-cp-fixture-001.md`))
+    commit(dir, 'the entry, gone')
+    const found = check(dir, '--base', trunkBefore)
+    assert.ok(found.findings.some((f) => f.rule === 'journal-entry' && /cairn\.path: CP-FIXTURE-001/.test(f.message)),
+      `the refusal names the key the checker reads: ${describe(found)}`)
   } finally {
     cleanup(dir, `${dir}.git`)
   }

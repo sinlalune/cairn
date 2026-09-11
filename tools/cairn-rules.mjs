@@ -166,8 +166,8 @@ export const RULE_METADATA = {
     enforcing: "git log --grep=^Cairn-Provisional: base..subject_commit --not <trunk> (ADR-004 d3), each unresolved by any later commit of this path publishing a valid cairn-unit block for a step its record did not carry (repair 006); blocking on a ready path, advisory at HEAD"
   },
   'journal-entry': {
-    condition: 'A path record reaches `done` in this change and no journal entry declares that path',
-    enforcing: "journalRecords(loadJournal(), id) on the transition into done; inconclusive when the journal cannot be read"
+    condition: 'A path record reaches `done` in this change and no journal entry declares that path under `cairn.path` (ADR-008 d4)',
+    enforcing: "journalRecords(loadJournal(), id) over the entries' own metadata block on the transition into done; inconclusive when the journal cannot be read"
   },
   'concept-orphan': {
     condition: 'A concept note that no normative or learning text outside the wiki links to',
@@ -187,7 +187,7 @@ export const RULE_METADATA = {
   },
   'registration-base': {
     condition: 'Path base_commit cannot be proved to equal the parent of the registration commit — the commit in which the record became running, in either record shape, a draft landed earlier notwithstanding (ADR-004 d1)',
-    enforcing: "pathRegistrationBaseState() === 'mismatch' | null, over activationCommit(the record's history reachable from the trunk)"
+    enforcing: "pathRegistrationBaseState() === 'mismatch' | null, over statusCommit(the record's history reachable from the trunk, over both record shapes)"
   },
   'remote-checkpoint': {
     condition: 'The path branch\'s tip is not present on its upstream tracking branch',
@@ -202,12 +202,12 @@ export const RULE_METADATA = {
     enforcing: "trunkContained(trunkRef) === false"
   },
   'transition': {
-    condition: 'Changed path state is not an allowed lifecycle transition, a path branch claims done, a declaration was deleted rather than archived, or the prior state is unavailable',
-    enforcing: 'transitionErrors(previous, current, onPathBranch)'
+    condition: 'Changed path state is not an allowed lifecycle transition, a path branch claims done, a declaration was deleted rather than archived, or the prior state is unavailable. A range that holds the merge as well reads what the record declared in the commit before the arrival, on the trunk\'s own line, rather than at the base (ADR-008 d2)',
+    enforcing: 'transitionErrors(previous, current, onPathBranch, integrationState(record, comparisonRef, id).readyBehind)'
   },
   'acceptance': {
-    condition: 'A ready path\'s candidate is not an ancestor, or is followed by anything but one administrative commit, or implementation changed after it, or the closure moved a field acceptance was measured against; a done path\'s candidate is not reachable. On manual-git additionally: the closing record in the path folder is missing, names another candidate, lacks its fields, is not a completed review, or its dispositions do not match the advisories attested at the candidate (advisory: a collapsed reviewer, or a prose disposition on a grandfathered path). On pull-request the request\'s description and approval are the record and are not read',
-    enforcing: 'pathClosureState(path) + closureFieldErrors(recordAtC, current) [+ manual-git: closingAcceptanceErrors(record) + fillErrors(record) + dispositionErrors(disposition, advisories_at_candidate, raised) + opening.accepted_by === closing.accepted_by]'
+    condition: 'A ready path\'s candidate is not an ancestor, or is followed by anything but one administrative commit, or implementation changed after it, or the closure moved a field acceptance was measured against; a done path\'s candidate is not reachable, its arrival is carried by a merge object, or one commit takes two paths to done (ADR-008 d2). On manual-git additionally: the closing record in the path folder is missing, names another candidate, lacks its fields, is not a completed review, or its dispositions do not match the advisories attested at the candidate (advisory: a collapsed reviewer, or a prose disposition on a grandfathered path). On pull-request the request\'s description and approval are the record and are not read',
+    enforcing: 'pathClosureState(path) + integrationState(record, comparisonRef, id).merge + one arrival at done per commit + closureFieldErrors(recordAtC, current) [+ manual-git: closingAcceptanceErrors(record) + fillErrors(record) + dispositionErrors(disposition, advisories_at_candidate, raised) + opening.accepted_by === closing.accepted_by]'
   },
   'record-integrity': {
     condition: 'An immutable event/history record changed, or a born-sliced step no longer preserves its adding blob as a prefix and no later step of this path binds the blob it replaces to the blob it adds (repair 005)',

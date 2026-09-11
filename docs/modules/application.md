@@ -55,7 +55,10 @@ local ref, else `HEAD` when the checkout is detached, else the remote-tracking
 ref; the range from a path's base to its candidate is read as this path's own
 commits alone, where a draft is resolved by the later commit that publishes the
 unit it was drafting, and an edited step record is answered by a later step of
-the same path binding the blob it replaces to the blob it adds; it validates `depends_on:` and knows two routes; the live-view generator
+the same path binding the blob it replaces to the blob it adds; it reads the
+integration from the same range — the commit in which a record reached `done`,
+whether that commit is a merge object carrying the edit, and whether the
+`ready` the branch declared is behind it; it validates `depends_on:` and knows two routes; the live-view generator
 marks each live path unblocked or names what it waits on. Closure follows the
 configured transport: on `pull-request` the checker proves the candidate, its
 closure surface, the opening digest and the trunk drift from Git and reads no

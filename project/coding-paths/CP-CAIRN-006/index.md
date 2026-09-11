@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-006
   route: full
   status: running
-  current_step: S05
+  current_step: S06
   base_commit: 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
   branch: path/cp-cairn-006
   assigned_writer: cp-cairn-006-writer
@@ -292,15 +292,22 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
   checked against the blobs the record really carries; and the two changed-file
   range rules audited, left as they were, and held there by a fixture that
   lands another path's unit on the trunk and merges it in — **complete**
-- **S06** — not started
+- [**S06**](./steps/S06.md) — one commit for one path: the integrating commit
+  read from the trunk's own first-parent line, refused when it is a merge
+  object carrying the edit and when one commit takes two paths to `done`, with
+  the honest shape green beside both; the `ready` a branch declared read from
+  the commit before the arrival, so an integrating request no longer refuses
+  every honest integration; and the journal entry asked for under
+  `cairn.path`, the key the checker reads — **complete**
+- **S07** — not started
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : d16c8594c3a3aaf7bde62cbf6d3c452642e8f154 — S04, which commit, which branch, which checkpoint; S05's own commit is named here by S06
-unit   : 4 — S04
+commit : 453cbafa42992e5bde8db945d1799e784f3ebfbf — S05, what a range means; S06's own commit is named here by S07
+unit   : 5 — S05
 base   : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
 trunk  : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8 — origin/main at registration
 ```
@@ -308,17 +315,24 @@ trunk  : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8 — origin/main at registratio
 ### Next action
 
 From the worktree `../cairn-cp-cairn-006` on branch `path/cp-cairn-006`:
-run S06 of the plan with `cairn-unit` — one commit for one path, one key,
-one remedy each. ADR-008 decision 2: the integrating commit is refused
-when it is a merge object carrying the edit, or when it takes two paths
-to `done` in one commit. Decision 4: the journal entry is read under the
-one key `cairn.path`, and the message that named two keys is gone.
-Decision 6: every blocking refusal names its remedy in one sentence —
-read the messages the rules print today against that, this unit's own
-`provisional` and `record-integrity` messages included. And the stale
-citations of an earlier repository's records under `tools/` are replaced
-by this repository's. Type `implementation`; the failing test comes
-first. Run the review movement on the unit's diff as the unit skill says.
+run S07 of the plan with `cairn-unit` — every refusal names its remedy.
+ADR-008 decision 6: every blocking message in `tools/cairn-check.mjs`
+read once against the sentence *say what to do, where you say what is
+wrong*, including the messages the pure error functions produce —
+`transitionErrors`, `workUnitErrors`, `pathFrontmatterErrors`,
+`closingAcceptanceErrors`, `routeDescent`, `closureFieldErrors`. Two
+remedies recur and are stated wherever they apply: a pushed record is
+corrected by a superseding step, never by editing it, and an object id
+the checker computes is never typed to satisfy it. The adopter's own
+sentence is the shape to match: *unsupported unit type `review` —
+allowed: …; a pushed record is corrected by a superseding repair step*.
+`provisional`'s *fold each* is the one message this path has already
+found false on a no-rewrite host. The fixture suite asserts on the remedy
+where it asserts on the message, and the citations of an earlier
+repository's records under `tools/` — `CP-OPS-002`, `CP-UI-TYPOGRAPHY`,
+Atomik — are replaced by references a reader of this repository can
+open, or by the fact without the dangling id. Type `implementation`. Run
+the review movement on the unit's diff as the unit skill says.
 
 ### Blockers
 
@@ -326,6 +340,21 @@ None.
 
 ### Tried and rejected
 
+- Carrying ADR-008's decisions 2, 4 and 6 as the single unit the plan named
+  (S06) — decision 6 is a sweep over every blocking message with the fixtures
+  asserting on the remedy, and the citations belong with it: one reader's
+  question, *what does this refusal tell me*, against this unit's, *what may
+  the integrating commit be*. [`plan.md`](./plan.md) is amended and the later
+  steps shift by one; the definition of done is untouched, and item 7 is
+  advanced by both units.
+- The `cairn-close` skill's sentence, which ADR-008 decision 2 also names
+  (S06) — `skills/**` is row 1's surface and item 10 requires it unchanged
+  here. The checker refuses both shapes now; the skill still owes the sentence
+  that stops a writer producing them, and the closing review should say so.
+- An inconclusive branch for a comparison ref that resolves to nothing (S06's
+  second review) — `previousRef` is `comparisonRef`'s output, a `merge-base` or
+  a `rev-parse HEAD`, so it is always a resolved object id; the branch could
+  not be reached by any repository a test can build.
 - An ordering predicate for *later* in a supersession (S05, second review) —
   the claim must name the blob the record carries NOW, so whichever order the
   two commits land in, both texts are named and both stay reachable, which is

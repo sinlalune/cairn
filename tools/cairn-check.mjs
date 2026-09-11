@@ -548,10 +548,18 @@ export function pathFrontmatterErrors(front, file = null) {
 
 /** A transition is checked whenever the previous path state is available.
  * `null` means this is a newly created path declaration. */
-export function transitionErrors(previous, current, onPathBranch = false) {
+export function transitionErrors(previous, current, onPathBranch = false, readyBehind = false) {
   const errors = []
-  const from = previous?.status ?? null
   const to = current?.status
+  // A comparison sees two ENDPOINTS. An integrating request's range holds the
+  // merge as well as the integrating commit, so it finds `running` at the base
+  // and `done` at the head while the `ready` the branch declared sits inside
+  // the range, in a commit the merge brought in. ADR-001 decision 7 refuses a
+  // trunk commit that takes a path to `done` WITH NO READY COMMIT BEHIND IT —
+  // a question about the history, which the endpoints cannot answer and
+  // `readyBehind` does (ADR-008 decision 2).
+  const declared = previous?.status ?? null
+  const from = readyBehind && declared === 'running' && to === 'done' ? 'ready' : declared
   const allowed = {
     null: ['draft', 'running'],
     draft: ['draft', 'running', 'archived'],
@@ -581,7 +589,7 @@ export function transitionErrors(previous, current, onPathBranch = false) {
   if (!(allowed[String(from)] ?? []).includes(to)) {
     errors.push(
       !onPathBranch && from === 'running' && to === 'done'
-        ? 'transition running → done is not allowed: the integrating commit records ready → done — declare `ready` on the branch first, in the administrative commit that carries subject_commit'
+        ? 'transition running → done is not allowed: the trunk records ready → done — the branch declares `ready` in the administrative commit that carries subject_commit, and the trunk records `done` in a commit of its own after the merge'
         : `transition ${from ?? 'new'} → ${to ?? 'missing'} is not allowed`
     )
   }
@@ -625,18 +633,22 @@ function dependsOn(front) {
   return Array.isArray(front?.depends_on) ? front.depends_on : []
 }
 
-/** ADR-004 decision 1: the registration commit is the trunk commit in which
- *  the record's status became `running` — not the one that first added the
- *  file. A record may land as a `draft` and be activated later, and judging
- *  the draft's parent demanded a `base_commit` the work never forked from.
- *  The adopter answered that demand by rewriting the field, which is how the
- *  trunk came to carry a value the specification's own definition calls false.
+/** The commit in which a record first declared a status — where a lifecycle
+ *  event HAPPENED, as against where the file was touched.
  *
- *  `commits` is the record's trunk history, oldest first; `statusAt` reads the
- *  status the record declared in one of them, and each read is a `git show`,
- *  so the search stops at the activation. */
-export function activationCommit(commits, statusAt) {
-  return commits.find((commit) => statusAt(commit) === 'running') ?? null
+ *  ADR-004 decision 1 is the registration: the trunk commit in which the
+ *  status became `running`, not the one that first added the file. A record
+ *  may land as a `draft` and be activated later, and judging the draft's
+ *  parent demanded a `base_commit` the work never forked from; the adopter
+ *  answered that demand by rewriting the field, which is how the trunk came to
+ *  carry a value the specification's own definition calls false. ADR-008
+ *  decision 2 is the integration, and asks the same question of `done`.
+ *
+ *  `commits` is the record's history in the range, oldest first; `statusAt`
+ *  reads the status the record declared in one of them, and each read is a
+ *  `git show`, so the search stops at the first match. */
+export function statusCommit(commits, statusAt, status = 'running') {
+  return commits.find((commit) => statusAt(commit) === status) ?? null
 }
 
 /** The commit a record's resume section names as its checkpoint, or `null`
@@ -1745,6 +1757,7 @@ export function evaluate({
   immutableMutations = [],
   relocations = [],
   supersessions = [],
+  integrationStateFor = null,
   branchSource = 'symbolic-ref',
   workUnits = null,
   rewritingForbidden = REWRITING_FORBIDDEN,
@@ -1905,18 +1918,59 @@ export function evaluate({
     }
   }
 
+  // ADR-008 decision 2. The integrating unit is ONE COMMIT FOR ONE PATH: one
+  // commit from a clean trunk checkout carrying `done`, the resolution, the
+  // live view and the journal entry. The arrivals are counted once here,
+  // because "how many paths does this change integrate" is a question about
+  // the change and not about any one record.
+  const previousOf = (file) => (previousPaths instanceof Map
+    ? previousPaths.get(file)
+    : previousPaths?.[file])
+  const arrivingDone = paths.filter((path) =>
+    path.front?.status === 'done' &&
+    stateChanged.includes(path.file) &&
+    previousOf(path.file) !== undefined &&
+    previousOf(path.file)?.status !== 'done')
+  // One read per record reaching `done`, for the two rules that ask about it.
+  // Only an arrival is read: a record that was already `done` integrated in
+  // some earlier change, and this one has no integrating commit of its own.
+  const integrationOf = new Map(arrivingDone
+    .map((path) => [path.file, integrationStateFor?.(path.file, path.front?.id) ?? null]))
+  // Two arrivals in one COMMIT is the refusal; two in one comparison is an
+  // ordinary request that spans two honest integrations, and refusing it would
+  // tell the author to do what they already did. An arrival with no commit yet
+  // is the one being prepared in the working tree, and there is one of those.
+  const perCommit = new Map()
+  for (const path of arrivingDone) {
+    const key = integrationOf.get(path.file)?.commit ?? null
+    if (!perCommit.has(key)) perCommit.set(key, [])
+    perCommit.get(key).push(path.front.id)
+  }
+  for (const [commit, ids] of perCommit) {
+    if (ids.length > 1) {
+      add('blocking', 'acceptance',
+        `${ids.join(', ')} reach done in ${commit ?? 'the commit being prepared'} — integrate one path per commit, from a clean trunk checkout, so that each integration can be read, reverted and journalled on its own`)
+    }
+  }
+  for (const path of arrivingDone) {
+    const integration = integrationOf.get(path.file)
+    if (integration?.merge) {
+      add('blocking', 'acceptance',
+        `${path.file} reaches done in ${integration.commit}, which is a merge object carrying the edit — land the candidate with the merge, then record done in one commit of its own on the trunk`)
+    }
+  }
+
   for (const path of paths) {
     if (stateChanged.includes(path.file)) {
-      const previous = previousPaths instanceof Map
-        ? previousPaths.get(path.file)
-        : previousPaths?.[path.file]
+      const previous = previousOf(path.file)
       if (previous === undefined) {
         add('blocking', 'transition',
           `${path.file}: previous path state is unavailable — provide a complete comparison ref`,
           'inconclusive')
       } else {
         const legacy = migrationExempt.has(String(path.front?.id ?? ''))
-        for (const error of transitionErrors(previous, path.front, onPath && path === match)) {
+        for (const error of transitionErrors(previous, path.front, onPath && path === match,
+          integrationOf.get(path.file)?.readyBehind ?? false)) {
           add(legacy ? 'advisory' : 'blocking', 'transition',
             `${path.file}: ${error}${legacy ? ' (grandfathered: this record predates the v0.2 schema)' : ''}`)
         }
@@ -1929,10 +1983,7 @@ export function evaluate({
     // the convention existed are not in any diff, and draining them is a
     // migration rather than a repair.
     if (path.front?.status === 'done' && stateChanged.includes(path.file)) {
-      const previous = previousPaths instanceof Map
-        ? previousPaths.get(path.file)
-        : previousPaths?.[path.file]
-      const arriving = previous !== undefined && previous?.status !== 'done'
+      const arriving = arrivingDone.includes(path)
       const id = String(path.front?.id ?? '')
       if (arriving && journalEntries == null) {
         add('blocking', 'journal-entry',
@@ -1947,7 +1998,7 @@ export function evaluate({
         // Exempting them would grandfather a requirement they can satisfy today,
         // which is a bypass rather than a migration.
         add('blocking', 'journal-entry',
-          `${path.file} reaches done with no journal entry declaring \`path: ${id}\` — write one file under ${JOURNAL_DIR}/ in this same change`)
+          `${path.file} reaches done with no journal entry declaring \`${METADATA_NAMESPACE}.path: ${id}\` — write one file under ${JOURNAL_DIR}/ in this same change, with the id under the metadata block and nowhere else`)
       }
     }
 
@@ -2530,31 +2581,15 @@ function pathRegistrationBaseState(trunkRef, branch, paths) {
   // declared this path `running`. Both record shapes are read, by the declared
   // id, for the same reason `pathRegistrationState` reads both — a record's
   // history is not erased by moving the file that carries it.
-  const shapes = [`${PATH_DIR}/${id}.md`, `${PATH_DIR}/${id}/index.md`]
-  // Every commit reachable from the trunk that touched the record, oldest
-  // first, in either shape.
-  //
-  // Not only the one that ADDED it: a record may land as a draft and be
-  // activated later (ADR-004 decision 1). Both shapes, because a record landed
-  // flat and sliced into a folder when it was activated has its draft under
-  // one name and its activation under the other.
-  //
-  // NOT `--first-parent`. On a `pull-request` registration transport the
+  // Not only the commit that ADDED the record: it may land as a draft and be
+  // activated later (ADR-004 decision 1). And NOT `--first-parent`. On a `pull-request` registration transport the
   // activation reaches the trunk as a merge, and that merge's first parent is
   // the trunk AT THE MERGE — a commit the registrant could not have pinned,
   // because the trunk may move between authoring the record and merging it.
   // The commit that declared `running` is the one whose parent is the base the
   // work forks from, which is what `base_commit` names.
-  const touching = gitOrNull(['log', '--format=%H', '--reverse', trunkRef, '--', ...shapes])
-  const commits = touching?.split('\n').filter(Boolean) ?? []
-  const statusAt = (commit) => {
-    for (const shape of shapes) {
-      const text = gitOrNull(['show', `${commit}:${shape}`])
-      if (text != null) return metadataOf(readFrontmatter(text)?.data)?.status
-    }
-    return undefined
-  }
-  const registration = activationCommit(commits, statusAt)
+  const { commits, statusAt } = recordHistory(trunkRef, recordShapes(id, match.file))
+  const registration = statusCommit(commits, statusAt)
   if (!registration) return null
   const parent = gitOrNull(['rev-parse', `${registration}^`])
   const declared = gitOrNull(['rev-parse', match.front.base_commit])
@@ -2649,6 +2684,82 @@ function pathClosureState(path, record) {
     subjectIsAncestor: true,
     commitsAfterSubject: count,
     forbiddenFiles: files.filter((file) => !allowed(file))
+  }
+}
+
+/** Where a record's history can be found: the two shapes a declaration takes,
+ *  and — because no rule requires a record's filename to equal the id it
+ *  declares — the file it is actually at. A record landed flat and sliced into
+ *  a folder has its earlier states under one name and its later ones under the
+ *  other, and a checker that reads one of them reads half a history. */
+function recordShapes(id, file = null) {
+  return [...new Set([`${PATH_DIR}/${id}.md`, `${PATH_DIR}/${id}/index.md`, ...(file ? [file] : [])])]
+}
+
+/**
+ * A record's history in a range, oldest first, with a reader for the status it
+ * declared at any commit.
+ *
+ * The caller supplies the names to walk — `recordShapes` gives both of the two
+ * a record may sit under, because a record's history is not erased by moving
+ * the file that carries it.
+ *
+ * `--topo-order` because the question is always about ancestry, and `--reverse`
+ * alone orders by commit date, which a rebase or a skewed clock can invert.
+ */
+function recordHistory(range, shapes, firstParent = false) {
+  const raw = gitOrNull([
+    'log', '--format=%H', '--topo-order', '--reverse',
+    ...(firstParent ? ['--first-parent'] : []), range, '--', ...shapes
+  ])
+  return {
+    commits: raw?.split('\n').filter(Boolean) ?? [],
+    statusAt: (commit) => {
+      for (const shape of shapes) {
+        const text = gitOrNull(['show', `${commit}:${shape}`])
+        if (text != null) return metadataOf(readFrontmatter(text)?.data)?.status
+      }
+      return undefined
+    }
+  }
+}
+
+/**
+ * ADR-008 decision 2. What this comparison holds about a record's integration:
+ * the commit in which the TRUNK came to say `done`, whether that commit is a
+ * merge object, and what the record said in the commit before it.
+ *
+ * `--first-parent`, which is the opposite of what `pathRegistrationBaseState`
+ * needs and for the opposite reason. There the question is which commit the
+ * registrant's `base_commit` should name, so a merge's first parent — the trunk
+ * as it stood at the merge — is exactly the wrong answer. Here the question is
+ * what the TRUNK said over time, and a walk that follows the branch side
+ * answers it about a branch: without the flag, a merge bringing in a branch
+ * that had already declared `done` is TREESAME to that branch and never
+ * appears, so the arrival looks like an ordinary commit and the merge object
+ * carrying it goes unread.
+ *
+ * `commit` is null when the arrival is not committed yet — the writer
+ * preparing the integrating commit in the working tree has no commit to judge,
+ * and the shape is read by the run that does see it: the integrating request's,
+ * which compares the trunk with the commit that would land.
+ */
+function integrationState(file, ref, id) {
+  if (!ref) return null
+  const { commits, statusAt } = recordHistory(`${ref}..HEAD`, recordShapes(id, file), true)
+  const commit = statusCommit(commits, statusAt, 'done')
+  const parents = commit
+    ? gitOrNull(['log', '--format=%P', '-1', commit])?.split(/\s+/).filter(Boolean) ?? []
+    : []
+  return {
+    commit,
+    merge: parents.length > 1,
+    // What the record said in the commit BEFORE this one on the trunk's own
+    // line — not "a `ready` somewhere in the range", which an abandoned earlier
+    // `ready` would satisfy and which would reopen the edge ADR-001 decision 7
+    // closes. Where nothing is committed yet, the trunk's current state is that
+    // commit's parent-to-be.
+    readyBehind: statusAt(commit ? `${commit}^` : 'HEAD') === 'ready'
   }
 }
 
@@ -3511,6 +3622,7 @@ async function main() {
       immutableMutations: immutableRecordMutations(previousRef, changed),
       relocations: verbatimRelocations(previousRef),
       supersessions: declaredSupersessions(workUnits),
+      integrationStateFor: (file, id) => integrationState(file, previousRef, id),
       branchSource,
       workUnits,
       // Judged against the SAME comparison every other changed-file rule uses,
