@@ -43,9 +43,20 @@ function git(dir, ...args) {
   return execFileSync('git', args, { cwd: dir, encoding: 'utf8', stdio: 'pipe' })
 }
 
+/** A fixture repository has an author of its own. Passing the identity at each
+ *  call site instead let one `git merge` be written without it: green on a
+ *  laptop with a global identity, red on a runner with none — a verdict that
+ *  turned on the environment, which is the parity failure `tools/soundness.md`
+ *  is about. It is set once, where the repository is made. */
+function identify(dir) {
+  git(dir, 'config', 'user.email', 't@example.invalid')
+  git(dir, 'config', 'user.name', 'fixture')
+  return dir
+}
+
 function commit(dir, message) {
   git(dir, 'add', '-A')
-  git(dir, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture', 'commit', '-qm', message)
+  git(dir, 'commit', '-qm', message)
 }
 
 /** A real, installed, green repository. */
@@ -53,6 +64,7 @@ function repository(options = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'cairn-fixture-'))
   applyPlan(planInstall({ ...defaultOptions(), ...options }), dir)
   git(dir, 'init', '-q', '-b', 'main')
+  identify(dir)
   commit(dir, 'install cairn')
   return dir
 }
@@ -349,7 +361,7 @@ pathFixture('a trunk commit taking a path from running to done with no ready com
     '---\ntype: Note\ntitle: A unit of another path\ndescription: x\ntags: [x]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Another path\n')
   commit(dir, 'CP-FIXTURE-002 S01: a second path completes a unit')
   git(dir, 'checkout', '-q', 'main')
-  git(dir, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture',
+  git(dir,
     'merge', '-q', '--no-ff', '-m', 'Merge CP-FIXTURE-002 into the trunk', 'path/cp-fixture-002')
 
   const candidate = git(dir, 'rev-parse', 'HEAD').trim()
@@ -372,7 +384,7 @@ pathFixture('a box ticked in the integrating commit on the trunk', 'scope-digest
     '---\ntype: Note\ntitle: A unit of another path\ndescription: x\ntags: [x]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Another path\n')
   commit(dir, 'CP-FIXTURE-002 S01: a second path completes a unit')
   git(dir, 'checkout', '-q', 'main')
-  git(dir, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture',
+  git(dir,
     'merge', '-q', '--no-ff', '-m', 'Merge CP-FIXTURE-002 into the trunk', 'path/cp-fixture-002')
 
   // The record reaches `done` and the box is ticked in the same change, which
@@ -482,7 +494,7 @@ pathFixture('a file written outside the declared surface, with the declaration u
 }, { record: { writes: '\n    - src/**' } })
 
 pathFixture('a published commit rewritten on a no-rewrite host', 'path-history', (dir) => {
-  git(dir, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture', 'commit', '--amend', '-qm', 'rewritten in place')
+  git(dir, 'commit', '--amend', '-qm', 'rewritten in place')
 }, { published: true })
 
 fixture('a path branched before its declaration reached the trunk', 'registration', (dir) => {
@@ -562,7 +574,7 @@ test('adversarial: registration-base — an activation that reached the trunk th
     const trunkAtMerge = git(dir, 'rev-parse', 'HEAD').trim()
     assert.notEqual(pinned, trunkAtMerge, 'the trunk must have moved, or this fixture proves nothing')
 
-    git(dir, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture',
+    git(dir,
       'merge', '-q', '--no-ff', '-m', 'Merge the activation of CP-FIXTURE-001', 'register/cp-fixture-001')
     regenerateView(dir)
     commit(dir, 'regenerate the live view')
@@ -653,7 +665,7 @@ test('adversarial: path-history — a rewritten published commit, judged on a de
     write(dir, 'docs/pushed.md', '---\ntype: Note\ntitle: Pushed\ndescription: x\ntags: [x]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Pushed\n')
     commit(dir, 'CP-FIXTURE-001: a unit that was published')
     git(dir, 'push', '-q', 'origin', 'path/cp-fixture-001')
-    git(dir, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture', 'commit', '--amend', '-qm', 'rewritten in place')
+    git(dir, 'commit', '--amend', '-qm', 'rewritten in place')
     assert.ok(blocking(check(dir)).includes('path-history'),
       `the rewrite is refused on the branch: ${describe(check(dir))}`)
 
@@ -928,6 +940,7 @@ closureFixture('the trunk moved inside the declared surface since the accepted b
   const other = mkdtempSync(join(tmpdir(), 'cairn-fixture-other-'))
   try {
     git(other, 'clone', '-q', '-b', 'main', `${dir}.git`, '.')
+    identify(other)
     write(other, 'src/other.js', 'export const other = true\n')
     commit(other, 'someone else lands inside the surface')
     git(other, 'push', '-q', 'origin', 'main')
@@ -1006,7 +1019,7 @@ function integratedRepository({ shape = 'one commit for one path' } = {}) {
     recordDone(dir)
     commit(dir, 'Integrate CP-FIXTURE-001')
   } else {
-    git(dir, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture',
+    git(dir,
       'merge', '-q', '--no-ff', '-m', 'Merge request #1', 'path/cp-fixture-001')
     if (shape !== 'done on the branch') {
       recordDone(dir)
@@ -1078,7 +1091,7 @@ function twoIntegrations(dir, { inOneCommit }) {
   commit(dir, 'CP-SECOND-003 is ready')
   const trunkBefore = git(dir, 'rev-parse', 'HEAD').trim()
 
-  git(dir, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture',
+  git(dir,
     'merge', '-q', '--no-ff', '-m', 'Merge request #1', 'path/cp-fixture-001')
   recordDone(dir)
   if (!inOneCommit) commit(dir, 'Integrate CP-FIXTURE-001')
@@ -1148,11 +1161,12 @@ function landOnTrunk(dir, writeFiles, message, { trailer = null } = {}) {
   const other = mkdtempSync(join(tmpdir(), 'cairn-fixture-trunk-'))
   try {
     git(other, 'clone', '-q', '-b', 'main', `${dir}.git`, '.')
+    identify(other)
     git(other, 'checkout', '-q', '-b', 'path/cp-other-002')
     writeFiles(other)
     commit(other, trailer ? `${message}\n\n${trailer}` : message)
     git(other, 'checkout', '-q', 'main')
-    git(other, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture',
+    git(other,
       'merge', '-q', '--no-ff', '-m', `Integrate ${message}`, 'path/cp-other-002')
     git(other, 'push', '-q', 'origin', 'main')
   } finally {
@@ -1163,7 +1177,7 @@ function landOnTrunk(dir, writeFiles, message, { trailer = null } = {}) {
 
 /** …and this path reaches a current base the one way this host allows. */
 function mergeTrunk(dir) {
-  git(dir, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture',
+  git(dir,
     'merge', '-q', '--no-ff', '-m', 'merge the trunk in', 'origin/main')
 }
 
