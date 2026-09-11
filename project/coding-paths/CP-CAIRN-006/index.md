@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-006
   route: full
   status: running
-  current_step: S01
+  current_step: S02
   base_commit: 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
   branch: path/cp-cairn-006
   assigned_writer: cp-cairn-006-writer
@@ -23,6 +23,7 @@ cairn:
     - tools/cairn-fixture.test.mjs
     - tools/soundness.md
     - spec/reference/conformance.md
+    - spec/concepts/lifecycle.md
     - docs/modules/application.md
     - docs/adr/**
     - docs/architecture/01-cairn-1-1.md
@@ -263,15 +264,21 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
   of the unit skill's resume movement; the 1.1 page amended in place and
   marked *since 2026-09-11*, the two indexes, and the register's rows 3
   and 4 naming each record and its surfaces — **complete**
-- **S02** — not started
+- [**S02**](./steps/S02.md) — the profile line and the transition: every run
+  reports the declared transports and what the forge does not enforce, read
+  from the rules that apply to the trunk, as output and never a finding; the
+  `trunkIntegration` escape gone, so a trunk commit taking a path from
+  `running` to `done` is refused and the refusal names its remedy, proved on
+  the shape path 1's own closing took — **complete**
+- **S03** — not started
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : dcfe9880a160662ac62a5330ebfda2b202c9b79d — the registration commit; S01's own commit is named here by S02
-unit   : 0 — S01 is complete on its push, and carries no unit number until its commit is on the remote
+commit : 2a83c159c39797c894a12b152685d17b30a36368 — S01, the two debts and two records; S02's own commit is named here by S03
+unit   : 1 — S01
 base   : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
 trunk  : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8 — origin/main at registration
 ```
@@ -279,15 +286,17 @@ trunk  : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8 — origin/main at registratio
 ### Next action
 
 From the worktree `../cairn-cp-cairn-006` on branch `path/cp-cairn-006`:
-run S02 of the plan with `cairn-unit` — the profile line and the
-transition. ADR-001 decisions 6 and 7: every run prints what the forge
-does not enforce on this repository and the transports the configuration
-declares, on both profiles and as no finding; `transitionErrors` loses
-its `trunkIntegration` exception, so a trunk commit taking a path from
-`running` to `done` with no `ready` commit behind it is refused with its
-remedy named; the fixture is the shape path 1's closing took. Type
-`implementation`; the failing test comes first. Run the review movement
-on the unit's diff as the unit skill says.
+run S03 of the plan with `cairn-unit` — the seal everywhere, and two
+paths on the same files. ADR-002 decision 1: the scope digest of the
+definition of done judged at every transition and on every ref — a unit
+on the branch, the candidate, `ready`, the integrating commit — against
+the acceptance block in force, whatever the status; a fixture ticks a box
+at `done` and is refused. ADR-003: the advisory `writes-overlap`, naming
+both paths and the patterns that meet, raised at registration and at
+every unit, silent when the later path declares `depends_on` the earlier;
+the catalogue and the soundness note carry it. Type `implementation`; the
+failing test comes first. Run the review movement on the unit's diff as
+the unit skill says.
 
 ### Blockers
 
@@ -295,6 +304,28 @@ None.
 
 ### Tried and rejected
 
+- Mapping `GITHUB_TOKEN` into the checker's step of
+  `.github/workflows/cairn.yml` (S02) — without it the profile line reads
+  *forge not read* on every CI run, which is the `ci` profile ADR-001
+  decision 6 is written for. The workflow is row 3's surface and item 10 of
+  the definition of done requires `.github/` unchanged here. Path 3 owes that
+  one `env:` entry; the line is correct either way, and says which it is.
+- Reading the repository's `allow_squash_merge` and `allow_rebase_merge` for
+  ADR-001 decision 6's *the repository's merge settings* (S02, first review)
+  — they say what the repository permits somewhere, not what may land on the
+  trunk, and against the live API they reported this repository as allowing
+  squash and rebase onto a trunk whose ruleset allows only `merge`. The
+  trunk's `pull_request` rule carries `allowed_merge_methods`, and that is the
+  setting the record means.
+- Naming the free plan as the cause when no rule guards the trunk (S02, both
+  reviews) — `plan` is not readable from the trunk's rules, and a private
+  repository on a paid plan with no ruleset configured arrives at the same
+  empty answer. The line reports the fact and invents no cause.
+- Amending `spec/concepts/enforcement-profile.md`, which ADR-001 decision 6
+  also names (S02) — it is outside this path's `writes:` and outside row 2 of
+  the register, and unlike the lifecycle concept it says nothing this unit
+  makes false: *host settings can also drift, so their effective state needs
+  independent evidence* is exactly what the profile line now prints.
 - Correcting the 1.1 page's opening sentence *Nothing here is implemented
   yet*, false since path 1 landed (S01) — neither record of S01 decides
   it, and the page is a governed document this path amends only where its

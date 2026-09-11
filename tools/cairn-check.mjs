@@ -61,6 +61,105 @@ export function effectiveBinding(config = CAIRN_CONFIG) {
   }
 }
 
+/* ------------------------------------------------------------------ *
+ * The profile line — ADR-001 decision 6.
+ *
+ * A profile is a CLAIM about host settings, and the enforcement-profile
+ * concept already says such settings need independent evidence. This prints
+ * that evidence beside the claim.
+ *
+ * It is output and never a finding: the remedy for a gap is a setting, not a
+ * commit. So nothing below can change an exit code — every read answers, none
+ * throws, and a forge that is unreachable, unauthorised or not GitHub is
+ * reported as "not read" rather than guessed at.
+ * ------------------------------------------------------------------ */
+
+/** The owner and repository of a GitHub remote, or `null` for anything else —
+ *  a self-hosted forge, and the local bare repositories the fixtures push to.
+ *  "Not read" is an honest line; a wrong reading is not. */
+export function githubSlug(url) {
+  const match = /^(?:(?:https?|ssh|git)(?::\/\/)(?:[^@/]+@)?|(?:[^@/\s]+@))github\.com[:/]([^/\s]+)\/([^/\s]+?)(?:\.git)?$/i
+    .exec(String(url ?? '').trim())
+  return match ? { owner: match[1], repo: match[2] } : null
+}
+
+/** What the forge does not enforce, from the three things ADR-001 decision 6
+ *  names: a check that does not guard the exact commit that lands, a merge
+ *  that rewrites it, and a role that bypasses the rules.
+ *
+ *  Everything is read from the rules that apply TO THE TRUNK, never from the
+ *  repository's own merge toggles: `allow_squash_merge` says what the
+ *  repository permits somewhere, and a ruleset that allows only `merge` on the
+ *  trunk overrides it. Reading the toggles reported this very repository as
+ *  allowing squash and rebase onto a trunk whose ruleset allows neither.
+ *
+ *  Where several rulesets apply, GitHub applies the MOST RESTRICTIVE form of a
+ *  rule defined more than once. So a check is strict if any applying rule
+ *  makes it strict, and a merge method lands only if every applying rule
+ *  allows it. */
+export function forgeGaps({ rules = [], rulesets = [] }) {
+  const gaps = []
+  if (rules.length === 0) {
+    // A private repository on a plan without rulesets is one way to arrive
+    // here; a repository that simply configured none is another. The line
+    // reports the fact it read and names no cause it did not.
+    gaps.push('no rule of the forge guards the trunk')
+    return gaps
+  }
+  const checks = rules.filter((rule) => rule.type === 'required_status_checks')
+  if (checks.length === 0) gaps.push('no check is required before a merge')
+  else if (!checks.some((rule) => rule.parameters?.strict_required_status_checks_policy === true)) {
+    gaps.push('a required check is not required on the exact commit that lands')
+  }
+  const requests = rules.filter((rule) => rule.type === 'pull_request')
+  if (requests.length === 0) gaps.push('a direct push to the trunk needs no pull request')
+  else {
+    // Absent parameters mean GitHub's own default, which is all three: an
+    // unread field must never read as the restrictive answer.
+    const rewriting = ['squash', 'rebase'].filter((method) => requests.every(
+      (rule) => (rule.parameters?.allowed_merge_methods ?? ['merge', 'squash', 'rebase']).includes(method)))
+    if (rewriting.length) {
+      gaps.push(`${rewriting.join(' and ')} merges are allowed on the trunk, so the commit that lands is not the object the check ran on`)
+    }
+  }
+  const bypass = rulesets.flatMap((ruleset) => ruleset?.bypass_actors ?? [])
+  if (bypass.length) {
+    gaps.push(`${bypass.length} actor${bypass.length === 1 ? '' : 's'} bypass${bypass.length === 1 ? 'es' : ''} the trunk's rules`)
+  }
+  return gaps
+}
+
+/** Read the forge, or say why it was not read. `request` is a parameter so the
+ *  suite proves this against payloads and never over the network. */
+export async function readForge({ token, slug, trunk, request }) {
+  if (!token) {
+    return { read: false, why: 'no token; set GITHUB_TOKEN or GH_TOKEN to read the trunk\'s rules and this repository\'s merge settings' }
+  }
+  if (!slug) return { read: false, why: 'the configured remote is not a GitHub repository' }
+  const base = `https://api.github.com/repos/${slug.owner}/${slug.repo}`
+  const rules = await request(`${base}/rules/branches/${encodeURIComponent(trunk)}`)
+  if (rules.error) return { read: false, why: `the forge answered ${rules.error}` }
+  const applied = Array.isArray(rules.value) ? rules.value : []
+  // One request per DISTINCT ruleset behind the trunk's rules: the branch
+  // endpoint gives the rules, and only the ruleset itself carries its bypasses.
+  // Together, so the wall time is one request's rather than one per ruleset,
+  // and a ruleset that could not be read makes the WHOLE read fail: a missing
+  // bypass list would otherwise be printed as a trunk nobody bypasses.
+  const ids = [...new Set(applied.map((rule) => rule.ruleset_id).filter((id) => id != null))]
+  const answers = await Promise.all(ids.map((id) => request(`${base}/rulesets/${id}`)))
+  const refused = answers.find((answer) => answer.error)
+  if (refused) return { read: false, why: `the forge answered ${refused.error} for a ruleset of the trunk` }
+  return { read: true, gaps: forgeGaps({ rules: applied, rulesets: answers.map((a) => a.value) }) }
+}
+
+export function profileLine({ transports, forge }) {
+  const declared = `transports registration ${transports.registration}, integration ${transports.integration}`
+  if (!forge.read) return `profile — ${declared}; forge not read (${forge.why})`
+  return forge.gaps.length
+    ? `profile — ${declared}; forge does not enforce: ${forge.gaps.join('; ')}`
+    : `profile — ${declared}; forge enforces everything these records name`
+}
+
 /** The running-paths view in ACTIVE.md is DERIVED from path declarations
  *  registered on the trunk before implementation branches. Registration makes
  *  the inputs globally complete; tools/cairn-active.mjs keeps the output
@@ -473,9 +572,18 @@ export function transitionErrors(previous, current, onPathBranch = false) {
     archived: ['archived']
   }
 
-  const trunkIntegration = !onPathBranch && from === 'running' && to === 'done'
-  if (!(allowed[String(from)] ?? []).includes(to) && !trunkIntegration) {
-    errors.push(`transition ${from ?? 'new'} → ${to ?? 'missing'} is not allowed`)
+  // ADR-001 decision 7 removed the edge that let a trunk commit take a path
+  // from `running` straight to `done`. It existed for the `manual-git` merge
+  // unit, but on BOTH transports the administrative commit has already put the
+  // path at `ready` on its branch, so the integrating unit records ready → done
+  // and never needs the shortcut. What the shortcut hid is a closure that never
+  // bound `subject_commit` to the record before the merge.
+  if (!(allowed[String(from)] ?? []).includes(to)) {
+    errors.push(
+      !onPathBranch && from === 'running' && to === 'done'
+        ? 'transition running → done is not allowed: the integrating commit records ready → done — declare `ready` on the branch first, in the administrative commit that carries subject_commit'
+        : `transition ${from ?? 'new'} → ${to ?? 'missing'} is not allowed`
+    )
   }
   if (onPathBranch && to === 'done') {
     errors.push('a path branch cannot claim `done`; it declares `ready` and integration records `done` on the trunk')
@@ -2047,6 +2155,31 @@ function git(args) {
   return execFileSync('git', args, { cwd: REPO, encoding: 'utf8' }).trim()
 }
 
+/** One GitHub read. An error is an ANSWER, never an exception: the profile
+ *  line must not be able to change an exit code, and an offline laptop must
+ *  not wait on a socket. */
+export async function githubRequest(url, { token, timeoutMs = 3000, doFetch = fetch } = {}) {
+  const abort = new AbortController()
+  const timer = setTimeout(() => abort.abort(), timeoutMs)
+  try {
+    const response = await doFetch(url, {
+      signal: abort.signal,
+      headers: {
+        accept: 'application/vnd.github+json',
+        authorization: `Bearer ${token}`,
+        'user-agent': 'cairn-check',
+        'x-github-api-version': '2022-11-28'
+      }
+    })
+    if (!response.ok) return { error: `HTTP ${response.status}` }
+    return { value: await response.json() }
+  } catch (error) {
+    return { error: error?.name === 'AbortError' ? `no answer in ${timeoutMs}ms` : String(error?.message ?? error) }
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 /** Raw stdout — for output whose LEADING whitespace is data, not padding. */
 /** Same, but a failure is an ANSWER (`null`), not an exception: a detached
  *  HEAD has no symbolic ref, and that fact is what the caller needs. */
@@ -2903,7 +3036,7 @@ function corpusFindings(previousRef = null, changed = [], viewCurrent = null) {
   return findings
 }
 
-function main() {
+async function main() {
   const argv = process.argv.slice(2)
   if (argv.includes('--scope-digest')) {
     // The digest a record carries is verified by `scopeDigestOf`, so it is
@@ -3002,9 +3135,17 @@ function main() {
   // the line people paste into ledgers.
   const baseLabel = base ? `${base} (${baseSource})` : `working tree vs HEAD (${baseSource})`
   const binding = effectiveBinding()
+  const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || null
+  const forge = await readForge({
+    token,
+    slug: githubSlug(gitOrNull(['remote', 'get-url', REMOTE])),
+    trunk: TRUNK_BRANCH,
+    request: (url) => githubRequest(url, { token })
+  })
+  const profile = { transports: { ...CAIRN_CONFIG.transport }, forge }
   if (asJson) {
     console.log(JSON.stringify(
-      { binding, branch, base, baseSource, changed: changed.length, findings }, null, 2))
+      { binding, profile, branch, base, baseSource, changed: changed.length, findings }, null, 2))
   } else {
     console.log(
       `cairn-check — profile ${ENFORCEMENT_PROFILE}, branch ${branch}, base ${baseLabel}, ${changed.length} changed file(s)`
@@ -3015,6 +3156,7 @@ function main() {
       `project ${binding.projectRoot}; source ${binding.sourceRoots.join(', ')}; ` +
       `path history ${PATH_HISTORY_POLICY}${REWRITING_FORBIDDEN ? ' (no rewriting)' : ' (rewriting allowed; retention is the host\'s to check, not this checker\'s)'}`
     )
+    console.log(profileLine(profile))
     for (const group of [
       ['FAIL', failed],
       ['INCONCLUSIVE', inconclusive],
@@ -3035,5 +3177,10 @@ function main() {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  main()
+  // A rejection here would exit 0 with no verdict printed, which is the one
+  // failure mode a gate must not have.
+  main().catch((error) => {
+    console.error(`cairn-check: ${error?.stack ?? error}`)
+    process.exit(1)
+  })
 }

@@ -69,6 +69,11 @@ import {
   TRUNK_BASE_CANDIDATES,
   stripCode,
   transitionErrors,
+  githubSlug,
+  forgeGaps,
+  readForge,
+  githubRequest,
+  profileLine,
   isVerbatimRelocation,
   preservesAppendOnlyRecord,
   recordOriginFromFollowLog,
@@ -1104,6 +1109,178 @@ test('a decision record needs a frontmatter block, a known status and an ISO dat
 })
 
 /* ------------------------------------------------------------------ *
+ * the profile line — ADR-001 decision 6
+ *
+ * A profile is a claim about settings, so the remedy for a gap is a setting
+ * and never a commit: everything here produces OUTPUT, and nothing here
+ * produces a finding. The reads are injected, so the suite makes no network
+ * call and the line is proved against payloads rather than against a forge.
+ * ------------------------------------------------------------------ */
+
+test('the GitHub slug is read from every remote form, and from nothing else', () => {
+  assert.deepEqual(githubSlug('git@github.com:sinlalune/cairn.git'), { owner: 'sinlalune', repo: 'cairn' })
+  assert.deepEqual(githubSlug('https://github.com/sinlalune/cairn.git'), { owner: 'sinlalune', repo: 'cairn' })
+  assert.deepEqual(githubSlug('https://github.com/sinlalune/cairn'), { owner: 'sinlalune', repo: 'cairn' })
+  assert.deepEqual(githubSlug('ssh://git@github.com/sinlalune/cairn.git'), { owner: 'sinlalune', repo: 'cairn' })
+  assert.deepEqual(githubSlug('git@GitHub.com:sinlalune/cairn.git'), { owner: 'sinlalune', repo: 'cairn' })
+  // A fixture's remote is a local bare repository, and a self-hosted forge is
+  // not GitHub. Both answer "not read" rather than a wrong reading.
+  assert.equal(githubSlug('/tmp/cairn-fixture-abc.git'), null)
+  assert.equal(githubSlug('git@gitlab.com:sinlalune/cairn.git'), null)
+  assert.equal(githubSlug(null), null)
+  // The host anchor is the whole of the check, so the fixtures that prove it
+  // are the ones that put github.com somewhere it does not govern. Loosened,
+  // these parse as an owner of `evil.example:sinlalune`, and the line would
+  // report some other repository's rules as this trunk's.
+  assert.equal(githubSlug('https://evil.example/github.com/sinlalune/cairn.git'), null)
+  assert.equal(githubSlug('git@github.com.evil.example:sinlalune/cairn.git'), null)
+  assert.equal(githubSlug('https://github.com.evil.example/sinlalune/cairn'), null)
+})
+
+/** This repository's own trunk, as `rules/branches/main` answers on
+ *  2026-09-11: the check `protocol` required on the exact commit, only merge
+ *  commits allowed to land, and the admin role bypassing the ruleset — the
+ *  honest line ADR-001 decision 6 wrote out by hand. The repository's own
+ *  `allow_squash_merge` and `allow_rebase_merge` are BOTH true and must not be
+ *  read: the trunk's ruleset is what governs the trunk. */
+const TRUNK_RULES = [
+  { type: 'deletion', ruleset_id: 7 },
+  { type: 'non_fast_forward', ruleset_id: 7 },
+  { type: 'pull_request', ruleset_id: 7, parameters: { allowed_merge_methods: ['merge'] } },
+  { type: 'required_status_checks', ruleset_id: 7, parameters: { strict_required_status_checks_policy: true, required_status_checks: [{ context: 'protocol' }] } }
+]
+const pullRequestRule = (...methods) =>
+  ({ type: 'pull_request', ruleset_id: 7, parameters: { allowed_merge_methods: methods } })
+
+test('the forge gaps are read from the trunk\'s rules, and this repository\'s own trunk yields the bypass alone', () => {
+  const gaps = forgeGaps({
+    rules: TRUNK_RULES,
+    rulesets: [{ id: 7, bypass_actors: [{ actor_id: 5, actor_type: 'RepositoryRole' }] }]
+  })
+  // The bypass, and ONLY the bypass: `allow_squash_merge` and
+  // `allow_rebase_merge` are both true on this repository, and the trunk's
+  // ruleset allows neither onto the trunk. The toggles are not read.
+  assert.deepEqual(gaps, ['1 actor bypasses the trunk\'s rules'])
+})
+
+test('a merge method lands only if EVERY applying rule allows it', () => {
+  const permissive = TRUNK_RULES.map((rule) => rule.type === 'pull_request' ? pullRequestRule('merge', 'squash', 'rebase') : rule)
+  assert.deepEqual(forgeGaps({ rules: permissive, rulesets: [] }),
+    ['squash and rebase merges are allowed on the trunk, so the commit that lands is not the object the check ran on'])
+  // GitHub applies the MOST RESTRICTIVE form of a rule defined more than once,
+  // so merge methods intersect. Unioning them reported a squash the forge
+  // would refuse.
+  assert.deepEqual(forgeGaps({ rules: [...permissive, pullRequestRule('merge')], rulesets: [] }), [])
+  // And an absent parameter is GitHub's own default, all three — never the
+  // restrictive answer.
+  assert.deepEqual(forgeGaps({ rules: [{ type: 'pull_request', ruleset_id: 9 }], rulesets: [] }),
+    ['no check is required before a merge', 'squash and rebase merges are allowed on the trunk, so the commit that lands is not the object the check ran on'])
+})
+
+test('a strict policy on any applying rule is enough, and none on any is the gap', () => {
+  const lax = { type: 'required_status_checks', ruleset_id: 7, parameters: { strict_required_status_checks_policy: false } }
+  const laxOnly = [lax, pullRequestRule('merge')]
+  assert.deepEqual(forgeGaps({ rules: laxOnly, rulesets: [] }),
+    ['a required check is not required on the exact commit that lands'])
+  // The strict form is the more restrictive one, so a strict rule behind a lax
+  // one still makes the check strict. Reading only the first rule found
+  // reported this as unenforced.
+  const strict = { type: 'required_status_checks', ruleset_id: 9, parameters: { strict_required_status_checks_policy: true } }
+  assert.deepEqual(forgeGaps({ rules: [...laxOnly, strict], rulesets: [] }), [])
+})
+
+test('a trunk guarded by rules that require no check, or no request, is said so', () => {
+  const noCheck = TRUNK_RULES.filter((rule) => rule.type !== 'required_status_checks')
+  assert.deepEqual(forgeGaps({ rules: noCheck, rulesets: [] }), ['no check is required before a merge'])
+  const noRequest = TRUNK_RULES.filter((rule) => rule.type !== 'pull_request')
+  assert.deepEqual(forgeGaps({ rules: noRequest, rulesets: [] }), ['a direct push to the trunk needs no pull request'])
+})
+
+test('a trunk with no rule at all is said to be unguarded, once, and no cause is invented for it', () => {
+  // ONCE: the missing check, the missing request and the merge methods are all
+  // that one absence, not four findings. A private repository on a plan
+  // without rulesets arrives here too, and the line does not claim to know
+  // which it is: the plan is not readable from what this reads.
+  assert.deepEqual(forgeGaps({ rules: [], rulesets: [] }), ['no rule of the forge guards the trunk'])
+})
+
+test('the forge is not read without a token, without GitHub, or when it answers badly', async () => {
+  const never = () => { throw new Error('the forge must not be called') }
+  assert.match((await readForge({ token: null, slug: { owner: 'o', repo: 'r' }, trunk: 'main', request: never })).why, /no token/)
+  assert.match((await readForge({ token: 't', slug: null, trunk: 'main', request: never })).why, /not a GitHub repository/)
+
+  const failing = async () => ({ error: 'HTTP 404' })
+  const refused = await readForge({ token: 't', slug: { owner: 'o', repo: 'r' }, trunk: 'main', request: failing })
+  assert.equal(refused.read, false)
+  assert.match(refused.why, /HTTP 404/)
+})
+
+test('a ruleset the token cannot read fails the whole read, rather than reporting no bypass', async () => {
+  // A fine-grained token without administration access reads the branch's
+  // rules and is refused the ruleset. Reporting `read: true` there printed
+  // "the forge enforces everything these records name" over a bypass list
+  // nobody had seen.
+  const request = async (url) => {
+    if (url.includes('/rules/branches/')) return { value: [{ type: 'pull_request', ruleset_id: 7, parameters: { allowed_merge_methods: ['merge'] } }] }
+    return { error: 'HTTP 403' }
+  }
+  const read = await readForge({ token: 't', slug: { owner: 'o', repo: 'r' }, trunk: 'main', request })
+  assert.equal(read.read, false)
+  assert.match(read.why, /HTTP 403 for a ruleset of the trunk/)
+})
+
+test('the forge read never throws: a refusal, a timeout and a broken fetch are all answers', async () => {
+  // This is the whole of the guarantee that the profile line cannot reach an
+  // exit code, and it is the one half of the read that touches the network.
+  assert.deepEqual(
+    await githubRequest('https://api.github.com/repos/o/r', { token: 't', doFetch: async () => ({ ok: false, status: 404 }) }),
+    { error: 'HTTP 404' })
+  assert.deepEqual(
+    await githubRequest('https://api.github.com/repos/o/r', { token: 't', doFetch: async () => { throw new Error('getaddrinfo ENOTFOUND') } }),
+    { error: 'getaddrinfo ENOTFOUND' })
+  assert.deepEqual(
+    await githubRequest('https://api.github.com/repos/o/r', {
+      token: 't',
+      timeoutMs: 5,
+      doFetch: (url, init) => new Promise((_resolve, reject) => {
+        init.signal.addEventListener('abort', () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' })))
+      })
+    }),
+    { error: 'no answer in 5ms' })
+  const ok = await githubRequest('https://api.github.com/repos/o/r', { token: 't', doFetch: async () => ({ ok: true, json: async () => ({ private: false }) }) })
+  assert.deepEqual(ok, { value: { private: false } })
+})
+
+test('the forge read asks for the trunk\'s rules and each ruleset behind them, and nothing else', async () => {
+  const asked = []
+  const request = async (url) => {
+    asked.push(url)
+    if (url.includes('/rules/branches/')) return { value: [{ type: 'pull_request', ruleset_id: 7, parameters: { allowed_merge_methods: ['merge'] } }, { type: 'deletion', ruleset_id: 7 }] }
+    return { value: { id: 7, bypass_actors: [{ actor_id: 5 }] } }
+  }
+  const read = await readForge({ token: 't', slug: { owner: 'o', repo: 'r' }, trunk: 'main', request })
+  assert.equal(read.read, true)
+  // The repository payload is NOT read: its merge toggles are the wrong
+  // reading, and nothing else on it is used.
+  assert.deepEqual(asked, [
+    'https://api.github.com/repos/o/r/rules/branches/main',
+    'https://api.github.com/repos/o/r/rulesets/7'
+  ])
+  // One ruleset id asked once, however many of its rules apply to the trunk.
+  assert.ok(read.gaps.some((g) => /bypasses/.test(g)), JSON.stringify(read.gaps))
+})
+
+test('the profile line names the declared transports and what the forge does not enforce', () => {
+  const transports = { registration: 'manual-git', integration: 'pull-request' }
+  assert.match(profileLine({ transports, forge: { read: false, why: 'no token' } }),
+    /transports registration manual-git, integration pull-request; forge not read \(no token\)/)
+  assert.match(profileLine({ transports, forge: { read: true, gaps: ['a bypass', 'a squash'] } }),
+    /forge does not enforce: a bypass; a squash/)
+  assert.match(profileLine({ transports, forge: { read: true, gaps: [] } }),
+    /forge enforces everything these records name/)
+})
+
+/* ------------------------------------------------------------------ *
  * transition — the lifecycle is a statement of fact
  * ------------------------------------------------------------------ */
 
@@ -1111,12 +1288,28 @@ test('lifecycle transitions distinguish ready from integrated done', () => {
   const ready = { ...A_PATH.front, status: 'ready', subject_commit: CANDIDATE }
   const done = { ...ready, status: 'done', resolution: 'completed' }
   assert.deepEqual(transitionErrors(A_PATH.front, ready, true), [])
-  assert.deepEqual(transitionErrors(A_PATH.front, done, false), [])
+  assert.deepEqual(transitionErrors(ready, done, false), [])
   assert.ok(transitionErrors(A_PATH.front, done, true).some((e) => e.includes('cannot claim `done`')))
   assert.ok(transitionErrors({ ...A_PATH.front, status: 'blocked' }, ready, true).some((e) => e.includes('not allowed')))
   assert.ok(transitionErrors(A_PATH.front, { ...A_PATH.front, status: 'archived' }).some((e) => e.includes('requires resolution')))
   assert.ok(transitionErrors(A_PATH.front, { ...A_PATH.front, status: 'archived', resolution: 'completed' }).some((e) => e.includes('never completed')))
   assert.deepEqual(transitionErrors(done, { ...done, status: 'archived', resolution: 'completed' }), [])
+})
+
+/* ADR-001 decision 7: the trunk had an edge that let an integrating commit
+ * take a path from `running` straight to `done`. It existed for the
+ * `manual-git` merge unit, and on both transports the administrative commit
+ * has already declared `ready` on the branch. The edge is gone, and the
+ * refusal names the remedy ADR-008 decision 6 asks for. */
+test('a trunk commit cannot take a path from running to done without a ready commit', () => {
+  const done = { ...A_PATH.front, status: 'done', subject_commit: CANDIDATE, resolution: 'completed' }
+  const errors = transitionErrors(A_PATH.front, done, false)
+  assert.ok(errors.some((e) => /running → done is not allowed/.test(e)),
+    `the trunk edge must be refused — got ${JSON.stringify(errors)}`)
+  assert.ok(errors.some((e) => /declare `ready` on the branch first/.test(e)),
+    `the refusal must name its remedy — got ${JSON.stringify(errors)}`)
+  // The edge it replaces stays open: an integrating commit records ready → done.
+  assert.deepEqual(transitionErrors({ ...A_PATH.front, status: 'ready', subject_commit: CANDIDATE }, done, false), [])
 })
 
 test('a path branch claiming done is blocked', () => {

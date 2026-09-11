@@ -334,6 +334,28 @@ pathFixture('a path branch claiming done for itself', 'transition', (dir) => {
   regenerateView(dir)
 })
 
+/* ADR-001 decision 7, proved on the shape this repository's own path 1 closed
+ * in: the trunk took CP-CAIRN-005 from `running` to `done` in one commit,
+ * because the administrative commit that should have declared `ready` on the
+ * branch was never made. The history is not tidied; it is the fixture.
+ *
+ * The trunk history carries a merged unit of a SECOND path, as ADR-004
+ * decision 4 requires of every blocking fixture: a rule that only ever sees
+ * one path's commits is not proved against the repository it runs in. */
+pathFixture('a trunk commit taking a path from running to done with no ready commit', 'transition', (dir) => {
+  git(dir, 'checkout', '-q', '-b', 'path/cp-fixture-002')
+  write(dir, 'docs/other-path-unit.md',
+    '---\ntype: Note\ntitle: A unit of another path\ndescription: x\ntags: [x]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Another path\n')
+  commit(dir, 'CP-FIXTURE-002 S01: a second path completes a unit')
+  git(dir, 'checkout', '-q', 'main')
+  git(dir, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture',
+    'merge', '-q', '--no-ff', '-m', 'Merge CP-FIXTURE-002 into the trunk', 'path/cp-fixture-002')
+
+  const candidate = git(dir, 'rev-parse', 'HEAD').trim()
+  writeAcceptedRecord(dir, { status: 'done', subject_commit: candidate, resolution: 'completed' })
+  regenerateView(dir)
+}, { checkout: false })
+
 pathFixture('a file written outside the declared surface, with the declaration unchanged', 'scope-drift', (dir) => {
   write(dir, 'lib/outside.js', 'export const outside = true\n')
 }, { record: { writes: '\n    - src/**' } })
