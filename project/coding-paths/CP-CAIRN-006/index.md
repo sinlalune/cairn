@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-006
   route: full
   status: running
-  current_step: S04
+  current_step: S05
   base_commit: 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
   branch: path/cp-cairn-006
   assigned_writer: cp-cairn-006-writer
@@ -284,15 +284,23 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
   checkpoint; the branch's tip resolved as the local ref, else `HEAD` when the
   checkout is detached, else the remote-tracking ref, so a detached request
   head is judged and never compared with itself — **complete**
-- **S05** — not started
+- [**S05**](./steps/S05.md) — what a range means: the pinned range from the base
+  to the candidate scoped to this path's own commits, where a draft is resolved
+  by a later commit publishing a valid unit in a record that cannot be
+  unwritten, and by nothing else; an edited step answered by a later step of
+  the same folder binding the blob it replaces to the blob it adds, the claim
+  checked against the blobs the record really carries; and the two changed-file
+  range rules audited, left as they were, and held there by a fixture that
+  lands another path's unit on the trunk and merges it in — **complete**
+- **S06** — not started
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 860382d2985cd22d0ccdf267bf57e0615cafdc3d — S03, the seal everywhere and two paths on the same files; S04's own commit is named here by S05
-unit   : 3 — S03
+commit : d16c8594c3a3aaf7bde62cbf6d3c452642e8f154 — S04, which commit, which branch, which checkpoint; S05's own commit is named here by S06
+unit   : 4 — S04
 base   : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
 trunk  : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8 — origin/main at registration
 ```
@@ -300,22 +308,17 @@ trunk  : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8 — origin/main at registratio
 ### Next action
 
 From the worktree `../cairn-cp-cairn-006` on branch `path/cp-cairn-006`:
-run S05 of the plan with `cairn-unit` — what a range means. ADR-004
-decision 3: on a no-rewrite host the range from base to candidate always
-carries trunk history, so every rule that walks it reads only this path's
-own records as evidence about this path; `provisional`,
-`record-integrity` and `record-date` are each read against that sentence
-and corrected where needed, and the conformance page states it once.
-Repair 006 of decision 6: a provisional commit is resolved by a later
-commit of the same path that adds a valid completed step, and by nothing
-else — the 1.0 rule is a timeless grep where its own reference describes
-it chronologically. Repair 005: a repair step may supersede an invalid
-step on the same branch by binding the blob it replaces and the blob it
-adds, so the earlier step stays append-only and the correction is a new
-step. Note that the shape a writer declares a supersession in has no home
-in this path's surfaces — see *Tried and rejected*. Type
-`implementation`; the failing test comes first. Run the review movement
-on the unit's diff as the unit skill says.
+run S06 of the plan with `cairn-unit` — one commit for one path, one key,
+one remedy each. ADR-008 decision 2: the integrating commit is refused
+when it is a merge object carrying the edit, or when it takes two paths
+to `done` in one commit. Decision 4: the journal entry is read under the
+one key `cairn.path`, and the message that named two keys is gone.
+Decision 6: every blocking refusal names its remedy in one sentence —
+read the messages the rules print today against that, this unit's own
+`provisional` and `record-integrity` messages included. And the stale
+citations of an earlier repository's records under `tools/` are replaced
+by this repository's. Type `implementation`; the failing test comes
+first. Run the review movement on the unit's diff as the unit skill says.
 
 ### Blockers
 
@@ -323,6 +326,25 @@ None.
 
 ### Tried and rejected
 
+- An ordering predicate for *later* in a supersession (S05, second review) —
+  the claim must name the blob the record carries NOW, so whichever order the
+  two commits land in, both texts are named and both stay reachable, which is
+  all the remedy is for. The two `git log --follow` calls I first wrote for it
+  refused nothing the binding does not already bind.
+- Deleting the condition that a supersession be declared in an append-only step
+  record, which no mutation of the suite can turn red (S05) — `pathWorkUnits`
+  offers units only from the record and its step files, so the folder
+  comparison beside it already excludes the record; the condition is what makes
+  the pure predicate true standing alone, for a caller that hands it a unit
+  from somewhere else. Named here rather than deleted, as `const head =
+  resolved.ref` was at S04.
+- Reporting another path's edit to its own step record, merged in from the
+  trunk (S05) — writing the audit's fixture showed that `git log --follow`
+  simplifies history at a merge, so a record that arrived through one is
+  *added* here at the commit that brought it, with the blobs it then had.
+  `record-integrity` therefore cannot see their edit at any base, which is the
+  right answer for the sentence decision 3 states and a fact the audit could
+  not have claimed from inspection. It is their trunk run's to report.
 - Running ADR-004's six corrections as the single unit the plan named (S04) —
   they are two subjects and could not be explained in three lines, which is
   the signal `cairn-code` gives for splitting. Decisions 1, 2 and 5 resolve an
@@ -334,13 +356,14 @@ None.
   says *may* gain a sentence (S04) — it is outside this path's `writes:` and
   outside row 2 of the register. The conformance matrix and the catalogue say
   what the rule reads.
-- Where a writer declares a same-branch step supersession (S05's subject,
-  raised at S04) — repair 005 needs a declared shape, and the surfaces that
+- Where a writer declares a same-branch step supersession (raised at S04,
+  settled at S05) — repair 005 needs a declared shape, and the surfaces that
   would carry it for a writer are `spec/reference/path-template.md` and the
-  `cairn-unit` skill, both row 1's and both excluded by item 10. S05 writes
-  the checker's reading and states the shape on the conformance page; the
-  closing review should say that the template and the skill still owe the
-  writer's half.
+  `cairn-unit` skill, both row 1's and both excluded by item 10. S05 wrote the
+  checker's reading and states the shape — `supersedes: <file>@<blob it
+  replaces>..<blob it adds>`, in the repair step's own block — on the
+  conformance page; the template and the skill still owe the writer's half, and
+  the closing review says so.
 - Deleting `const head = resolved.ref` in favour of `HEAD`, which no fixture
   can tell apart (S04's review) — wherever `remote-checkpoint` fires the two
   coincide, so the suite cannot stage the difference; the expression is right

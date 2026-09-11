@@ -79,6 +79,11 @@ import {
   activationCommit,
   checkpointCommit,
   resolveBranchRef,
+  unresolvedProvisional,
+  parseSupersession,
+  supersessionClaim,
+  supersessionBinds,
+  commitsWithFiles,
   isVerbatimRelocation,
   preservesAppendOnlyRecord,
   recordOriginFromFollowLog,
@@ -1218,6 +1223,129 @@ test('the branch history is resolved from where the checker stands, in ADR-004\'
   // evidence about this one.
   assert.deepEqual(resolve([tracking]), { ref: tracking, source: 'remote-tracking' })
   assert.deepEqual(resolve([]), { ref: 'HEAD', source: 'head' })
+})
+
+/* ------------------------------------------------------------------ *
+ * ADR-004 decision 3, and repairs 005 and 006 — what a range means
+ * ------------------------------------------------------------------ */
+
+test('a provisional commit is resolved by a later commit of the same path, and by nothing else', () => {
+  // The 1.0 rule matched the trailer anywhere in the range with no notion of
+  // AFTER, while the unit reference it implements says "the completed unit's
+  // own commit supersedes it". On the adopter that refused a candidate whose
+  // draft had been finished three commits earlier, and the only remedy the
+  // message named — fold it — is a rewrite this host forbids.
+  const order = ['draft', 'unit', 'later', 'candidate']
+  // Reachability as Git answers it, a commit included in its own ancestry.
+  const isAncestor = (a, b) => order.indexOf(a) <= order.indexOf(b)
+  assert.deepEqual(unresolvedProvisional(['draft'], ['unit'], isAncestor), [])
+  assert.deepEqual(unresolvedProvisional(['draft'], ['later'], isAncestor), [])
+  // A completed unit that came BEFORE the draft finished something else.
+  assert.deepEqual(unresolvedProvisional(['later'], ['unit'], isAncestor), ['later'])
+  assert.deepEqual(unresolvedProvisional(['draft'], [], isAncestor), ['draft'])
+  // And a draft does not resolve itself: a commit that says out loud it is not
+  // finished is not the completed unit that finishes it.
+  assert.deepEqual(unresolvedProvisional(['draft'], ['draft'], isAncestor), ['draft'])
+  // Each draft answers for itself: one finished unit does not clear the one
+  // that came after it.
+  assert.deepEqual(unresolvedProvisional(['draft', 'later'], ['unit'], isAncestor), ['later'])
+})
+
+test('a supersession names the record, the blob it replaces and the blob it adds', () => {
+  const file = `${PATH_DIR}/CP-EX-010/steps/S15.md`
+  const [before, after] = ['a'.repeat(40), 'b'.repeat(40)]
+  assert.deepEqual(parseSupersession(`${file}@${before}..${after}`), { file, before, after })
+  // Abbreviated, which is what a writer copies out of `git log`.
+  assert.deepEqual(parseSupersession(`${file}@a1b2c3d..e4f5a6b`),
+    { file, before: 'a1b2c3d', after: 'e4f5a6b' })
+  // Half a claim is no claim: the specification asks for both ids.
+  assert.equal(parseSupersession(`${file}@${before}`), null)
+  assert.equal(parseSupersession(`${before}..${after}`), null)
+  assert.equal(parseSupersession(`${file}@${before}..zzzzzzz`), null)
+  assert.equal(parseSupersession(`${file}@abcdef..${after}`), null, 'six characters name too many blobs')
+  assert.equal(parseSupersession('S15, superseded'), null)
+  assert.equal(parseSupersession(undefined), null)
+})
+
+test('a supersession binds only the two blobs the record actually carries', () => {
+  const declared = { before: 'a1b2c3d', after: 'e4f5a6b' }
+  const blobs = { before: `a1b2c3d${'0'.repeat(33)}`, after: `e4f5a6b${'0'.repeat(33)}` }
+  assert.ok(supersessionBinds(declared, blobs))
+  assert.ok(!supersessionBinds(declared, { ...blobs, after: 'f'.repeat(40) }),
+    'a claim about a text the record no longer carries is not a claim about this record')
+  assert.ok(!supersessionBinds(declared, { ...blobs, before: 'f'.repeat(40) }))
+  assert.ok(!supersessionBinds(declared, { before: null, after: blobs.after }))
+  assert.ok(!supersessionBinds(null, blobs))
+})
+
+test('a claim is readable only from a completed unit, in a step record, about its own path', () => {
+  const step = `${PATH_DIR}/CP-EX-010/steps/S16.md`
+  const target = `${PATH_DIR}/CP-EX-010/steps/S15.md`
+  const claim = `${target}@a1b2c3d..e4f5a6b`
+  const unit = { step: 'S16', unit: '16', type: 'repair', verified: 'test', supersedes: claim, __file: step }
+  assert.deepEqual(supersessionClaim(unit), { file: target, before: 'a1b2c3d', after: 'e4f5a6b' })
+
+  // The mutable record beside the steps is not a record: a sentence added
+  // there to clear a gate can be deleted the next minute, and the edit stays
+  // exempted with nothing saying so.
+  assert.equal(supersessionClaim({ ...unit, __file: `${PATH_DIR}/CP-EX-010/index.md` }), null)
+  // Half a block grants nothing, by the reading `work-unit` already uses.
+  assert.equal(supersessionClaim({ ...unit, type: 'invented' }), null)
+  assert.equal(supersessionClaim({ ...unit, verified: undefined }), null)
+  // Another path's record is another path's business (ADR-004 decision 3).
+  assert.equal(supersessionClaim({ ...unit, supersedes: `${PATH_DIR}/CP-OTHER-002/steps/S15.md@a1b2c3d..e4f5a6b` }), null)
+  // And a record does not supersede itself: that is the edit, not the remedy.
+  assert.equal(supersessionClaim({ ...unit, supersedes: `${step}@a1b2c3d..e4f5a6b` }), null)
+  assert.equal(supersessionClaim({ ...unit, supersedes: undefined }), null)
+  assert.equal(supersessionClaim(undefined), null)
+})
+
+test('the commits of a log, with the files each one touched', () => {
+  const [first, second] = ['a'.repeat(40), 'b'.repeat(40)]
+  assert.deepEqual(
+    commitsWithFiles(`${first}\n\ntools/a.mjs\ntools/b.mjs\n${second}\n\ntools/a.mjs\n`),
+    [{ commit: first, files: ['tools/a.mjs', 'tools/b.mjs'] }, { commit: second, files: ['tools/a.mjs'] }])
+  // A merge commit lists no files, and is not dropped: it simply touched none.
+  assert.deepEqual(commitsWithFiles(`${first}\n\n${second}\n\ntools/a.mjs\n`),
+    [{ commit: first, files: [] }, { commit: second, files: ['tools/a.mjs'] }])
+  assert.deepEqual(commitsWithFiles(''), [])
+  assert.deepEqual(commitsWithFiles(null), [])
+  // Output that begins with a file, which no `--format=%H` log produces, is
+  // not silently attributed to a commit that was never named.
+  assert.deepEqual(commitsWithFiles('tools/a.mjs\n'), [])
+})
+
+test('a step record edited on the branch is answered by a later step that binds both blobs', () => {
+  // Crumbz S15 was refused for an unsupported unit type; the agent edited the
+  // pushed record, which is a second violation, and no history may be
+  // rewritten to undo either. S16 bound both blobs — and the 1.0 checker had
+  // no predicate for the remedy its own specification names.
+  const step = `${PATH_DIR}/CP-EX-010/steps/S15.md`
+  const declared = { before: 'a1b2c3d', after: 'e4f5a6b' }
+  const actual = { before: `a1b2c3d${'0'.repeat(33)}`, after: `e4f5a6b${'0'.repeat(33)}` }
+  const bound = run([step], 'path/cp-ex-010', [A_PATH], {
+    immutableMutations: [step],
+    supersessions: [{ file: step, declaredIn: `${PATH_DIR}/CP-EX-010/steps/S16.md`, declared, actual }]
+  })
+  assert.ok(!rules(bound, 'blocking').includes('record-integrity'),
+    `the bound supersession is the remedy — findings were ${JSON.stringify(messages(bound, 'record-integrity'))}`)
+  const stated = messages(bound, 'record-integrity', 'advisory')
+  assert.equal(stated.length, 1, 'an exemption nobody can see is indistinguishable from a rule nobody enforces')
+  assert.match(stated[0], /S16/)
+
+  // A claim that names other blobs proves nothing, and the refusal says what
+  // the record does carry rather than leaving the writer to guess.
+  const wrong = run([step], 'path/cp-ex-010', [A_PATH], {
+    immutableMutations: [step],
+    supersessions: [{ file: step, declaredIn: `${PATH_DIR}/CP-EX-010/steps/S16.md`, declared: { before: 'a1b2c3d', after: 'f'.repeat(40) }, actual }]
+  })
+  assert.ok(rules(wrong, 'blocking').includes('record-integrity'))
+  assert.ok(messages(wrong, 'record-integrity', 'blocking').some((m) => m.includes(actual.after)),
+    `the refusal names the blobs the record carries — ${JSON.stringify(messages(wrong, 'record-integrity', 'blocking'))}`)
+
+  // And with no claim at all the rule is what it was.
+  const bare = run([step], 'path/cp-ex-010', [A_PATH], { immutableMutations: [step] })
+  assert.ok(rules(bare, 'blocking').includes('record-integrity'))
 })
 
 /* ------------------------------------------------------------------ *

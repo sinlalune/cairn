@@ -52,7 +52,10 @@ a path's opening acceptance from the record's own `## Opening acceptance`
 block, its checkpoint from the resume section, the registration commit as the
 trunk commit in which the record became `running`, and the branch's tip from the
 local ref, else `HEAD` when the checkout is detached, else the remote-tracking
-ref; it validates `depends_on:` and knows two routes; the live-view generator
+ref; the range from a path's base to its candidate is read as this path's own
+commits alone, where a draft is resolved by the later commit that publishes the
+unit it was drafting, and an edited step record is answered by a later step of
+the same path binding the blob it replaces to the blob it adds; it validates `depends_on:` and knows two routes; the live-view generator
 marks each live path unblocked or names what it waits on. Closure follows the
 configured transport: on `pull-request` the checker proves the candidate, its
 closure surface, the opening digest and the trunk drift from Git and reads no

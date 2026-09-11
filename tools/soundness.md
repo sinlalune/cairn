@@ -117,6 +117,21 @@ the other — a rule that agreed too easily, in the one shape the note says to
 expect. It is decided segment by segment now, with `**` tried at every length
 it can take.
 
+A second reversal is worth naming because it took a rule three repairs to
+find. `provisional` asks whether a candidate still carries unfinished work, and
+the fact it can read is a trailer inside `base..candidate`. On a host that
+forbids rewriting, that range is not this path's work: reaching a current base
+means merging the trunk in, so the range carries every other path's commits
+too, and the proxy was broader than the sentence in the one direction that
+refuses honest candidates. It was also TIMELESS where the sentence it
+implements is chronological — *the completed unit's own commit supersedes it* —
+so a draft the path had finished three commits earlier still refused the
+candidate, and the only remedy the message named, fold it, is the rewrite this
+host forbids. Both halves are the same mistake: reading a range as a bag of
+commits rather than as this path's history. Where a range is pinned rather than
+derived from a merge-base, it is scoped to this path's own commits before
+anything is read from it.
+
 **4. A stated requirement with no predicate is listed as unenforced.** The
 conformance page is where that is said. An unenforced requirement and an
 unsound gate are indistinguishable from inside a green run — both are a passing

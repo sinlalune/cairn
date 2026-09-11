@@ -865,6 +865,93 @@ export function isVerbatimRelocation(before, after) {
   return from.length > 0 && strip(after).startsWith(from)
 }
 
+/**
+ * REPAIR 005 of ADR-004 decision 6. Where history is never rewritten, a pushed
+ * step record that was edited cannot be un-edited, and the remedy chapter 5
+ * names — *add a superseding record naming both ids* — had no predicate: the
+ * repair was recorded and not gated, which is how one wrong unit type on the
+ * adopter became four faults nothing could clear.
+ *
+ * A later step of the same path binds the mutation by naming the blob the
+ * record was added with and the blob it carries now. The shape is this
+ * repository's own — `<file>@<blob>`, as `governs:` pins a document — with
+ * Git's range punctuation between the two ids, in the repair step's own block:
+ *
+ *     supersedes: project/coding-paths/CP-X/steps/S15.md@64f13aa..35e6d65
+ *
+ * Both ids or none: a claim naming one blob says which text is gone without
+ * saying what replaced it, which is the half that makes the record readable.
+ */
+export function parseSupersession(value) {
+  const match = /^(\S+\.md)@([0-9a-f]{7,64})\.\.([0-9a-f]{7,64})$/.exec(String(value ?? ''))
+  return match ? { file: match[1], before: match[2], after: match[3] } : null
+}
+
+/**
+ * Is this unit's claim readable at all? Three conditions, and the exemption is
+ * worth nothing without any one of them:
+ *
+ * - it is declared in an APPEND-ONLY STEP RECORD, never in the mutable
+ *   `index.md` beside it — a sentence that can be added to clear a gate and
+ *   deleted afterwards leaves the edit exempted and no record of the
+ *   exemption, which is the opposite of what a superseding record is for;
+ * - it is a COMPLETED UNIT, by the same reading `work-unit` uses, so half a
+ *   block grants nothing;
+ * - and it names another STEP RECORD in its own path's steps folder: ADR-004
+ *   decision 3 applied to the rule standing beside it, so no path clears
+ *   another path's edit and no record clears its own.
+ *
+ * There is deliberately no fourth condition for *later*. Not because a claim
+ * could not be written first — a writer can hash the replacement text before
+ * committing it — but because the claim has to name the blob the record
+ * carries NOW, so whichever order the two commits land in, both texts are
+ * named and both stay reachable, which is the whole of what a superseding
+ * record is for. An ordinal comparison would add a predicate that refuses
+ * nothing the binding does not already bind.
+ *
+ * Pure: everything here is read from the unit and its own file name.
+ */
+export function supersessionClaim(unit) {
+  const declared = parseSupersession(unit?.supersedes)
+  const file = String(unit?.__file ?? '')
+  if (!declared || !isAppendOnlyStepRecord(file) || workUnitErrors(unit).length > 0) return null
+  if (!isAppendOnlyStepRecord(declared.file) || declared.file === file) return null
+  return dirname(declared.file) === dirname(file) ? declared : null
+}
+
+/** Does the claim describe THIS record? A writer copies abbreviated ids out of
+ *  `git log`, so a declared id is a prefix of the real one — and a claim about
+ *  a text the record does not carry binds nothing, which is the whole reason
+ *  the ids are in the declaration rather than a sentence saying "superseded". */
+export function supersessionBinds(declaration, { before, after } = {}) {
+  const names = (id, declared) => Boolean(id) && String(id).startsWith(declared)
+  return Boolean(declaration && names(before, declaration.before) && names(after, declaration.after))
+}
+
+/**
+ * REPAIR 006 of ADR-004 decision 6. A provisional commit is resolved by a LATER
+ * commit of the same path that publishes a completed unit, and by nothing else.
+ *
+ * The 1.0 rule matched the trailer anywhere in the range with no notion of
+ * after, while the unit reference it implements is chronological: *the
+ * completed unit's own commit supersedes it*. A timeless grep for a
+ * chronological sentence refused a candidate whose draft had been finished
+ * three commits earlier, and named the one remedy — fold it — that this host
+ * forbids.
+ *
+ * Order is ancestry rather than the clock: on one branch the two agree, and
+ * where they disagree an author date is a claim while reachability is a fact.
+ *
+ * Pure: the caller supplies the ordering.
+ */
+export function unresolvedProvisional(provisional, completions, isAncestor) {
+  // A commit is its own ancestor, and a draft that also publishes a completed
+  // step would otherwise clear itself — the one commit that says out loud it
+  // is not finished, resolving the mark it carries.
+  return provisional.filter((commit) =>
+    !completions.some((unit) => unit !== commit && isAncestor(commit, unit)))
+}
+
 /** The ISO date at the head of a string, or null. Used on a filename and on a
  *  frontmatter `timestamp:`, which is why it accepts a trailing remainder. */
 export function dateOf(value) {
@@ -1657,6 +1744,7 @@ export function evaluate({
   previousPaths = new Map(),
   immutableMutations = [],
   relocations = [],
+  supersessions = [],
   branchSource = 'symbolic-ref',
   workUnits = null,
   rewritingForbidden = REWRITING_FORBIDDEN,
@@ -1934,15 +2022,27 @@ export function evaluate({
       add('advisory', 'record-integrity',
         `${validRelocations.length} append-only record(s) were relocated verbatim: ${validRelocations.slice(0, 3).map(([from, to]) => `${from.split('/').at(-1)} → ${to}`).join(', ')}${validRelocations.length > 3 ? ', …' : ''}. Links were repointed and nothing earlier was rewritten — stated rather than exempted in silence`)
     }
+    // REPAIR 005. A mutation that a later step of this path has bound — the
+    // blob it replaces, the blob it adds — is the remedy chapter 5 names, not
+    // a second violation: both texts stay reachable and the correction is a
+    // new step. The claim is checked against the blobs the record really
+    // carries, because a supersession nobody verifies is a sentence that
+    // clears any edit.
+    const claims = new Map(supersessions.map((claim) => [claim.file, claim]))
     for (const file of immutableMutations) {
-      if (isImmutableRecord(file) && !relocated.has(file)) {
-        if (isAppendOnlyStepRecord(file)) {
-          add('blocking', 'record-integrity',
-            `${file} no longer preserves its adding blob as a prefix — append a suffix, or add a superseding record instead of changing earlier text`)
-        } else {
-          add('blocking', 'record-integrity',
-            `${file} is an existing immutable record and may not be modified, renamed, or deleted; add a superseding record instead`)
-        }
+      if (!isImmutableRecord(file) || relocated.has(file)) continue
+      const claim = claims.get(file)
+      if (!isAppendOnlyStepRecord(file)) {
+        add('blocking', 'record-integrity',
+          `${file} is an existing immutable record and may not be modified, renamed, or deleted; add a superseding record instead`)
+      } else if (supersessionBinds(claim?.declared, claim?.actual)) {
+        add('advisory', 'record-integrity',
+          `${file} is superseded on this branch by ${claim.declaredIn}, which binds ${claim.declared.before} to ${claim.declared.after} — the earlier text stays reachable and the correction is a new step, stated rather than exempted in silence`)
+      } else {
+        add('blocking', 'record-integrity',
+          claim
+            ? `${file} no longer preserves its adding blob as a prefix, and the supersession in ${claim.declaredIn} binds ${claim.declared.before} to ${claim.declared.after}, which this record does not carry — it was added as ${claim.actual.before ?? 'a blob this checkout cannot read'} and carries ${claim.actual.after ?? 'no text'}`
+            : `${file} no longer preserves its adding blob as a prefix — append a suffix, or supersede it from a later step of this path binding the blob it replaces to the blob it adds`)
       }
     }
   }
@@ -2100,7 +2200,7 @@ export function evaluate({
   if (onPath && match && match.front.status === 'ready') {
     if (provisionalInCandidate == null) {
       add('blocking', 'provisional',
-        `cannot read the commit range for ${match.front.id} — fetch the complete path history and rerun the gate`,
+        `cannot read the commit range for ${match.front.id} against the trunk — fetch the trunk and the complete path history, and rerun the gate`,
         'inconclusive')
     } else if (provisionalInCandidate.length > 0) {
       add('blocking', 'provisional',
@@ -2846,15 +2946,126 @@ function redactionIndex() {
   }
 }
 
-/** Commits between the recorded base and the proposed candidate that still
- *  announce themselves as incomplete. */
-function provisionalCommits(from, to) {
+/** Is one commit reachable from the other? */
+function commitIsAncestor(a, b) {
+  try {
+    execFileSync('git', ['merge-base', '--is-ancestor', a, b], { cwd: REPO, stdio: 'ignore' })
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * ADR-004 decision 3. `base_commit..subject_commit` is a PINNED range, and on a
+ * host that forbids rewriting the only way to a current base is to merge the
+ * trunk in — so every trunk commit merged since registration is inside it,
+ * carrying other paths' completed units and other paths' drafts. The
+ * merge-base comparison every changed-file rule uses corrects itself as the
+ * branch merges; a pinned range cannot, so it is scoped here: `--not <trunk>`
+ * leaves this branch's own commits, which on one-writer-per-branch are this
+ * path's.
+ *
+ * What remains is then read chronologically, as repair 006 asks: a draft the
+ * path itself finished later is resolved, and is not a reason to refuse a
+ * candidate.
+ */
+function unresolvedProvisionalCommits(path, trunkRef) {
+  const from = path?.front?.base_commit
+  const to = path?.front?.subject_commit
   if (!isCommitPin(from) || !isCommitPin(to)) return []
-  const raw = gitOrNull([
-    'log', '--format=%h', `--grep=^${PROVISIONAL_TRAILER}:`, `${from}..${to}`
-  ])
+  // No trunk, no scoping — and an unscoped range is the reading this rule
+  // exists to stop, so the run says it could not decide rather than deciding
+  // on the broader question.
+  if (!trunkRef || gitOrNull(['rev-parse', '--verify', '--quiet', `${trunkRef}^{commit}`]) == null) return null
+  const range = [`${from}..${to}`, '--not', trunkRef]
+  const raw = gitOrNull(['log', '--format=%H', `--grep=^${PROVISIONAL_TRAILER}:`, ...range])
   if (raw == null) return null
-  return raw.split('\n').map((line) => line.trim()).filter(Boolean)
+  const provisional = raw.split('\n').map((line) => line.trim()).filter(Boolean)
+  if (provisional.length === 0) return []
+  const completions = unitCompletionCommits(range, path)
+  if (completions == null) return null
+  return unresolvedProvisional(provisional, completions, commitIsAncestor)
+}
+
+/**
+ * The commits in this range that publish a completed unit of THIS path: a
+ * `cairn-unit` block, valid by the same reading the `work-unit` rule uses, for
+ * a step the record did not carry at that commit's parent.
+ *
+ * Scoped to this path's own record — its folder, or the flat file that is its
+ * own ledger. The adopter's first repair counted a step record under any
+ * `CP-*` folder, so another path's units, merged in from the trunk, cleared
+ * this path's draft; the reviewer who found it named two such records by id.
+ *
+ * A merge commit lists no files here, which is the right answer twice over:
+ * merging the trunk in finishes nothing of this path's own.
+ */
+function unitCompletionCommits(range, path) {
+  const dir = path.file.endsWith('/index.md') ? path.file.slice(0, -'/index.md'.length) : null
+  const raw = gitOrNull(['log', '--format=%H', '--name-only', ...range, '--', dir ?? path.file])
+  // Unreadable is not "nothing finished it": that answer refuses the
+  // candidate, which is a verdict this rule has no evidence for.
+  if (raw == null) return null
+  // A unit is published by a step record, or by the FLAT record that is its own
+  // ledger — never by the plan, and never by the `index.md` of a folder
+  // record, which may be edited freely and would let a block added there and
+  // deleted afterwards resolve a draft. Same argument as `supersessionClaim`.
+  const ledger = (file) => isAppendOnlyStepRecord(file) || (dir === null && file === path.file)
+  return commitsWithFiles(raw)
+    .filter(({ commit, files }) => files.some((file) => ledger(file) && publishesAUnit(commit, file)))
+    .map(({ commit }) => commit)
+}
+
+/** `--format=%H --name-only` emits a hash, a blank line, then that commit's
+ *  files. Kept pure so the plumbing format has a test rather than being
+ *  trusted by inspection, as `recordOriginFromFollowLog` is for its own. */
+export function commitsWithFiles(raw) {
+  const out = []
+  for (const line of String(raw ?? '').split('\n').map((text) => text.trim())) {
+    if (isObjectId(line)) out.push({ commit: line, files: [] })
+    else if (line && out.length > 0) out.at(-1).files.push(line)
+  }
+  return out
+}
+
+/** The steps a record declares as completed units, at one ref. */
+function completedStepsAt(ref, file) {
+  const text = gitOrNull(['show', `${ref}:${file}`])
+  if (text == null) return []
+  return parseWorkUnits(text)
+    .filter((unit) => workUnitErrors(unit).length === 0)
+    .map((unit) => unit.step)
+}
+
+/** Did this commit publish a step the record did not carry before it? */
+function publishesAUnit(commit, file) {
+  const before = completedStepsAt(`${commit}^`, file)
+  return completedStepsAt(commit, file).some((step) => !before.includes(step))
+}
+
+/** REPAIR 005. The supersessions this path's own records declare, each carried
+ *  with the blobs the record it names actually has: the blob that added it,
+ *  followed through relocations, and the blob it carries now. Whether the claim
+ *  binds is decided in `evaluate`, where it can be tested without a
+ *  repository. */
+function declaredSupersessions(workUnits) {
+  const out = []
+  for (const unit of workUnits ?? []) {
+    const declared = supersessionClaim(unit)
+    if (!declared) continue
+    const origin = stepRecordOrigin(declared.file)
+    out.push({
+      file: declared.file,
+      declaredIn: unit.__file,
+      declared,
+      actual: {
+        before: origin ? gitOrNull(['rev-parse', `${origin.commit}:${origin.file}`]) : null,
+        after: existsSync(join(REPO, declared.file)) ? gitOrNull(['hash-object', '--', declared.file]) : null
+      }
+    })
+  }
+  return out
 }
 
 function headCarriesProvisionalTrailer() {
@@ -2888,15 +3099,6 @@ function pathRemoteCheckpoint(branch) {
     (refExists(tracking) ? tracking : null)
   if (!upstream) return { state: 'missing', upstream: null, branchRef: resolved }
 
-  const ancestor = (a, b) => {
-    try {
-      execFileSync('git', ['merge-base', '--is-ancestor', a, b], { cwd: REPO, stdio: 'ignore' })
-      return true
-    } catch {
-      return false
-    }
-  }
-
   // Three shapes, and only the third is a rewrite.
   //
   //   HEAD reachable from upstream  → published (or simply behind)
@@ -2908,8 +3110,8 @@ function pathRemoteCheckpoint(branch) {
   // a force-push. That is exactly what ADR-022 forbids, and unlike the policy
   // field itself it is a fact a local checkout can read.
   const head = resolved.ref
-  if (ancestor(head, upstream)) return { state: 'published', upstream, diverged: false, branchRef: resolved }
-  return { state: 'unpushed', upstream, diverged: !ancestor(upstream, head), branchRef: resolved }
+  if (commitIsAncestor(head, upstream)) return { state: 'published', upstream, diverged: false, branchRef: resolved }
+  return { state: 'unpushed', upstream, diverged: !commitIsAncestor(upstream, head), branchRef: resolved }
 }
 
 /**
@@ -3067,7 +3269,8 @@ function pathWorkUnits(file) {
       }
     }
   }
-  const units = files.flatMap((rel) => parseWorkUnits(readFileSync(join(REPO, rel), 'utf8')))
+  const units = files.flatMap((rel) =>
+    parseWorkUnits(readFileSync(join(REPO, rel), 'utf8')).map((unit) => ({ ...unit, __file: rel })))
   return units.sort((a, b) =>
     (Number.parseInt(a.unit, 10) || 0) - (Number.parseInt(b.unit, 10) || 0))
 }
@@ -3277,6 +3480,7 @@ async function main() {
   const viewCurrent = activeViewCurrent()
   const paths = loadPaths()
   const pathForBranch = paths.find((path) => path.front?.branch === branch) ?? null
+  const workUnits = pathForBranch ? pathWorkUnits(pathForBranch.file) : null
   const trunkRef = base ?? TRUNK_BRANCH
   const previousRef = comparisonRef(base)
   const stateChanged = previousRef ? changedFiles(previousRef) : changed
@@ -3306,8 +3510,9 @@ async function main() {
       previousPaths: previousPathStates(paths, previousRef),
       immutableMutations: immutableRecordMutations(previousRef, changed),
       relocations: verbatimRelocations(previousRef),
+      supersessions: declaredSupersessions(workUnits),
       branchSource,
-      workUnits: pathForBranch ? pathWorkUnits(pathForBranch.file) : null,
+      workUnits,
       // Judged against the SAME comparison every other changed-file rule uses,
       // so the local default and the CI command see one set of added records.
       addedRecords: addedRecordDates(changed, previousRef),
@@ -3320,7 +3525,7 @@ async function main() {
       trunkDelta: pathForBranch?.front?.status === 'ready' ? trunkDeltaSinceBase(trunkRef) : [],
       redactionRecordExists: redactionIndex(),
       provisionalInCandidate: pathForBranch
-        ? provisionalCommits(pathForBranch.front?.base_commit, pathForBranch.front?.subject_commit)
+        ? unresolvedProvisionalCommits(pathForBranch, trunkRef)
         : [],
       headProvisional: headCarriesProvisionalTrailer()
     })

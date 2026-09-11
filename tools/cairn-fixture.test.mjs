@@ -730,6 +730,19 @@ Candidate accepted for administrative closure and exact integration.
 }
 const closingFile = (subject) => `project/coding-paths/CP-FIXTURE-001/closing-${subject}.md`
 
+/** The resume section a running record carries once it has completed a unit:
+ *  the last commit the remote holds, so the path can be picked up cold. */
+const RESUME = (commit) => `
+## Resume
+
+### Checkpoint
+
+\`\`\`text
+commit : ${commit}
+unit   : 1
+\`\`\`
+`
+
 const STEP_RECORD = `---
 type: Cairn Coding Path Step
 title: 'CP-FIXTURE-001 S01 — the one constant'
@@ -759,11 +772,14 @@ verified: cairn-check
  *  in the working tree — exactly where the operations page says to run the
  *  gate. `provisional` marks the one implementation commit as a draft, which
  *  is the one state this harness builds red on purpose. */
-function readyRepository({ provisional = false, transport = 'pull-request' } = {}) {
+function readyRepository({ provisional = false, resolved = false, beforeCandidate = null, transport = 'pull-request' } = {}) {
   const dir = repository({ transport })
   const base = git(dir, 'rev-parse', 'HEAD').trim()
   writeAcceptedRecord(dir, {
     base_commit: base,
+    // Two units is a full-route trigger, and a harness that escalates one unit
+    // late would be red for a reason this fixture is not about.
+    ...(resolved ? { route: 'full' } : {}),
     writes: '\n    - src/**',
     governs: `\n    - docs/architecture/index.md@${'b'.repeat(40)}`
   })
@@ -782,9 +798,32 @@ function readyRepository({ provisional = false, transport = 'pull-request' } = {
   commit(dir, provisional
     ? 'CP-FIXTURE-001 S01: the one constant\n\nCairn-Provisional: a draft nobody folded'
     : 'CP-FIXTURE-001 S01: the one constant')
+  // The unit that finishes the draft. Nothing is rewritten: the marked commit
+  // stays in the branch as what it was, and a later commit of this path says
+  // the work it was drafting is done (ADR-004 decision 6, repair 006).
+  if (resolved === 'in the index') {
+    // The same claim, in the file that may be edited: a block added to clear
+    // the gate and deleted the next minute resolves nothing.
+    appendFileSync(join(dir, RECORD),
+      '\n```cairn-unit\nstep: S02\nunit: 02\ntype: implementation\nverified: cairn-check\n```\n')
+    commit(dir, 'CP-FIXTURE-001 S02: a unit nobody can keep')
+  } else if (resolved) {
+    write(dir, STEP.replace('S01.md', 'S02.md'), STEP_RECORD
+      .replace(/S01/g, 'S02')
+      .replace('unit: 01', 'unit: 02')
+      .replace('- one exported constant, and its module note',
+        '- the draft of S01, finished; the marked commit stays in the branch'))
+    commit(dir, 'CP-FIXTURE-001 S02: the draft, finished')
+  }
   git(dir, 'init', '-q', '--bare', `${dir}.git`)
   git(dir, 'remote', 'add', 'origin', `${dir}.git`)
   git(dir, 'push', '-q', '-u', 'origin', 'main', 'path/cp-fixture-001')
+  // Where another path's work enters this path's range: the trunk moves and
+  // the branch merges it in, which is the only way to a current base here.
+  if (beforeCandidate) {
+    beforeCandidate(dir)
+    git(dir, 'push', '-q', 'origin', 'path/cp-fixture-001')
+  }
   const subject = git(dir, 'rev-parse', 'HEAD').trim()
   const trunk = git(dir, 'rev-parse', 'origin/main').trim()
 
@@ -908,6 +947,250 @@ test('adversarial: provisional — a candidate whose range still carries a Cairn
     const found = check(dir)
     assert.deepEqual(blocking(found), ['provisional'], describe(found))
     assert.ok(advisory(found).includes('provisional'), 'HEAD is that draft, and is reported as one')
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+/* ------------------------------------------------------------------ *
+ * What a range means — ADR-004 decision 3, repairs 005 and 006
+ *
+ * On a host that forbids rewriting, the only way to a current base is to
+ * merge the trunk in, so the range from the base to the candidate always
+ * carries other paths' work. These fixtures put it there.
+ * ------------------------------------------------------------------ */
+
+/** Another participant lands a completed unit on the REMOTE trunk, through a
+ *  merge of their own branch — so their commits are reachable from the trunk
+ *  without being trunk commits, which is what a `--no-ff` integration leaves
+ *  behind and what every later range then contains. */
+function landOnTrunk(dir, writeFiles, message, { trailer = null } = {}) {
+  const other = mkdtempSync(join(tmpdir(), 'cairn-fixture-trunk-'))
+  try {
+    git(other, 'clone', '-q', '-b', 'main', `${dir}.git`, '.')
+    git(other, 'checkout', '-q', '-b', 'path/cp-other-002')
+    writeFiles(other)
+    commit(other, trailer ? `${message}\n\n${trailer}` : message)
+    git(other, 'checkout', '-q', 'main')
+    git(other, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture',
+      'merge', '-q', '--no-ff', '-m', `Integrate ${message}`, 'path/cp-other-002')
+    git(other, 'push', '-q', 'origin', 'main')
+  } finally {
+    cleanup(other)
+  }
+  git(dir, 'fetch', '-q', 'origin')
+}
+
+/** …and this path reaches a current base the one way this host allows. */
+function mergeTrunk(dir) {
+  git(dir, '-c', 'user.email=t@example.invalid', '-c', 'user.name=fixture',
+    'merge', '-q', '--no-ff', '-m', 'merge the trunk in', 'origin/main')
+}
+
+const OTHER_RECORD = 'project/coding-paths/CP-OTHER-002/index.md'
+const OTHER_STEP = 'project/coding-paths/CP-OTHER-002/steps/S01.md'
+const LONG_AGO = '2025-01-05'
+
+/** Another path's completed unit, as the trunk carries it: a closed record and
+ *  a step record dated long before today — a drift `record-date` reports about
+ *  the change that adds it, and about no other. */
+function otherPathsUnit(other) {
+  write(other, OTHER_RECORD, `---
+type: Cairn Coding Path
+title: Another path
+description: A path that closed before this one merged the trunk in.
+tags: [coding-path]
+timestamp: ${LONG_AGO}T00:00:00Z
+cairn:
+  id: CP-OTHER-002
+  route: lightweight
+  status: done
+  resolution: completed
+---
+
+# CP-OTHER-002 — Another path
+
+## Goal
+
+Be somebody else's work.
+`)
+  write(other, OTHER_STEP, `---
+type: Cairn Coding Path Step
+title: 'CP-OTHER-002 S01 — their unit'
+timestamp: ${LONG_AGO}T00:00:00Z
+cairn:
+  path: CP-OTHER-002
+  step: S01
+---
+
+# CP-OTHER-002 S01
+
+\`\`\`cairn-unit
+step: S01
+unit: 01
+type: implementation
+verified: cairn-check
+\`\`\`
+
+- their one line
+`)
+}
+
+test('decision 3, audited: another path\'s records, merged in from the trunk, are not evidence about this path', () => {
+  // The adopter's repair counted a step record under ANY path folder as this
+  // path's completion, and two of another path's records would have cleared a
+  // draft they had nothing to do with. The comparison every changed-file rule
+  // uses is the merge-base with the trunk, and the merge-base ADVANCES with
+  // the merge — so what arrived through it is behind the range, not in it.
+  const dir = publishedRepository()
+  try {
+    landOnTrunk(dir, otherPathsUnit, 'CP-OTHER-002 S01: their unit')
+    landOnTrunk(dir, (other) => {
+      edit(other, OTHER_STEP, 'their one line', 'their one line, rewritten after the fact')
+    }, 'CP-OTHER-002 S02: an edit of their own')
+    mergeTrunk(dir)
+
+    // This rule was READ against decision 3 and left alone: it walks the
+    // comparison ref, which is the merge-base with the trunk, and the
+    // merge-base advances with the merge. This fixture is the guard on that
+    // property, not a repair of the rule.
+    const found = check(dir)
+    assert.deepEqual(blocking(found), [],
+      `another path's rewritten step is their repository's business, not this path's: ${describe(found)}`)
+    assert.ok(!advisory(found).includes('record-date'),
+      'their record is dated long ago and was added by their commit, not by this change')
+
+    // And the property is the merge-base, nothing subtler: told to compare
+    // against a base BEHIND the merge, the same run reads their records as
+    // this change's. The default and the CI command never ask that question —
+    // the base they resolve is the trunk — and the header names the base of
+    // any run that does.
+    // `main` here is the local ref, left where this branch forked: a base
+    // behind the merge, which is the one shape the merge-base cannot correct.
+    const pinned = check(dir, '--base', git(dir, 'rev-parse', 'main').trim())
+    assert.ok(advisory(pinned).includes('record-date'),
+      'the scoping IS the comparison ref: told to compare against a base behind the merge, the same run reads their record as this change\'s')
+
+    // And the same run still reads THIS path's own records: the scoping is
+    // path-scoped, not blind.
+    write(dir, STEP, STEP_RECORD.replace(`timestamp: ${TODAY}`, `timestamp: ${LONG_AGO}`))
+    commit(dir, 'CP-FIXTURE-001 S01: the one constant')
+    assert.ok(advisory(check(dir)).includes('record-date'),
+      'this path\'s own record, dated long before the commit that adds it, is still reported')
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+test('repair 006: a draft this path finished later does not refuse its candidate', () => {
+  // Crumbz CP-004 pushed S16 as a provisional commit, finished the work in
+  // S17, merged the trunk in and was refused by a rule that matched the
+  // trailer anywhere in the range — with the one remedy this host forbids.
+  const { dir } = readyRepository({ provisional: true, resolved: true })
+  try {
+    const found = check(dir)
+    assert.deepEqual(blocking(found), [],
+      `the completed unit that finishes a draft is what resolves it: ${describe(found)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+test('repair 006: a unit claimed in the mutable record resolves nothing', () => {
+  const { dir } = readyRepository({ provisional: true, resolved: 'in the index' })
+  try {
+    assert.ok(blocking(check(dir)).includes('provisional'),
+      'a draft is finished by a step record, which cannot be unwritten, and by nothing else')
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+test('decision 3: another path\'s draft, merged in from the trunk, is not this candidate\'s', () => {
+  const { dir } = readyRepository({
+    beforeCandidate: (repo) => {
+      landOnTrunk(repo, otherPathsUnit, 'CP-OTHER-002 S01: their draft',
+        { trailer: 'Cairn-Provisional: their unfinished work, not ours' })
+      mergeTrunk(repo)
+    }
+  })
+  try {
+    const found = check(dir)
+    assert.deepEqual(blocking(found), [],
+      `a trailer on another path's commit says nothing about this path: ${describe(found)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+const REPAIR_STEP = (supersedes) => `---
+type: Cairn Coding Path Step
+title: 'CP-FIXTURE-001 S02 — the correction'
+timestamp: ${TODAY}T00:00:00Z
+cairn:
+  path: CP-FIXTURE-001
+  step: S02
+---
+
+# CP-FIXTURE-001 S02
+
+\`\`\`cairn-unit
+step: S02
+unit: 02
+type: repair
+supersedes: ${supersedes}
+verified: cairn-check
+\`\`\`
+
+- S01 was edited after it was pushed, and nothing is rewritten to undo it
+`
+
+test('repair 005: an edited step is answered by a later step that binds both blobs', () => {
+  // One unsupported unit type on the adopter became four faults: the record
+  // was refused, the agent edited the pushed record, and on a no-rewrite host
+  // neither could be undone. The specification's remedy — a superseding record
+  // naming both ids — had no predicate until this.
+  // `full`, because two units on a lightweight path is a trigger of its own
+  // and this fixture is not about the route.
+  const dir = publishedRepository({ record: { route: 'full' } })
+  const step2 = 'project/coding-paths/CP-FIXTURE-001/steps/S02.md'
+  try {
+    write(dir, STEP, STEP_RECORD)
+    // A unit refreshes the resume section in the same change, and a running
+    // record that completed one must name the commit the remote holds.
+    appendFileSync(join(dir, RECORD), RESUME(git(dir, 'rev-parse', 'HEAD').trim()))
+    commit(dir, 'CP-FIXTURE-001 S01: the one constant')
+    git(dir, 'push', '-q', 'origin', 'path/cp-fixture-001')
+    assert.deepEqual(blocking(check(dir)), [], `the baseline must be green: ${describe(check(dir))}`)
+
+    const before = git(dir, 'rev-parse', `HEAD:${STEP}`).trim()
+    edit(dir, STEP, 'one exported constant', 'a constant that was always two')
+    commit(dir, 'the edit that cannot be undone')
+    git(dir, 'push', '-q', 'origin', 'path/cp-fixture-001')
+    const after = git(dir, 'rev-parse', `HEAD:${STEP}`).trim()
+    assert.ok(blocking(check(dir)).includes('record-integrity'), 'the edit is a violation and stays one')
+
+    // A claim that names a blob the record does not carry binds nothing.
+    write(dir, step2, REPAIR_STEP(`${STEP}@${before}..${'f'.repeat(40)}`))
+    const wrong = check(dir)
+    assert.ok(blocking(wrong).includes('record-integrity'),
+      'a supersession nobody verifies is a sentence that clears any edit')
+
+    // The true claim, in the mutable record beside the steps rather than in a
+    // record of its own: a sentence that can be added to clear the gate and
+    // deleted the next minute leaves the edit exempted and nothing saying so.
+    rmSync(join(dir, step2))
+    appendFileSync(join(dir, RECORD), `\n\`\`\`cairn-unit\nstep: S02\nunit: 02\ntype: repair\nsupersedes: ${STEP}@${before}..${after}\nverified: cairn-check\n\`\`\`\n`)
+    assert.ok(blocking(check(dir)).includes('record-integrity'),
+      'a claim in a file that may be edited is not a superseding record')
+    write(dir, RECORD, readFileSync(join(dir, RECORD), 'utf8').split('\n```cairn-unit')[0] + '\n')
+
+    // The claim, true: the blob the record was added with, the blob it carries.
+    write(dir, step2, REPAIR_STEP(`${STEP}@${before}..${after}`))
+    const bound = check(dir)
+    assert.ok(!blocking(bound).includes('record-integrity'),
+      `the bound supersession is the remedy: ${describe(bound)}`)
+    assert.ok(advisory(bound).includes('record-integrity'), 'and it is stated, not silent')
   } finally {
     cleanup(dir, `${dir}.git`)
   }

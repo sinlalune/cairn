@@ -162,8 +162,8 @@ export const RULE_METADATA = {
     enforcing: 'parseWorkUnits(record) => workUnitErrors(unit) over WORK_UNIT_TYPES; status running && units > 0 => checkpointCommit(record); touched(source roots) => touched(modules root) && touched(PATH_DIR); areaOf(file) => changed.includes(note) (advisory)'
   },
   'provisional': {
-    condition: 'A proposed candidate still contains commits marked Cairn-Provisional, or HEAD is itself provisional',
-    enforcing: "git log --grep=^Cairn-Provisional: base..subject_commit (blocking on a ready path, advisory at HEAD)"
+    condition: 'A proposed candidate still contains a commit of this path marked Cairn-Provisional that no later commit of this path has resolved, or HEAD is itself provisional',
+    enforcing: "git log --grep=^Cairn-Provisional: base..subject_commit --not <trunk> (ADR-004 d3), each unresolved by any later commit of this path publishing a valid cairn-unit block for a step its record did not carry (repair 006); blocking on a ready path, advisory at HEAD"
   },
   'journal-entry': {
     condition: 'A path record reaches `done` in this change and no journal entry declares that path',
@@ -210,8 +210,8 @@ export const RULE_METADATA = {
     enforcing: 'pathClosureState(path) + closureFieldErrors(recordAtC, current) [+ manual-git: closingAcceptanceErrors(record) + fillErrors(record) + dispositionErrors(disposition, advisories_at_candidate, raised) + opening.accepted_by === closing.accepted_by]'
   },
   'record-integrity': {
-    condition: 'An immutable event/history record changed, or a born-sliced step no longer preserves its adding blob as a prefix',
-    enforcing: 'immutableRecordMutations(mergeBaseWithTrunk) + appendOnlyStepRecordMutations(changed) + preservesAppendOnlyRecord(before, after)'
+    condition: 'An immutable event/history record changed, or a born-sliced step no longer preserves its adding blob as a prefix and no later step of this path binds the blob it replaces to the blob it adds (repair 005)',
+    enforcing: 'immutableRecordMutations(mergeBaseWithTrunk) + appendOnlyStepRecordMutations(changed) + preservesAppendOnlyRecord(before, after); exempt where supersessionBinds(supersessionClaim(unit), the record\'s adding blob and current blob) — the claim readable only from a completed unit in an append-only step record of the same folder — stated as an advisory'
   },
   'scope-drift': {
     condition: 'Changed files outside path frontmatter declared writes: patterns',
