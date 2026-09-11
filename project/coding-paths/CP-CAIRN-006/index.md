@@ -255,28 +255,39 @@ none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
-- **S01** — not started
+- [**S01**](./steps/S01.md) — the two debts, two records: ADR-024
+  superseding the kit-default clause of ADR-001 decision 1, so a
+  repository installed at 1.1 declares `manual-git` registration and
+  `--transport` names the integration transport alone; ADR-025 deciding
+  that a red run's post-mortem is read before the next unit, one sentence
+  of the unit skill's resume movement; the 1.1 page amended in place and
+  marked *since 2026-09-11*, the two indexes, and the register's rows 3
+  and 4 naming each record and its surfaces — **complete**
+- **S02** — not started
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — the trunk commit that adds this record, whose parent is base
-unit   : 0
+commit : dcfe9880a160662ac62a5330ebfda2b202c9b79d — the registration commit; S01's own commit is named here by S02
+unit   : 0 — S01 is complete on its push, and carries no unit number until its commit is on the remote
 base   : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
 trunk  : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8 — origin/main at registration
 ```
 
 ### Next action
 
-In a fresh session, from the worktree `../cairn-cp-cairn-006` on branch
-`path/cp-cairn-006`: run S01 of the plan with `cairn-unit` — the two
-debts, two records: ADR-024 superseding the kit-default clause of ADR-001
-decision 1, ADR-025 on the reading of a red run's post-mortem, the 1.1
-page amended in place and marked *since 2026-09-11*, the two indexes, the
-register's rows 3 and 4. Type `decision`. Run the review movement on the
-unit's diff as the unit skill says.
+From the worktree `../cairn-cp-cairn-006` on branch `path/cp-cairn-006`:
+run S02 of the plan with `cairn-unit` — the profile line and the
+transition. ADR-001 decisions 6 and 7: every run prints what the forge
+does not enforce on this repository and the transports the configuration
+declares, on both profiles and as no finding; `transitionErrors` loses
+its `trunkIntegration` exception, so a trunk commit taking a path from
+`running` to `done` with no `ready` commit behind it is refused with its
+remedy named; the fixture is the shape path 1's closing took. Type
+`implementation`; the failing test comes first. Run the review movement
+on the unit's diff as the unit skill says.
 
 ### Blockers
 
@@ -284,6 +295,15 @@ None.
 
 ### Tried and rejected
 
+- Correcting the 1.1 page's opening sentence *Nothing here is implemented
+  yet*, false since path 1 landed (S01) — neither record of S01 decides
+  it, and the page is a governed document this path amends only where its
+  records reach. It is named here so the closing review finds it stated
+  rather than missed.
+- Amending the `cairn-postmortem` row of the 1.1 page's tools table for
+  ADR-025 (S01) — the row says what the tool does; the writer's
+  obligation to read its output belongs to *How a path runs*, beside the
+  gates, and one placement is enough.
 - Reopening the two debts in the chat — path 1 already ruled them out of
   its scope and named the remedy, a superseding record; asking again is
   the thing path 1's journal asks not to do.
