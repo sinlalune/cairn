@@ -1784,12 +1784,13 @@ test('two declared patterns meet when some file matches both', () => {
   assert.ok(!meet('spec/**/*.md', 'tools/**'))
 })
 
-/** The guarantee worth sweeping rather than sampling: on patterns without
- *  `**`, deciding that two surfaces meet agrees exactly with deciding that
- *  some file is in both, by the same matcher `scope-drift` uses. `**` is the
- *  one place the two readings part, and the comment on `patternsMeet` says
- *  where. */
-test('without `**`, two surfaces meet exactly when some file is in both', () => {
+/** The guarantee worth sweeping rather than sampling: whenever some file is in
+ *  both surfaces — by the same matcher `scope-drift` uses — the two are said to
+ *  meet. It is swept in the direction that matters, because a missed overlap is
+ *  a race nobody is told about, where a generous one is an advisory somebody
+ *  reads. `**` was left out of the alphabet when this was written; that is the
+ *  hole the closing request's reviewer found, and it is in now. */
+test('two surfaces meet whenever some file is in both, `**` included', () => {
   const alphabet = ['a', 'b', 'ax.md', 'x.md', 'y.mjs']
   const files = []
   for (const one of alphabet) {
@@ -1799,7 +1800,9 @@ test('without `**`, two surfaces meet exactly when some file is in both', () => 
       for (const three of alphabet) files.push(`${one}/${two}/${three}`)
     }
   }
-  const segments = ['a', 'b', '*', 'x.md', '*.md', 'a*', '*.mjs']
+  // Both shapes a globstar takes are in the alphabet: `**` as a whole segment,
+  // and `**.md` glued to a name, where it is an ordinary `*`.
+  const segments = ['a', 'b', '*', '**', 'x.md', '*.md', 'a**', '**.md']
   const patterns = []
   for (const one of segments) {
     patterns.push(one)
@@ -1816,6 +1819,19 @@ test('without `**`, two surfaces meet exactly when some file is in both', () => 
     }
   }
   assert.deepEqual(disagreements.slice(0, 5), [])
+
+  // What `**` means, named so a reader meets it directly rather than trusting
+  // the sweep: a globstar is a WHOLE SEGMENT, so it never eats part of a name,
+  // and glued to anything else it is an ordinary `*`.
+  assert.ok(matchesAny('a/x.md', ['a/**/x.md']))
+  assert.ok(matchesAny('a/b/x.md', ['a/**/x.md']))
+  assert.ok(matchesAny('a/b/c/x.md', ['a/**/x.md']))
+  assert.ok(!matchesAny('a/ax.md', ['a/**/x.md']), '`**` spans separators; it does not swallow half a segment')
+  assert.ok(!matchesAny('a/b/zzx.md', ['a/**/x.md']))
+  assert.ok(matchesAny('docs/a.md', ['docs/**.md']))
+  assert.ok(!matchesAny('docs/a/b.md', ['docs/**.md']), 'glued to a name, `**` is an ordinary `*`')
+  // The meet reader always said so; this is the line that had to move.
+  assert.ok(!patternsMeet('docs/**.md', 'docs/a/b.md'))
 })
 
 const live = (id, writes, extra = {}) => ({

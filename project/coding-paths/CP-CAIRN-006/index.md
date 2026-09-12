@@ -7,13 +7,13 @@ timestamp: 2026-09-11T00:00:00Z
 cairn:
   id: CP-CAIRN-006
   route: full
-  status: ready
-  current_step: S08
+  status: running
+  current_step: S09
   base_commit: 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
   branch: path/cp-cairn-006
   assigned_writer: cp-cairn-006-writer
   depends_on: []
-  subject_commit: 6828a7e771b5426902a92218d1a541a8a9d6ec75
+  subject_commit: null
   resolution: null
   writes:
     - tools/cairn-check.mjs
@@ -318,37 +318,44 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
   `record-integrity` refuse a valid second step record; and the catalogue, the
   matrix, the soundness note and the module note saying what the twenty-six
   rules are — **complete**
-- **Closing** — the candidate `6828a7e`, the review as
-  [request #15](https://github.com/sinlalune/cairn/pull/15), and this
-  administrative commit. The closure carries no step file (ADR-008 decision 1):
-  what persists of the review is the request's description and this record's
-  own fields.
+- [**S09**](./steps/S09.md) — one meaning for one glob: the closing request's
+  reviewer found that `globToRegExp` and `patternsMeet` disagree about `**`, so
+  two live paths could declare surfaces that share a file with no overlap
+  reported; a globstar is a whole segment now, in the one matcher both rules
+  use, and the exhaustive agreement test — written with `**` left out of its
+  alphabet, which is the hole — carries both of its shapes. The candidate
+  `6828a7e` is void — **complete**
+- **Closing** — a new candidate, the review as
+  [request #15](https://github.com/sinlalune/cairn/pull/15) repointed at it, and
+  the administrative commit. The closure carries no step file (ADR-008
+  decision 1).
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 6828a7e771b5426902a92218d1a541a8a9d6ec75 — S08, the review rule and the fixture sweep; the candidate C
+commit : 6828a7e771b5426902a92218d1a541a8a9d6ec75 — S08, the review rule and the fixture sweep; S09's own commit is the candidate
 unit   : 8 — S08
 base   : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
-trunk  : dcfe9880a160662ac62a5330ebfda2b202c9b79d — origin/main at the candidate, unmoved since registration
+trunk  : dcfe9880a160662ac62a5330ebfda2b202c9b79d — origin/main, unmoved since registration
 ```
 
 ### Next action
 
-The path is `ready` on candidate `6828a7e`, reviewed in
-[request #15](https://github.com/sinlalune/cairn/pull/15), with this
-administrative commit on the branch and its check green before the merge
-is asked for. **The owner runs `npm run cairn-check` and `npm test` on a
-repository of theirs, then merges the request** — the merge is the
+S09 answered the closing request's finding, so the candidate `6828a7e` is
+void and S09's own commit is the new one. From the worktree
+`../cairn-cp-cairn-006` on branch `path/cp-cairn-006`: declare `ready`
+with `subject_commit` at that commit, regenerate the live view, point the
+resume checkpoint at it, run the gate **before** committing, push, and
+update [request #15](https://github.com/sinlalune/cairn/pull/15) to name
+the new candidate and what changed since the first. Then the owner runs
+the checker on a repository of theirs and merges; the merge is the
 acceptance.
 
 After the merge, from a clean trunk checkout: the integrating unit —
 `status: done`, `resolution: completed`, the live view, and one journal
-entry under `project/log/` — in one commit for this one path, which is
-what this path's own S06 rule now requires of everyone. Then prove `C`
-reachable from the trunk and remove this worktree from another checkout.
+entry under `project/log/` — in one commit for this one path.
 
 The request names three debts this path found and does not own: the
 writer's half of a supersession (row 1), the close skill's sentence
@@ -361,6 +368,10 @@ None.
 
 ### Tried and rejected
 
+- Deriving the overlap from the compiled regexes, which the closing request's
+  reviewer offered first (S09) — `patternsMeet` would have inherited
+  `globToRegExp`'s meaning, and that meaning was the defect. The two share one
+  implementation of what a pattern means instead.
 - Tying `review` to the step file's own presence in the changed set (S08's
   first review) — the rule inherits `work-unit`'s trigger, the record changing,
   so a unit that lands a new step without touching the record is asked for

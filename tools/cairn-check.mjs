@@ -1251,10 +1251,21 @@ export function globToRegExp(pattern) {
   for (let i = 0; i < pattern.length; i += 1) {
     const char = pattern[i]
     if (char === '*') {
-      if (pattern[i + 1] === '*') {
+      // `**` is a globstar only when it is a WHOLE SEGMENT, which is what every
+      // glob means by it and what `patternsMeet` reads. Glued to anything else
+      // it is an ordinary `*`: compiled as `.*` it spanned separators, so
+      // `docs/**.md` took in `docs/a/b.md` where the meet reader said it could
+      // not, and two live paths could share a file with no overlap reported.
+      const wholeSegment = pattern[i + 1] === '*' && (i === 0 || pattern[i - 1] === '/')
+      const trailing = i + 2 === pattern.length
+      if (wholeSegment && trailing) {
         out += '.*'
         i += 1
-        if (pattern[i + 1] === '/') i += 1
+      } else if (wholeSegment && pattern[i + 2] === '/') {
+        // Zero or more COMPLETE segments: `a/**/x.md` is `a/x.md` and
+        // `a/b/x.md`, and never `a/zzzx.md`.
+        out += '(?:[^/]+/)*'
+        i += 2
       } else {
         out += '[^/]*'
       }
@@ -1285,11 +1296,17 @@ export function matchesAny(file, patterns) {
  *  wildcard stands, try consuming nothing and try consuming one token.
  *
  *  `**` is read here as zero or more whole SEGMENTS, which is what a `writes:`
- *  means by it. `globToRegExp`, which decides whether a FILE is in a surface,
- *  compiles `**` to `.*` and lets it span part of a segment, so the two
- *  readings disagree at the edges in both directions: `a/**\/x.md` takes in
- *  `a/a/ax.md` there and not here, and `a/**` meets `a` here and not there.
- *  On patterns without `**` they agree exactly, which the suite sweeps.
+ *  means by it and what `globToRegExp` — the matcher deciding whether a FILE is
+ *  in a surface — compiles it to. The two agreed on everything else and parted
+ *  on `**` until the closing request of CP-CAIRN-006: compiled as `.*` it took
+ *  in `a/a/ax.md` for `a/**\/x.md`, which this reader has never done, so two
+ *  live paths could share a file with no overlap reported. The suite sweeps
+ *  both readings over an alphabet that now contains `**`.
+ *
+ *  One edge remains, and it is this reader that is broader: `a/**` meets `a`
+ *  here, where no FILE named `a` is inside that surface. A surface is a set of
+ *  files; whether two declarations can collide is a question about the
+ *  declarations, and answering it generously is what an advisory is for.
  */
 export function patternsMeet(a, b) {
   return tokensMeet(String(a).split('/'), String(b).split('/'), '**', segmentsMeet)
