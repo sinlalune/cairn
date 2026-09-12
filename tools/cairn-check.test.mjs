@@ -19,6 +19,7 @@
  */
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
+import { readFileSync } from 'node:fs'
 import {
   adrFrontmatterErrors,
   closingAcceptanceErrors,
@@ -294,7 +295,7 @@ test('unavailable registration evidence is inconclusive and still exits through 
 })
 
 test('a base_commit different from the registration parent is blocked', () => {
-  const found = run(['README.md'], 'path/cp-ex-010', [A_PATH], { registrationBaseState: 'mismatch' })
+  const found = run(['README.md'], 'path/cp-ex-010', [A_PATH], { registrationBaseState: { state: 'mismatch', registration: 'b'.repeat(40), parent: 'c'.repeat(40) } })
   assert.ok(rules(found, 'blocking').includes('registration-base'))
 })
 
@@ -562,9 +563,9 @@ ${answer}
 yes
 `
   assert.deepEqual(fillErrors(text('clean', 'No.')), [])
-  assert.ok(fillErrors(text('', 'No.')).includes('no `verdict:` in its frontmatter'))
-  assert.ok(fillErrors(text('clean', '')).includes('no findings section has been answered'))
-  assert.ok(fillErrors(text('TO BE FILLED', 'No.')).includes('still carries the scaffold placeholder'))
+  assert.ok(fillErrors(text('', 'No.')).some((e) => e.startsWith('no `verdict:` in its frontmatter')))
+  assert.ok(fillErrors(text('clean', '')).some((e) => e.startsWith('no findings section has been answered')))
+  assert.ok(fillErrors(text('TO BE FILLED', 'No.')).some((e) => e.startsWith('still carries the scaffold placeholder')))
 })
 
 test('closure may move status and subject_commit and nothing else', () => {
@@ -620,7 +621,7 @@ test('comparing against the CLOSURE commit alone would be unsound', () => {
 test('an advisory firing at closure and missing from the attestation proves it incomplete', () => {
   const entry = { rule: 'scope-drift', disposition: 'accepted', reason: 'r' }
   const errors = dispositionErrors([entry], ['scope-drift'], ['scope-drift', 'decision-drift'])
-  assert.ok(errors.some((e) => /proves the attested set incomplete/.test(e)))
+  assert.ok(errors.some((e) => /its absence proves the set incomplete/.test(e)))
 })
 
 test('a closing record with no attested candidate set cannot be checked soundly', () => {
@@ -1349,6 +1350,146 @@ test('a step record edited on the branch is answered by a later step that binds 
 })
 
 /* ------------------------------------------------------------------ *
+ * ADR-008 decision 6 — every refusal names its remedy
+ * ------------------------------------------------------------------ */
+
+test('the three refusals that taught an agent to move the fact now name the remedy', () => {
+  // ADR-008 decision 6's three examples, each a message the first adopter
+  // answered by changing the thing the message named.
+
+  // A rewritten `base_commit`, false by the specification's own definition: the
+  // refusal now prints the commit it computed, so nothing is typed to satisfy it.
+  const registration = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], {
+    registrationBaseState: { state: 'mismatch', registration: 'b'.repeat(40), parent: 'c'.repeat(40) }
+  })
+  assert.ok(messages(registration, 'registration-base', 'blocking')
+    .some((m) => m.includes('c'.repeat(40)) && /git merge-base/.test(m) && /created before registration/.test(m)),
+    `the refusal names the fact and both repairs — ${JSON.stringify(messages(registration, 'registration-base', 'blocking'))}`)
+
+  // An edited pushed step record, after `review` was refused as a unit type.
+  assert.ok(workUnitErrors({ step: 'S15', unit: '15', type: 'review', verified: 'gate' })
+    .some((e) => /superseding step/.test(e)),
+    'the refusal that met `review` is the one that invited the edit')
+
+  // And a widened `writes:`, where the remedy is to widen it deliberately and
+  // say why, in the same commit.
+  const drift = run(['src/elsewhere.js'], 'path/cp-ex-010', [A_PATH], {
+    previousFronts: new Map([[`${A_PATH.file}::writes`, A_PATH.writes]])
+  })
+  assert.ok(messages(drift, 'scope-drift', 'blocking').some((m) => /update writes: in this same commit and record why/.test(m)),
+    `findings were ${JSON.stringify(messages(drift, 'scope-drift', 'blocking'))}`)
+})
+
+test('a refusal about an id the checker computes never asks for the id to be typed', () => {
+  // `base_commit`, `subject_commit`, the checkpoint and the digest are all
+  // read from the repository. A message that asks the writer to make one
+  // "correct" is asking them to type over evidence.
+  const computed = [
+    ...pathFrontmatterErrors({ id: 'CP-EX-010', status: 'running', branch: 'path/cp-ex-010' }, `${PATH_DIR}/CP-EX-010.md`),
+    ...pathFrontmatterErrors({ id: 'CP-EX-010', status: 'ready', branch: 'path/cp-ex-010', base_commit: '70f7e27' }, `${PATH_DIR}/CP-EX-010.md`),
+    ...transitionErrors({ status: 'ready' }, { status: 'done', resolution: 'completed' })
+  ]
+  assert.ok(computed.every((error) => typeof error === 'string' && error.length > 0))
+  for (const error of computed) {
+    assert.match(error, /`git |the commit |registration|candidate|checkpoint/,
+      `"${error}" says what is wrong and not where the value comes from`)
+  }
+})
+
+test('every blocking message says what to do, not only what is wrong', () => {
+  // ADR-008 decision 6, held to by the messages themselves rather than by a
+  // reviewer's memory: three times on the first adopter a message that named a
+  // fact led the agent to move the fact.
+  //
+  // What can be read from a string is not "this instruction is good" but "this
+  // sentence asks the reader to DO something", and the honest proxy for that is
+  // an imperative verb — the ones these remedies actually use. Punctuation is
+  // not: the first draft of this test accepted any `— ` or `; `, and passed a
+  // message that named a count and stopped.
+  //
+  // WHAT IT DOES NOT PROVE, in the note's own terms: it reads a message whole,
+  // so a remedy anywhere in it satisfies the check, and a ternary whose two
+  // branches differ — an instruction for most readers, an explanation for a
+  // grandfathered record — passes on the strength of either. Telling those
+  // branches apart needs a parser, and a message can satisfy this check with
+  // bad advice in any case. What it cannot do is say nothing.
+  const IMPERATIVES = [
+    'add', 'answer', 'append', 'archive', 'begin', 'carry', 'check out', 'complete', 'compute',
+    'correct', 'declare', 'escalate', 'fetch', 'fold', 'integrate', 'land', 'let',
+    'make', 'merge', 'name', 'number', 'point', 'produce', 'provide', 'read', 'recover',
+    'record', 'refresh', 'register', 'remove', 'rename', 'rerun', 'resolve',
+    'restore', 'return', 'scaffold', 'state', 'supersede', 'uppercase', 'write'
+  ]
+  const namesARemedy = (text) =>
+    IMPERATIVES.some((verb) => new RegExp(`(^|[—;:,.] |\\b(?:so|and|then|or) )${verb}\\b`, 'i').test(text))
+
+  const source = readFileSync(new URL('./cairn-check.mjs', import.meta.url), 'utf8')
+  // A remedy held in a `const` beside the message is still the message's, so an
+  // interpolation of a name this file binds to a string is expanded rather than
+  // erased — otherwise a message could satisfy the check by padding, or fail it
+  // for keeping its longest sentence out of the template.
+  const literalsIn = (text) => (text.match(/'(?:[^'\\\n]|\\.)*'/g) ?? []).map((literal) => literal.slice(1, -1))
+  const bound = new Map()
+  for (const [, name, value] of source.matchAll(/^\s*const (\w+) =\n?((?:\s*'(?:[^'\\]|\\.)*'\s*\+?\n?)+)/gm)) {
+    bound.set(name, literalsIn(value).join(' '))
+  }
+  const spell = (text) => text.replace(/\$\{\s*(\w+)\s*\}/g, (whole, name) => bound.get(name) ?? '…')
+
+  const silent = []
+  for (const [, message] of source.matchAll(/add\(\s*(?:'blocking'|[^,]*?\?\s*'(?:blocking|advisory)'\s*:\s*'blocking')\s*,\s*'[a-z-]+'\s*,\s*([\s\S]*?)\)\n/g)) {
+    // A message whose own words are only punctuation carries an error from one
+    // of the pure functions below, and is audited there, where the sentence is.
+    const skeleton = spell(message).replace(/\$\{[^}]*\}/g, '…').replace(/\s+/g, ' ').trim()
+    if (/^`[…:\s`,]*`?$/.test(skeleton)) continue
+    // Elsewhere what is left of an interpolation is its own string literals: a
+    // remedy often lives on one branch of a ternary, and erasing the expression
+    // would hide it. Joining them is the limit this test states above; they are
+    // separated so that a literal opening with its verb keeps a boundary.
+    const text = spell(message)
+      .replace(/\$\{[^}]*\}/g, (expr) => literalsIn(expr).join('. ') || '…')
+      .replace(/\s+/g, ' ').trim()
+    if (!namesARemedy(text)) silent.push(text.slice(0, 110))
+  }
+  assert.deepEqual(silent, [],
+    'a message that names the fault and stops is the one that invites the writer to move the fact')
+
+  // And the sentences the pure functions produce, which reach the reader
+  // through those interpolations. Every function whose output is interpolated
+  // into a blocking finding is here; a new one is added when it is written.
+  const pure = [
+    ...pathFrontmatterErrors({ id: 'bad id', status: 'nonesuch', branch: 'x', depends_on: 'x' }, `${PATH_DIR}/CP-EX-010.md`),
+    ...pathFrontmatterErrors({ id: 'CP-EX-010', status: 'ready', branch: 'path/cp-ex-010' }, `${PATH_DIR}/CP-EX-010.md`),
+    ...pathFrontmatterErrors({ id: 'CP-EX-010', status: 'archived', resolution: 'nope' }, `${PATH_DIR}/CP-EX-010.md`),
+    ...pathFrontmatterErrors({ id: 'CP-EX-010', status: 'running', branch: 'path/other', depends_on: ['CP-EX-010', 'nope'] }, `${PATH_DIR}/CP-EX-010.md`),
+    ...transitionErrors({ status: 'running' }, { status: 'done' }),
+    ...transitionErrors({ status: 'running' }, { status: 'done', resolution: 'completed' }, true),
+    ...transitionErrors({ status: 'nonesuch' }, { status: 'running' }),
+    ...transitionErrors({ status: 'done' }, { status: 'archived', resolution: 'abandoned' }),
+    ...transitionErrors({ status: 'running' }, { status: 'archived', resolution: 'completed' }),
+    ...transitionErrors({ status: 'archived', resolution: 'abandoned' }, { status: 'archived', resolution: 'superseded' }),
+    ...workUnitErrors({ type: 'review' }),
+    ...openingAcceptanceErrors({}),
+    ...closingAcceptanceErrors({ verdict: 'maybe' }, 'CP-EX-010'),
+    ...closingAcceptanceErrors(null, 'CP-EX-010'),
+    ...fillErrors('TO BE FILLED\n\n## Findings\n\n### Q?\n'),
+    ...fillErrors(`---\n${METADATA_NAMESPACE}:\n  verdict: maybe\n---\n\n## Findings\n\n### Q?\n`),
+    ...adrFrontmatterErrors({ id: 'ADR-999', status: 'nonesuch' }, 'docs/adr/ADR-001-x.md', 'accepted'),
+    ...adrFrontmatterErrors({ id: 'ADR-001', status: 'accepted', date: 'x' }, 'docs/adr/ADR-001-x.md', 'proposed'),
+    ...closureFieldErrors({ status: 'ready', writes: ['a'] }, { status: 'ready', writes: ['b'] }),
+    ...dispositionErrors(null, null, []),
+    ...dispositionErrors([{}, { rule: 'x' }, { rule: 'x', disposition: 'nope' }, { rule: 'x', disposition: 'deferred', reason: 'r' }], ['y'], ['x']),
+    routeDescent('full', 'lightweight')
+  ].filter(Boolean)
+  // The inputs above are chosen to reach every branch; these say so, because a
+  // producer that fell silent would otherwise satisfy the filter with nothing.
+  for (const reached of [/base_commit/, /work-unit type/, /resolution/, /verdict/, /adr\.date/, /advisory_disposition/, /route moved/, /scope_digest/]) {
+    assert.ok(pure.some((error) => reached.test(error)), `no sentence reached ${reached}`)
+  }
+  assert.deepEqual(pure.filter((error) => !namesARemedy(error)), [],
+    'these reach the reader inside a blocking finding, and answer for themselves')
+})
+
+/* ------------------------------------------------------------------ *
  * ADR-008 decisions 2 and 4 — one commit for one path, one key
  * ------------------------------------------------------------------ */
 
@@ -1816,7 +1957,7 @@ test('lifecycle transitions distinguish ready from integrated done', () => {
   assert.deepEqual(transitionErrors(ready, done, false), [])
   assert.ok(transitionErrors(A_PATH.front, done, true).some((e) => e.includes('cannot claim `done`')))
   assert.ok(transitionErrors({ ...A_PATH.front, status: 'blocked' }, ready, true).some((e) => e.includes('not allowed')))
-  assert.ok(transitionErrors(A_PATH.front, { ...A_PATH.front, status: 'archived' }).some((e) => e.includes('requires resolution')))
+  assert.ok(transitionErrors(A_PATH.front, { ...A_PATH.front, status: 'archived' }).some((e) => e.includes('requires a resolution')))
   assert.ok(transitionErrors(A_PATH.front, { ...A_PATH.front, status: 'archived', resolution: 'completed' }).some((e) => e.includes('never completed')))
   assert.deepEqual(transitionErrors(done, { ...done, status: 'archived', resolution: 'completed' }), [])
 })
@@ -1831,8 +1972,8 @@ test('a trunk commit cannot take a path from running to done without a ready com
   const errors = transitionErrors(A_PATH.front, done, false)
   assert.ok(errors.some((e) => /running → done is not allowed/.test(e)),
     `the trunk edge must be refused — got ${JSON.stringify(errors)}`)
-  assert.ok(errors.some((e) => /the branch declares `ready` in the administrative commit/.test(e) &&
-    /the trunk records `done` in a commit of its own after the merge/.test(e)),
+  assert.ok(errors.some((e) => /declare `ready` on the branch, in the administrative commit/.test(e) &&
+    /record `done` on the trunk in a commit of its own after the merge/.test(e)),
     `the refusal must name its remedy, whichever half is missing — got ${JSON.stringify(errors)}`)
   // The edge it replaces stays open: an integrating commit records ready → done.
   assert.deepEqual(transitionErrors({ ...A_PATH.front, status: 'ready', subject_commit: CANDIDATE }, done, false), [])

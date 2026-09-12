@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-006
   route: full
   status: running
-  current_step: S06
+  current_step: S07
   base_commit: 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
   branch: path/cp-cairn-006
   assigned_writer: cp-cairn-006-writer
@@ -21,6 +21,7 @@ cairn:
     - tools/cairn-check.test.mjs
     - tools/cairn-rules.test.mjs
     - tools/cairn-fixture.test.mjs
+    - tools/cairn-audit.test.mjs
     - tools/soundness.md
     - spec/reference/conformance.md
     - spec/concepts/lifecycle.md
@@ -299,15 +300,23 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
   the commit before the arrival, so an integrating request no longer refuses
   every honest integration; and the journal entry asked for under
   `cairn.path`, the key the checker reads — **complete**
-- **S07** — not started
+- [**S07**](./steps/S07.md) — every refusal names its remedy: an audit that
+  reads the checker's own source and requires each blocking message to ask the
+  reader to do something, the pure error functions audited by calling them, and
+  a remedy held in a `const` expanded rather than erased; forty-odd messages
+  rewritten, the three that taught an agent to move the fault first among them;
+  the fixtures asserting on the remedy where they assert on the message; and
+  ten dangling citations of an earlier repository's records replaced by the
+  facts they were evidence for — **complete**
+- **S08** — not started
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 453cbafa42992e5bde8db945d1799e784f3ebfbf — S05, what a range means; S06's own commit is named here by S07
-unit   : 5 — S05
+commit : b3708ac20d96a38fe39b8ae2d62cb877df30a7d3 — S06, one commit for one path; S07's own commit is named here by S08
+unit   : 6 — S06
 base   : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
 trunk  : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8 — origin/main at registration
 ```
@@ -315,24 +324,19 @@ trunk  : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8 — origin/main at registratio
 ### Next action
 
 From the worktree `../cairn-cp-cairn-006` on branch `path/cp-cairn-006`:
-run S07 of the plan with `cairn-unit` — every refusal names its remedy.
-ADR-008 decision 6: every blocking message in `tools/cairn-check.mjs`
-read once against the sentence *say what to do, where you say what is
-wrong*, including the messages the pure error functions produce —
-`transitionErrors`, `workUnitErrors`, `pathFrontmatterErrors`,
-`closingAcceptanceErrors`, `routeDescent`, `closureFieldErrors`. Two
-remedies recur and are stated wherever they apply: a pushed record is
-corrected by a superseding step, never by editing it, and an object id
-the checker computes is never typed to satisfy it. The adopter's own
-sentence is the shape to match: *unsupported unit type `review` —
-allowed: …; a pushed record is corrected by a superseding repair step*.
-`provisional`'s *fold each* is the one message this path has already
-found false on a no-rewrite host. The fixture suite asserts on the remedy
-where it asserts on the message, and the citations of an earlier
-repository's records under `tools/` — `CP-OPS-002`, `CP-UI-TYPOGRAPHY`,
-Atomik — are replaced by references a reader of this repository can
-open, or by the fact without the dangling id. Type `implementation`. Run
-the review movement on the unit's diff as the unit skill says.
+run S08 of the plan with `cairn-unit` — the review rule, the fixture
+sweep, the catalogue. ADR-017 decision 2: a blocking rule `review`, the
+step record of a path's current unit carrying a `#### Review` section
+that is not empty, `closure` excepted, and the section's content not
+read. ADR-004 decision 4: every blocking rule's fixture gains a merged
+trunk commit carrying another path's completed unit, so that a rule
+passing on a single-path history alone is not proved —
+`landOnTrunk`/`mergeTrunk` in the fixture suite are the helpers S05 wrote
+for it. Then the catalogue and the linkage on the conformance page
+regenerated, `tools/soundness.md` one line per rule this path added, and
+`docs/modules/application.md` describing the tools as they are at the
+candidate, with no history. Type `implementation`. Run the review
+movement on the unit's diff as the unit skill says.
 
 ### Blockers
 
@@ -340,6 +344,22 @@ None.
 
 ### Tried and rejected
 
+- Splitting a message's ternary branches to audit each alone (S07, both
+  reviews) — the first reader was right that joining them lets a talkative
+  branch carry a silent one, and the second was right that what I wrote could
+  only weaken the check and silently skipped whole messages. Telling branches
+  apart needs a parser; the branches that differ today are a grandfathered
+  explanation and two remedies. The audit reads a message whole and states what
+  that does not prove.
+- Instructing a repair in `registration-base` (S07, both reviews) — first
+  *register the path again*, which the registration's immutability makes
+  impossible, then *write this parent*, which is the computed id ADR-008
+  decision 6 says is never typed to satisfy a gate. The message names what it
+  compared and the one question that separates the two causes, `git
+  merge-base`, with the repair reference for the second.
+- Padding a message with *name it:* so the audit could see a remedy held in a
+  `const` (S07, second review) — the proxy paid off with a word. The audit
+  expands the binding instead.
 - Carrying ADR-008's decisions 2, 4 and 6 as the single unit the plan named
   (S06) — decision 6 is a sweep over every blocking message with the fixtures
   asserting on the remedy, and the citations belong with it: one reader's

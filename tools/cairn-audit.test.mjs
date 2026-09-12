@@ -42,7 +42,7 @@ test('the scaffold binds the exact path, branch, candidate and base, and is not 
   assert.match(front, /^  path: CP-EX-010$/m)
   assert.match(front, /^  scope_ref: project\/coding-paths\/CP-EX-010\/index\.md#definition-of-done$/m)
   for (const question of QUESTIONS) assert.ok(text.includes(`### ${question}`))
-  assert.ok(fillErrors(text, PLACEHOLDER).includes('still carries the scaffold placeholder'))
+  assert.ok(fillErrors(text, PLACEHOLDER).some((e) => e.startsWith('still carries the scaffold placeholder')))
 })
 
 test('the request description carries the same review, to paste', () => {
@@ -79,13 +79,17 @@ ${QUESTIONS.map((q, i) => `### ${q}\n\n${answers[i]}\n`).join('\n')}
 test('a hollowed-out record — placeholder deleted, nothing written — does not count', () => {
   const hollow = record({ answers: ['', '', '', ''] })
   assert.ok(!hollow.includes(PLACEHOLDER))
-  assert.deepEqual(fillErrors(hollow), ['no findings section has been answered'])
+  const hollowErrors = fillErrors(hollow)
+  assert.equal(hollowErrors.length, 1)
+  assert.ok(hollowErrors[0].startsWith('no findings section has been answered'))
   assert.deepEqual(fillErrors(record()), [], 'one answered question is enough: the rule asks whether the reviewer answered, never whether the answer is good')
 })
 
 test('the verdict must name an outcome from the stated vocabulary, and may qualify it', () => {
   assert.ok(fillErrors(record({ verdict: 'looks fine to me' })).some((e) => /names none of/.test(e)))
-  assert.deepEqual(fillErrors(record({ verdict: '' })), ['no `verdict:` in its frontmatter'])
+  const unnamed = fillErrors(record({ verdict: '' }))
+  assert.equal(unnamed.length, 1)
+  assert.ok(unnamed[0].startsWith('no `verdict:` in its frontmatter'))
   for (const stated of ['clean', 'Clean', 'drift noted, proceeding', 'drift noted, repaired before merge', 'needs a conversation before merge']) {
     assert.deepEqual(fillErrors(record({ verdict: stated })), [], stated)
   }

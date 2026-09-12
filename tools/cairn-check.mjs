@@ -448,8 +448,8 @@ export function parseWrites(text) {
     // A trailing comment on an ITEM is the same trap F9 fixed on the `writes:`
     // line itself, one line lower: `- docs/adr/**   # every ADR` declared the
     // surface `docs/adr/**   # every ADR`, which matches nothing, so the path
-    // silently declared less than it said. Found live on 2026-08-24 (CP-OPS-002
-    // S05) when a widened declaration kept reporting drift.
+    // silently declared less than it said — found live in the repository this
+    // checker was cut from, where a widened declaration kept reporting drift.
     if (item) out.push(item[1].replace(/\s+#.*$/, '').trim())
   }
   return out.filter(Boolean)
@@ -488,10 +488,10 @@ export function registrationMatches(text, id, branch, baseCommit) {
 export function pathFrontmatterErrors(front, file = null) {
   if (!front) return [`missing ${METADATA_NAMESPACE}: frontmatter block`]
   const errors = []
-  if (!front.id) errors.push(`missing ${METADATA_NAMESPACE}.id`)
+  if (!front.id) errors.push(`missing ${METADATA_NAMESPACE}.id — a record names the path it declares, in the canonical CP-<UPPERCASE-ID> form its file is named after`)
   else {
     if (!/^CP-[A-Z0-9][A-Z0-9-]*$/.test(front.id)) {
-      errors.push(`${METADATA_NAMESPACE}.id must use canonical CP-<UPPERCASE-ID> form`)
+      errors.push(`${METADATA_NAMESPACE}.id must use canonical CP-<UPPERCASE-ID> form — uppercase it, and rename the record and the branch to match, before the path is registered`)
     }
     // Two shapes carry a path record, and the identity lives in a different
     // segment of each: `CP-<id>.md` names it in the file, `CP-<id>/index.md`
@@ -502,14 +502,14 @@ export function pathFrontmatterErrors(front, file = null) {
     const named = last === 'index.md' ? parts.at(-2) : last?.replace(/\.md$/, '')
     const shape = last === 'index.md' ? `${front.id}/index.md` : `${front.id}.md`
     if (last && named !== front.id) {
-      errors.push(`${METADATA_NAMESPACE}.id "${front.id}" does not match the record's own name (expected ${shape}, got ${parts.slice(-2).join('/')})`)
+      errors.push(`${METADATA_NAMESPACE}.id "${front.id}" does not match the record's own name (expected ${shape}, got ${parts.slice(-2).join('/')}) — rename the record to the id it declares, or declare the id it is named after`)
     }
   }
   if (!PATH_STATUSES.includes(front.status)) {
-    errors.push(`status "${front.status}" is outside the vocabulary (${PATH_STATUSES.join(' | ')})`)
+    errors.push(`status "${front.status}" is outside the vocabulary — declare one of ${PATH_STATUSES.join(' | ')}`)
   }
   if (['running', 'blocked', 'ready'].includes(front.status) && !front.branch) {
-    errors.push(`status "${front.status}" requires ${METADATA_NAMESPACE}.branch`)
+    errors.push(`status "${front.status}" requires ${METADATA_NAMESPACE}.branch — declare path/${String(front.id ?? '<id>').toLowerCase()}, the branch this path's one writer works in`)
   }
   if (
     ['running', 'blocked', 'ready'].includes(front.status) &&
@@ -517,30 +517,30 @@ export function pathFrontmatterErrors(front, file = null) {
     front.branch &&
     front.branch !== `path/${front.id.toLowerCase()}`
   ) {
-    errors.push(`${METADATA_NAMESPACE}.branch must equal path/${front.id.toLowerCase()}`)
+    errors.push(`${METADATA_NAMESPACE}.branch must equal path/${front.id.toLowerCase()} — rename the branch, or declare the id the branch is named after; one path is one branch`)
   }
   if (['running', 'blocked', 'ready'].includes(front.status) && !isCommitPin(front.base_commit)) {
-    errors.push(`status "${front.status}" requires ${METADATA_NAMESPACE}.base_commit as a 7–64 digit Git hash`)
+    errors.push(`status "${front.status}" requires ${METADATA_NAMESPACE}.base_commit as a 7–64 digit Git hash — it is the parent of the commit that registered this path, read with \`git rev-parse <registration>^\``)
   }
   if (front.status === 'ready' && !isObjectId(front.subject_commit)) {
-    errors.push(`status "ready" requires ${METADATA_NAMESPACE}.subject_commit as a full object id — ${OBJECT_ID_FORMATS}`)
+    errors.push(`status "ready" requires ${METADATA_NAMESPACE}.subject_commit as a full object id (${OBJECT_ID_FORMATS}) — it is the candidate the gates were run on, read with \`git rev-parse HEAD\` at that commit`)
   }
   if (front.depends_on !== undefined) {
     if (!Array.isArray(front.depends_on)) {
-      errors.push(`${METADATA_NAMESPACE}.depends_on must be a list of path ids`)
+      errors.push(`${METADATA_NAMESPACE}.depends_on must be a list of path ids — write it as a YAML list, empty where this path waits on nothing`)
     } else {
       for (const id of front.depends_on) {
         if (!/^CP-[A-Z0-9][A-Z0-9-]*$/.test(String(id))) {
-          errors.push(`${METADATA_NAMESPACE}.depends_on names "${id}", which is not a canonical CP-<UPPERCASE-ID>`)
+          errors.push(`${METADATA_NAMESPACE}.depends_on names "${id}", which is not a canonical CP-<UPPERCASE-ID> — name the path by the id its own record declares, or drop the entry`)
         } else if (id === front.id) {
-          errors.push(`${METADATA_NAMESPACE}.depends_on names the path itself`)
+          errors.push(`${METADATA_NAMESPACE}.depends_on names the path itself — remove it; a path that waits on itself is never unblocked in the live view`)
         }
       }
     }
   }
   if (front.status === 'archived' && front.resolution && !PATH_RESOLUTIONS.includes(front.resolution)) {
     errors.push(
-      `${METADATA_NAMESPACE}.resolution "${front.resolution}" is outside the vocabulary (${PATH_RESOLUTIONS.join(' | ')})`
+      `${METADATA_NAMESPACE}.resolution "${front.resolution}" is outside the vocabulary — declare one of ${PATH_RESOLUTIONS.join(' | ')}`
     )
   }
   return errors
@@ -589,22 +589,22 @@ export function transitionErrors(previous, current, onPathBranch = false, readyB
   if (!(allowed[String(from)] ?? []).includes(to)) {
     errors.push(
       !onPathBranch && from === 'running' && to === 'done'
-        ? 'transition running → done is not allowed: the trunk records ready → done — the branch declares `ready` in the administrative commit that carries subject_commit, and the trunk records `done` in a commit of its own after the merge'
-        : `transition ${from ?? 'new'} → ${to ?? 'missing'} is not allowed`
+        ? 'transition running → done is not allowed: the trunk records ready → done — declare `ready` on the branch, in the administrative commit that carries subject_commit, and record `done` on the trunk in a commit of its own after the merge'
+        : `transition ${from ?? 'new'} → ${to ?? 'missing'} is not allowed — declare the state the work has actually reached${allowed[String(from)] ? `, one of ${allowed[String(from)].join(' | ')}` : ''}`
     )
   }
   if (onPathBranch && to === 'done') {
-    errors.push('a path branch cannot claim `done`; it declares `ready` and integration records `done` on the trunk')
+    errors.push('a path branch cannot claim `done` — declare `ready` here, and let the commit that integrates the candidate on the trunk record `done`')
   }
   if (to === 'archived' && !PATH_RESOLUTIONS.includes(current?.resolution)) {
-    errors.push('status `archived` requires resolution: completed | abandoned | superseded')
+    errors.push('status `archived` requires a resolution — declare completed, abandoned or superseded, so the record says what became of the work rather than only that it stopped')
   }
   if (to === 'archived' && from === 'done' && current?.resolution !== 'completed') {
-    errors.push('done → archived requires resolution: completed')
+    errors.push('done → archived requires resolution: completed — work that integrated is completed; declare it, or leave the path at done')
   }
   if (from === 'archived' && to === 'archived' && previous?.resolution !== current?.resolution) {
     errors.push(
-      `an archived path's resolution is terminal: ${previous?.resolution ?? 'none'} cannot become ${current?.resolution ?? 'none'}`
+      `an archived path's resolution is terminal: ${previous?.resolution ?? 'none'} cannot become ${current?.resolution ?? 'none'} — restore the resolution this record was archived with, and record the new judgement in a superseding record`
     )
   }
   if (
@@ -617,13 +617,13 @@ export function transitionErrors(previous, current, onPathBranch = false, readyB
     from !== 'archived' &&
     !['abandoned', 'superseded'].includes(current?.resolution)
   ) {
-    errors.push('an unintegrated path archives as abandoned or superseded, never completed')
+    errors.push('an unintegrated path archives as abandoned or superseded, never completed — declare which it was, or integrate the work and reach archived through done')
   }
   if (to === 'done' && current?.resolution !== 'completed') {
-    errors.push('status `done` requires resolution: completed')
+    errors.push('status `done` requires resolution: completed — declare it in the same commit that records done, or the integration says nothing about what landed')
   }
   if (to === 'done' && !isObjectId(current?.subject_commit)) {
-    errors.push(`status \`done\` requires subject_commit as a full object id — ${OBJECT_ID_FORMATS}`)
+    errors.push(`status \`done\` requires subject_commit as a full object id (${OBJECT_ID_FORMATS}) — it is the candidate that was accepted, already named by the record at \`ready\`; carry that value forward rather than typing a new one`)
   }
   return errors
 }
@@ -768,37 +768,37 @@ export function findingsSections(text) {
  *  least one of its own questions — never whether the answers are any good. */
 export function fillErrors(text, placeholder = 'TO BE FILLED') {
   const errors = []
-  if (String(text).includes(placeholder)) errors.push('still carries the scaffold placeholder')
+  if (String(text).includes(placeholder)) errors.push(`still carries the scaffold placeholder — answer the questions ${placeholder} stands in for, or say in the record why one does not apply`)
   const verdict = String(metadataOf(readFrontmatter(String(text))?.data)?.verdict ?? '').trim()
-  if (!verdict) errors.push('no `verdict:` in its frontmatter')
+  if (!verdict) errors.push('no `verdict:` in its frontmatter — state the review\'s outcome in one of the stated stems, so a reader need not infer it from the prose')
   else if (!VERDICT_STEMS.some((stem) => verdict.toLowerCase().startsWith(stem))) {
-    errors.push(`verdict "${verdict}" names none of: ${VERDICT_STEMS.join(' · ')}`)
+    errors.push(`verdict "${verdict}" names none of ${VERDICT_STEMS.join(' · ')} — begin it with one of those, and keep whatever else you want to say after it`)
   }
   if (findingsSections(String(text)).filter((s) => s.body !== '').length === 0) {
-    errors.push('no findings section has been answered')
+    errors.push('no findings section has been answered — answer at least one of the coherence questions under `## Findings`')
   }
   return errors
 }
 
 export function closingAcceptanceErrors(record, pathId) {
   const errors = []
-  if (!record) return ['missing closing record']
-  if (record.path !== pathId) errors.push(`path must equal ${pathId}`)
+  if (!record) return ['missing closing record — scaffold it with `cairn-audit --subject <candidate>` and answer its questions before declaring the path ready']
+  if (record.path !== pathId) errors.push(`path must equal ${pathId} — this record sits in that path's folder, so name the path it closes`)
   if (!isObjectId(record.subject_commit)) {
-    errors.push(`subject_commit must be a full object id — ${OBJECT_ID_FORMATS}`)
+    errors.push(`subject_commit must be a full object id (${OBJECT_ID_FORMATS}) — the candidate the gates were run on, read with \`git rev-parse HEAD\` at that commit`)
   }
-  if (!String(record.accepted_by ?? '').trim()) errors.push('accepted_by is required')
+  if (!String(record.accepted_by ?? '').trim()) errors.push('accepted_by is required — name whoever accepted this candidate, so the record says who is answerable for it')
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(String(record.accepted_at))) {
-    errors.push('accepted_at must be an ISO UTC timestamp')
+    errors.push('accepted_at must be an ISO UTC timestamp — write the moment the acceptance happened, as YYYY-MM-DDTHH:MM:SSZ')
   }
-  if (record.decision !== 'accepted') errors.push('decision must equal accepted')
-  if (!String(record.scope_ref ?? '').trim()) errors.push('scope_ref is required')
+  if (record.decision !== 'accepted') errors.push('decision must equal accepted — a candidate integrates on an acceptance; where it was refused, return the record to `running` and produce another')
+  if (!String(record.scope_ref ?? '').trim()) errors.push('scope_ref is required — name the same section the opening acceptance bound, so the two digests are comparable')
   // An empty list is the honest disposition of a candidate that raised no
   // advisory; `String([])` is '', and reading it as absent forced a reviewer
   // to invent an entry (greenfield pilot, 2026-09-01).
   if (!Array.isArray(record.advisory_disposition) &&
       !String(record.advisory_disposition ?? '').trim()) {
-    errors.push('advisory_disposition is required — a structured list, empty when the candidate raised none')
+    errors.push('advisory_disposition is required — record it, empty where the candidate raised no advisory')
   }
   return errors
 }
@@ -859,8 +859,8 @@ export function preservesAppendOnlyRecord(before, after, relocated = false) {
  * `record-integrity` protects a record from being rewritten or from ceasing to
  * exist. It used to key on the file path, so it read a move as both — which is
  * how a migration that changed nothing about twenty-three records reported
- * twenty-three violations (CP-OPS-002 S08l). A path is where a record sits; it
- * is not what the record is.
+ * twenty-three violations. A path is where a record sits; it is not what the
+ * record is.
  *
  * Two operations are sanctioned on a record that moves, and no others.
  * REPOINTING a link, because a link is an address rather than content and the
@@ -998,9 +998,9 @@ function daysApart(a, b) {
  * `drift` compares the date the record CLAIMS with the date the commit that
  * introduced it was authored on. It is the only half carrying evidence the
  * author did not supply, and the only half that can see the defect this rule
- * was proposed for: every CP-UI-TYPOGRAPHY record was dated `2026-08-27` in
- * BOTH places while the ceremony, the audit and the journal entry happened on
- * the 31st. The author-agreement half is blind to that by construction.
+ * was proposed for: one path's four records — opening check, closing ceremony,
+ * audit and journal entry — each carried the same date in BOTH places, four
+ * days before the events they describe. The author-agreement half is blind to that by construction.
  *
  * It stays ADVISORY, because a lag is not automatically a lie: a note taken on
  * one day and committed two days later is dated correctly, and a rule insisting
@@ -1046,17 +1046,17 @@ export function adrFrontmatterErrors(front, file, bodyStatus = null) {
   const errors = []
   const expected = /^docs\/adr\/(ADR-\d{3})-/.exec(file)?.[1]
 
-  if (!front.id) errors.push('missing adr.id')
+  if (!front.id) errors.push('missing adr.id — declare the record\'s own number, the one its filename carries')
   else if (expected && front.id !== expected) {
-    errors.push(`adr.id "${front.id}" does not match the file name (${expected})`)
+    errors.push(`adr.id "${front.id}" does not match the file name (${expected}) — rename the file to the id it declares, or declare the id it is named after; a record is cited by both`)
   }
   if (!ADR_STATUSES.includes(front.status)) {
-    errors.push(`status "${front.status}" is outside the vocabulary (${ADR_STATUSES.join(' | ')})`)
+    errors.push(`status "${front.status}" is outside the vocabulary — declare one of ${ADR_STATUSES.join(' | ')}; a decision is proposed, accepted, superseded or rejected, and nothing else`)
   } else if (bodyStatus && bodyStatus !== front.status) {
-    errors.push(`adr.status "${front.status}" contradicts the document's own "Status: ${bodyStatus}"`)
+    errors.push(`adr.status "${front.status}" contradicts the document's own "Status: ${bodyStatus}" — make the two agree; the frontmatter is what every index reads and the line is what a person reads`)
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(front.date))) {
-    errors.push('adr.date must be an ISO date (YYYY-MM-DD)')
+    errors.push('adr.date must be an ISO date (YYYY-MM-DD) — write the day the decision was made, not the day the file was touched')
   }
   return errors
 }
@@ -1327,9 +1327,9 @@ export function writesOverlaps(paths) {
  *  quotes included. That string starts with `"`, so it matches no `writes:`
  *  glob, no `startsWith('apps/')` guarded root and no area pattern — a source
  *  file whose name contains a space was INVISIBLE to `same-work-unit` and
- *  `branch-identity` while still being counted as changed. Found on CP-OPS-002
- *  S06d, by the one file in this repository that has such a name, which had
- *  already broken a `find` loop in the audit that named it.
+ *  `branch-identity` while still being counted as changed. Found by the one
+ *  file that had such a name, which had already broken a `find` loop in the
+ *  audit that named it.
  *
  *  Unquoting is the wrong fix: `\303\251` for `é` means reassembling UTF-8
  *  from octal escapes, which is a decoder to get wrong. `-z` asks Git not to
@@ -1460,16 +1460,16 @@ export function parseWorkUnits(text) {
 
 export function workUnitErrors(unit) {
   const errors = []
-  if (!unit.step) errors.push('a cairn-unit block needs step')
+  if (!unit.step) errors.push('a cairn-unit block needs step — name the step this unit completed, as its own record does')
   if (!/^\d{1,4}$/.test(unit.unit ?? '')) {
-    errors.push(`a cairn-unit block needs unit as a ledger ordinal, got "${unit.unit ?? ''}"`)
+    errors.push(`a cairn-unit block needs unit as a ledger ordinal, got "${unit.unit ?? ''}" — number it after the last completed unit of this path`)
   }
   if (!WORK_UNIT_TYPES.includes(unit.type)) {
     errors.push(
-      `work-unit type "${unit.type ?? ''}" is outside ${WORK_UNIT_TYPES.join(' | ')}`
+      `work-unit type "${unit.type ?? ''}" is outside ${WORK_UNIT_TYPES.join(' | ')} — declare the one whose surfaces this unit moved; and if the record is already pushed, correct it with a superseding step that binds both blobs, never by editing it`
     )
   }
-  if (!unit.verified) errors.push('a cairn-unit block needs verified')
+  if (!unit.verified) errors.push('a cairn-unit block needs verified — name the gates you ran bare on this unit, so a reader knows what the claim rests on')
   return errors
 }
 
@@ -1532,14 +1532,14 @@ export function openingFromRecord(text) {
 export function openingAcceptanceErrors(opening) {
   if (!opening) return ['no opening acceptance']
   const errors = []
-  if (opening.decision !== 'accepted') errors.push('decision must equal accepted')
-  if (!String(opening.accepted_by ?? '').trim()) errors.push('accepted_by is required')
+  if (opening.decision !== 'accepted') errors.push('decision must equal accepted — a path opens on an acceptance, so record the owner\'s answer rather than the question')
+  if (!String(opening.accepted_by ?? '').trim()) errors.push('accepted_by is required — name whoever accepted this scope, so the record says who is answerable for it')
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(String(opening.accepted_at))) {
-    errors.push('accepted_at must be an ISO UTC timestamp')
+    errors.push('accepted_at must be an ISO UTC timestamp — write the moment the acceptance happened, as YYYY-MM-DDTHH:MM:SSZ')
   }
-  if (!String(opening.scope_ref ?? '').includes('#')) errors.push('scope_ref must name a file and a heading anchor')
+  if (!String(opening.scope_ref ?? '').includes('#')) errors.push('scope_ref must name a file and a heading anchor — point it at this record\'s own `#definition-of-done`, so the digest below has text to bind')
   if (!/^[a-z0-9]+:[0-9a-f]+$/.test(String(opening.scope_digest ?? ''))) {
-    errors.push('scope_digest is required — a scope accepted without a digest is bound to nothing')
+    errors.push('scope_digest is required — a scope accepted without a digest is bound to nothing; compute it with `cairn-check --scope-digest <record>#definition-of-done`')
   }
   return errors
 }
@@ -1580,7 +1580,7 @@ export function closureFieldErrors(previous, current) {
     const before = JSON.stringify(previous[key] ?? null)
     const after = JSON.stringify(current[key] ?? null)
     if (before !== after) {
-      errors.push(`closure changed \`${key}\`, which acceptance was measured against — only ${mutable.join(', ')} may move when a path declares ${current.status}`)
+      errors.push(`closure changed \`${key}\`, which acceptance was measured against — restore it to the value the candidate was accepted with; only ${mutable.join(', ')} may move when a path declares ${current.status}`)
     }
   }
   return errors
@@ -1630,42 +1630,42 @@ export const DISPOSITIONS = ['fixed', 'accepted', 'deferred']
 export function dispositionErrors(disposition, attested, raisedHere = []) {
   const errors = []
   if (!Array.isArray(disposition)) {
-    return ['advisory_disposition must be a list of { rule, disposition, reason } entries']
+    return ['advisory_disposition must be a list of { rule, disposition, reason } entries — write one entry per advisory the candidate raised']
   }
   if (!Array.isArray(attested)) {
-    errors.push('advisories_at_candidate must list the advisory rules raised at the candidate — without it, dispositions can only be compared against the closure commit, whose advisory set is a strict subset')
+    errors.push('advisories_at_candidate must list the advisory rules raised at the candidate — run the gate on the candidate and record the advisory rule names it reported')
     attested = []
   }
   const attestedSet = new Set(attested)
   for (const rule of raisedHere) {
     if (!attestedSet.has(rule)) {
-      errors.push(`advisory "${rule}" is raised at the closure commit but is absent from advisories_at_candidate — the closure commit's findings are a subset of the candidate's, so this proves the attested set incomplete`)
+      errors.push(`advisory "${rule}" is raised at the closure commit but is absent from advisories_at_candidate — add it to the attested set and dispose of it; the closure commit's findings are a subset of the candidate's, so its absence proves the set incomplete`)
     }
   }
   const named = new Set()
   for (const entry of disposition) {
     if (typeof entry !== 'object' || entry == null) {
-      errors.push('every advisory_disposition entry must name a rule, a disposition and a reason')
+      errors.push('every advisory_disposition entry must name a rule, a disposition and a reason — write each as a mapping with those three keys')
       continue
     }
-    if (!entry.rule) errors.push('an advisory_disposition entry has no rule')
+    if (!entry.rule) errors.push('an advisory_disposition entry has no rule — name the advisory rule it disposes of, as the gate reported it')
     else named.add(entry.rule)
     if (!DISPOSITIONS.includes(entry.disposition)) {
-      errors.push(`disposition "${entry.disposition ?? ''}" for ${entry.rule ?? 'an entry'} is outside ${DISPOSITIONS.join(' | ')}`)
+      errors.push(`disposition "${entry.disposition ?? ''}" for ${entry.rule ?? 'an entry'} is outside ${DISPOSITIONS.join(' | ')} — declare which of those this advisory received`)
     }
     if (!String(entry.reason ?? '').trim()) {
-      errors.push(`${entry.rule ?? 'an entry'} has no reason`)
+      errors.push(`${entry.rule ?? 'an entry'} has no reason — state in one sentence why the advisory was disposed of that way`)
     }
     if (entry.disposition === 'deferred' && !(entry.owner && entry.follow_up)) {
-      errors.push(`${entry.rule ?? 'an entry'} is deferred without an owner and a follow_up`)
+      errors.push(`${entry.rule ?? 'an entry'} is deferred without an owner and a follow_up — name who carries it and where it is tracked, or dispose of it here`)
     }
   }
   for (const rule of attestedSet) {
-    if (!named.has(rule)) errors.push(`advisory "${rule}" was raised at the candidate and has no disposition`)
+    if (!named.has(rule)) errors.push(`advisory "${rule}" was raised at the candidate and has no disposition — add an entry saying whether it was fixed, accepted or deferred, and why`)
   }
   for (const rule of named) {
     if (!attestedSet.has(rule)) {
-      errors.push(`advisory_disposition names "${rule}", which advisories_at_candidate does not list as raised`)
+      errors.push(`advisory_disposition names "${rule}", which advisories_at_candidate does not list as raised — add it to the attested set if the candidate raised it, or remove the entry`)
     }
   }
   return errors
@@ -1707,7 +1707,7 @@ export function fullRouteTriggers(writes = [], areaOfFile = areaOf, unitCount = 
 export function routeDescent(previous, current) {
   if (!previous || !current || previous === current) return null
   if (previous === 'full' && current !== 'full') {
-    return `route moved from full to ${current} — escalation is one-way; a change does not become small by being called small`
+    return `route moved from full to ${current} — restore \`full\`; escalation is one-way, and a change does not become small by being called small`
   }
   return null
 }
@@ -1810,12 +1810,13 @@ export function evaluate({
   if (onPath) {
     if (!match) {
       add('blocking', 'branch-path',
-        `branch "${branch}" has no coding path declaring it (expected a file in ${PATH_DIR}/ with ${METADATA_NAMESPACE}.branch: ${branch})`)
+        `branch "${branch}" has no coding path declaring it — register the path first, landing a record in ${PATH_DIR}/ that declares ${METADATA_NAMESPACE}.branch: ${branch} on the trunk, or check out the branch the record you are working on names`)
     } else if (!PATH_BRANCH_STATUSES.includes(match.front.status)) {
       add('blocking', 'branch-path',
-        `${match.file} declares this branch but its status is "${match.front.status}" — a path branch must be running, blocked, or ready; done is recorded by integration on the trunk`)
+        `${match.file} declares this branch but its status is "${match.front.status}" — check out the branch whose record is live, or open a path for the work you meant to do here; a path branch is running, blocked or ready, and done is recorded by integration on the trunk`)
     } else if (!isCommitPin(match.front.base_commit)) {
-      add('blocking', 'branch-path', `${match.file} needs ${METADATA_NAMESPACE}.base_commit as a 7–64 digit Git hash`)
+      add('blocking', 'branch-path',
+        `${match.file} needs ${METADATA_NAMESPACE}.base_commit as a 7–64 digit Git hash — the parent of the commit that registered this path, read with \`git rev-parse <registration>^\``)
     }
   }
 
@@ -1836,9 +1837,10 @@ export function evaluate({
       add('advisory', 'registration',
         `${match.front.id} predates trunk registration and is explicitly grandfathered — do not copy this exception to a new path`)
     }
-    if (registrationState !== 'grandfathered' && registrationBaseState === 'mismatch') {
+    const baseMismatch = registrationBaseState?.state === 'mismatch' ? registrationBaseState : null
+    if (registrationState !== 'grandfathered' && baseMismatch) {
       add('blocking', 'registration-base',
-        `${match.file} base_commit is not the parent of its trunk registration commit`)
+        `${match.file} base_commit is not the parent of its trunk registration commit ${baseMismatch.registration}, whose parent is ${baseMismatch.parent} — read \`git merge-base ${TRUNK_BRANCH} ${branch}\`: where it prints that parent, the field was read from the wrong commit and states the branch point once corrected; where it prints something earlier, the branch was created before registration, and \`spec/reference/repair.md\` names the repair — register retroactively in a \`repair\` unit, with the field at the real branch point`)
     } else if (registrationState !== 'grandfathered' && registrationBaseState == null) {
       add('blocking', 'registration-base',
         `cannot prove the registration parent for ${match.front.id} — fetch the complete trunk history and rerun the gate`,
@@ -1987,7 +1989,7 @@ export function evaluate({
       const id = String(path.front?.id ?? '')
       if (arriving && journalEntries == null) {
         add('blocking', 'journal-entry',
-          `${path.file} reaches done, and the journal could not be read to check for its entry — missing evidence is not a pass`,
+          `${path.file} reaches done, and the journal could not be read to check for its entry — provide ${JOURNAL_DIR}/ and rerun the gate; missing evidence is not a pass`,
           'inconclusive')
       } else if (arriving && !journalRecords(journalEntries, id)) {
         // NO MIGRATION EXEMPTION HERE, deliberately. The v0.2 exception excuses
@@ -2024,21 +2026,22 @@ export function evaluate({
       }
       if (record?.subject_commit && path.front.subject_commit !== record.subject_commit) {
         add('blocking', 'acceptance',
-          `${path.file}: ${METADATA_NAMESPACE}.subject_commit must equal the closing record subject_commit`)
+          `${path.file}: ${METADATA_NAMESPACE}.subject_commit must equal the closing record subject_commit — one closure binds one candidate, so write the closing record for the candidate this record names, or declare the candidate that record reviewed`)
       }
       for (const error of record?.__fill ?? []) {
         add('blocking', 'acceptance',
-          `${record.__file} is not a completed review: ${error} — the coherence questions are answered before a candidate is declared ready`)
+          `${record.__file} is not a completed review: ${error} — answer the coherence questions on this candidate before declaring the path ready`)
       }
     }
     const state = closureStateFor?.(path, record)
     if (state == null) {
       add(legacyRecord ? 'advisory' : 'blocking', 'acceptance',
-        `${path.file}: cannot inspect the accepted candidate and administrative closure commit${legacyRecord ? ' (grandfathered: it ran on the trunk, so no candidate commit exists to inspect)' : ''}`,
+        `${path.file}: cannot inspect the accepted candidate and administrative closure commit${legacyRecord ? ' (grandfathered: it ran on the trunk, so no candidate commit exists to inspect)' : ' — fetch the branch this record names and rerun the gate, so the closure is judged rather than assumed'}`,
         legacyRecord ? undefined : 'inconclusive')
     } else {
       if (!state.subjectIsAncestor) {
-        add('blocking', 'acceptance', `${path.file}: accepted subject_commit is not an ancestor of HEAD`)
+        add('blocking', 'acceptance',
+          `${path.file}: accepted subject_commit is not an ancestor of HEAD — check out the branch that holds the candidate, or produce a new candidate and re-accept it; a closure judges the commit it names`)
       }
       // At `ready` the branch holds C and exactly one administrative commit,
       // whose files are judged. At `done` the candidate has been integrated by
@@ -2049,11 +2052,11 @@ export function evaluate({
       if (path.front.status === 'ready') {
         if (state.commitsAfterSubject !== 1) {
           add('blocking', 'acceptance',
-            `${path.file}: ready requires exactly one administrative commit after subject_commit; found ${state.commitsAfterSubject}`)
+            `${path.file}: ready requires exactly one administrative commit after subject_commit; found ${state.commitsAfterSubject} — declare ready in one commit that changes only the closure surface; work that belongs to the path needs a new candidate that contains it`)
         }
         if (state.forbiddenFiles?.length) {
           add('blocking', 'acceptance',
-            `${path.file}: implementation changed after acceptance: ${state.forbiddenFiles.join(', ')}`)
+            `${path.file}: implementation changed after acceptance: ${state.forbiddenFiles.join(', ')} — the candidate is void; return the record to \`running\`, produce a new candidate and repeat review and acceptance on it`)
         }
       }
     }
@@ -2142,7 +2145,7 @@ export function evaluate({
         continue
       }
       add('blocking', 'schema',
-        `${path.file} is running with no valid opening acceptance under \`## Opening acceptance\` (${errors.join('; ')}) — a path activates on recorded acceptance, never on a conversation`)
+        `${path.file} is running with no valid opening acceptance under \`## Opening acceptance\` (${errors.join('; ')}) — write that block into the record before the path runs; a path activates on recorded acceptance, never on a conversation`)
     }
   }
 
@@ -2160,11 +2163,11 @@ export function evaluate({
   if (sourceChanged.length > 0) {
     if (touched(slash(MODULE_DIR)).length === 0) {
       add('blocking', 'work-unit',
-        'source changed but no module note did — code, tests, docs and the step land in ONE work unit')
+        `source changed but no module note did — refresh the note for the area you changed, under ${slash(MODULE_DIR)}, in this same commit; code, tests, docs and the step land in ONE work unit`)
     }
     if (touched(`${PATH_DIR}/`).length === 0) {
       add('blocking', 'work-unit',
-        'source changed but no coding path did — every executed step updates its own record in the same unit')
+        'source changed but no coding path did — write this unit\'s step record and refresh the record\'s resume section in this same commit; every executed step updates its own record in the same unit')
     }
     // area precision is advisory: the map is a judgment call
     const areas = new Set(sourceChanged.map(areaOf).filter(Boolean))
@@ -2221,8 +2224,8 @@ export function evaluate({
       if (!forStep) {
         add('blocking', 'work-unit',
           step
-            ? `${match.file} changed while declaring current_step ${step}, with no \`cairn-unit\` block for that step — every completed work unit declares its step, ledger ordinal, type (${WORK_UNIT_TYPES.join(' | ')}) and verification`
-            : `${match.file} changed with no \`cairn-unit\` block — every completed work unit declares its step, ledger ordinal, type (${WORK_UNIT_TYPES.join(' | ')}) and verification`)
+            ? `${match.file} changed while declaring current_step ${step}, with no \`cairn-unit\` block for that step — add one to that step's record, declaring its ledger ordinal, its type (${WORK_UNIT_TYPES.join(' | ')}) and what verified it`
+            : `${match.file} changed with no \`cairn-unit\` block — add one to this unit's step record, declaring its ledger ordinal, its type (${WORK_UNIT_TYPES.join(' | ')}) and what verified it`)
       }
     }
     for (const unit of workUnits) {
@@ -2255,12 +2258,16 @@ export function evaluate({
         'inconclusive')
     } else if (provisionalInCandidate.length > 0) {
       add('blocking', 'provisional',
-        `${provisionalInCandidate.length} commit(s) between the base and the candidate still carry ${PROVISIONAL_TRAILER}: — fold each into the work unit it was drafting before proposing a candidate (${provisionalInCandidate.slice(0, 3).join(', ')})`)
+        `${provisionalInCandidate.length} commit(s) of this path between the base and the candidate still carry ${PROVISIONAL_TRAILER}: and nothing later finished them (${provisionalInCandidate.slice(0, 3).join(', ')}) — ${rewritingForbidden
+          ? 'complete the work each was drafting in a unit of its own, whose commit publishes a step record; nothing is rewritten here, so a draft is superseded by the unit that finishes it and stays in the history as what it was'
+          : 'fold each into the work unit it was drafting, retaining its checkpoint first, before proposing a candidate'}`)
     }
   }
   if (onPath && headProvisional) {
     add('advisory', 'provisional',
-      `HEAD carries ${PROVISIONAL_TRAILER}: — this commit is durable but is not a checkpoint, must not be named as a resume point, and must be folded before a candidate`)
+      `HEAD carries ${PROVISIONAL_TRAILER}: — this commit is durable but is not a checkpoint and must not be named as a resume point; ${rewritingForbidden
+        ? 'finish the work it drafts in a unit of its own before proposing a candidate, and it is superseded where it stands'
+        : 'fold it into that unit before proposing a candidate'}`)
   }
 
   // 9. scope is bound by digest, not by a pointer -----------------------
@@ -2297,21 +2304,21 @@ export function evaluate({
       // fault once the path is closing, which is where the rule always asked.
       if (closing) {
         add(exempt ? 'advisory' : 'blocking', 'scope-digest',
-          `the opening acceptance for ${id} carries no scope_digest${exempt ? ' (grandfathered: this path predates the rule)' : ' — a scope accepted without a digest is bound to nothing'}`)
+          `the opening acceptance for ${id} carries no scope_digest${exempt ? ' (grandfathered: this path predates the rule)' : ' — a scope accepted without a digest is bound to nothing; compute it with \`cairn-check --scope-digest <record>#definition-of-done\` and record it in a fresh acceptance naming the one it supersedes'}`)
       }
     } else if (expected === undefined) {
       add('blocking', 'scope-digest',
-        `cannot resolve ${opening.scope_ref ?? 'the scope_ref'} for ${id} — a scope that cannot be read cannot be shown unchanged`,
+        `cannot resolve ${opening.scope_ref ?? 'the scope_ref this acceptance names'} for ${id} — provide the record it points at and rerun the gate; a scope that cannot be read cannot be shown unchanged`,
         'inconclusive')
     } else if (expected === null) {
       add('blocking', 'scope-digest',
-        `${opening.scope_ref} names no section for ${id} — acceptance must point at text that exists`)
+        `${opening.scope_ref} names no section for ${id} — point scope_ref at a heading this record has, or restore the section it names; acceptance binds text that exists`)
     } else if (opening.scope_digest !== expected) {
       add('blocking', 'scope-digest',
         `the definition of done moved after acceptance: the opening acceptance says ${opening.scope_digest}, ${path.file} now digests to ${expected} — restore the accepted text or record a scope amendment`)
     } else if (record && record.scope_digest !== opening.scope_digest) {
       add(exempt ? 'advisory' : 'blocking', 'scope-digest',
-        `the closing record for ${id} says ${record.scope_digest ?? 'nothing'} where the opening acceptance says ${opening.scope_digest} — closure re-computes the digest at the candidate and must find the accepted text${exempt ? ' (grandfathered: this path predates the rule)' : ''}`)
+        `the closing record for ${id} says ${record.scope_digest ?? 'nothing'} where the opening acceptance says ${opening.scope_digest} — restore the accepted text and re-compute the digest at the candidate, or record a scope amendment naming the acceptance it supersedes${exempt ? ' (grandfathered: this path predates the rule)' : ''}`)
     }
   }
 
@@ -2427,7 +2434,8 @@ export function evaluate({
       add(exempt ? 'advisory' : 'blocking', 'route',
         `${match.file} declares no route: — add ${ROUTES.join(' | ')} explicitly; this host's configured default for newly generated paths is ${DEFAULT_ROUTE}${exempt ? ' (grandfathered: this path predates the rule)' : ''}`)
     } else if (!ROUTES.includes(route)) {
-      add('blocking', 'route', `${match.file} declares route "${route}", outside ${ROUTES.join(' | ')}`)
+      add('blocking', 'route',
+        `${match.file} declares route "${route}", outside ${ROUTES.join(' | ')} — declare \`full\` where the work touches the control plane, the decision plane or two implemented areas, and \`lightweight\` otherwise`)
     } else {
       const triggers = fullRouteTriggers(match.writes ?? [], areaOf, (workUnits ?? []).length)
       if (route === 'lightweight' && triggers.length > 0) {
@@ -2545,7 +2553,7 @@ function changedFiles(base) {
 /** The state against which this proposed work is judged. A trunk run compares
  * with HEAD; a branch run compares with its trunk merge-base. There is no
  * third form: `--previous` let CI compare each push with the one before it,
- * which is how twenty-six edited records went unjudged (CP-OPS-002 S09e). */
+ * which is how twenty-six edited records went unjudged. */
 function comparisonRef(base) {
   if (base) return gitOrNull(['merge-base', base, 'HEAD'])
   return gitOrNull(['rev-parse', 'HEAD'])
@@ -2594,7 +2602,7 @@ function pathRegistrationBaseState(trunkRef, branch, paths) {
   const parent = gitOrNull(['rev-parse', `${registration}^`])
   const declared = gitOrNull(['rev-parse', match.front.base_commit])
   if (!parent || !declared) return null
-  return parent === declared ? 'match' : 'mismatch'
+  return parent === declared ? 'match' : { state: 'mismatch', registration, parent }
 }
 
 /** Advisories the closure itself raises, which therefore cannot have been
@@ -2950,8 +2958,8 @@ function pathRegistrationState(trunkRef, branch, paths) {
   // The declaration is looked up on the trunk by the ID it declares, in either
   // shape. Keying on this checkout's file path made a record's registration
   // depend on where the record sits TODAY, so migrating `CP-<id>.md` to
-  // `CP-<id>/index.md` reported a path that has been registered since August as
-  // never registered at all (CP-OPS-002 S08l).
+  // `CP-<id>/index.md` reported a path registered weeks earlier as never
+  // registered at all.
   for (const candidate of [`${PATH_DIR}/${id}.md`, `${PATH_DIR}/${id}/index.md`]) {
     try {
       // stderr piped: the first shape tried is usually absent, and Git's
@@ -3231,9 +3239,9 @@ function pathRemoteCheckpoint(branch) {
  * `AGENTS.md` requires one journal file per entry, written at merge time. Until
  * now NO RULE ASKED. `same-work-unit` fires when *source* changes without a
  * module note or ledger, and a closing unit changes neither — so nothing asked.
- * Observed rather than hypothesised: CP-UI-TYPOGRAPHY was closed, audited, set
- * to `done` and proposed for merge with no entry, and every gate reported `OK`.
- * A human reviewer caught it (S08 brief, finding 2).
+ * Observed rather than hypothesised: a path was closed, audited, set to `done`
+ * and proposed for merge with no entry, and every gate reported `OK`. A human
+ * reviewer caught it.
  *
  * It reads the configured metadata block's `path`, NOT the filename. The convention does encode the id in
  * the filename, and matching that would have been easier and wrong for the same
@@ -3289,7 +3297,7 @@ function addedRecordDates(changed, ref) {
         // without it the answer is when its current path first appeared. A
         // record that moved would report the migration's date and be accused of
         // carrying an earlier one — the same substitution `record-integrity`
-        // made about the same move, in a quieter voice (CP-OPS-002 S08l).
+        // made about the same move, in a quieter voice.
         addedOn:
           gitOrNull([
             'log', '--follow', '--diff-filter=A', '--format=%ad', '--date=short', '-1', '--', file
@@ -3485,8 +3493,8 @@ function corpusFindings(previousRef = null, changed = [], viewCurrent = null) {
   // The rule used to skip itself when the branch matched `path/*`, on reasoning
   // that was sound when it was written: a running path never hand-writes the
   // generated view. `actions/checkout` detaches, so CI's branch was `HEAD` and
-  // the rule ran there — CP-UI-TYPOGRAPHY S04 was green locally and red in CI,
-  // one tree, one command. A predicate that branches on where it runs cannot be
+  // the rule ran there — one path's unit was green locally and red in CI, on
+  // one tree, under one command. A predicate that branches on where it runs cannot be
   // repaired by making both sides agree about the branch name; the branch name
   // has to stop being the question.
   //
@@ -3600,7 +3608,7 @@ async function main() {
   // HEAD on the trunk. The 0.2 checker compared event records with HEAD only,
   // so a committed edit to an immutable record was invisible to every push
   // run and surfaced only when a pull request compared the branch with the
-  // trunk (CP-OPS-002 S09e). Born-sliced step records do not depend on this
+  // trunk. Born-sliced step records do not depend on this
   // ref at all: their adding blob is stable and appendOnlyStepRecordMutations
   // follows it directly.
   const findings = [

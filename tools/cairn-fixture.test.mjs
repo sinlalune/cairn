@@ -74,9 +74,9 @@ function check(dir, ...args) {
   return checkWithEnv(dir, process.env, ...args)
 }
 
-/** The same, with an explicit environment. The suite's own CI failure (Atomik
- *  S09d) was the checker reading the HOST's branch variables while judging a
- *  fixture repository, so the environment is a parameter a test can control. */
+/** The same, with an explicit environment. The suite's own first CI failure
+ *  was the checker reading the HOST's branch variables while judging a fixture
+ *  repository, so the environment is a parameter a test can control. */
 function checkWithEnv(dir, env, ...args) {
   try {
     const out = execFileSync(process.execPath, [CHECK, '--json', ...args], {
@@ -210,6 +210,17 @@ function publishedRepository(options) {
   return dir
 }
 
+/** ADR-008 decision 6. Where a fixture names the remedy its refusal owes, the
+ *  refusal is held to it: three times on the first adopter a message that named
+ *  only the fault led the agent to move the fault — a rewritten `base_commit`,
+ *  an edited step record, a widened `writes:`. A rule firing is half the
+ *  assertion; what it then tells the reader to do is the other half. */
+function assertRemedy(found, rule, remedy) {
+  if (!remedy) return
+  assert.ok(found.findings.some((f) => f.rule === rule && remedy.test(f.message)),
+    `${rule} fired without naming its remedy: ${describe(found)}`)
+}
+
 /** One adversarial fixture over a fresh installation, on the trunk. */
 function fixture(name, rule, mutate, options = {}) {
   COVERED.add(rule)
@@ -223,6 +234,7 @@ function fixture(name, rule, mutate, options = {}) {
       const found = check(dir)
       assert.ok(blocking(found).includes(rule),
         `${rule} did not fire on a repository that violates it — blocking findings were: ${blocking(found).join(', ') || 'none'}`)
+      assertRemedy(found, rule, options.remedy)
     } finally {
       cleanup(dir)
     }
@@ -242,6 +254,7 @@ function pathFixture(name, rule, mutate, options = {}) {
       const found = check(dir)
       assert.ok(blocking(found).includes(rule),
         `${rule} did not fire — blocking findings were: ${blocking(found).join(', ') || 'none'}`)
+      assertRemedy(found, rule, options.remedy)
     } finally {
       cleanup(dir, `${dir}.git`)
     }
@@ -329,6 +342,13 @@ pathFixture('a path branch declaring an unknown route', 'route', (dir) => {
 pathFixture('a changed path record carrying no work unit', 'work-unit', (dir) => {
   appendFileSync(join(dir, RECORD), '\n- [ ] One more thing.\n')
 })
+
+pathFixture('a work unit declaring a type the vocabulary does not have', 'work-unit', (dir) => {
+  // The first adopter's closing unit declared `review`. The refusal named the
+  // vocabulary and stopped, so the agent edited the pushed record to change the
+  // type — a second violation, on a host where neither can be undone.
+  write(dir, STEP, STEP_RECORD.replace('type: implementation', 'type: review'))
+}, { remedy: /superseding step/ })
 
 pathFixture('a branch no path declares', 'branch-path', (dir) => {
   git(dir, 'checkout', '-q', '-b', 'path/cp-nobody')
@@ -513,7 +533,7 @@ fixture('a registration whose base_commit is not the registration parent', 'regi
   regenerateView(dir)
   commit(dir, 'register CP-FIXTURE-001 with a stale base')
   git(dir, 'checkout', '-q', '-b', 'path/cp-fixture-001')
-})
+}, { remedy: /git merge-base .*created before registration/s })
 
 /* ADR-004 decision 1. The adopter's CP-016 landed as a draft through one
  * request and went `running` through a second; judged against the DRAFT's
@@ -1393,7 +1413,7 @@ test('repair 005: an edited step is answered by a later step that binds both blo
 /* ------------------------------------------------------------------ *
  * Invocation parity — one tree, one verdict
  *
- * Atomik S08a found that the default local command and the CI command
+ * The first adopter found that the default local command and the CI command
  * compared different bases, so nine findings were invisible locally for many
  * pushes. The fix was a default, and a default is a claim until something
  * compares the two invocations on ONE tree and requires one verdict.
@@ -1445,7 +1465,7 @@ test('parity: a host describing another repository does not name this one\'s bra
 })
 
 test('parity: a committed edit to an immutable record is judged against the trunk, not the last push', () => {
-  // Atomik S09e: twenty-six immutable records were edited at a path's first
+  // Twenty-six immutable records were once edited at a path's first
   // step and every push run reported OK, because record integrity compared
   // each push with the one before it. The comparison every changed-file rule
   // uses is the merge-base with the trunk, and so is this one now.
