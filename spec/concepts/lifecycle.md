@@ -74,9 +74,11 @@ Three edges deserve their reasons stated:
   by [acceptance drift](./acceptance-drift.md), and implementation resumes.
 
 An unintegrated path archives as `abandoned` or `superseded`, never
-`completed`. The trunk may observe `running → done` when it integrates a branch
-whose ready state was never on the trunk; that is the integration form of
-`ready → done`, not permission to skip closure.
+`completed`. The trunk does not observe `running → done`: on every transport
+the administrative commit has already declared `ready` on the branch, so the
+integrating commit records `ready → done`. A trunk commit that flips `running`
+to `done` is refused, and the remedy is to declare `ready` on the branch
+first.
 
 An unchanged state is not a transition. A validator comparing two commits will
 often see a record declaring the state it declared before; it accepts that for

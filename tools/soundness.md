@@ -66,7 +66,15 @@ own name in the finding. A green suite of valid inputs proves only that a rule
 is quiet; a rule that never fires passes those tests identically. A blocking
 rule with no fixture is unproven and is treated as unsound until one exists.
 The fixture must also prove the green baseline first: a fixture that blocks for
-an unrelated reason proves nothing about the rule it names.
+an unrelated reason proves nothing about the rule it names. And on a host that forbids
+rewriting, a fixture that judges a path branch must contain a merged trunk
+commit carrying another path's completed unit (ADR-004 decision 4): a current
+base is reached by merging the trunk in, so every real range holds other paths'
+work, and a rule that reads that work as evidence about THIS path is wrong by
+construction and green on a single-path history. The path and closure harnesses
+carry it, so a fixture built on them has the shape without being told; one that
+stays on the trunk gets the other path's work on the trunk and no merge back,
+because it has no branch to merge into.
 
 **2. A predicate never branches on a value that varies with where it runs.**
 The tree is the same locally and in CI; the environment — the branch name, the
@@ -97,6 +105,51 @@ return readdirSync(SESSION_DIR).some((file) => file.includes(id))
 
 The comment states the sentence. The code asks a filename question. Every path
 satisfied it from the moment it opened.
+
+One rule reverses this on purpose. `writes-overlap` asks two paths what they
+*declared* they would write, because the fact — which files each will actually
+touch — does not exist yet at the registration where the answer is useful. A
+predicate about the future has only declarations to read, and this one is
+broader than the fact in one direction and narrower in the other: two surfaces
+can meet on a pattern and never meet on a file, and a path can write outside
+its declaration, where `scope-drift` catches it. That is the whole reason the
+rule reports rather than blocks, and why its finding names the patterns that
+meet rather than files it cannot know.
+
+Its own first draft showed the second failure in miniature. Deciding whether
+two patterns can name a common file looks like a job for the matcher already
+in the file: fill each pattern's wildcards, and offer the result to the other.
+That answers NO for `spec/**/*.md` and `spec/reference/**`, which both name
+`spec/reference/conformance.md`, because no single filling of either satisfies
+the other — a rule that agreed too easily, in the one shape the note says to
+expect. It is decided segment by segment now, with `**` tried at every length
+it can take.
+
+A second reversal is worth naming because it took a rule three repairs to
+find. `provisional` asks whether a candidate still carries unfinished work, and
+the fact it can read is a trailer inside `base..candidate`. On a host that
+forbids rewriting, that range is not this path's work: reaching a current base
+means merging the trunk in, so the range carries every other path's commits
+too, and the proxy was broader than the sentence in the one direction that
+refuses honest candidates. It was also TIMELESS where the sentence it
+implements is chronological — *the completed unit's own commit supersedes it* —
+so a draft the path had finished three commits earlier still refused the
+candidate, and the only remedy the message named, fold it, is the rewrite this
+host forbids. Both halves are the same mistake: reading a range as a bag of
+commits rather than as this path's history. Where a range is pinned rather than
+derived from a merge-base, it is scoped to this path's own commits before
+anything is read from it.
+
+A third rule reads presence and refuses to read further. `review` asks whether
+the current unit's ledger carries a `#### Review` section that is not empty, and
+nothing about what is in it. The sentence it stands for — *the diff
+was read by someone who did not write it* — is not readable from a repository
+at all: whether the reader was a fresh context, and whether the dispositions
+are honest, are facts about how the unit was made. A predicate that scored the
+section would be inventing the judgement it cannot make, and the proxy that
+remains is narrow and says so: a writer who types the heading and one word
+satisfies it. What it removes is the silent case — a unit that skipped the
+movement and said nothing — and the owner reads the section at the candidate.
 
 **4. A stated requirement with no predicate is listed as unenforced.** The
 conformance page is where that is said. An unenforced requirement and an

@@ -19,6 +19,7 @@
  */
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
+import { readFileSync } from 'node:fs'
 import {
   adrFrontmatterErrors,
   closingAcceptanceErrors,
@@ -69,6 +70,23 @@ import {
   TRUNK_BASE_CANDIDATES,
   stripCode,
   transitionErrors,
+  githubSlug,
+  forgeGaps,
+  readForge,
+  githubRequest,
+  profileLine,
+  patternsMeet,
+  writesOverlaps,
+  statusCommit,
+  reviewSection,
+  isUnitLedger,
+  checkpointCommit,
+  resolveBranchRef,
+  unresolvedProvisional,
+  parseSupersession,
+  supersessionClaim,
+  supersessionBinds,
+  commitsWithFiles,
   isVerbatimRelocation,
   preservesAppendOnlyRecord,
   recordOriginFromFollowLog,
@@ -190,6 +208,11 @@ const run = (changed, branch, paths = [A_PATH], extra = {}) =>
       forbiddenFiles: []
     }),
     openingRecordFor: () => OPENING,
+    // A healthy repository: the definition of done digests to what its
+    // acceptance accepted. Since ADR-002 decision 1 the seal is judged
+    // wherever the record changes, so every run over a changed record reads
+    // this, not only a closing one.
+    scopeDigestFor: () => OPENING.scope_digest,
     previousPaths: new Map(paths.map((path) => [path.file, path.front])),
     immutableMutations: [],
     ...extra
@@ -274,7 +297,7 @@ test('unavailable registration evidence is inconclusive and still exits through 
 })
 
 test('a base_commit different from the registration parent is blocked', () => {
-  const found = run(['README.md'], 'path/cp-ex-010', [A_PATH], { registrationBaseState: 'mismatch' })
+  const found = run(['README.md'], 'path/cp-ex-010', [A_PATH], { registrationBaseState: { state: 'mismatch', registration: 'b'.repeat(40), parent: 'c'.repeat(40) } })
   assert.ok(rules(found, 'blocking').includes('registration-base'))
 })
 
@@ -542,9 +565,9 @@ ${answer}
 yes
 `
   assert.deepEqual(fillErrors(text('clean', 'No.')), [])
-  assert.ok(fillErrors(text('', 'No.')).includes('no `verdict:` in its frontmatter'))
-  assert.ok(fillErrors(text('clean', '')).includes('no findings section has been answered'))
-  assert.ok(fillErrors(text('TO BE FILLED', 'No.')).includes('still carries the scaffold placeholder'))
+  assert.ok(fillErrors(text('', 'No.')).some((e) => e.startsWith('no `verdict:` in its frontmatter')))
+  assert.ok(fillErrors(text('clean', '')).some((e) => e.startsWith('no findings section has been answered')))
+  assert.ok(fillErrors(text('TO BE FILLED', 'No.')).some((e) => e.startsWith('still carries the scaffold placeholder')))
 })
 
 test('closure may move status and subject_commit and nothing else', () => {
@@ -600,7 +623,7 @@ test('comparing against the CLOSURE commit alone would be unsound', () => {
 test('an advisory firing at closure and missing from the attestation proves it incomplete', () => {
   const entry = { rule: 'scope-drift', disposition: 'accepted', reason: 'r' }
   const errors = dispositionErrors([entry], ['scope-drift'], ['scope-drift', 'decision-drift'])
-  assert.ok(errors.some((e) => /proves the attested set incomplete/.test(e)))
+  assert.ok(errors.some((e) => /its absence proves the set incomplete/.test(e)))
 })
 
 test('a closing record with no attested candidate set cannot be checked soundly', () => {
@@ -646,6 +669,28 @@ test('one actor on both acceptances is recorded as an acceptance advisory, not f
   assert.ok(!messages(found, 'acceptance', 'blocking').some((m) => /both the opening and the closing/.test(m)))
   // An advisory the closure itself raises is never demanded in the attestation.
   assert.ok(CLOSURE_RAISED_ADVISORIES.has('acceptance'))
+})
+
+test('a closing path is not asked to have attested an overlap another record caused', () => {
+  // `writes-overlap` turns on OTHER path records' current status, so it can
+  // appear between the candidate and the closure without one line of this
+  // path's tree changing. Folded into the attested set, the subset check
+  // reported the attestation incomplete — a blocking finding whose stated
+  // reason was false — so the advisory is one the closure may raise.
+  const ready = readyPath()
+  const racer = live('CP-RACE', [SRC])   // the same file A_PATH declares
+  const found = run([ready.file], 'path/cp-ex-010', [ready, racer], {
+    ...MANUAL,
+    previousPaths: new Map([[ready.file, A_PATH.front]]),
+    closureFor: () => digested(),
+    scopeDigestFor: () => 'sha256:abc',
+    migrationExempt: new Set()
+  })
+  assert.ok(messages(found, 'writes-overlap', 'advisory').length > 0,
+    'the fixture must actually raise the overlap, or this proves nothing')
+  assert.deepEqual(
+    messages(found, 'acceptance', 'blocking').filter((m) => /writes-overlap/.test(m)), [],
+    'the closure must not be refused for an advisory another record caused')
 })
 
 test('two different actors raise no collapse finding', () => {
@@ -1104,6 +1149,917 @@ test('a decision record needs a frontmatter block, a known status and an ISO dat
 })
 
 /* ------------------------------------------------------------------ *
+ * ADR-004 — which commit, which branch, which checkpoint
+ * ------------------------------------------------------------------ */
+
+test('the registration commit is the one where the record became running, not the one that added it', () => {
+  // The adopter's CP-016 landed as a draft through one request and went
+  // `running` through a second. Judged against the draft's parent, the only
+  // way to a green gate was to rewrite `base_commit` to a value the
+  // specification's own definition calls false — and the trunk carries it.
+  const [draft, activation, later] = ['a', 'b', 'c'].map((c) => c.repeat(40))
+  const asked = []
+  const statusAt = (commit) => {
+    asked.push(commit)
+    return { [draft]: 'draft', [activation]: 'running', [later]: 'running' }[commit]
+  }
+  assert.equal(statusCommit([draft, activation, later], statusAt), activation)
+  // And it stops there: each status is a `git show`, and the commits after the
+  // activation answer nothing.
+  assert.deepEqual(asked, [draft, activation])
+  // Born running: the commit that adds it is the activation.
+  assert.equal(statusCommit([draft], () => 'running'), draft)
+  // Still a draft, or a commit where the record cannot be read: there is no
+  // registration commit to judge, and the rule says so as inconclusive.
+  assert.equal(statusCommit([draft], () => 'draft'), null)
+  assert.equal(statusCommit([draft], () => undefined), null)
+  assert.equal(statusCommit([], () => 'running'), null)
+})
+
+test('a running path that has completed a unit names an object id in its checkpoint', () => {
+  const section = (commit) => `## Resume\n\n### Checkpoint\n\n\`\`\`text\ncommit : ${commit}\nunit   : 2\n\`\`\`\n`
+  assert.equal(checkpointCommit(section('a'.repeat(40))), 'a'.repeat(40))
+  assert.equal(checkpointCommit(section(`${'a'.repeat(40)} — S02, what it established`)), 'a'.repeat(40))
+  // The three shapes fifteen adopter units left behind.
+  assert.equal(checkpointCommit(section('unpinned')), null)
+  assert.equal(checkpointCommit(section('')), null)
+  assert.equal(checkpointCommit('# A record with no resume section\n'), null)
+})
+
+test('a unit is not complete while the record cannot be resumed from', () => {
+  const withUnit = { ...A_PATH, front: { ...A_PATH.front, current_step: 'S01' } }
+  const found = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: [{ step: 'S01', unit: '01', type: 'implementation', verified: 'test' }],
+    checkpointFor: () => null
+  })
+  assert.ok(messages(found, 'work-unit', 'blocking').some((m) => /checkpoint/.test(m)),
+    `findings were ${JSON.stringify(messages(found, 'work-unit', 'blocking'))}`)
+  const pinned = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: [{ step: 'S01', unit: '01', type: 'implementation', verified: 'test' }],
+    checkpointFor: () => 'a'.repeat(40)
+  })
+  assert.deepEqual(messages(pinned, 'work-unit', 'blocking').filter((m) => /checkpoint/.test(m)), [])
+  // Before the first unit there is nothing to have pushed.
+  const noUnits = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: [], checkpointFor: () => null
+  })
+  assert.deepEqual(messages(noUnits, 'work-unit', 'blocking').filter((m) => /checkpoint/.test(m)), [])
+})
+
+test('the branch history is resolved from where the checker stands, in ADR-004\'s order', () => {
+  const branch = 'path/cp-ex-010'
+  const tracking = `${REMOTE}/${branch}`
+  const resolve = (present, detached = false) => resolveBranchRef({
+    branch, remote: REMOTE, detached, refExists: (ref) => present.includes(ref)
+  })
+  // The local ref first: it is the branch this checkout writes, and it wins
+  // even where the remote-tracking ref also exists.
+  assert.deepEqual(resolve([branch]), { ref: branch, source: 'local' })
+  assert.deepEqual(resolve([branch, tracking]), { ref: branch, source: 'local' })
+  // Then HEAD, when the checkout is detached — the request head, which is the
+  // commit the gate must judge. Taking the remote-tracking ref here would
+  // compare it with itself, and a rewritten published commit then passes the
+  // one run that is the merge gate.
+  assert.deepEqual(resolve([tracking], true), { ref: 'HEAD', source: 'head' })
+  assert.deepEqual(resolve([], true), { ref: 'HEAD', source: 'head' })
+  // Then the remote-tracking ref: HEAD is some other branch, so it is not
+  // evidence about this one.
+  assert.deepEqual(resolve([tracking]), { ref: tracking, source: 'remote-tracking' })
+  assert.deepEqual(resolve([]), { ref: 'HEAD', source: 'head' })
+})
+
+/* ------------------------------------------------------------------ *
+ * ADR-004 decision 3, and repairs 005 and 006 — what a range means
+ * ------------------------------------------------------------------ */
+
+test('a provisional commit is resolved by a later commit of the same path, and by nothing else', () => {
+  // The 1.0 rule matched the trailer anywhere in the range with no notion of
+  // AFTER, while the unit reference it implements says "the completed unit's
+  // own commit supersedes it". On the adopter that refused a candidate whose
+  // draft had been finished three commits earlier, and the only remedy the
+  // message named — fold it — is a rewrite this host forbids.
+  const order = ['draft', 'unit', 'later', 'candidate']
+  // Reachability as Git answers it, a commit included in its own ancestry.
+  const isAncestor = (a, b) => order.indexOf(a) <= order.indexOf(b)
+  assert.deepEqual(unresolvedProvisional(['draft'], ['unit'], isAncestor), [])
+  assert.deepEqual(unresolvedProvisional(['draft'], ['later'], isAncestor), [])
+  // A completed unit that came BEFORE the draft finished something else.
+  assert.deepEqual(unresolvedProvisional(['later'], ['unit'], isAncestor), ['later'])
+  assert.deepEqual(unresolvedProvisional(['draft'], [], isAncestor), ['draft'])
+  // And a draft does not resolve itself: a commit that says out loud it is not
+  // finished is not the completed unit that finishes it.
+  assert.deepEqual(unresolvedProvisional(['draft'], ['draft'], isAncestor), ['draft'])
+  // Each draft answers for itself: one finished unit does not clear the one
+  // that came after it.
+  assert.deepEqual(unresolvedProvisional(['draft', 'later'], ['unit'], isAncestor), ['later'])
+})
+
+test('a supersession names the record, the blob it replaces and the blob it adds', () => {
+  const file = `${PATH_DIR}/CP-EX-010/steps/S15.md`
+  const [before, after] = ['a'.repeat(40), 'b'.repeat(40)]
+  assert.deepEqual(parseSupersession(`${file}@${before}..${after}`), { file, before, after })
+  // Abbreviated, which is what a writer copies out of `git log`.
+  assert.deepEqual(parseSupersession(`${file}@a1b2c3d..e4f5a6b`),
+    { file, before: 'a1b2c3d', after: 'e4f5a6b' })
+  // Half a claim is no claim: the specification asks for both ids.
+  assert.equal(parseSupersession(`${file}@${before}`), null)
+  assert.equal(parseSupersession(`${before}..${after}`), null)
+  assert.equal(parseSupersession(`${file}@${before}..zzzzzzz`), null)
+  assert.equal(parseSupersession(`${file}@abcdef..${after}`), null, 'six characters name too many blobs')
+  assert.equal(parseSupersession('S15, superseded'), null)
+  assert.equal(parseSupersession(undefined), null)
+})
+
+test('a supersession binds only the two blobs the record actually carries', () => {
+  const declared = { before: 'a1b2c3d', after: 'e4f5a6b' }
+  const blobs = { before: `a1b2c3d${'0'.repeat(33)}`, after: `e4f5a6b${'0'.repeat(33)}` }
+  assert.ok(supersessionBinds(declared, blobs))
+  assert.ok(!supersessionBinds(declared, { ...blobs, after: 'f'.repeat(40) }),
+    'a claim about a text the record no longer carries is not a claim about this record')
+  assert.ok(!supersessionBinds(declared, { ...blobs, before: 'f'.repeat(40) }))
+  assert.ok(!supersessionBinds(declared, { before: null, after: blobs.after }))
+  assert.ok(!supersessionBinds(null, blobs))
+})
+
+test('a claim is readable only from a completed unit, in a step record, about its own path', () => {
+  const step = `${PATH_DIR}/CP-EX-010/steps/S16.md`
+  const target = `${PATH_DIR}/CP-EX-010/steps/S15.md`
+  const claim = `${target}@a1b2c3d..e4f5a6b`
+  const unit = { step: 'S16', unit: '16', type: 'repair', verified: 'test', supersedes: claim, __file: step }
+  assert.deepEqual(supersessionClaim(unit), { file: target, before: 'a1b2c3d', after: 'e4f5a6b' })
+
+  // The mutable record beside the steps is not a record: a sentence added
+  // there to clear a gate can be deleted the next minute, and the edit stays
+  // exempted with nothing saying so.
+  assert.equal(supersessionClaim({ ...unit, __file: `${PATH_DIR}/CP-EX-010/index.md` }), null)
+  // Half a block grants nothing, by the reading `work-unit` already uses.
+  assert.equal(supersessionClaim({ ...unit, type: 'invented' }), null)
+  assert.equal(supersessionClaim({ ...unit, verified: undefined }), null)
+  // Another path's record is another path's business (ADR-004 decision 3).
+  assert.equal(supersessionClaim({ ...unit, supersedes: `${PATH_DIR}/CP-OTHER-002/steps/S15.md@a1b2c3d..e4f5a6b` }), null)
+  // And a record does not supersede itself: that is the edit, not the remedy.
+  assert.equal(supersessionClaim({ ...unit, supersedes: `${step}@a1b2c3d..e4f5a6b` }), null)
+  assert.equal(supersessionClaim({ ...unit, supersedes: undefined }), null)
+  assert.equal(supersessionClaim(undefined), null)
+})
+
+test('the commits of a log, with the files each one touched', () => {
+  const [first, second] = ['a'.repeat(40), 'b'.repeat(40)]
+  assert.deepEqual(
+    commitsWithFiles(`${first}\n\ntools/a.mjs\ntools/b.mjs\n${second}\n\ntools/a.mjs\n`),
+    [{ commit: first, files: ['tools/a.mjs', 'tools/b.mjs'] }, { commit: second, files: ['tools/a.mjs'] }])
+  // A merge commit lists no files, and is not dropped: it simply touched none.
+  assert.deepEqual(commitsWithFiles(`${first}\n\n${second}\n\ntools/a.mjs\n`),
+    [{ commit: first, files: [] }, { commit: second, files: ['tools/a.mjs'] }])
+  assert.deepEqual(commitsWithFiles(''), [])
+  assert.deepEqual(commitsWithFiles(null), [])
+  // Output that begins with a file, which no `--format=%H` log produces, is
+  // not silently attributed to a commit that was never named.
+  assert.deepEqual(commitsWithFiles('tools/a.mjs\n'), [])
+})
+
+test('a step record edited on the branch is answered by a later step that binds both blobs', () => {
+  // Crumbz S15 was refused for an unsupported unit type; the agent edited the
+  // pushed record, which is a second violation, and no history may be
+  // rewritten to undo either. S16 bound both blobs — and the 1.0 checker had
+  // no predicate for the remedy its own specification names.
+  const step = `${PATH_DIR}/CP-EX-010/steps/S15.md`
+  const declared = { before: 'a1b2c3d', after: 'e4f5a6b' }
+  const actual = { before: `a1b2c3d${'0'.repeat(33)}`, after: `e4f5a6b${'0'.repeat(33)}` }
+  const bound = run([step], 'path/cp-ex-010', [A_PATH], {
+    immutableMutations: [step],
+    supersessions: [{ file: step, declaredIn: `${PATH_DIR}/CP-EX-010/steps/S16.md`, declared, actual }]
+  })
+  assert.ok(!rules(bound, 'blocking').includes('record-integrity'),
+    `the bound supersession is the remedy — findings were ${JSON.stringify(messages(bound, 'record-integrity'))}`)
+  const stated = messages(bound, 'record-integrity', 'advisory')
+  assert.equal(stated.length, 1, 'an exemption nobody can see is indistinguishable from a rule nobody enforces')
+  assert.match(stated[0], /S16/)
+
+  // A claim that names other blobs proves nothing, and the refusal says what
+  // the record does carry rather than leaving the writer to guess.
+  const wrong = run([step], 'path/cp-ex-010', [A_PATH], {
+    immutableMutations: [step],
+    supersessions: [{ file: step, declaredIn: `${PATH_DIR}/CP-EX-010/steps/S16.md`, declared: { before: 'a1b2c3d', after: 'f'.repeat(40) }, actual }]
+  })
+  assert.ok(rules(wrong, 'blocking').includes('record-integrity'))
+  assert.ok(messages(wrong, 'record-integrity', 'blocking').some((m) => m.includes(actual.after)),
+    `the refusal names the blobs the record carries — ${JSON.stringify(messages(wrong, 'record-integrity', 'blocking'))}`)
+
+  // And with no claim at all the rule is what it was.
+  const bare = run([step], 'path/cp-ex-010', [A_PATH], { immutableMutations: [step] })
+  assert.ok(rules(bare, 'blocking').includes('record-integrity'))
+})
+
+/* ------------------------------------------------------------------ *
+ * ADR-008 decision 6 — every refusal names its remedy
+ * ------------------------------------------------------------------ */
+
+test('the three refusals that taught an agent to move the fact now name the remedy', () => {
+  // ADR-008 decision 6's three examples, each a message the first adopter
+  // answered by changing the thing the message named.
+
+  // A rewritten `base_commit`, false by the specification's own definition: the
+  // refusal now prints the commit it computed, so nothing is typed to satisfy it.
+  const registration = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], {
+    registrationBaseState: { state: 'mismatch', registration: 'b'.repeat(40), parent: 'c'.repeat(40) }
+  })
+  assert.ok(messages(registration, 'registration-base', 'blocking')
+    .some((m) => m.includes('c'.repeat(40)) && /git merge-base/.test(m) && /created before registration/.test(m)),
+    `the refusal names the fact and both repairs — ${JSON.stringify(messages(registration, 'registration-base', 'blocking'))}`)
+
+  // An edited pushed step record, after `review` was refused as a unit type.
+  assert.ok(workUnitErrors({ step: 'S15', unit: '15', type: 'review', verified: 'gate' })
+    .some((e) => /superseding step/.test(e)),
+    'the refusal that met `review` is the one that invited the edit')
+
+  // And a widened `writes:`, where the remedy is to widen it deliberately and
+  // say why, in the same commit.
+  const drift = run(['src/elsewhere.js'], 'path/cp-ex-010', [A_PATH], {
+    previousFronts: new Map([[`${A_PATH.file}::writes`, A_PATH.writes]])
+  })
+  assert.ok(messages(drift, 'scope-drift', 'blocking').some((m) => /update writes: in this same commit and record why/.test(m)),
+    `findings were ${JSON.stringify(messages(drift, 'scope-drift', 'blocking'))}`)
+})
+
+test('a refusal about an id the checker computes never asks for the id to be typed', () => {
+  // `base_commit`, `subject_commit`, the checkpoint and the digest are all
+  // read from the repository. A message that asks the writer to make one
+  // "correct" is asking them to type over evidence.
+  const computed = [
+    ...pathFrontmatterErrors({ id: 'CP-EX-010', status: 'running', branch: 'path/cp-ex-010' }, `${PATH_DIR}/CP-EX-010.md`),
+    ...pathFrontmatterErrors({ id: 'CP-EX-010', status: 'ready', branch: 'path/cp-ex-010', base_commit: '70f7e27' }, `${PATH_DIR}/CP-EX-010.md`),
+    ...transitionErrors({ status: 'ready' }, { status: 'done', resolution: 'completed' })
+  ]
+  assert.ok(computed.every((error) => typeof error === 'string' && error.length > 0))
+  for (const error of computed) {
+    assert.match(error, /`git |the commit |registration|candidate|checkpoint/,
+      `"${error}" says what is wrong and not where the value comes from`)
+  }
+})
+
+test('every blocking message says what to do, not only what is wrong', () => {
+  // ADR-008 decision 6, held to by the messages themselves rather than by a
+  // reviewer's memory: three times on the first adopter a message that named a
+  // fact led the agent to move the fact.
+  //
+  // What can be read from a string is not "this instruction is good" but "this
+  // sentence asks the reader to DO something", and the honest proxy for that is
+  // an imperative verb — the ones these remedies actually use. Punctuation is
+  // not: the first draft of this test accepted any `— ` or `; `, and passed a
+  // message that named a count and stopped.
+  //
+  // WHAT IT DOES NOT PROVE, in the note's own terms: it reads a message whole,
+  // so a remedy anywhere in it satisfies the check, and a ternary whose two
+  // branches differ — an instruction for most readers, an explanation for a
+  // grandfathered record — passes on the strength of either. Telling those
+  // branches apart needs a parser, and a message can satisfy this check with
+  // bad advice in any case. What it cannot do is say nothing.
+  const IMPERATIVES = [
+    'add', 'answer', 'append', 'archive', 'begin', 'carry', 'check out', 'complete', 'compute',
+    'correct', 'declare', 'escalate', 'fetch', 'fold', 'integrate', 'land', 'let',
+    'make', 'merge', 'name', 'number', 'point', 'produce', 'provide', 'read', 'recover',
+    'record', 'refresh', 'register', 'remove', 'rename', 'rerun', 'resolve',
+    'restore', 'return', 'scaffold', 'state', 'supersede', 'uppercase', 'write'
+  ]
+  const namesARemedy = (text) =>
+    IMPERATIVES.some((verb) => new RegExp(`(^|[—;:,.] |\\b(?:so|and|then|or) )${verb}\\b`, 'i').test(text))
+
+  const source = readFileSync(new URL('./cairn-check.mjs', import.meta.url), 'utf8')
+  // A remedy held in a `const` beside the message is still the message's, so an
+  // interpolation of a name this file binds to a string is expanded rather than
+  // erased — otherwise a message could satisfy the check by padding, or fail it
+  // for keeping its longest sentence out of the template.
+  const literalsIn = (text) => (text.match(/'(?:[^'\\\n]|\\.)*'/g) ?? []).map((literal) => literal.slice(1, -1))
+  const bound = new Map()
+  for (const [, name, value] of source.matchAll(/^\s*const (\w+) =\n?((?:\s*'(?:[^'\\]|\\.)*'\s*\+?\n?)+)/gm)) {
+    bound.set(name, literalsIn(value).join(' '))
+  }
+  const spell = (text) => text.replace(/\$\{\s*(\w+)\s*\}/g, (whole, name) => bound.get(name) ?? '…')
+
+  const silent = []
+  for (const [, message] of source.matchAll(/add\(\s*(?:'blocking'|[^,]*?\?\s*'(?:blocking|advisory)'\s*:\s*'blocking')\s*,\s*'[a-z-]+'\s*,\s*([\s\S]*?)\)\n/g)) {
+    // A message whose own words are only punctuation carries an error from one
+    // of the pure functions below, and is audited there, where the sentence is.
+    const skeleton = spell(message).replace(/\$\{[^}]*\}/g, '…').replace(/\s+/g, ' ').trim()
+    if (/^`[…:\s`,]*`?$/.test(skeleton)) continue
+    // Elsewhere what is left of an interpolation is its own string literals: a
+    // remedy often lives on one branch of a ternary, and erasing the expression
+    // would hide it. Joining them is the limit this test states above; they are
+    // separated so that a literal opening with its verb keeps a boundary.
+    const text = spell(message)
+      .replace(/\$\{[^}]*\}/g, (expr) => literalsIn(expr).join('. ') || '…')
+      .replace(/\s+/g, ' ').trim()
+    if (!namesARemedy(text)) silent.push(text.slice(0, 110))
+  }
+  assert.deepEqual(silent, [],
+    'a message that names the fault and stops is the one that invites the writer to move the fact')
+
+  // And the sentences the pure functions produce, which reach the reader
+  // through those interpolations. Every function whose output is interpolated
+  // into a blocking finding is here; a new one is added when it is written.
+  const pure = [
+    ...pathFrontmatterErrors({ id: 'bad id', status: 'nonesuch', branch: 'x', depends_on: 'x' }, `${PATH_DIR}/CP-EX-010.md`),
+    ...pathFrontmatterErrors({ id: 'CP-EX-010', status: 'ready', branch: 'path/cp-ex-010' }, `${PATH_DIR}/CP-EX-010.md`),
+    ...pathFrontmatterErrors({ id: 'CP-EX-010', status: 'archived', resolution: 'nope' }, `${PATH_DIR}/CP-EX-010.md`),
+    ...pathFrontmatterErrors({ id: 'CP-EX-010', status: 'running', branch: 'path/other', depends_on: ['CP-EX-010', 'nope'] }, `${PATH_DIR}/CP-EX-010.md`),
+    ...transitionErrors({ status: 'running' }, { status: 'done' }),
+    ...transitionErrors({ status: 'running' }, { status: 'done', resolution: 'completed' }, true),
+    ...transitionErrors({ status: 'nonesuch' }, { status: 'running' }),
+    ...transitionErrors({ status: 'done' }, { status: 'archived', resolution: 'abandoned' }),
+    ...transitionErrors({ status: 'running' }, { status: 'archived', resolution: 'completed' }),
+    ...transitionErrors({ status: 'archived', resolution: 'abandoned' }, { status: 'archived', resolution: 'superseded' }),
+    ...workUnitErrors({ type: 'review' }),
+    ...openingAcceptanceErrors({}),
+    ...closingAcceptanceErrors({ verdict: 'maybe' }, 'CP-EX-010'),
+    ...closingAcceptanceErrors(null, 'CP-EX-010'),
+    ...fillErrors('TO BE FILLED\n\n## Findings\n\n### Q?\n'),
+    ...fillErrors(`---\n${METADATA_NAMESPACE}:\n  verdict: maybe\n---\n\n## Findings\n\n### Q?\n`),
+    ...adrFrontmatterErrors({ id: 'ADR-999', status: 'nonesuch' }, 'docs/adr/ADR-001-x.md', 'accepted'),
+    ...adrFrontmatterErrors({ id: 'ADR-001', status: 'accepted', date: 'x' }, 'docs/adr/ADR-001-x.md', 'proposed'),
+    ...closureFieldErrors({ status: 'ready', writes: ['a'] }, { status: 'ready', writes: ['b'] }),
+    ...dispositionErrors(null, null, []),
+    ...dispositionErrors([{}, { rule: 'x' }, { rule: 'x', disposition: 'nope' }, { rule: 'x', disposition: 'deferred', reason: 'r' }], ['y'], ['x']),
+    routeDescent('full', 'lightweight')
+  ].filter(Boolean)
+  // The inputs above are chosen to reach every branch; these say so, because a
+  // producer that fell silent would otherwise satisfy the filter with nothing.
+  for (const reached of [/base_commit/, /work-unit type/, /resolution/, /verdict/, /adr\.date/, /advisory_disposition/, /route moved/, /scope_digest/]) {
+    assert.ok(pure.some((error) => reached.test(error)), `no sentence reached ${reached}`)
+  }
+  assert.deepEqual(pure.filter((error) => !namesARemedy(error)), [],
+    'these reach the reader inside a blocking finding, and answer for themselves')
+})
+
+/* ------------------------------------------------------------------ *
+ * review — the unit's fourth movement leaves a record, ADR-017 d2
+ * ------------------------------------------------------------------ */
+
+test('the review section is the step\'s own, and empty is not written', () => {
+  const step = (body) => `# CP-EX-010 S02\n\n#### Self-review\n\n- \`delete:\` a line\n\n#### Review${body}\n#### Verification\n\n\`\`\`text\ntests : pass\n\`\`\`\n`
+  assert.equal(reviewSection(step('\n\nFirst read: nothing found.\n\n')), 'First read: nothing found.')
+  // Present and empty is the shape a writer leaves when the movement was
+  // skipped and the heading copied from the template.
+  assert.equal(reviewSection(step('\n\n')), '')
+  assert.equal(reviewSection(step('\n\n<finding> — **fixed**\n\n')), '<finding> — **fixed**')
+  assert.equal(reviewSection('# CP-EX-010 S02\n\nNo section at all.\n'), null)
+})
+
+test('a unit is not complete until its diff was read by someone who did not write it', () => {
+  const step = `${PATH_DIR}/CP-EX-010/steps/S02.md`
+  const withUnit = { ...A_PATH, front: { ...A_PATH.front, current_step: 'S02' } }
+  const units = [{ step: 'S02', unit: '02', type: 'implementation', verified: 'test', __file: step }]
+
+  const missing = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: units, checkpointFor: () => 'a'.repeat(40), reviewFor: () => null
+  })
+  assert.ok(rules(missing, 'blocking').includes('review'),
+    `findings were ${JSON.stringify(messages(missing, 'review', 'blocking'))}`)
+  assert.ok(messages(missing, 'review', 'blocking').some((m) => m.includes(step) && /write it into/.test(m)),
+    'the refusal names the step it belongs in, never an earlier one')
+
+  const empty = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: units, checkpointFor: () => 'a'.repeat(40), reviewFor: () => ''
+  })
+  assert.ok(rules(empty, 'blocking').includes('review'), 'a heading with nothing under it is the skipped movement')
+
+  const read = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: units, checkpointFor: () => 'a'.repeat(40), reviewFor: () => 'the reader found nothing'
+  })
+  assert.ok(!rules(read, 'blocking').includes('review'), JSON.stringify(messages(read, 'review')))
+
+  // The content is not judged: a disposition the owner would reject reads the
+  // same to this rule as one they would not.
+  const thin = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: units, checkpointFor: () => 'a'.repeat(40), reviewFor: () => 'x'
+  })
+  assert.ok(!rules(thin, 'blocking').includes('review'))
+
+  // `closure` carries no step file, so it carries no review.
+  const closing = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: [{ ...units[0], type: 'closure', __file: withUnit.file }],
+    checkpointFor: () => 'a'.repeat(40),
+    reviewFor: () => null
+  })
+  assert.ok(!rules(closing, 'blocking').includes('review'))
+
+  // `current_step` is a convenience no rule requires, so a record that drops it
+  // is judged on the ledger's newest unit rather than going unjudged.
+  const dropped = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], {
+    workUnits: [{ step: 'S01', unit: '01', type: 'implementation', verified: 'test', __file: `${PATH_DIR}/CP-EX-010/steps/S01.md` }, ...units],
+    checkpointFor: () => 'a'.repeat(40),
+    reviewFor: (file) => (file === step ? null : 'read')
+  })
+  assert.ok(rules(dropped, 'blocking').includes('review'),
+    `findings were ${JSON.stringify(messages(dropped, 'review', 'blocking'))}`)
+
+  // The flat record shape is its own ledger, so it is judged — one section
+  // there answers for every unit of the path, which the conformance page
+  // states as the gap it is.
+  assert.ok(isUnitLedger(A_PATH.file, A_PATH.file))
+  const flat = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], {
+    workUnits: [{ ...units[0], __file: A_PATH.file }],
+    checkpointFor: () => 'a'.repeat(40),
+    reviewFor: () => null
+  })
+  assert.ok(rules(flat, 'blocking').includes('review'))
+
+  // A folder's `index.md` is not: a block put there would be answered by a
+  // section in a file that may be rewritten the next minute, so the rule reads
+  // the step record beside it or nothing at all.
+  const folder = { ...A_PATH, file: `${PATH_DIR}/CP-EX-010/index.md` }
+  assert.ok(!isUnitLedger(folder.file, folder.file))
+  const inIndex = run([folder.file], 'path/cp-ex-010', [folder], {
+    workUnits: [{ ...units[0], __file: folder.file }],
+    checkpointFor: () => 'a'.repeat(40),
+    reviewFor: () => null
+  })
+  assert.ok(!rules(inIndex, 'blocking').includes('review'))
+
+  // And an earlier step, written before the rule existed, is not judged when a
+  // later unit is: only the current one is read.
+  const earlier = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: [{ step: 'S01', unit: '01', type: 'implementation', verified: 'test', __file: `${PATH_DIR}/CP-EX-010/steps/S01.md` }, ...units],
+    checkpointFor: () => 'a'.repeat(40),
+    reviewFor: (file) => (file === step ? 'read' : null)
+  })
+  assert.ok(!rules(earlier, 'blocking').includes('review'))
+})
+
+/* ------------------------------------------------------------------ *
+ * ADR-008 decisions 2 and 4 — one commit for one path, one key
+ * ------------------------------------------------------------------ */
+
+test('the commit a record reached a status in is the first that declares it', () => {
+  const [draft, running, done] = ['a', 'b', 'c'].map((c) => c.repeat(40))
+  const statusAt = (commit) => ({ [draft]: 'draft', [running]: 'running', [done]: 'done' })[commit]
+  assert.equal(statusCommit([draft, running, done], statusAt), running, 'running by default, as registration reads it')
+  assert.equal(statusCommit([draft, running, done], statusAt, 'done'), done)
+  assert.equal(statusCommit([draft, running], statusAt, 'done'), null)
+})
+
+test('the integrating commit is one commit for one path', () => {
+  // On the adopter one request recorded two integrations, and one integrating
+  // unit was a merge commit that brought the trunk in and edited the record in
+  // the same object. Nothing read either shape.
+  const done = (id, file) => ({
+    file,
+    front: { id, route: 'lightweight', status: 'done', resolution: 'completed', subject_commit: CANDIDATE },
+    writes: []
+  })
+  const first = done('CP-EX-010', `${PATH_DIR}/CP-EX-010.md`)
+  const second = done('CP-EX-011', `${PATH_DIR}/CP-EX-011.md`)
+  const integrating = {
+    stateChanged: [first.file, second.file],
+    previousPaths: new Map([
+      [first.file, { ...first.front, status: 'ready' }],
+      [second.file, { ...second.front, status: 'ready' }]
+    ]),
+    journalEntries: [{ path: 'CP-EX-010' }, { path: 'CP-EX-011' }]
+  }
+
+  const inOneCommit = 'f'.repeat(40)
+  const two = run([first.file, second.file], 'main', [first, second], {
+    ...integrating,
+    integrationStateFor: () => ({ commit: inOneCommit, merge: false, readyBehind: true })
+  })
+  assert.ok(messages(two, 'acceptance', 'blocking')
+    .some((m) => new RegExp(`CP-EX-010, CP-EX-011 reach done in ${inOneCommit}`).test(m)),
+    `findings were ${JSON.stringify(messages(two, 'acceptance', 'blocking'))}`)
+
+  // Two arrivals in one COMPARISON, each in its own commit, is an ordinary
+  // request spanning two integrations — and refusing it would tell the author
+  // to do what they did.
+  const apart = run([first.file, second.file], 'main', [first, second], {
+    ...integrating,
+    integrationStateFor: (file) => ({ commit: file === first.file ? 'a'.repeat(40) : 'b'.repeat(40), merge: false, readyBehind: true })
+  })
+  assert.deepEqual(messages(apart, 'acceptance', 'blocking'), [])
+
+  // One path, and the commit that records it is not a merge object.
+  const one = run([first.file], 'main', [first], {
+    ...integrating,
+    stateChanged: [first.file],
+    previousPaths: new Map([[first.file, { ...first.front, status: 'ready' }]]),
+    integrationStateFor: () => ({ commit: 'f'.repeat(40), merge: false })
+  })
+  assert.deepEqual(messages(one, 'acceptance', 'blocking'), [])
+
+  // The same arrival, carried by a merge object.
+  const merged = run([first.file], 'main', [first], {
+    ...integrating,
+    stateChanged: [first.file],
+    previousPaths: new Map([[first.file, { ...first.front, status: 'ready' }]]),
+    integrationStateFor: () => ({ commit: 'f'.repeat(40), merge: true })
+  })
+  assert.ok(messages(merged, 'acceptance', 'blocking').some((m) => /merge/.test(m)),
+    `findings were ${JSON.stringify(messages(merged, 'acceptance', 'blocking'))}`)
+
+  // A record that was already done is not arriving, and is nobody's
+  // integrating commit.
+  const settled = run([first.file], 'main', [first], {
+    ...integrating,
+    stateChanged: [first.file],
+    previousPaths: new Map([[first.file, first.front]]),
+    integrationStateFor: () => ({ commit: 'f'.repeat(40), merge: true })
+  })
+  assert.deepEqual(messages(settled, 'acceptance', 'blocking'), [])
+})
+
+test('the journal entry is asked for under the key it is written with', () => {
+  const done = {
+    ...A_PATH,
+    front: { ...A_PATH.front, status: 'done', resolution: 'completed', subject_commit: CANDIDATE }
+  }
+  const found = run([done.file], 'main', [done], {
+    stateChanged: [done.file],
+    previousPaths: new Map([[done.file, { ...done.front, status: 'ready' }]]),
+    journalEntries: []
+  })
+  const message = messages(found, 'journal-entry', 'blocking')[0] ?? ''
+  assert.match(message, new RegExp(`${METADATA_NAMESPACE}\\.path: ${done.front.id}`),
+    'the fifteen adopter entries carry a top-level `path:` too, copied forward from a message that named one')
+})
+
+/* ------------------------------------------------------------------ *
+ * scope-digest — the seal at every transition, ADR-002 decision 1
+ * ------------------------------------------------------------------ */
+
+test('the seal is judged on the trunk, where the integrating commit ticks the box', () => {
+  // Two Crumbz paths were ticked inside their integrating commits and both
+  // runs were green: the guard read a CLOSED status on the path's OWN branch,
+  // and the trunk is neither.
+  const done = {
+    ...A_PATH,
+    front: { ...A_PATH.front, status: 'done', subject_commit: CANDIDATE, resolution: 'completed' }
+  }
+  const moved = run([done.file], 'main', [done], {
+    stateChanged: [done.file],
+    scopeDigestFor: () => 'sha256:moved',
+    journalEntries: [{ path: done.front.id }]
+  })
+  assert.ok(messages(moved, 'scope-digest', 'blocking').some((m) => /definition of done moved after acceptance/.test(m)),
+    `the trunk must judge the seal — findings were ${JSON.stringify(messages(moved, 'scope-digest', 'blocking'))}`)
+})
+
+test('the seal is judged at a unit, long before the path is closing', () => {
+  const moved = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], {
+    stateChanged: [A_PATH.file],
+    scopeDigestFor: () => 'sha256:moved'
+  })
+  assert.ok(messages(moved, 'scope-digest', 'blocking').some((m) => /definition of done moved after acceptance/.test(m)),
+    `a running path's own unit must judge the seal — findings were ${JSON.stringify(messages(moved, 'scope-digest', 'blocking'))}`)
+})
+
+test('a running path is not held to a closing record, whatever is lying in its folder', () => {
+  // The closing-record comparison belongs to closure. Judging a running path
+  // against a stale `closing-*.md` would refuse a unit for a file the unit
+  // has nothing to do with.
+  const found = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], {
+    ...MANUAL,
+    stateChanged: [A_PATH.file],
+    closureFor: (id) => ({ ...acceptedRecord(id), scope_digest: 'sha256:stale' })
+  })
+  assert.deepEqual(messages(found, 'scope-digest', 'blocking'), [])
+})
+
+test('a closing path is judged even when its record is not in this change', () => {
+  // The fallback that keeps today's reading: with no trunk to compare against,
+  // the changed set is the working tree, and a committed record is not in it.
+  const ready = { ...A_PATH, front: { ...A_PATH.front, status: 'ready', subject_commit: CANDIDATE } }
+  const found = run([], 'path/cp-ex-010', [ready], {
+    stateChanged: [],
+    scopeDigestFor: () => 'sha256:moved'
+  })
+  assert.ok(messages(found, 'scope-digest', 'blocking').some((m) => /definition of done moved after acceptance/.test(m)),
+    `findings were ${JSON.stringify(messages(found, 'scope-digest', 'blocking'))}`)
+})
+
+test('a record with no acceptance yet is bound to nothing yet, not in breach', () => {
+  // A draft, or a registration landing in this same change, has no opening
+  // block to digest against. Only a closing path owes one.
+  const draft = { ...A_PATH, front: { ...A_PATH.front, status: 'draft' } }
+  const found = run([draft.file], 'main', [draft], {
+    stateChanged: [draft.file],
+    openingRecordFor: () => null
+  })
+  assert.deepEqual(messages(found, 'scope-digest', 'blocking'), [])
+})
+
+/* ------------------------------------------------------------------ *
+ * writes-overlap — two live paths on the same files, ADR-003
+ * ------------------------------------------------------------------ */
+
+test('two declared patterns meet when some file matches both', () => {
+  const meet = (a, b) => {
+    assert.equal(patternsMeet(a, b), patternsMeet(b, a), `${a} / ${b}: the answer must not depend on the order`)
+    return patternsMeet(a, b)
+  }
+  assert.ok(meet('tools/**', 'tools/cairn-check.mjs'))
+  assert.ok(meet('docs/**', 'docs/adr/**'))
+  assert.ok(meet('spec/**/*.md', 'spec/reference/conformance.md'))
+  assert.ok(meet('tools/*.mjs', 'tools/**'))
+  assert.ok(meet('docs/index.md', 'docs/index.md'))
+  // `**` spans any number of segments, zero included. Filling each pattern's
+  // wildcards once and offering the result to the other answers NO for every
+  // pair below, though each names a file both patterns match — which is why
+  // the decision is made segment by segment.
+  assert.ok(meet('spec/**/*.md', 'spec/reference/**'), 'spec/reference/conformance.md is in both')
+  assert.ok(meet('docs/**/*.md', 'docs/adr/**'), 'docs/adr/ADR-001.md is in both')
+  assert.ok(meet('src/**', '**/*.mjs'), 'src/a.mjs is in both')
+  assert.ok(meet('project/**/index.md', 'project/coding-paths/**'), 'project/coding-paths/index.md is in both')
+  // `**` is zero or more whole segments here, which is what a `writes:` means
+  // by it and is not quite what `globToRegExp` does with it — see below.
+  assert.ok(meet('a/**', 'a'), '`**` matching zero segments is still a match')
+  // Two literals of different depth name no common file.
+  assert.ok(!meet('a/b', 'a/b/c'))
+  // One filling per segment lines a prefix up with a prefix and nothing else:
+  // both of these name `docs/adr-1.md`.
+  assert.ok(meet('docs/*.md', 'docs/adr-*'))
+
+  assert.ok(!meet('tools/**', 'docs/**'))
+  assert.ok(!meet('tools/*.mjs', 'tools/*.md'))
+  assert.ok(!meet('docs/adr/**', 'docs/modules/**'))
+  assert.ok(!meet('spec/index.md', 'spec/reference/conformance.md'))
+  assert.ok(!meet('spec/**/*.md', 'tools/**'))
+})
+
+/** The guarantee worth sweeping rather than sampling: whenever some file is in
+ *  both surfaces — by the same matcher `scope-drift` uses — the two are said to
+ *  meet. It is swept in the direction that matters, because a missed overlap is
+ *  a race nobody is told about, where a generous one is an advisory somebody
+ *  reads. `**` was left out of the alphabet when this was written; that is the
+ *  hole the closing request's reviewer found, and it is in now. */
+test('two surfaces meet whenever some file is in both, `**` included', () => {
+  const alphabet = ['a', 'b', 'ax.md', 'x.md', 'y.mjs']
+  const files = []
+  for (const one of alphabet) {
+    files.push(one)
+    for (const two of alphabet) {
+      files.push(`${one}/${two}`)
+      for (const three of alphabet) files.push(`${one}/${two}/${three}`)
+    }
+  }
+  // Both shapes a globstar takes are in the alphabet: `**` as a whole segment,
+  // and `**.md` glued to a name, where it is an ordinary `*`.
+  const segments = ['a', 'b', '*', '**', 'x.md', '*.md', 'a**', '**.md']
+  const patterns = []
+  for (const one of segments) {
+    patterns.push(one)
+    for (const two of segments) {
+      patterns.push(`${one}/${two}`)
+      for (const three of segments) patterns.push(`${one}/${two}/${three}`)
+    }
+  }
+  const disagreements = []
+  for (const one of patterns) {
+    for (const two of patterns) {
+      const shared = files.some((file) => globToRegExp(one).test(file) && globToRegExp(two).test(file))
+      if (shared && !patternsMeet(one, two)) disagreements.push(`${one} ∩ ${two}: a file is in both and they do not meet`)
+    }
+  }
+  assert.deepEqual(disagreements.slice(0, 5), [])
+
+  // What `**` means, named so a reader meets it directly rather than trusting
+  // the sweep: a globstar is a WHOLE SEGMENT, so it never eats part of a name,
+  // and glued to anything else it is an ordinary `*`.
+  assert.ok(matchesAny('a/x.md', ['a/**/x.md']))
+  assert.ok(matchesAny('a/b/x.md', ['a/**/x.md']))
+  assert.ok(matchesAny('a/b/c/x.md', ['a/**/x.md']))
+  assert.ok(!matchesAny('a/ax.md', ['a/**/x.md']), '`**` spans separators; it does not swallow half a segment')
+  assert.ok(!matchesAny('a/b/zzx.md', ['a/**/x.md']))
+  assert.ok(matchesAny('docs/a.md', ['docs/**.md']))
+  assert.ok(!matchesAny('docs/a/b.md', ['docs/**.md']), 'glued to a name, `**` is an ordinary `*`')
+  // The meet reader always said so; this is the line that had to move.
+  assert.ok(!patternsMeet('docs/**.md', 'docs/a/b.md'))
+})
+
+const live = (id, writes, extra = {}) => ({
+  file: `${PATH_DIR}/${id}.md`,
+  front: { id, route: 'lightweight', status: 'running', base_commit: '70f7e27', branch: `path/${id.toLowerCase()}`, ...extra },
+  writes
+})
+
+test('two live paths whose surfaces meet are named, with the patterns that meet', () => {
+  const found = writesOverlaps([live('CP-A', ['tools/**', 'docs/adr/**']), live('CP-B', ['tools/cairn-check.mjs'])])
+  assert.equal(found.length, 1)
+  assert.deepEqual(found[0].paths, ['CP-A', 'CP-B'])
+  assert.deepEqual(found[0].patterns, ['tools/** ∩ tools/cairn-check.mjs'])
+  // Two paths declaring the SAME pattern name it once, not against itself.
+  assert.deepEqual(
+    writesOverlaps([live('CP-A', ['src/**']), live('CP-B', ['src/**'])])[0].patterns,
+    ['src/**'])
+})
+
+test('the overlap is silent when either path declares depends_on the other', () => {
+  const a = live('CP-A', ['tools/**'])
+  const b = live('CP-B', ['tools/**'], { depends_on: ['CP-A'] })
+  assert.deepEqual(writesOverlaps([a, b]), [])
+  // and it reappears when the declaration is dropped while the earlier path
+  // is still live, which is the shape CP-016 took on the adopter.
+  assert.equal(writesOverlaps([a, { ...b, front: { ...b.front, depends_on: [] } }]).length, 1)
+})
+
+test('a path that is not live is not raced with', () => {
+  const a = live('CP-A', ['tools/**'])
+  for (const status of ['draft', 'done', 'archived']) {
+    assert.deepEqual(writesOverlaps([a, live('CP-B', ['tools/**'], { status })]), [],
+      `a ${status} path holds no surface`)
+  }
+  for (const status of ['running', 'blocked', 'ready']) {
+    assert.equal(writesOverlaps([a, live('CP-B', ['tools/**'], { status })]).length, 1,
+      `a ${status} path is live`)
+  }
+})
+
+test('the overlap is reported on a run that belongs to one of the two paths', () => {
+  const a = live('CP-A', ['tools/**'])
+  const b = live('CP-B', ['tools/cairn-check.mjs'])
+  const onA = run([a.file], 'path/cp-a', [a, b], { stateChanged: [] })
+  assert.ok(messages(onA, 'writes-overlap', 'advisory').some((m) => /CP-A/.test(m) && /CP-B/.test(m)),
+    `advisories were ${JSON.stringify(messages(onA, 'writes-overlap', 'advisory'))}`)
+  assert.deepEqual(messages(onA, 'writes-overlap', 'blocking'), [], 'the overlap is the owner\'s call, so it never blocks')
+  // At the later path's registration, on the trunk, its record is the change.
+  const atRegistration = run([b.file], 'main', [a, b], { stateChanged: [b.file] })
+  assert.ok(messages(atRegistration, 'writes-overlap', 'advisory').length === 1)
+  // A run belonging to neither says nothing about them.
+  const elsewhere = run([], 'main', [a, b], { stateChanged: [] })
+  assert.deepEqual(messages(elsewhere, 'writes-overlap', 'advisory'), [])
+})
+
+/* ------------------------------------------------------------------ *
+ * the profile line — ADR-001 decision 6
+ *
+ * A profile is a claim about settings, so the remedy for a gap is a setting
+ * and never a commit: everything here produces OUTPUT, and nothing here
+ * produces a finding. The reads are injected, so the suite makes no network
+ * call and the line is proved against payloads rather than against a forge.
+ * ------------------------------------------------------------------ */
+
+test('the GitHub slug is read from every remote form, and from nothing else', () => {
+  assert.deepEqual(githubSlug('git@github.com:sinlalune/cairn.git'), { owner: 'sinlalune', repo: 'cairn' })
+  assert.deepEqual(githubSlug('https://github.com/sinlalune/cairn.git'), { owner: 'sinlalune', repo: 'cairn' })
+  assert.deepEqual(githubSlug('https://github.com/sinlalune/cairn'), { owner: 'sinlalune', repo: 'cairn' })
+  assert.deepEqual(githubSlug('ssh://git@github.com/sinlalune/cairn.git'), { owner: 'sinlalune', repo: 'cairn' })
+  assert.deepEqual(githubSlug('git@GitHub.com:sinlalune/cairn.git'), { owner: 'sinlalune', repo: 'cairn' })
+  // A fixture's remote is a local bare repository, and a self-hosted forge is
+  // not GitHub. Both answer "not read" rather than a wrong reading.
+  assert.equal(githubSlug('/tmp/cairn-fixture-abc.git'), null)
+  assert.equal(githubSlug('git@gitlab.com:sinlalune/cairn.git'), null)
+  assert.equal(githubSlug(null), null)
+  // The host anchor is the whole of the check, so the fixtures that prove it
+  // are the ones that put github.com somewhere it does not govern. Loosened,
+  // these parse as an owner of `evil.example:sinlalune`, and the line would
+  // report some other repository's rules as this trunk's.
+  assert.equal(githubSlug('https://evil.example/github.com/sinlalune/cairn.git'), null)
+  assert.equal(githubSlug('git@github.com.evil.example:sinlalune/cairn.git'), null)
+  assert.equal(githubSlug('https://github.com.evil.example/sinlalune/cairn'), null)
+})
+
+/** This repository's own trunk, as `rules/branches/main` answers on
+ *  2026-09-11: the check `protocol` required on the exact commit, only merge
+ *  commits allowed to land, and the admin role bypassing the ruleset — the
+ *  honest line ADR-001 decision 6 wrote out by hand. The repository's own
+ *  `allow_squash_merge` and `allow_rebase_merge` are BOTH true and must not be
+ *  read: the trunk's ruleset is what governs the trunk. */
+const TRUNK_RULES = [
+  { type: 'deletion', ruleset_id: 7 },
+  { type: 'non_fast_forward', ruleset_id: 7 },
+  { type: 'pull_request', ruleset_id: 7, parameters: { allowed_merge_methods: ['merge'] } },
+  { type: 'required_status_checks', ruleset_id: 7, parameters: { strict_required_status_checks_policy: true, required_status_checks: [{ context: 'protocol' }] } }
+]
+const pullRequestRule = (...methods) =>
+  ({ type: 'pull_request', ruleset_id: 7, parameters: { allowed_merge_methods: methods } })
+
+test('the forge gaps are read from the trunk\'s rules, and this repository\'s own trunk yields the bypass alone', () => {
+  const gaps = forgeGaps({
+    rules: TRUNK_RULES,
+    rulesets: [{ id: 7, bypass_actors: [{ actor_id: 5, actor_type: 'RepositoryRole' }] }]
+  })
+  // The bypass, and ONLY the bypass: `allow_squash_merge` and
+  // `allow_rebase_merge` are both true on this repository, and the trunk's
+  // ruleset allows neither onto the trunk. The toggles are not read.
+  assert.deepEqual(gaps, ['1 actor bypasses the trunk\'s rules'])
+})
+
+test('a merge method lands only if EVERY applying rule allows it', () => {
+  const permissive = TRUNK_RULES.map((rule) => rule.type === 'pull_request' ? pullRequestRule('merge', 'squash', 'rebase') : rule)
+  assert.deepEqual(forgeGaps({ rules: permissive, rulesets: [] }),
+    ['squash and rebase merges are allowed on the trunk, so the commit that lands is not the object the check ran on'])
+  // GitHub applies the MOST RESTRICTIVE form of a rule defined more than once,
+  // so merge methods intersect. Unioning them reported a squash the forge
+  // would refuse.
+  assert.deepEqual(forgeGaps({ rules: [...permissive, pullRequestRule('merge')], rulesets: [] }), [])
+  // And an absent parameter is GitHub's own default, all three — never the
+  // restrictive answer.
+  assert.deepEqual(forgeGaps({ rules: [{ type: 'pull_request', ruleset_id: 9 }], rulesets: [] }),
+    ['no check is required before a merge', 'squash and rebase merges are allowed on the trunk, so the commit that lands is not the object the check ran on'])
+})
+
+test('a strict policy on any applying rule is enough, and none on any is the gap', () => {
+  const lax = { type: 'required_status_checks', ruleset_id: 7, parameters: { strict_required_status_checks_policy: false } }
+  const laxOnly = [lax, pullRequestRule('merge')]
+  assert.deepEqual(forgeGaps({ rules: laxOnly, rulesets: [] }),
+    ['a required check is not required on the exact commit that lands'])
+  // The strict form is the more restrictive one, so a strict rule behind a lax
+  // one still makes the check strict. Reading only the first rule found
+  // reported this as unenforced.
+  const strict = { type: 'required_status_checks', ruleset_id: 9, parameters: { strict_required_status_checks_policy: true } }
+  assert.deepEqual(forgeGaps({ rules: [...laxOnly, strict], rulesets: [] }), [])
+})
+
+test('a trunk guarded by rules that require no check, or no request, is said so', () => {
+  const noCheck = TRUNK_RULES.filter((rule) => rule.type !== 'required_status_checks')
+  assert.deepEqual(forgeGaps({ rules: noCheck, rulesets: [] }), ['no check is required before a merge'])
+  const noRequest = TRUNK_RULES.filter((rule) => rule.type !== 'pull_request')
+  assert.deepEqual(forgeGaps({ rules: noRequest, rulesets: [] }), ['a direct push to the trunk needs no pull request'])
+})
+
+test('a trunk with no rule at all is said to be unguarded, once, and no cause is invented for it', () => {
+  // ONCE: the missing check, the missing request and the merge methods are all
+  // that one absence, not four findings. A private repository on a plan
+  // without rulesets arrives here too, and the line does not claim to know
+  // which it is: the plan is not readable from what this reads.
+  assert.deepEqual(forgeGaps({ rules: [], rulesets: [] }), ['no rule of the forge guards the trunk'])
+})
+
+test('the forge is not read without a token, without GitHub, or when it answers badly', async () => {
+  const never = () => { throw new Error('the forge must not be called') }
+  assert.match((await readForge({ token: null, slug: { owner: 'o', repo: 'r' }, trunk: 'main', request: never })).why, /no token/)
+  assert.match((await readForge({ token: 't', slug: null, trunk: 'main', request: never })).why, /not a GitHub repository/)
+
+  const failing = async () => ({ error: 'HTTP 404' })
+  const refused = await readForge({ token: 't', slug: { owner: 'o', repo: 'r' }, trunk: 'main', request: failing })
+  assert.equal(refused.read, false)
+  assert.match(refused.why, /HTTP 404/)
+})
+
+test('a ruleset the token cannot read fails the whole read, rather than reporting no bypass', async () => {
+  // A fine-grained token without administration access reads the branch's
+  // rules and is refused the ruleset. Reporting `read: true` there printed
+  // "the forge enforces everything these records name" over a bypass list
+  // nobody had seen.
+  const request = async (url) => {
+    if (url.includes('/rules/branches/')) return { value: [{ type: 'pull_request', ruleset_id: 7, parameters: { allowed_merge_methods: ['merge'] } }] }
+    return { error: 'HTTP 403' }
+  }
+  const read = await readForge({ token: 't', slug: { owner: 'o', repo: 'r' }, trunk: 'main', request })
+  assert.equal(read.read, false)
+  assert.match(read.why, /HTTP 403 for a ruleset of the trunk/)
+})
+
+test('the forge read never throws: a refusal, a timeout and a broken fetch are all answers', async () => {
+  // This is the whole of the guarantee that the profile line cannot reach an
+  // exit code, and it is the one half of the read that touches the network.
+  assert.deepEqual(
+    await githubRequest('https://api.github.com/repos/o/r', { token: 't', doFetch: async () => ({ ok: false, status: 404 }) }),
+    { error: 'HTTP 404' })
+  assert.deepEqual(
+    await githubRequest('https://api.github.com/repos/o/r', { token: 't', doFetch: async () => { throw new Error('getaddrinfo ENOTFOUND') } }),
+    { error: 'getaddrinfo ENOTFOUND' })
+  assert.deepEqual(
+    await githubRequest('https://api.github.com/repos/o/r', {
+      token: 't',
+      timeoutMs: 5,
+      doFetch: (url, init) => new Promise((_resolve, reject) => {
+        init.signal.addEventListener('abort', () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' })))
+      })
+    }),
+    { error: 'no answer in 5ms' })
+  const ok = await githubRequest('https://api.github.com/repos/o/r', { token: 't', doFetch: async () => ({ ok: true, json: async () => ({ private: false }) }) })
+  assert.deepEqual(ok, { value: { private: false } })
+})
+
+test('the forge read asks for the trunk\'s rules and each ruleset behind them, and nothing else', async () => {
+  const asked = []
+  const request = async (url) => {
+    asked.push(url)
+    if (url.includes('/rules/branches/')) return { value: [{ type: 'pull_request', ruleset_id: 7, parameters: { allowed_merge_methods: ['merge'] } }, { type: 'deletion', ruleset_id: 7 }] }
+    return { value: { id: 7, bypass_actors: [{ actor_id: 5 }] } }
+  }
+  const read = await readForge({ token: 't', slug: { owner: 'o', repo: 'r' }, trunk: 'main', request })
+  assert.equal(read.read, true)
+  // The repository payload is NOT read: its merge toggles are the wrong
+  // reading, and nothing else on it is used.
+  assert.deepEqual(asked, [
+    'https://api.github.com/repos/o/r/rules/branches/main',
+    'https://api.github.com/repos/o/r/rulesets/7'
+  ])
+  // One ruleset id asked once, however many of its rules apply to the trunk.
+  assert.ok(read.gaps.some((g) => /bypasses/.test(g)), JSON.stringify(read.gaps))
+})
+
+test('the profile line names the declared transports and what the forge does not enforce', () => {
+  const transports = { registration: 'manual-git', integration: 'pull-request' }
+  assert.match(profileLine({ transports, forge: { read: false, why: 'no token' } }),
+    /transports registration manual-git, integration pull-request; forge not read \(no token\)/)
+  assert.match(profileLine({ transports, forge: { read: true, gaps: ['a bypass', 'a squash'] } }),
+    /forge does not enforce: a bypass; a squash/)
+  assert.match(profileLine({ transports, forge: { read: true, gaps: [] } }),
+    /forge enforces everything these records name/)
+})
+
+/* ------------------------------------------------------------------ *
  * transition — the lifecycle is a statement of fact
  * ------------------------------------------------------------------ */
 
@@ -1111,12 +2067,34 @@ test('lifecycle transitions distinguish ready from integrated done', () => {
   const ready = { ...A_PATH.front, status: 'ready', subject_commit: CANDIDATE }
   const done = { ...ready, status: 'done', resolution: 'completed' }
   assert.deepEqual(transitionErrors(A_PATH.front, ready, true), [])
-  assert.deepEqual(transitionErrors(A_PATH.front, done, false), [])
+  assert.deepEqual(transitionErrors(ready, done, false), [])
   assert.ok(transitionErrors(A_PATH.front, done, true).some((e) => e.includes('cannot claim `done`')))
   assert.ok(transitionErrors({ ...A_PATH.front, status: 'blocked' }, ready, true).some((e) => e.includes('not allowed')))
-  assert.ok(transitionErrors(A_PATH.front, { ...A_PATH.front, status: 'archived' }).some((e) => e.includes('requires resolution')))
+  assert.ok(transitionErrors(A_PATH.front, { ...A_PATH.front, status: 'archived' }).some((e) => e.includes('requires a resolution')))
   assert.ok(transitionErrors(A_PATH.front, { ...A_PATH.front, status: 'archived', resolution: 'completed' }).some((e) => e.includes('never completed')))
   assert.deepEqual(transitionErrors(done, { ...done, status: 'archived', resolution: 'completed' }), [])
+})
+
+/* ADR-001 decision 7: the trunk had an edge that let an integrating commit
+ * take a path from `running` straight to `done`. It existed for the
+ * `manual-git` merge unit, and on both transports the administrative commit
+ * has already declared `ready` on the branch. The edge is gone, and the
+ * refusal names the remedy ADR-008 decision 6 asks for. */
+test('a trunk commit cannot take a path from running to done without a ready commit', () => {
+  const done = { ...A_PATH.front, status: 'done', subject_commit: CANDIDATE, resolution: 'completed' }
+  const errors = transitionErrors(A_PATH.front, done, false)
+  assert.ok(errors.some((e) => /running → done is not allowed/.test(e)),
+    `the trunk edge must be refused — got ${JSON.stringify(errors)}`)
+  assert.ok(errors.some((e) => /declare `ready` on the branch, in the administrative commit/.test(e) &&
+    /record `done` on the trunk in a commit of its own after the merge/.test(e)),
+    `the refusal must name its remedy, whichever half is missing — got ${JSON.stringify(errors)}`)
+  // The edge it replaces stays open: an integrating commit records ready → done.
+  assert.deepEqual(transitionErrors({ ...A_PATH.front, status: 'ready', subject_commit: CANDIDATE }, done, false), [])
+  // And the same integration read from an integrating request, whose range
+  // holds the merge as well: the endpoints say running → done, while the
+  // `ready` the branch declared is a commit inside the range. The record's
+  // sentence is "with no ready commit behind it" (ADR-008 decision 2).
+  assert.deepEqual(transitionErrors(A_PATH.front, done, false, true), [])
 })
 
 test('a path branch claiming done is blocked', () => {

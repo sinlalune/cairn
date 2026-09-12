@@ -82,8 +82,10 @@ export const RULE_CONFORMANCE = {
   'registration-base': 'Registration on the remote trunk before implementation',
   'schema': 'The path record, its declaration and its opening acceptance',
   'scope-drift': 'Two declared surfaces, widened in the same unit',
+  'writes-overlap': 'One path: one record, one branch, one worktree, one writer',
   'route': 'The route, its triggers and one-way escalation',
   'work-unit': 'A typed work unit, coherent in one commit',
+  'review': 'A typed work unit, coherent in one commit',
   'remote-checkpoint': 'Every completed unit pushed as a remote checkpoint',
   'provisional': 'Provisional commits never in a candidate',
   'path-history': 'A published path branch is never rewritten',
@@ -145,24 +147,28 @@ export const RULE_METADATA = {
     enforcing: 'redactionMarkers(stripCode(text)) => redaction record exists'
   },
   'scope-digest': {
-    condition: 'The definition of done no longer digests to what the opening acceptance accepted, the opening carries no digest, or on manual-git the closing record disagrees with the opening',
-    enforcing: 'scopeDigest(resolveScopeSection(pathRecord, opening.scope_ref)) === opening.scope_digest (=== closing.scope_digest on manual-git)'
+    condition: 'The definition of done no longer digests to what the opening acceptance accepted — judged for every path record this run sees changed, whatever its status (ADR-002 d1) — or, on a closing path, the opening carries no digest, or on manual-git the closing record disagrees with the opening',
+    enforcing: 'scopeDigest(resolveScopeSection(pathRecord, opening.scope_ref)) === opening.scope_digest, for every path record in the comparison and the branch\'s own closed path (=== closing.scope_digest on manual-git)'
+  },
+  'writes-overlap': {
+    condition: 'Two live paths declare writes: patterns that meet, and neither declares depends_on the other; reported on the runs those paths own — the later one\'s registration, and every unit of either',
+    enforcing: 'writesOverlaps(paths) over running | blocked | ready, patternsMeet(a, b) by probe'
   },
   'acceptance-drift': {
     condition: 'The trunk moved inside the path\'s declared writes: or governs: since the base the candidate was read against — the merge-base of the branch and the trunk',
     enforcing: 'acceptanceDrift(git diff --name-only $(git merge-base <trunk> HEAD) <trunk>, writes, governs) — never trunk === base'
   },
   'work-unit': {
-    condition: 'A changed path record carries no `cairn-unit` block for its current step, a block declares an unknown type, or source changed without a module note and the path record moving with it (the area-precise note is advisory)',
-    enforcing: 'parseWorkUnits(record) => workUnitErrors(unit) over WORK_UNIT_TYPES; touched(source roots) => touched(modules root) && touched(PATH_DIR); areaOf(file) => changed.includes(note) (advisory)'
+    condition: 'A changed path record carries no `cairn-unit` block for its current step, a block declares an unknown type, a running record with a completed unit names no object id in its checkpoint (ADR-004 d2), or source changed without a module note and the path record moving with it (the area-precise note is advisory)',
+    enforcing: 'parseWorkUnits(record) => workUnitErrors(unit) over WORK_UNIT_TYPES; status running && units > 0 => checkpointCommit(record); touched(source roots) => touched(modules root) && touched(PATH_DIR); areaOf(file) => changed.includes(note) (advisory)'
   },
   'provisional': {
-    condition: 'A proposed candidate still contains commits marked Cairn-Provisional, or HEAD is itself provisional',
-    enforcing: "git log --grep=^Cairn-Provisional: base..subject_commit (blocking on a ready path, advisory at HEAD)"
+    condition: 'A proposed candidate still contains a commit of this path marked Cairn-Provisional that no later commit of this path has resolved, or HEAD is itself provisional',
+    enforcing: "git log --grep=^Cairn-Provisional: base..subject_commit --not <trunk> (ADR-004 d3), each unresolved by any later commit of this path publishing a valid cairn-unit block for a step its record did not carry (repair 006); blocking on a ready path, advisory at HEAD"
   },
   'journal-entry': {
-    condition: 'A path record reaches `done` in this change and no journal entry declares that path',
-    enforcing: "journalRecords(loadJournal(), id) on the transition into done; inconclusive when the journal cannot be read"
+    condition: 'A path record reaches `done` in this change and no journal entry declares that path under `cairn.path` (ADR-008 d4)',
+    enforcing: "journalRecords(loadJournal(), id) over the entries' own metadata block on the transition into done; inconclusive when the journal cannot be read"
   },
   'concept-orphan': {
     condition: 'A concept note that no normative or learning text outside the wiki links to',
@@ -181,12 +187,12 @@ export const RULE_METADATA = {
     enforcing: "pathRegistrationState() === 'missing' (blocking) or declared migration exception (advisory)"
   },
   'registration-base': {
-    condition: 'Path base_commit cannot be proved to equal the registration commit parent',
-    enforcing: "pathRegistrationBaseState() === 'mismatch' | null"
+    condition: 'Path base_commit cannot be proved to equal the parent of the registration commit — the commit in which the record became running, in either record shape, a draft landed earlier notwithstanding (ADR-004 d1)',
+    enforcing: "pathRegistrationBaseState() === 'mismatch' | null, over statusCommit(the record's history reachable from the trunk, over both record shapes)"
   },
   'remote-checkpoint': {
-    condition: 'Local path HEAD not present on upstream tracking branch',
-    enforcing: "pathRemoteCheckpoint(branch).state === 'missing' | 'unpushed'"
+    condition: 'The path branch\'s tip is not present on its upstream tracking branch',
+    enforcing: "pathRemoteCheckpoint(branch).state === 'missing' | 'unpushed', over resolveBranchRef(branch) — the local ref, else HEAD when detached, else the remote-tracking ref — against <branch>@{upstream} (ADR-004 d5)"
   },
   'path-history': {
     condition: 'A published path commit was rewritten while this host forbids rewriting (ADR-022)',
@@ -197,16 +203,20 @@ export const RULE_METADATA = {
     enforcing: "trunkContained(trunkRef) === false"
   },
   'transition': {
-    condition: 'Changed path state is not an allowed lifecycle transition, a path branch claims done, a declaration was deleted rather than archived, or the prior state is unavailable',
-    enforcing: 'transitionErrors(previous, current, onPathBranch)'
+    condition: 'Changed path state is not an allowed lifecycle transition, a path branch claims done, a declaration was deleted rather than archived, or the prior state is unavailable. A range that holds the merge as well reads what the record declared in the commit before the arrival, on the trunk\'s own line, rather than at the base (ADR-008 d2)',
+    enforcing: 'transitionErrors(previous, current, onPathBranch, integrationState(record, comparisonRef, id).readyBehind)'
   },
   'acceptance': {
-    condition: 'A ready path\'s candidate is not an ancestor, or is followed by anything but one administrative commit, or implementation changed after it, or the closure moved a field acceptance was measured against; a done path\'s candidate is not reachable. On manual-git additionally: the closing record in the path folder is missing, names another candidate, lacks its fields, is not a completed review, or its dispositions do not match the advisories attested at the candidate (advisory: a collapsed reviewer, or a prose disposition on a grandfathered path). On pull-request the request\'s description and approval are the record and are not read',
-    enforcing: 'pathClosureState(path) + closureFieldErrors(recordAtC, current) [+ manual-git: closingAcceptanceErrors(record) + fillErrors(record) + dispositionErrors(disposition, advisories_at_candidate, raised) + opening.accepted_by === closing.accepted_by]'
+    condition: 'A ready path\'s candidate is not an ancestor, or is followed by anything but one administrative commit, or implementation changed after it, or the closure moved a field acceptance was measured against; a done path\'s candidate is not reachable, its arrival is carried by a merge object, or one commit takes two paths to done (ADR-008 d2). On manual-git additionally: the closing record in the path folder is missing, names another candidate, lacks its fields, is not a completed review, or its dispositions do not match the advisories attested at the candidate (advisory: a collapsed reviewer, or a prose disposition on a grandfathered path). On pull-request the request\'s description and approval are the record and are not read',
+    enforcing: 'pathClosureState(path) + integrationState(record, comparisonRef, id).merge + one arrival at done per commit + closureFieldErrors(recordAtC, current) [+ manual-git: closingAcceptanceErrors(record) + fillErrors(record) + dispositionErrors(disposition, advisories_at_candidate, raised) + opening.accepted_by === closing.accepted_by]'
+  },
+  'review': {
+    condition: 'The ledger of a path\'s current unit — its step record, or the flat record that is one — carries no `#### Review` section, or carries it empty; the `closure` type, which writes no step file, is excepted (ADR-017 d2)',
+    enforcing: "reviewSection(the current unit's ledger) — the unit `current_step` names, else the ledger's newest; presence and emptiness only, and never the `index.md` of a folder record; the findings and their dispositions are the owner's to read at the candidate"
   },
   'record-integrity': {
-    condition: 'An immutable event/history record changed, or a born-sliced step no longer preserves its adding blob as a prefix',
-    enforcing: 'immutableRecordMutations(mergeBaseWithTrunk) + appendOnlyStepRecordMutations(changed) + preservesAppendOnlyRecord(before, after)'
+    condition: 'An immutable event/history record changed, or a born-sliced step no longer preserves its adding blob as a prefix and no later step of this path binds the blob it replaces to the blob it adds (repair 005)',
+    enforcing: 'immutableRecordMutations(mergeBaseWithTrunk) + appendOnlyStepRecordMutations(changed) + preservesAppendOnlyRecord(before, after); exempt where supersessionBinds(supersessionClaim(unit), the record\'s adding blob and current blob) — the claim readable only from a completed unit in an append-only step record of the same folder — stated as an advisory'
   },
   'scope-drift': {
     condition: 'Changed files outside path frontmatter declared writes: patterns',

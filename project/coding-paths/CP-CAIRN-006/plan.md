@@ -1,7 +1,7 @@
 ---
 type: Cairn Coding Path Plan
 title: CP-CAIRN-006 — forward plan
-description: The units of coding path 2 of 1.1 — the two debts settled first by two records, then the checker rule by rule in the order the 1.1 page's transition table reads them, the fixture sweep and the catalogue last, then the candidate with its administrative commit before the merge is asked.
+description: The units of coding path 2 of 1.1 — the two debts settled first by two records, then the checker rule by rule in the order the 1.1 page's transition table reads them, the fixture sweep and the catalogue last, then the candidate with its administrative commit before the merge is asked. Amended at S04, which split ADR-004's six corrections into two units, and at S06, which split ADR-008's housekeeping the same way.
 tags: [coding-path, plan, implementation, checker]
 timestamp: 2026-09-11T00:00:00Z
 cairn:
@@ -16,6 +16,19 @@ merged trunk commit carrying another path's unit (ADR-004 decision 4);
 every refusal names its remedy in one sentence (ADR-008 decision 6).
 Each unit runs the review movement on its own diff, as the unit skill
 now says.
+
+**Amended at S06.** ADR-008's decisions 2, 4 and 6 were planned as one
+unit. They are two: what the integrating commit may be, and what a
+refusal tells its reader. The later steps shift by one again, the
+definition of done is untouched, and item 7 is advanced by both units.
+
+**Amended at S04.** ADR-004's six corrections were planned as one unit.
+They are two: decisions 1, 2 and 5 resolve identity — which commit
+registered the path, which branch the checker stands on, which commit the
+checkpoint names — and decision 3 with repairs 005 and 006 is one
+subject, what a range may be read as evidence of. The later steps shift
+by one; the definition of done is untouched, and item 6 is advanced by
+both units.
 
 1. **S01 — the two debts, two records.** Type `decision`. ADR-024
    supersedes the clause of ADR-001 decision 1 on the kit's installed
@@ -40,26 +53,40 @@ now says.
    every ref, against the acceptance in force; a fixture ticks a box at
    `done`. ADR-003: the advisory `writes-overlap`, silent under
    `depends_on`, at registration and at every unit.
-4. **S04 — what the checker reads.** ADR-004 decisions 1, 2, 3 and 5:
-   the registration commit as the activation, the remote checkpoint of a
-   running path with a unit, path-scoped range rules, the branch resolved
-   from where the checker stands. Decision 6: the three Crumbz repairs
-   upstream — same-branch step supersession, chronological path-scoped
-   provisional resolution, detached-checkout evidence.
-5. **S05 — one commit for one path, one key, one remedy each.** ADR-008
-   decisions 2, 4 and 6: the integrating commit refused when it is a
-   merge object carrying the edit or takes two paths to `done`; the
-   journal key `cairn.path` alone; every blocking message names its
-   remedy. The stale citations of an earlier repository's records under
-   `tools/` replaced.
-6. **S06 — the review rule, the fixture sweep, the catalogue.** ADR-017
+4. **S04 — which commit, which branch, which checkpoint.** ADR-004
+   decisions 1, 2 and 5, with repair 007 of decision 6: the registration
+   commit is the trunk commit in which the record became `running`, a
+   draft landed earlier notwithstanding; a running path carrying a unit
+   names an object id in its checkpoint; every reader of the branch's
+   history resolves it as the local ref, else `HEAD` on the request head,
+   else the remote-tracking ref, and says which it used.
+5. **S05 — what a range means.** ADR-004 decision 3 and repairs 005 and
+   006 of decision 6: every range rule reads only this path's records as
+   evidence about this path; a provisional commit is resolved by a later
+   commit of the same path that adds a valid completed step, and by
+   nothing else; a repair step may supersede an invalid step on the same
+   branch by binding the blob it replaces and the blob it adds.
+6. **S06 — one commit for one path, one key.** ADR-008 decisions 2 and 4:
+   the integrating commit refused when it is a merge object carrying the
+   edit or takes two paths to `done`; the journal entry read under the
+   key it is written with, and the message that named a top-level one
+   gone.
+7. **S07 — every refusal names its remedy.** ADR-008 decision 6: every
+   blocking message in the checker read once against the sentence *say
+   what to do, where you say what is wrong*, with the two remedies that
+   recur stated wherever they apply — a pushed record is corrected by a
+   superseding step, and an id the checker computes is never typed to
+   satisfy it; the fixture suite asserts on the remedy where it asserts
+   on the message. The stale citations of an earlier repository's records
+   under `tools/` replaced.
+8. **S08 — the review rule, the fixture sweep, the catalogue.** ADR-017
    decision 2: `review`, blocking, the current unit's step carries a
    non-empty `#### Review`, `closure` excepted. ADR-004 decision 4: every
    blocking fixture gains a merged trunk commit carrying another path's
    unit. The catalogue and the linkage on the conformance page
    regenerated, `tools/soundness.md` one line per new rule,
    `docs/modules/application.md` describing the tools as they are.
-7. **S07 — the candidate.** Trunk merged in, gates bare, the request
+9. **S09 — the candidate.** Trunk merged in, gates bare, the request
    opened in the template's order; the administrative commit — `ready`,
    `subject_commit`, the checkpoint, the live view — on the branch and
    its check green before the owner is asked to merge, as path 1's

@@ -1,9 +1,9 @@
 ---
 type: Cairn Architecture
 title: Cairn 1.1 — a repository run by a sole owner with agents
-description: What a Cairn 1.1 repository is as a whole — how a path opens, runs and closes when one owner works with agents, what the checker reads at each transition, what the documentation plane holds and where, which tools exist, and what 1.1 removes from 1.0 — naming the decision record behind every statement; amended on 2026-09-07 with the coding guidelines, ADR-016 to ADR-020, and on 2026-09-09 with the pedagogy, ADR-021 to ADR-023.
+description: What a Cairn 1.1 repository is as a whole — how a path opens, runs and closes when one owner works with agents, what the checker reads at each transition, what the documentation plane holds and where, which tools exist, and what 1.1 removes from 1.0 — naming the decision record behind every statement; amended on 2026-09-07 with the coding guidelines, ADR-016 to ADR-020, on 2026-09-09 with the pedagogy, ADR-021 to ADR-023, and on 2026-09-11 with the two records coding path 1 owed, ADR-024 and ADR-025.
 tags: [cairn, architecture, 1.1, sole-owner, coding-guidelines, pedagogy]
-timestamp: 2026-09-09T00:00:00Z
+timestamp: 2026-09-11T00:00:00Z
 ---
 
 # Cairn 1.1 — a repository run by a sole owner with agents
@@ -52,6 +52,18 @@ ADR-001, ADR-011, ADR-012, ADR-013, ADR-018 and ADR-019 otherwise gain a
 sentence or a clause where the records say so. A sentence this amendment adds is marked
 *since 2026-09-09* where it changes what an earlier sentence of this
 page said.
+
+**Amended on 2026-09-11** by the two records coding path 1 owed,
+ADR-024 and ADR-025, promoted from the
+[journal entry](../../project/log/2026-09-10-cp-cairn-005.md) of
+CP-CAIRN-005 at blob `b69c03fcc0e62be72f4c7bdb288f38dbdc41be8e`, which
+named them. The entry stays exactly as it was. One clause is superseded:
+ADR-001 decision 1's clause keeping the kit's installed default at
+`transport.registration: pull-request`, by ADR-024, because path 1
+deleted the only sequence that default described; ADR-014 decision 1
+gains a reader, by ADR-025. A sentence this amendment adds is marked
+*since 2026-09-11* where it changes what an earlier sentence of this page
+said.
 
 ## What 1.1 is for
 
@@ -109,6 +121,10 @@ acceptance: the agent writes it into the record with the owner as
 view, and lands the registration commit on the trunk directly. A sole
 owner's repository declares `transport.registration: manual-git`; there is
 no `register/` branch and no registration request (ADR-001, decision 1).
+Since 2026-09-11 the kit installs that declaration, so the sequence the
+open skill ships is the one the configuration written beside it names,
+and `--transport` chooses the integration transport alone; a repository
+that installed 1.0 keeps the declaration it made (ADR-024).
 On a forge whose trunk ruleset requires a request, the owner's role
 bypasses it, and the checker prints that bypass on every run (ADR-001,
 decision 6).
@@ -153,7 +169,11 @@ committed in place (ADR-007).
 The writer's own bare gate before each push is the unit's check. The
 forge no longer runs on pushes to path branches: one run per commit that
 can land (ADR-005). A writer who wants the forge on every unit opens the
-request as a draft at the first unit.
+request as a draft at the first unit. Since 2026-09-11, when a run does go
+red, the post-mortem it produced — in its log, and on the request where
+the workflow posts it — is read by the writer before the next unit
+starts; reading is the whole of it, and nothing enters the checker
+(ADR-025).
 
 The coding stance the writer takes during *change* comes, since
 2026-09-07, from Ponytail at a pinned tag: the decision ladder,
@@ -289,7 +309,7 @@ and the site that projects it (ADR-012).
 | `cairn-audit` | the request's description for one candidate, since 2026-09-07 with the definition of done item by item, since 2026-09-09 opening with three plain lines and the surface link | 1.0; ADR-018 d2; ADR-021 d2 |
 | `cairn-postmortem` | for one path or the repository, the mechanical reading the adopter notes did by hand; run by the workflow when the gate goes red, into the run's log and onto the request, and on demand; since 2026-09-09 it prints the facts a question to the owner is built from | ADR-014 d1; ADR-021 d3 |
 | `cairn-test` | this repository's fixture suite for the tools, run by this repository's workflow before the checker and proven at each release; the kit installs no suite and names no test script, so `npm test` stays the adopter's | ADR-014 d2 |
-| `cairn` | `init`, `status`, `update`, `adopt`, as in 1.0; installs the pointer page and the three concept folders; `update` rewrites every pristine file, prints what the release changes in an edited one and lists it on the pointer page, and takes the release's version of a named file on request; since 2026-09-07 the kit names Ponytail at a pinned tag as a dependency it does not copy; since 2026-09-09 it installs six skills, the sixth `cairn-learn` | 1.0; ADR-011, ADR-013, ADR-015; ADR-016 d1; ADR-022 d2 |
+| `cairn` | `init`, `status`, `update`, `adopt`, as in 1.0; installs the pointer page and the three concept folders; `update` rewrites every pristine file, prints what the release changes in an edited one and lists it on the pointer page, and takes the release's version of a named file on request; since 2026-09-07 the kit names Ponytail at a pinned tag as a dependency it does not copy; since 2026-09-09 it installs six skills, the sixth `cairn-learn`; since 2026-09-11 `init` writes `transport.registration: manual-git`, the `--transport` option naming the integration transport alone | 1.0; ADR-011, ADR-013, ADR-015; ADR-016 d1; ADR-022 d2; ADR-024 |
 | the workflow | one job, one run per commit that can land: the request's run for a candidate, the trunk's run for a registration and an integration | ADR-005 |
 
 The kit of 1.1 was to ship with at most twenty-nine files, the pointer
@@ -306,7 +326,8 @@ installed 1.0 receives all of this through `update` (ADR-015).
 - **The registration request.** A sole owner's plan lands on the trunk
   directly after the go-ahead in the chat (ADR-001, decision 1). With it
   go the `register/` branches and the `registration-pending` rule that
-  was proposed to tolerate the wait.
+  was proposed to tolerate the wait — and, since 2026-09-11, the
+  installed default that still named the request's transport (ADR-024).
 - **The push run on path branches.** One run per commit that can land
   (ADR-005).
 - **The module note's history.** The note describes now; the journal
