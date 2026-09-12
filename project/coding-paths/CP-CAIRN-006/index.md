@@ -7,13 +7,13 @@ timestamp: 2026-09-11T00:00:00Z
 cairn:
   id: CP-CAIRN-006
   route: full
-  status: running
+  status: ready
   current_step: S08
   base_commit: 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
   branch: path/cp-cairn-006
   assigned_writer: cp-cairn-006-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 6828a7e771b5426902a92218d1a541a8a9d6ec75
   resolution: null
   writes:
     - tools/cairn-check.mjs
@@ -318,39 +318,42 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
   `record-integrity` refuse a valid second step record; and the catalogue, the
   matrix, the soundness note and the module note saying what the twenty-six
   rules are — **complete**
-- **S09** — not started
+- **Closing** — the candidate `6828a7e`, the review as
+  [request #15](https://github.com/sinlalune/cairn/pull/15), and this
+  administrative commit. The closure carries no step file (ADR-008 decision 1):
+  what persists of the review is the request's description and this record's
+  own fields.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 0a9ff423c8cd18c1564be88259fe878cc2b97bc1 — S07, every refusal names its remedy; S08's own commit is named here by S09
-unit   : 7 — S07
+commit : 6828a7e771b5426902a92218d1a541a8a9d6ec75 — S08, the review rule and the fixture sweep; the candidate C
+unit   : 8 — S08
 base   : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
-trunk  : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8 — origin/main at registration
+trunk  : dcfe9880a160662ac62a5330ebfda2b202c9b79d — origin/main at the candidate, unmoved since registration
 ```
 
 ### Next action
 
-From the worktree `../cairn-cp-cairn-006` on branch `path/cp-cairn-006`:
-run S09 of the plan with `cairn-unit` and then `cairn-close` — the
-candidate. Merge the trunk in, run every gate bare on the result, and
-open the request with its description in the template's order: the three
-plain lines and the surface link, the definition of done item by item,
-the ledger. Then the administrative commit — `ready`, `subject_commit`,
-the checkpoint, the live view — lands **on the branch** and its check is
-green **before** the owner is asked to merge, which is the one thing path
-1's closing skipped and its journal asks not to repeat. The owner runs
-the checker on a repository of theirs before the merge; the merge is the
+The path is `ready` on candidate `6828a7e`, reviewed in
+[request #15](https://github.com/sinlalune/cairn/pull/15), with this
+administrative commit on the branch and its check green before the merge
+is asked for. **The owner runs `npm run cairn-check` and `npm test` on a
+repository of theirs, then merges the request** — the merge is the
 acceptance.
 
-Three debts this path found and did not own are stated for the closing
-review: the `cairn-unit` skill and the path template still owe the
-writer's half of a supersession (S05); the `cairn-close` skill still owes
-the sentence that stops a writer producing an integrating merge object
-(S06); and `README.md` still says the checker runs twenty-four rules with
-nineteen blocking, where it runs twenty-six with twenty (S03, S08).
+After the merge, from a clean trunk checkout: the integrating unit —
+`status: done`, `resolution: completed`, the live view, and one journal
+entry under `project/log/` — in one commit for this one path, which is
+what this path's own S06 rule now requires of everyone. Then prove `C`
+reachable from the trunk and remove this worktree from another checkout.
+
+The request names three debts this path found and does not own: the
+writer's half of a supersession (row 1), the close skill's sentence
+against an integrating merge object (row 1), and the README's rule count,
+twenty-four where it is now twenty-six (row 5).
 
 ### Blockers
 
