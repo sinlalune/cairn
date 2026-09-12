@@ -185,6 +185,118 @@ function writeAcceptedRecord(dir, fields) {
   write(dir, record, PATH_RECORD({ ...fields, opening: scopeDigest(dir, record) }))
 }
 
+/** Another participant works on the REMOTE trunk: a branch of their own,
+ *  landed through a `--no-ff` merge, with `done` recorded in a commit after it
+ *  — the shape ADR-008 decision 2 requires, so that what arrives in this
+ *  path's range is an honest integration rather than a second violation. */
+function landOnTrunk(dir, writeFiles, message, { trailer = null, thenOnTrunk = null } = {}) {
+  const other = mkdtempSync(join(tmpdir(), 'cairn-fixture-trunk-'))
+  try {
+    git(other, 'clone', '-q', '-b', 'main', `${dir}.git`, '.')
+    identify(other)
+    git(other, 'checkout', '-q', '-b', 'path/cp-other-002')
+    writeFiles(other)
+    commit(other, trailer ? `${message}\n\n${trailer}` : message)
+    git(other, 'checkout', '-q', 'main')
+    git(other, 'merge', '-q', '--no-ff', '-m', `Merge ${message}`, 'path/cp-other-002')
+    if (thenOnTrunk) {
+      thenOnTrunk(other)
+      commit(other, `Integrate CP-OTHER-002`)
+    }
+    git(other, 'push', '-q', 'origin', 'main')
+  } finally {
+    cleanup(other)
+  }
+  git(dir, 'fetch', '-q', 'origin')
+}
+
+/** …and this path reaches a current base the one way this host allows. */
+function mergeTrunk(dir) {
+  git(dir, 'merge', '-q', '--no-ff', '-m', 'merge the trunk in', 'origin/main')
+}
+
+const OTHER_RECORD = 'project/coding-paths/CP-OTHER-002/index.md'
+const OTHER_STEP = 'project/coding-paths/CP-OTHER-002/steps/S01.md'
+const LONG_AGO = '2025-01-05'
+
+/** Another path's completed unit, as their branch carries it: a running record
+ *  and a step record dated long before today — a drift `record-date` reports
+ *  about the change that adds it, and about no other. */
+function otherPathsUnit(other) {
+  write(other, OTHER_RECORD, otherPathsRecord('running'))
+  write(other, OTHER_STEP, `---
+type: Cairn Coding Path Step
+title: 'CP-OTHER-002 S01 — their unit'
+timestamp: ${LONG_AGO}T00:00:00Z
+cairn:
+  path: CP-OTHER-002
+  step: S01
+---
+
+# CP-OTHER-002 S01
+
+\`\`\`cairn-unit
+step: S01
+unit: 01
+type: implementation
+verified: cairn-check
+\`\`\`
+
+- their one line
+
+#### Self-review
+
+- *Lean already*
+
+#### Review
+
+First read, a fresh context given this unit's diff and the two criteria: it
+found nothing.
+`)
+}
+
+const otherPathsRecord = (status, subject) => `---
+type: Cairn Coding Path
+title: Another path
+description: A path whose completed unit is in this one's range, because a current base is reached by merging the trunk in.
+tags: [coding-path]
+timestamp: ${LONG_AGO}T00:00:00Z
+cairn:
+  id: CP-OTHER-002
+  route: lightweight
+  status: ${status}
+  current_step: S01
+  branch: path/cp-other-002
+  base_commit: eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+${status === 'done' ? `  resolution: completed\n  subject_commit: ${subject}\n` : ''}---
+
+# CP-OTHER-002 — Another path
+
+## Goal
+
+Be somebody else's work.
+`
+
+/** Their integration: `done` and a journal entry, in a commit of its own after
+ *  the merge, which is what ADR-008 decision 2 asks of everyone. */
+function otherPathIntegrates(other) {
+  write(other, OTHER_RECORD, otherPathsRecord('done', git(other, 'rev-parse', 'path/cp-other-002').trim()))
+  write(other, `project/log/${LONG_AGO}-cp-other-002.md`, `---
+type: Cairn Journal Entry
+title: CP-OTHER-002 — integrated
+timestamp: ${LONG_AGO}T00:00:00Z
+cairn:
+  path: CP-OTHER-002
+  outcome: completed
+---
+
+# CP-OTHER-002
+
+Somebody else's integration.
+`)
+  regenerateView(other)
+}
+
 /** A green repository with one registered path, checked out on its branch.
  *
  *  Reaching green here is most of the work, and it is the half that makes a
@@ -200,13 +312,45 @@ function pathRepository({ checkout = true, record = {} } = {}) {
   return dir
 }
 
+/**
+ * ADR-004 decision 4. A fixture whose range holds only this path's commits
+ * cannot show the fault decision 3 names: on a no-rewrite host the only way to
+ * a current base is to merge the trunk in, so every range carries other paths'
+ * completed units, and a rule that reads them as evidence about THIS path is
+ * wrong by construction — and green on a single-path history.
+ *
+ * So the trunk moves under every published fixture, carrying another path's
+ * unit through its own `--no-ff` integration, and this path merges it in. It is
+ * done here rather than in each fixture so that a fixture written later has the
+ * shape without being told.
+ */
+function withAnotherPathsUnitMergedIn(dir) {
+  landOnTrunk(dir, otherPathsUnit, 'CP-OTHER-002 S01: their unit', { thenOnTrunk: otherPathIntegrates })
+  // The local trunk knows what the remote one holds: without this the path's
+  // own merge would be the commit that brings their integration to `main`, and
+  // every rule about an integrating commit would be reading their work.
+  const on = git(dir, 'rev-parse', '--abbrev-ref', 'HEAD').trim()
+  git(dir, 'checkout', '-q', 'main')
+  git(dir, 'merge', '-q', '--ff-only', 'origin/main')
+  // A fixture that never leaves the trunk judges a commit on it, where there is
+  // no path range to read another path's records into; the merge is for the
+  // ones that have a branch.
+  if (on !== 'main') {
+    git(dir, 'checkout', '-q', on)
+    mergeTrunk(dir)
+  }
+}
+
 /** The same, published: a bare repository is a real remote, and the remote
  *  trunk is the base the gate resolves by default on a path branch. */
-function publishedRepository(options) {
+function publishedRepository(options = {}) {
   const dir = pathRepository(options)
+  const branch = options.checkout === false ? [] : ['path/cp-fixture-001']
   git(dir, 'init', '-q', '--bare', `${dir}.git`)
   git(dir, 'remote', 'add', 'origin', `${dir}.git`)
-  git(dir, 'push', '-q', '-u', 'origin', 'main', 'path/cp-fixture-001')
+  git(dir, 'push', '-q', '-u', 'origin', 'main', ...branch)
+  withAnotherPathsUnitMergedIn(dir)
+  if (branch.length > 0) git(dir, 'push', '-q', 'origin', ...branch)
   return dir
 }
 
@@ -245,7 +389,10 @@ function fixture(name, rule, mutate, options = {}) {
 function pathFixture(name, rule, mutate, options = {}) {
   COVERED.add(rule)
   test(`adversarial: ${rule} — ${name}`, () => {
-    const dir = options.published ? publishedRepository(options) : pathRepository(options)
+    // Always published: ADR-004 decision 4 asks every blocking rule's fixture
+    // to hold a merged trunk commit carrying another path's completed unit,
+    // and a repository with no remote has no trunk to merge.
+    const dir = publishedRepository(options)
     try {
       const clean = check(dir)
       assert.deepEqual(blocking(clean), [],
@@ -343,6 +490,15 @@ pathFixture('a changed path record carrying no work unit', 'work-unit', (dir) =>
   appendFileSync(join(dir, RECORD), '\n- [ ] One more thing.\n')
 })
 
+pathFixture('a unit whose step carries no record of the review movement', 'review', (dir) => {
+  // A unit as it really lands — the step record and the path record moving
+  // together — except that the fourth movement left no record. The heading
+  // with nothing under it is the shape a writer leaves when the movement was
+  // skipped and the template copied (ADR-017 decision 2).
+  write(dir, STEP, `${STEP_RECORD.slice(0, STEP_RECORD.indexOf('#### Review'))}#### Review\n`)
+  appendFileSync(join(dir, RECORD), RESUME(git(dir, 'rev-parse', 'HEAD').trim()))
+}, { remedy: /hand this unit's diff to a fresh context/ })
+
 pathFixture('a work unit declaring a type the vocabulary does not have', 'work-unit', (dir) => {
   // The first adopter's closing unit declared `review`. The refusal named the
   // vocabulary and stopped, so the agent edited the pushed record to change the
@@ -358,6 +514,8 @@ pathFixture('a path branch that does not contain the trunk tip', 'rebase', (dir)
   git(dir, 'checkout', '-q', 'main')
   write(dir, 'docs/moved-on.md', '---\ntype: Note\ntitle: The trunk moved\ndescription: x\ntags: [x]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Moved on\n')
   commit(dir, 'trunk moves on')
+  // Pushed, because the trunk the rule resolves is the remote one.
+  git(dir, 'push', '-q', 'origin', 'main')
   git(dir, 'checkout', '-q', 'path/cp-fixture-001')
 })
 
@@ -515,7 +673,7 @@ pathFixture('a file written outside the declared surface, with the declaration u
 
 pathFixture('a published commit rewritten on a no-rewrite host', 'path-history', (dir) => {
   git(dir, 'commit', '--amend', '-qm', 'rewritten in place')
-}, { published: true })
+})
 
 fixture('a path branched before its declaration reached the trunk', 'registration', (dir) => {
   const base = git(dir, 'rev-parse', 'HEAD').trim()
@@ -795,6 +953,15 @@ verified: cairn-check
 \`\`\`
 
 - one exported constant, and its module note
+
+#### Self-review
+
+- \`delete:\` nothing; the unit is one constant
+
+#### Review
+
+First read, a fresh context given this unit's diff and the two criteria: it
+found nothing.
 `
 
 /** A real repository at the moment the closure commit A is being prepared:
@@ -820,6 +987,13 @@ function readyRepository({ provisional = false, resolved = false, beforeCandidat
   commit(dir, 'register CP-FIXTURE-001')
   git(dir, 'checkout', '-q', '-b', 'path/cp-fixture-001')
 
+  git(dir, 'init', '-q', '--bare', `${dir}.git`)
+  git(dir, 'remote', 'add', 'origin', `${dir}.git`)
+  git(dir, 'push', '-q', '-u', 'origin', 'main', 'path/cp-fixture-001')
+  // The trunk moves while the work is under way, and a current base is reached
+  // by merging it in (ADR-004 decision 4).
+  withAnotherPathsUnitMergedIn(dir)
+
   // S01: source, its module note, and a widening discovered while working.
   write(dir, 'src/app.js', 'export const app = true\n')
   write(dir, 'docs/modules/application.md', `---\ntype: Cairn Module Note\ntitle: Application\ndescription: The one area.\ntags: [module]\ntimestamp: ${TODAY}T00:00:00Z\n---\n\n# Application\n\nOne exported constant.\n`)
@@ -841,22 +1015,16 @@ function readyRepository({ provisional = false, resolved = false, beforeCandidat
       '\n```cairn-unit\nstep: S02\nunit: 02\ntype: implementation\nverified: cairn-check\n```\n')
     commit(dir, 'CP-FIXTURE-001 S02: a unit nobody can keep')
   } else if (resolved) {
+    const finished = '- the draft of S01, finished; the marked commit stays in the branch'
+    const drafted = '- one exported constant, and its module note'
+    assert.ok(STEP_RECORD.includes(drafted),
+      'S02 is S01 with its one bullet replaced; without that it differs only in a name')
     write(dir, STEP.replace('S01.md', 'S02.md'), STEP_RECORD
-      .replace(/S01/g, 'S02')
-      .replace('unit: 01', 'unit: 02')
-      .replace('- one exported constant, and its module note',
-        '- the draft of S01, finished; the marked commit stays in the branch'))
+      .replace(/S01/g, 'S02').replace('unit: 01', 'unit: 02').replace(drafted, finished))
     commit(dir, 'CP-FIXTURE-001 S02: the draft, finished')
   }
-  git(dir, 'init', '-q', '--bare', `${dir}.git`)
-  git(dir, 'remote', 'add', 'origin', `${dir}.git`)
-  git(dir, 'push', '-q', '-u', 'origin', 'main', 'path/cp-fixture-001')
-  // Where another path's work enters this path's range: the trunk moves and
-  // the branch merges it in, which is the only way to a current base here.
-  if (beforeCandidate) {
-    beforeCandidate(dir)
-    git(dir, 'push', '-q', 'origin', 'path/cp-fixture-001')
-  }
+  if (beforeCandidate) beforeCandidate(dir)
+  git(dir, 'push', '-q', 'origin', 'path/cp-fixture-001')
   const subject = git(dir, 'rev-parse', 'HEAD').trim()
   const trunk = git(dir, 'rev-parse', 'origin/main').trim()
 
@@ -1173,92 +1341,19 @@ test('the journal entry is asked for under the key it is written with', () => {
  * carries other paths' work. These fixtures put it there.
  * ------------------------------------------------------------------ */
 
-/** Another participant lands a completed unit on the REMOTE trunk, through a
- *  merge of their own branch — so their commits are reachable from the trunk
- *  without being trunk commits, which is what a `--no-ff` integration leaves
- *  behind and what every later range then contains. */
-function landOnTrunk(dir, writeFiles, message, { trailer = null } = {}) {
-  const other = mkdtempSync(join(tmpdir(), 'cairn-fixture-trunk-'))
-  try {
-    git(other, 'clone', '-q', '-b', 'main', `${dir}.git`, '.')
-    identify(other)
-    git(other, 'checkout', '-q', '-b', 'path/cp-other-002')
-    writeFiles(other)
-    commit(other, trailer ? `${message}\n\n${trailer}` : message)
-    git(other, 'checkout', '-q', 'main')
-    git(other,
-      'merge', '-q', '--no-ff', '-m', `Integrate ${message}`, 'path/cp-other-002')
-    git(other, 'push', '-q', 'origin', 'main')
-  } finally {
-    cleanup(other)
-  }
-  git(dir, 'fetch', '-q', 'origin')
-}
-
-/** …and this path reaches a current base the one way this host allows. */
-function mergeTrunk(dir) {
-  git(dir,
-    'merge', '-q', '--no-ff', '-m', 'merge the trunk in', 'origin/main')
-}
-
-const OTHER_RECORD = 'project/coding-paths/CP-OTHER-002/index.md'
-const OTHER_STEP = 'project/coding-paths/CP-OTHER-002/steps/S01.md'
-const LONG_AGO = '2025-01-05'
-
-/** Another path's completed unit, as the trunk carries it: a closed record and
- *  a step record dated long before today — a drift `record-date` reports about
- *  the change that adds it, and about no other. */
-function otherPathsUnit(other) {
-  write(other, OTHER_RECORD, `---
-type: Cairn Coding Path
-title: Another path
-description: A path that closed before this one merged the trunk in.
-tags: [coding-path]
-timestamp: ${LONG_AGO}T00:00:00Z
-cairn:
-  id: CP-OTHER-002
-  route: lightweight
-  status: done
-  resolution: completed
----
-
-# CP-OTHER-002 — Another path
-
-## Goal
-
-Be somebody else's work.
-`)
-  write(other, OTHER_STEP, `---
-type: Cairn Coding Path Step
-title: 'CP-OTHER-002 S01 — their unit'
-timestamp: ${LONG_AGO}T00:00:00Z
-cairn:
-  path: CP-OTHER-002
-  step: S01
----
-
-# CP-OTHER-002 S01
-
-\`\`\`cairn-unit
-step: S01
-unit: 01
-type: implementation
-verified: cairn-check
-\`\`\`
-
-- their one line
-`)
-}
-
 test('decision 3, audited: another path\'s records, merged in from the trunk, are not evidence about this path', () => {
   // The adopter's repair counted a step record under ANY path folder as this
   // path's completion, and two of another path's records would have cleared a
   // draft they had nothing to do with. The comparison every changed-file rule
   // uses is the merge-base with the trunk, and the merge-base ADVANCES with
   // the merge — so what arrived through it is behind the range, not in it.
+  // Their unit is already merged in: `publishedRepository` carries it, as
+  // ADR-004 decision 4 asks of every fixture. Here they go on to rewrite it.
   const dir = publishedRepository()
+  // A base BEHIND the merge this branch has already made: their unit arrived
+  // through it, so a run pinned here reads their records as this change's.
+  const forked = git(dir, 'merge-base', 'path/cp-fixture-001', 'main').trim()
   try {
-    landOnTrunk(dir, otherPathsUnit, 'CP-OTHER-002 S01: their unit')
     landOnTrunk(dir, (other) => {
       edit(other, OTHER_STEP, 'their one line', 'their one line, rewritten after the fact')
     }, 'CP-OTHER-002 S02: an edit of their own')
@@ -1279,11 +1374,9 @@ test('decision 3, audited: another path\'s records, merged in from the trunk, ar
     // this change's. The default and the CI command never ask that question —
     // the base they resolve is the trunk — and the header names the base of
     // any run that does.
-    // `main` here is the local ref, left where this branch forked: a base
-    // behind the merge, which is the one shape the merge-base cannot correct.
-    const pinned = check(dir, '--base', git(dir, 'rev-parse', 'main').trim())
-    assert.ok(advisory(pinned).includes('record-date'),
-      'the scoping IS the comparison ref: told to compare against a base behind the merge, the same run reads their record as this change\'s')
+    const pinned = check(dir, '--base', forked)
+    assert.ok(blocking(pinned).includes('record-integrity'),
+      `the scoping IS the comparison ref: told to compare against a base behind the merge, the same run reads their rewritten step as this change's — ${describe(pinned)}`)
 
     // And the same run still reads THIS path's own records: the scoping is
     // path-scoped, not blind.

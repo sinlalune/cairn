@@ -85,6 +85,7 @@ export const RULE_CONFORMANCE = {
   'writes-overlap': 'One path: one record, one branch, one worktree, one writer',
   'route': 'The route, its triggers and one-way escalation',
   'work-unit': 'A typed work unit, coherent in one commit',
+  'review': 'A typed work unit, coherent in one commit',
   'remote-checkpoint': 'Every completed unit pushed as a remote checkpoint',
   'provisional': 'Provisional commits never in a candidate',
   'path-history': 'A published path branch is never rewritten',
@@ -208,6 +209,10 @@ export const RULE_METADATA = {
   'acceptance': {
     condition: 'A ready path\'s candidate is not an ancestor, or is followed by anything but one administrative commit, or implementation changed after it, or the closure moved a field acceptance was measured against; a done path\'s candidate is not reachable, its arrival is carried by a merge object, or one commit takes two paths to done (ADR-008 d2). On manual-git additionally: the closing record in the path folder is missing, names another candidate, lacks its fields, is not a completed review, or its dispositions do not match the advisories attested at the candidate (advisory: a collapsed reviewer, or a prose disposition on a grandfathered path). On pull-request the request\'s description and approval are the record and are not read',
     enforcing: 'pathClosureState(path) + integrationState(record, comparisonRef, id).merge + one arrival at done per commit + closureFieldErrors(recordAtC, current) [+ manual-git: closingAcceptanceErrors(record) + fillErrors(record) + dispositionErrors(disposition, advisories_at_candidate, raised) + opening.accepted_by === closing.accepted_by]'
+  },
+  'review': {
+    condition: 'The ledger of a path\'s current unit — its step record, or the flat record that is one — carries no `#### Review` section, or carries it empty; the `closure` type, which writes no step file, is excepted (ADR-017 d2)',
+    enforcing: "reviewSection(the current unit's ledger) — the unit `current_step` names, else the ledger's newest; presence and emptiness only, and never the `index.md` of a folder record; the findings and their dispositions are the owner's to read at the candidate"
   },
   'record-integrity': {
     condition: 'An immutable event/history record changed, or a born-sliced step no longer preserves its adding blob as a prefix and no later step of this path binds the blob it replaces to the blob it adds (repair 005)',

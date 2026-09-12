@@ -220,6 +220,11 @@ verified: cairn-check
 
 One line of source, one line of note; nothing to refuse.
 
+#### Review
+
+First read, a fresh context given this unit's diff and the two criteria: it
+found nothing.
+
 #### Verification
 
 \`\`\`text

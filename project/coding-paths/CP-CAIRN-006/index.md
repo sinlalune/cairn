@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-006
   route: full
   status: running
-  current_step: S07
+  current_step: S08
   base_commit: 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
   branch: path/cp-cairn-006
   assigned_writer: cp-cairn-006-writer
@@ -22,6 +22,7 @@ cairn:
     - tools/cairn-rules.test.mjs
     - tools/cairn-fixture.test.mjs
     - tools/cairn-audit.test.mjs
+    - tools/cairn-pilot.mjs
     - tools/soundness.md
     - spec/reference/conformance.md
     - spec/concepts/lifecycle.md
@@ -308,15 +309,24 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
   the fixtures asserting on the remedy where they assert on the message; and
   ten dangling citations of an earlier repository's records replaced by the
   facts they were evidence for — **complete**
-- **S08** — not started
+- [**S08**](./steps/S08.md) — the review rule and the fixture sweep: `review`,
+  blocking, the current unit's ledger carrying a `#### Review` section that is
+  not empty, read for the unit `current_step` names or the ledger's newest,
+  never in a folder's `index.md`, and `closure` excepted; every fixture built
+  on the path and closure harnesses carrying another path's completed unit
+  landed through its own integration; a `--follow` mispairing that made
+  `record-integrity` refuse a valid second step record; and the catalogue, the
+  matrix, the soundness note and the module note saying what the twenty-six
+  rules are — **complete**
+- **S09** — not started
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : b3708ac20d96a38fe39b8ae2d62cb877df30a7d3 — S06, one commit for one path; S07's own commit is named here by S08
-unit   : 6 — S06
+commit : 0a9ff423c8cd18c1564be88259fe878cc2b97bc1 — S07, every refusal names its remedy; S08's own commit is named here by S09
+unit   : 7 — S07
 base   : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
 trunk  : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8 — origin/main at registration
 ```
@@ -324,19 +334,23 @@ trunk  : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8 — origin/main at registratio
 ### Next action
 
 From the worktree `../cairn-cp-cairn-006` on branch `path/cp-cairn-006`:
-run S08 of the plan with `cairn-unit` — the review rule, the fixture
-sweep, the catalogue. ADR-017 decision 2: a blocking rule `review`, the
-step record of a path's current unit carrying a `#### Review` section
-that is not empty, `closure` excepted, and the section's content not
-read. ADR-004 decision 4: every blocking rule's fixture gains a merged
-trunk commit carrying another path's completed unit, so that a rule
-passing on a single-path history alone is not proved —
-`landOnTrunk`/`mergeTrunk` in the fixture suite are the helpers S05 wrote
-for it. Then the catalogue and the linkage on the conformance page
-regenerated, `tools/soundness.md` one line per rule this path added, and
-`docs/modules/application.md` describing the tools as they are at the
-candidate, with no history. Type `implementation`. Run the review
-movement on the unit's diff as the unit skill says.
+run S09 of the plan with `cairn-unit` and then `cairn-close` — the
+candidate. Merge the trunk in, run every gate bare on the result, and
+open the request with its description in the template's order: the three
+plain lines and the surface link, the definition of done item by item,
+the ledger. Then the administrative commit — `ready`, `subject_commit`,
+the checkpoint, the live view — lands **on the branch** and its check is
+green **before** the owner is asked to merge, which is the one thing path
+1's closing skipped and its journal asks not to repeat. The owner runs
+the checker on a repository of theirs before the merge; the merge is the
+acceptance.
+
+Three debts this path found and did not own are stated for the closing
+review: the `cairn-unit` skill and the path template still owe the
+writer's half of a supersession (S05); the `cairn-close` skill still owes
+the sentence that stops a writer producing an integrating merge object
+(S06); and `README.md` still says the checker runs twenty-four rules with
+nineteen blocking, where it runs twenty-six with twenty (S03, S08).
 
 ### Blockers
 
@@ -344,6 +358,21 @@ None.
 
 ### Tried and rejected
 
+- Tying `review` to the step file's own presence in the changed set (S08's
+  first review) — the rule inherits `work-unit`'s trigger, the record changing,
+  so a unit that lands a new step without touching the record is asked for
+  neither. That trigger is older than this rule and shared by every
+  changed-file rule; widening it here would give one rule a different world.
+  Named for the closing review.
+- Deleting the `closure` guard on `review`, which no real repository reaches
+  (S08's first review) — a closure unit writes no step file and cannot move
+  `current_step`, so the guard is unreachable through the tool. It is what
+  makes the reading true standing alone, and ADR-017 decision 2 states the
+  exception in as many words.
+- Making every fixture carry a merged trunk commit (S08) — the fixtures that
+  build their own registration on a fresh installation, and the corpus ones,
+  have no harness to carry it and no range to read another path's records into.
+  The conformance page names them rather than claiming the sweep is total.
 - Splitting a message's ternary branches to audit each alone (S07, both
   reviews) — the first reader was right that joining them lets a talkative
   branch carry a silent one, and the second was right that what I wrote could

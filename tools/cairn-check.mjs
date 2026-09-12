@@ -651,6 +651,39 @@ export function statusCommit(commits, statusAt, status = 'running') {
   return commits.find((commit) => statusAt(commit) === status) ?? null
 }
 
+/**
+ * ADR-017 decision 2. The unit's fourth movement leaves a record: `#### Review`
+ * in the step's own file, one line per finding the fresh context returned with
+ * its disposition, or the sentence saying it found nothing.
+ *
+ * Returns the section's body, `''` where the heading stands with nothing under
+ * it — the shape a writer leaves when the movement was skipped and the heading
+ * copied from the template — and `null` where there is no section at all.
+ *
+ * The content is not read beyond that. Whether the reader was fresh, and
+ * whether the dispositions are honest, is what the owner reads at the
+ * candidate; a checker that scored them would be inventing a judgement.
+ */
+export function reviewSection(text) {
+  const section = resolveScopeSection(String(text ?? ''), '#review')
+  if (section == null) return null
+  const nl = section.indexOf('\n')
+  return nl === -1 ? '' : section.slice(nl + 1).trim()
+}
+
+/**
+ * Is this the file a unit's ledger is kept in?
+ *
+ * A step record always. The FLAT record shape is its own ledger, so it counts
+ * too — but the `index.md` of a FOLDER record never does: it may be edited
+ * freely, and a `cairn-unit` block put there could publish a unit, or answer
+ * for a unit's review, in a file that can be rewritten the next minute.
+ */
+export function isUnitLedger(file, recordFile) {
+  const dir = String(recordFile ?? '').endsWith('/index.md')
+  return isAppendOnlyStepRecord(file) || (!dir && file === recordFile)
+}
+
 /** The commit a record's resume section names as its checkpoint, or `null`
  *  when it names none — `unpinned`, empty, or anything that is not an object
  *  id. Fifteen adopter units left it `unpinned`, so neither path could be
@@ -1760,6 +1793,7 @@ export function evaluate({
   integrationStateFor = null,
   branchSource = 'symbolic-ref',
   workUnits = null,
+  reviewFor = null,
   rewritingForbidden = REWRITING_FORBIDDEN,
   addedRecords = [],
   provisionalInCandidate = [],
@@ -2231,6 +2265,38 @@ export function evaluate({
     for (const unit of workUnits) {
       for (const error of workUnitErrors(unit)) {
         add('blocking', 'work-unit', `${match.file}: ${error}`)
+      }
+    }
+
+    // ADR-017 decision 2. A unit has five movements, and the fourth leaves a
+    // record: the fresh context's findings with their dispositions, in the
+    // step's own file. The checker reads the section's PRESENCE, never its
+    // content — whether the reader was fresh and whether the dispositions are
+    // honest is what the owner reads at the candidate, and a rule that scored
+    // them would be inventing a judgement.
+    //
+    // Only the CURRENT unit's step, so a step written before this rule existed
+    // is not refused when a later unit is judged. `closure` carries no step
+    // file, so it carries no review.
+    // `current_step` is a convenience, not a guarantee: nothing requires it,
+    // and keying the rule on it alone would let a record drop one optional line
+    // and go unjudged. Where it names no unit the current one is the ledger's
+    // newest, which `pathWorkUnits` has already sorted last.
+    //
+    // Read in the unit's own ledger — its step record, or the flat record that
+    // is one. Never in the `index.md` of a folder record: a block put there
+    // would be answered by a section in a file that may be rewritten the next
+    // minute, which is the opposite of what the record is for. On the flat
+    // shape one section answers for every unit, which the conformance page
+    // states as the gap it is.
+    if (changed.includes(match.file) && reviewFor && workUnits.length > 0) {
+      const current = workUnits.find((unit) => unit.step === match.front.current_step) ?? workUnits.at(-1)
+      if (isUnitLedger(current.__file, match.file) && current.type !== 'closure') {
+        const review = reviewFor(current.__file)
+        if (!review) {
+          add('blocking', 'review',
+            `${current.__file} carries no ${review === null ? '`#### Review` section' : 'finding under its `#### Review` section'} — hand this unit's diff to a fresh context, then write it into that step between the self-review and the verification: one line per finding with its disposition, or one sentence saying the reader found nothing`)
+        }
       }
     }
 
@@ -2838,10 +2904,22 @@ export function recordOriginFromFollowLog(raw) {
 }
 
 function stepRecordOrigin(file) {
-  const raw = gitOrNull([
-    'log', '--follow', '--diff-filter=A', '--format=%H', '--name-only', '--', file
-  ])
-  return raw == null ? null : recordOriginFromFollowLog(raw)
+  const addedAt = (...flags) => {
+    const raw = gitOrNull(['log', ...flags, '--diff-filter=A', '--format=%H', '--name-only', '--', file])
+    return raw == null ? null : recordOriginFromFollowLog(raw)
+  }
+  const followed = addedAt('--follow')
+  // `--follow` re-runs rename detection to carry a record across a move, and
+  // two step records of the same path are similar enough to be paired by it:
+  // one written from the template beside another is reported as that other's
+  // rename, and its adding blob is then the SIBLING's, which no valid record
+  // can have as a prefix. A relocation removes its source; a file still sitting
+  // there was never moved. So where the followed source still exists, the
+  // question is the narrower one, and the record is read as what it is — added.
+  if (followed && followed.file !== file && existsSync(join(REPO, followed.file))) {
+    return addedAt()
+  }
+  return followed
 }
 
 /**
@@ -3130,7 +3208,7 @@ function unitCompletionCommits(range, path) {
   // ledger — never by the plan, and never by the `index.md` of a folder
   // record, which may be edited freely and would let a block added there and
   // deleted afterwards resolve a draft. Same argument as `supersessionClaim`.
-  const ledger = (file) => isAppendOnlyStepRecord(file) || (dir === null && file === path.file)
+  const ledger = (file) => isUnitLedger(file, path.file)
   return commitsWithFiles(raw)
     .filter(({ commit, files }) => files.some((file) => ledger(file) && publishesAUnit(commit, file)))
     .map(({ commit }) => commit)
@@ -3633,6 +3711,7 @@ async function main() {
       integrationStateFor: (file, id) => integrationState(file, previousRef, id),
       branchSource,
       workUnits,
+      reviewFor: (file) => reviewSection(readFileSync(join(REPO, file), 'utf8')),
       // Judged against the SAME comparison every other changed-file rule uses,
       // so the local default and the CI command see one set of added records.
       addedRecords: addedRecordDates(changed, previousRef),

@@ -78,6 +78,8 @@ import {
   patternsMeet,
   writesOverlaps,
   statusCommit,
+  reviewSection,
+  isUnitLedger,
   checkpointCommit,
   resolveBranchRef,
   unresolvedProvisional,
@@ -1487,6 +1489,101 @@ test('every blocking message says what to do, not only what is wrong', () => {
   }
   assert.deepEqual(pure.filter((error) => !namesARemedy(error)), [],
     'these reach the reader inside a blocking finding, and answer for themselves')
+})
+
+/* ------------------------------------------------------------------ *
+ * review — the unit's fourth movement leaves a record, ADR-017 d2
+ * ------------------------------------------------------------------ */
+
+test('the review section is the step\'s own, and empty is not written', () => {
+  const step = (body) => `# CP-EX-010 S02\n\n#### Self-review\n\n- \`delete:\` a line\n\n#### Review${body}\n#### Verification\n\n\`\`\`text\ntests : pass\n\`\`\`\n`
+  assert.equal(reviewSection(step('\n\nFirst read: nothing found.\n\n')), 'First read: nothing found.')
+  // Present and empty is the shape a writer leaves when the movement was
+  // skipped and the heading copied from the template.
+  assert.equal(reviewSection(step('\n\n')), '')
+  assert.equal(reviewSection(step('\n\n<finding> — **fixed**\n\n')), '<finding> — **fixed**')
+  assert.equal(reviewSection('# CP-EX-010 S02\n\nNo section at all.\n'), null)
+})
+
+test('a unit is not complete until its diff was read by someone who did not write it', () => {
+  const step = `${PATH_DIR}/CP-EX-010/steps/S02.md`
+  const withUnit = { ...A_PATH, front: { ...A_PATH.front, current_step: 'S02' } }
+  const units = [{ step: 'S02', unit: '02', type: 'implementation', verified: 'test', __file: step }]
+
+  const missing = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: units, checkpointFor: () => 'a'.repeat(40), reviewFor: () => null
+  })
+  assert.ok(rules(missing, 'blocking').includes('review'),
+    `findings were ${JSON.stringify(messages(missing, 'review', 'blocking'))}`)
+  assert.ok(messages(missing, 'review', 'blocking').some((m) => m.includes(step) && /write it into/.test(m)),
+    'the refusal names the step it belongs in, never an earlier one')
+
+  const empty = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: units, checkpointFor: () => 'a'.repeat(40), reviewFor: () => ''
+  })
+  assert.ok(rules(empty, 'blocking').includes('review'), 'a heading with nothing under it is the skipped movement')
+
+  const read = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: units, checkpointFor: () => 'a'.repeat(40), reviewFor: () => 'the reader found nothing'
+  })
+  assert.ok(!rules(read, 'blocking').includes('review'), JSON.stringify(messages(read, 'review')))
+
+  // The content is not judged: a disposition the owner would reject reads the
+  // same to this rule as one they would not.
+  const thin = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: units, checkpointFor: () => 'a'.repeat(40), reviewFor: () => 'x'
+  })
+  assert.ok(!rules(thin, 'blocking').includes('review'))
+
+  // `closure` carries no step file, so it carries no review.
+  const closing = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: [{ ...units[0], type: 'closure', __file: withUnit.file }],
+    checkpointFor: () => 'a'.repeat(40),
+    reviewFor: () => null
+  })
+  assert.ok(!rules(closing, 'blocking').includes('review'))
+
+  // `current_step` is a convenience no rule requires, so a record that drops it
+  // is judged on the ledger's newest unit rather than going unjudged.
+  const dropped = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], {
+    workUnits: [{ step: 'S01', unit: '01', type: 'implementation', verified: 'test', __file: `${PATH_DIR}/CP-EX-010/steps/S01.md` }, ...units],
+    checkpointFor: () => 'a'.repeat(40),
+    reviewFor: (file) => (file === step ? null : 'read')
+  })
+  assert.ok(rules(dropped, 'blocking').includes('review'),
+    `findings were ${JSON.stringify(messages(dropped, 'review', 'blocking'))}`)
+
+  // The flat record shape is its own ledger, so it is judged — one section
+  // there answers for every unit of the path, which the conformance page
+  // states as the gap it is.
+  assert.ok(isUnitLedger(A_PATH.file, A_PATH.file))
+  const flat = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], {
+    workUnits: [{ ...units[0], __file: A_PATH.file }],
+    checkpointFor: () => 'a'.repeat(40),
+    reviewFor: () => null
+  })
+  assert.ok(rules(flat, 'blocking').includes('review'))
+
+  // A folder's `index.md` is not: a block put there would be answered by a
+  // section in a file that may be rewritten the next minute, so the rule reads
+  // the step record beside it or nothing at all.
+  const folder = { ...A_PATH, file: `${PATH_DIR}/CP-EX-010/index.md` }
+  assert.ok(!isUnitLedger(folder.file, folder.file))
+  const inIndex = run([folder.file], 'path/cp-ex-010', [folder], {
+    workUnits: [{ ...units[0], __file: folder.file }],
+    checkpointFor: () => 'a'.repeat(40),
+    reviewFor: () => null
+  })
+  assert.ok(!rules(inIndex, 'blocking').includes('review'))
+
+  // And an earlier step, written before the rule existed, is not judged when a
+  // later unit is: only the current one is read.
+  const earlier = run([withUnit.file], 'path/cp-ex-010', [withUnit], {
+    workUnits: [{ step: 'S01', unit: '01', type: 'implementation', verified: 'test', __file: `${PATH_DIR}/CP-EX-010/steps/S01.md` }, ...units],
+    checkpointFor: () => 'a'.repeat(40),
+    reviewFor: (file) => (file === step ? 'read' : null)
+  })
+  assert.ok(!rules(earlier, 'blocking').includes('review'))
 })
 
 /* ------------------------------------------------------------------ *

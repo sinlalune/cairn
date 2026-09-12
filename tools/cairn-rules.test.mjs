@@ -83,8 +83,8 @@ test('cairn-rules: emitted table rows have exact 5 columns and no unescaped inne
 const BLOCKING_RULES = [
   'acceptance', 'acceptance-drift', 'branch-path', 'concept-orphan', 'derived-view',
   'journal-entry', 'links', 'path-history', 'provisional', 'rebase', 'record-integrity',
-  'registration', 'registration-base', 'route', 'schema', 'scope-digest', 'scope-drift',
-  'transition', 'work-unit'
+  'registration', 'registration-base', 'review', 'route', 'schema', 'scope-digest',
+  'scope-drift', 'transition', 'work-unit'
 ]
 const ADVISORY_ONLY_RULES = [
   'concept-growth', 'decision-drift', 'record-date', 'redaction', 'remote-checkpoint',
