@@ -7,13 +7,13 @@ timestamp: 2026-09-11T00:00:00Z
 cairn:
   id: CP-CAIRN-006
   route: full
-  status: running
+  status: ready
   current_step: S09
   base_commit: 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
   branch: path/cp-cairn-006
   assigned_writer: cp-cairn-006-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: adfe226f4b972272a7611d0607e7b15aaaed3d3e
   resolution: null
   writes:
     - tools/cairn-check.mjs
@@ -335,27 +335,27 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 6828a7e771b5426902a92218d1a541a8a9d6ec75 — S08, the review rule and the fixture sweep; S09's own commit is the candidate
-unit   : 8 — S08
+commit : adfe226f4b972272a7611d0607e7b15aaaed3d3e — S09, one meaning for one glob; the candidate C
+unit   : 9 — S09
 base   : 37752a2ff3cdbbc33f83201eb4a0c4276a69b9f8
 trunk  : dcfe9880a160662ac62a5330ebfda2b202c9b79d — origin/main, unmoved since registration
 ```
 
 ### Next action
 
-S09 answered the closing request's finding, so the candidate `6828a7e` is
-void and S09's own commit is the new one. From the worktree
-`../cairn-cp-cairn-006` on branch `path/cp-cairn-006`: declare `ready`
-with `subject_commit` at that commit, regenerate the live view, point the
-resume checkpoint at it, run the gate **before** committing, push, and
-update [request #15](https://github.com/sinlalune/cairn/pull/15) to name
-the new candidate and what changed since the first. Then the owner runs
-the checker on a repository of theirs and merges; the merge is the
-acceptance.
+The path is `ready` on candidate `adfe226` — S09's commit, which answers the
+closing request's finding — with this administrative commit on the branch
+and its check green before the merge is asked for.
+[Request #15](https://github.com/sinlalune/cairn/pull/15) names the new
+candidate and what changed since the first, which was void.
+**The owner runs `npm run cairn-check` and `npm test` on a repository of
+theirs, then merges** — the merge is the acceptance.
 
 After the merge, from a clean trunk checkout: the integrating unit —
 `status: done`, `resolution: completed`, the live view, and one journal
-entry under `project/log/` — in one commit for this one path.
+entry under `project/log/` — in one commit for this one path, which is
+what this path's own S06 rule now requires of everyone. Then prove `C`
+reachable from the trunk and remove this worktree from another checkout.
 
 The request names three debts this path found and does not own: the
 writer's half of a supersession (row 1), the close skill's sentence
