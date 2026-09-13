@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-007
   route: full
   status: running
-  current_step: S01
+  current_step: S08
   base_commit: 4255c4c6c74db01c06d9594b6765d02847c8978e
   branch: path/cp-cairn-007
   assigned_writer: cp-cairn-007-writer
@@ -277,14 +277,15 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 - **S05** — the two tools that speak to the owner — complete
 - **S06** — the sentences the skills owed — complete
 - **S07** — the tools as they are — complete
+- **S08** — the record says which step it is on (repair) — complete
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : f14ac06d0d9a9c4d3b1fa7b8c6e3d2a1b0f9e8d7
-unit   : 6 — S07 is committed on the push that follows this record, and S08 names its id
+commit : 7411770d02d2d3fdf0001d544892eb055a9b9a1d
+unit   : 7 — S08 is committed on the push that follows this record; the closure names its id as C
 base   : 4255c4c6c74db01c06d9594b6765d02847c8978e
 trunk  : 4255c4c6c74db01c06d9594b6765d02847c8978e — origin/main at registration
 ```
@@ -292,14 +293,13 @@ trunk  : 4255c4c6c74db01c06d9594b6765d02847c8978e — origin/main at registratio
 ### Next action
 
 From the worktree `../cairn-cp-cairn-007` on branch `path/cp-cairn-007`:
-run S08 — the plan's sixth and last unit — with `cairn-unit`: the
-candidate. Merge the trunk in, never rebase; run every gate bare; replace
-the draft request's description with what `npm run cairn-audit` now
-prints and fill its blanks, naming item 2 of the definition of done as
-knowingly unmet with S03 as the reason; then the administrative commit
-declaring `ready` and `subject_commit`, on the branch, with its check
-read green — and only then is the owner asked to merge. The owner reads
-a post-mortem, on a red run of theirs or on demand, before the merge.
+close the path with `cairn-close`. `C` is S08's commit, the trunk tip
+already in it; regenerate the request's description with
+`npm run cairn-audit -- --subject <C>`, re-fill it — item 2 named as
+knowingly unmet, with S03 as the reason — then the administrative commit
+`A` declaring `ready` and `subject_commit`, with the gate run BEFORE
+committing and its check read green. Only then is the owner asked to
+merge, and the owner reads a post-mortem before it.
 
 Note for movement 6: pushes to path branches no longer run on the forge
 (S02, ADR-005), but the request is open as a draft — [#16](https://github.com/sinlalune/cairn/pull/16)
