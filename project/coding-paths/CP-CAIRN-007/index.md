@@ -272,7 +272,34 @@ whole of it.
 
 ### Blockers
 
-None.
+**One, and it stops the path.** S02 mapped `GITHUB_TOKEN` into the
+checker's step, as item 2 of the definition of done requires. The draft
+request opened at S02 produced the first real run of this branch,
+`34756757308` on `1505444`, and its profile line reads:
+
+```text
+profile — transports registration manual-git, integration pull-request; forge enforces everything these records name
+```
+
+That line is false. Read as the owner, this repository's trunk ruleset
+`22101008` carries `bypass_actors: [{actor_id: 5, actor_type:
+RepositoryRole, bypass_mode: always}]` — a repository role that bypasses
+the trunk's rules always. The honest line names that gap; the run reports
+none. The workflow's token cannot see the field: GitHub returns
+`bypass_actors` only to a requester with write access to the ruleset,
+which needs an `administration` scope that a workflow `permissions:`
+block cannot grant at all, and `forgeGaps` reads the absent list as a
+trunk nobody bypasses (`?? []`). A refused ruleset would have been
+reported as *forge not read*; an elided field is reported as safety.
+
+Before this unit there was no token on CI, so the line said *forge not
+read* and the defect never fired. The token did not create it; it made it
+speak. The remedy is in `tools/cairn-check.mjs`, which item 7 of the
+definition of done holds byte-identical, so this path cannot take it
+without a superseding acceptance — or the owner can give the step a token
+that may read the ruleset, which needs a secret only they can create.
+The question is with the owner; nothing else on this path proceeds until
+it is answered.
 
 ### Tried and rejected
 
