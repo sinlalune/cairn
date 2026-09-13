@@ -17,6 +17,7 @@ cairn:
   resolution: null
   writes:
     - .github/workflows/cairn.yml
+    - tools/cairn-workflow.test.mjs
     - tools/cairn-postmortem.mjs
     - tools/cairn-postmortem.test.mjs
     - tools/cairn-audit.mjs
@@ -244,8 +245,8 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : f337bdb7fa4449e883f510ce784f8fdafa9ead46
-unit   : 0 — S01 is committed on the push that follows this record, and S02 names its id
+commit : 94fb08b9362181f2cd03a37172bf8cc943b89c17
+unit   : 1 — S02 is committed on the push that follows this record, and S03 names its id
 base   : 4255c4c6c74db01c06d9594b6765d02847c8978e
 trunk  : 4255c4c6c74db01c06d9594b6765d02847c8978e — origin/main at registration
 ```
@@ -253,16 +254,21 @@ trunk  : 4255c4c6c74db01c06d9594b6765d02847c8978e — origin/main at registratio
 ### Next action
 
 From the worktree `../cairn-cp-cairn-007` on branch `path/cp-cairn-007`:
-run S02 of the plan with `cairn-unit` — the workflow, from ADR-005 and
-ADR-014 at their tables. The `push` trigger's branch list becomes the
-trunk alone and the request's run judges the request head; the checker's
-step gains `GITHUB_TOKEN` so the profile line reads the trunk's rules; a
-step on the checker's failure runs `node tools/cairn-postmortem.mjs
---branch <the run's branch>` into the log and, on a request, posts it
-once as a comment, committing nothing; this repository's suite runs
-before the checker as `cairn-test`, and `test` leaves `package.json`.
-Failing test first for anything the tools do; run the review movement on
+run S03 of the plan with `cairn-unit` — the two tools that speak to the
+owner, from ADR-021 decision 2, ADR-018 decision 2 and ADR-008 decision 5
+at their tables. `cairn-audit` prints the request's description in the
+order the template gives — three plain lines and the surface link as
+placeholders, then one line per item of the definition of done read from
+the record, each with a place for the unit that advanced it and the
+command or page that shows it, then the ledger unchanged; `cairn-active`
+reports, beside the live view, a roadmap register that still carries the
+installer's row. Failing test first for both; run the review movement on
 the unit's diff as the unit skill says.
+
+Note for movement 6: pushes to path branches no longer run on the forge
+(S02, ADR-005). Unless the owner has had the request opened as a draft,
+there is no run to read after a push, and the writer's bare gate is the
+whole of it.
 
 ### Blockers
 
@@ -286,6 +292,11 @@ None.
   and path 2 closed on that file. The repetition is named as a debt in
   S01 and carried to this path's journal entry; the `--follow` guard
   that the repetition had already dropped is restored in S01.
+- S02: exporting or fixing `readForge`'s per-ruleset degradation so the
+  profile line cannot under-report a trunk's bypass actors when the
+  workflow's token may not see them — `tools/cairn-check.mjs`, which item
+  7 of the definition of done holds byte-identical. Named in S02's review
+  and with the owner.
 - S01: reading `done` beside `ready` in the administrative-commit
   reading. `done` is declared on the TRUNK by the integrating unit, never
   on the branch, so a branch reading would print a fact no commit of the

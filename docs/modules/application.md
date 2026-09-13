@@ -45,10 +45,15 @@ the base defaults to the trunk. Every run reports the transports the
 configuration declares and what the forge does not enforce — as a third header
 line, or as the `profile` object under `--json`. The forge half is read from
 the rules that apply to the trunk when `GITHUB_TOKEN` or `GH_TOKEN` is set and
-the remote is a GitHub repository, and is reported as not read otherwise, which
-is what the workflow's own runs say until the token is mapped into the step.
+the remote is a GitHub repository, and is reported as not read otherwise. This
+repository's workflow maps `GITHUB_TOKEN` into the checker's step, so the read
+is attempted there with the forge's own token. A ruleset the token cannot fetch
+makes the whole read fail and the line says so; a field the forge elides because
+the token may not see it is a field the line cannot report, which is the limit
+of what any token-scoped reading gives. None of it is a finding: the remedy for
+a gap is a setting, and no failure of the read reaches an exit code.
 None of it is a finding: the remedy for a gap is a setting, and no failure of
-the read reaches an exit code. The configuration is schema 2. The checker reads
+The configuration is schema 2. The checker reads
 a path's opening acceptance from the record's own `## Opening acceptance`
 block, its checkpoint from the resume section, the registration commit as the
 trunk commit in which the record became `running`, and the branch's tip from the
@@ -80,7 +85,10 @@ no longer defines rather than deleting anything of the adopter's.
 
 ## Testing
 
-`npm test` runs Node's own runner over `tools/*.test.mjs`. Two kinds of test, and the difference is
+`npm run cairn-test` runs Node's own runner over `tools/*.test.mjs`, and
+`npm test` is an alias of it. The suite is this repository's: the kit installs
+none and its workflow runs no test step, so an adopter's `npm test` stays the
+adopter's product suite. Two kinds of test, and the difference is
 the whole discipline written in [soundness](../../tools/soundness.md): the unit
 suite proves each rule's predicate against `evaluate()` with hand-built
 arguments, and the fixture suite proves each rule is WIRED, by installing a real
@@ -89,4 +97,7 @@ violation and requiring the rule among the blocking findings. Every blocking
 rule has such a fixture, and the coverage is declared in the suite so that a
 new blocking rule forces the choice. Three parity tests assert that the local
 default and the CI invocation reach one verdict on one tree. CI runs the suite
-before the gate, in the one job that is the required check.
+before the gate as `cairn-test`, in the one job that is the required check; the
+job runs once per commit that can land — the trunk's push and the request,
+never a push to a path branch — and a step after the checker's failure prints
+the post-mortem into the run's log and posts it on the request.

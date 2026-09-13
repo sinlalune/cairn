@@ -33,6 +33,7 @@
     "cairn-audit": "node tools/cairn-audit.mjs",
     "cairn-postmortem": "node tools/cairn-postmortem.mjs",
     "cairn-rules": "node tools/cairn-rules.mjs",
-    "test": "node --test 'tools/*.test.mjs'"
+    "cairn-test": "node --test 'tools/*.test.mjs'",
+    "test": "npm run cairn-test"
   }
 }
