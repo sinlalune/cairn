@@ -153,8 +153,9 @@ reading of a red run (ADR-025).
       `docs/architecture/`, `README.md` or `site/` changes; the ten
       governing documents are byte-identical at the candidate to what they
       are at `base_commit`; the register, a write surface, gains this
-      path's id in row 3 and the three widened files in its writes column,
-      and nothing else.
+      path's id in row 3, the widened files in its writes column, one new
+      row for the readings that must not lie, and the kit halves of
+      ADR-005 and ADR-014 named on row 4 — and nothing else.
 - [ ] Every completed step has one self-contained step record naming the
       definition-of-done item it advances, a refreshed resume section, one
       commit, a remote checkpoint, a self-review in the five tags and a
@@ -201,6 +202,36 @@ with the word "yes"; that go-ahead is this acceptance, and the record
 lands on the trunk directly. The owner said the units run in a fresh
 session. Amendments: none.
 
+### Amendment of 2026-09-13 — the register may own what this path found
+
+S02 mapped the forge's token into the checker's step and the run that
+followed certified a protection this repository does not have; S03 took
+the token back out. The owner was asked where the durable answer should
+live, and answered: **its own row, before the release.** Asked first how
+to end it at all, the owner's steer was to *refer to the manifesto, don't
+build a messy complex factory, just do the simplest fluid native
+workflow* — which is what chose the deletion in S03 over a stored
+credential or a scope amendment reopening coding path 2's files.
+
+This acceptance supersedes the one above it. It widens item 7, and
+nothing else: the register may gain one row for the readings that must
+not lie — the record saying a reading the forge withheld is reported as
+unread and never as an answer, and the checker made to keep it — placed
+before the release row so that 1.1.0 cannot be cut with it open; and row
+4 may name the kit halves of ADR-005 and ADR-014, which this path found
+belong to no row. The definition of done is otherwise the text it was
+accepted with, and no other surface of this path moves.
+
+```yaml
+decision: accepted
+accepted_by: sinlalune
+accepted_roles: [initiator, reviewer]
+accepted_at: 2026-09-13T13:10:00Z
+scope_ref: project/coding-paths/CP-CAIRN-007/index.md#definition-of-done
+scope_digest: sha256:c6305ca2ad5917c4612c3135d224d749b5a0a8d28eb36b1cf5a2817b6b2414b4
+supersedes: 2026-09-13T08:53:36Z
+```
+
 ## Documentation coverage
 
 ### Required
@@ -241,14 +272,15 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 - **S01** — the post-mortem tool — complete
 - **S02** — one run per commit that can land — complete
 - **S03** — the gate stops certifying what it cannot see (repair of S02) — complete
+- **S04** — the register owns what this path found — complete
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 2f216d0c9f4a3ac86a1b0f1e8e5bd4bb9a0f4e4f
-unit   : 2 — S03 is committed on the push that follows this record, and S04 names its id
+commit : dcd8849f4e30e8b5c9d6b0c2a41f7e8d9b3c5a71
+unit   : 3 — S04 is committed on the push that follows this record, and S05 names its id
 base   : 4255c4c6c74db01c06d9594b6765d02847c8978e
 trunk  : 4255c4c6c74db01c06d9594b6765d02847c8978e — origin/main at registration
 ```
@@ -256,9 +288,9 @@ trunk  : 4255c4c6c74db01c06d9594b6765d02847c8978e — origin/main at registratio
 ### Next action
 
 From the worktree `../cairn-cp-cairn-007` on branch `path/cp-cairn-007`:
-run S04 — the plan's third unit, one behind its numbering since the
-repair took S03 — with `cairn-unit`: the two tools that speak to the
-owner, from ADR-021 decision 2, ADR-018 decision 2 and ADR-008 decision 5
+run S05 — the plan's third unit, two behind its numbering since the
+repair took S03 and the register unit took S04 — with `cairn-unit`: the
+two tools that speak to the owner, from ADR-021 decision 2, ADR-018 decision 2 and ADR-008 decision 5
 at their tables. `cairn-audit` prints the request's description in the
 order the template gives — three plain lines and the surface link as
 placeholders, then one line per item of the definition of done read from
@@ -277,7 +309,11 @@ read.
 
 None.
 
-**One item of the definition of done is knowingly unmet.** Item 2 asks
+**One item of the definition of done is knowingly unmet, and the work
+that lets it be met is now owned.** Row 5 of the
+[roadmap register](../index.md) carries it — the record that makes the
+checker's own sentence bind, and the change that keeps it — and sits
+before the release row, so 1.1.0 cannot be cut with it open. Item 2 asks
 that the checker's step carry `GITHUB_TOKEN` *so the profile line reads
 the trunk's rules on CI*. S02 carried it and S03 took it back out,
 because the token the forge gives a workflow cannot see a ruleset's
