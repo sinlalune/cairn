@@ -276,14 +276,15 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 - **S04** — the register owns what this path found — complete
 - **S05** — the two tools that speak to the owner — complete
 - **S06** — the sentences the skills owed — complete
+- **S07** — the tools as they are — complete
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : bfbc89d1d1ba47ba4e1ba9cbbd6e1a6c9ff1a0ea
-unit   : 5 — S06 is committed on the push that follows this record, and S07 names its id
+commit : f14ac06d0d9a9c4d3b1fa7b8c6e3d2a1b0f9e8d7
+unit   : 6 — S07 is committed on the push that follows this record, and S08 names its id
 base   : 4255c4c6c74db01c06d9594b6765d02847c8978e
 trunk  : 4255c4c6c74db01c06d9594b6765d02847c8978e — origin/main at registration
 ```
@@ -291,14 +292,14 @@ trunk  : 4255c4c6c74db01c06d9594b6765d02847c8978e — origin/main at registratio
 ### Next action
 
 From the worktree `../cairn-cp-cairn-007` on branch `path/cp-cairn-007`:
-run S07 — the plan's fifth unit — with `cairn-unit`: the module note.
-`docs/modules/application.md` describes the tools as they are at the
-candidate, the post-mortem included, with no history; and row 3 of the
-[roadmap register](../index.md) carries the files this path widened its
-writes by — `skills/cairn-unit/reference.md`, `skills/cairn-open/SKILL.md`,
-`skills/cairn-close/SKILL.md`, `spec/reference/path-template.md`,
-`tools/cairn-workflow.test.mjs` and `.github/pull_request_template.md`.
-Run the review movement on the unit's diff as the unit skill says.
+run S08 — the plan's sixth and last unit — with `cairn-unit`: the
+candidate. Merge the trunk in, never rebase; run every gate bare; replace
+the draft request's description with what `npm run cairn-audit` now
+prints and fill its blanks, naming item 2 of the definition of done as
+knowingly unmet with S03 as the reason; then the administrative commit
+declaring `ready` and `subject_commit`, on the branch, with its check
+read green — and only then is the owner asked to merge. The owner reads
+a post-mortem, on a red run of theirs or on demand, before the merge.
 
 Note for movement 6: pushes to path branches no longer run on the forge
 (S02, ADR-005), but the request is open as a draft — [#16](https://github.com/sinlalune/cairn/pull/16)
