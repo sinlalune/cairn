@@ -7,13 +7,13 @@ timestamp: 2026-09-12T00:00:00Z
 cairn:
   id: CP-CAIRN-007
   route: full
-  status: running
+  status: ready
   current_step: S08
   base_commit: 4255c4c6c74db01c06d9594b6765d02847c8978e
   branch: path/cp-cairn-007
   assigned_writer: cp-cairn-007-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: c57d11c22687aeee0a1301063b2ef98d25df387f
   resolution: null
   writes:
     - .github/workflows/cairn.yml
@@ -284,8 +284,8 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 7411770d02d2d3fdf0001d544892eb055a9b9a1d
-unit   : 7 — S08 is committed on the push that follows this record; the closure names its id as C
+commit : c57d11c22687aeee0a1301063b2ef98d25df387f
+unit   : 8 — the candidate C, checked bare and reviewed in the request
 base   : 4255c4c6c74db01c06d9594b6765d02847c8978e
 trunk  : 4255c4c6c74db01c06d9594b6765d02847c8978e — origin/main at registration
 ```
