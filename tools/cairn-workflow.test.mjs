@@ -56,9 +56,17 @@ test('this repository\'s suite runs before the checker, under its own name', () 
   assert.ok(!('cairn-test' in scripts), 'and the kit ships no suite to run')
 })
 
-test('the checker\'s step carries the token the forge is read with, and the base CI judges against', () => {
+test('the checker judges the base CI judges against, and does not read the forge from here', () => {
   const checker = step('cairn-check', 'cairn-postmortem')
-  assert.match(checker, /GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}/, 'without it the profile line cannot even attempt the trunk\'s rules')
+  // The workflow's own token cannot see a ruleset's bypass list, and the
+  // checker reads an absent list as a trunk nobody bypasses. Mapped here, it
+  // turned an honest `forge not read` into `forge enforces everything these
+  // records name` on a trunk whose ruleset carries an always-bypass role
+  // (2026-09-13, run 34756757308). Unread is the answer that sends a human to
+  // look.
+  // The env KEY, not the word: the step's comment says why the token is absent,
+  // and a substring ban would read that explanation as the thing it forbids.
+  assert.ok(!/^ +GITHUB_TOKEN:/m.test(checker), 'the profile line is not read with a token that cannot see what it reports')
   assert.match(checker, /CAIRN_BASE_REF: origin\/\$\{\{ github\.base_ref \|\| 'main' \}\}/)
   assert.match(checker, /^ +run: node tools\/cairn-check\.mjs --base "\$CAIRN_BASE_REF"$/m, 'bare: a pipe would report the last command\'s status')
 })
@@ -80,6 +88,10 @@ test('the post-mortem runs only when the checker fails, keeps its reading, and c
   assert.match(incident, /if: failure\(\) && steps\.cairn-check\.conclusion == 'failure'/,
     'only the CHECKER\'s failure: a red suite is a different incident, and this step would read a repository the checker never judged')
   assert.match(WORKFLOW, /^ +id: cairn-check$/m, 'the condition names a step id, so the id has to exist')
+  // The post-mortem's own forge readings keep the token: a run count and a
+  // request's timestamps are refused outright when the token may not see them,
+  // never elided into a friendlier answer.
+  assert.match(incident, /GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}/)
   assert.match(incident, /node tools\/cairn-postmortem\.mjs --branch "\$CAIRN_BRANCH"/)
   // `bash -e`: a non-zero exit before `cat` would lose the reading on exactly
   // the run it was written for, and the tool says why it stopped on stderr.

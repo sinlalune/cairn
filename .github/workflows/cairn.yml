@@ -48,9 +48,16 @@ jobs:
         id: cairn-check
         env:
           CAIRN_BASE_REF: origin/${{ github.base_ref || 'main' }}
-          # Without it the profile line reports the trunk's rules as *forge not
-          # read* on the one run that is the merge gate.
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # No token here, deliberately. The forge hands a workflow only
+          # `secrets.GITHUB_TOKEN`, and that token may not read a ruleset's
+          # bypass list — GitHub ELIDES the field rather than refusing it, and
+          # the checker reads an absent list as a trunk nobody bypasses. On
+          # 2026-09-13 that made this repository's own run print "forge
+          # enforces everything these records name" while the trunk's ruleset
+          # carried a role that bypasses it always. `forge not read` is the
+          # honest line, and the one that sends a human to look. The token
+          # belongs here once the checker can tell an unread bypass list from
+          # an empty one; until then this is a reading nobody should trust.
         run: node tools/cairn-check.mjs --base "$CAIRN_BASE_REF"
       # Only on the CHECKER's failure, so the incident is written while it
       # happens (ADR-014 decision 1). A red suite is a different incident, and

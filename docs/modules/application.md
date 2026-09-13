@@ -45,13 +45,17 @@ the base defaults to the trunk. Every run reports the transports the
 configuration declares and what the forge does not enforce — as a third header
 line, or as the `profile` object under `--json`. The forge half is read from
 the rules that apply to the trunk when `GITHUB_TOKEN` or `GH_TOKEN` is set and
-the remote is a GitHub repository, and is reported as not read otherwise. This
-repository's workflow maps `GITHUB_TOKEN` into the checker's step, so the read
-is attempted there with the forge's own token. A ruleset the token cannot fetch
-makes the whole read fail and the line says so; a field the forge elides because
-the token may not see it is a field the line cannot report, which is the limit
-of what any token-scoped reading gives. None of it is a finding: the remedy for
-a gap is a setting, and no failure of the read reaches an exit code.
+the remote is a GitHub repository, and is reported as not read otherwise —
+which is what this repository's CI runs say, because no token is mapped into
+the checker's step there. A workflow is given only the forge's own
+`secrets.GITHUB_TOKEN`, which may not read a ruleset's bypass list; the forge
+elides that field rather than refusing it, and `forgeGaps` reads an absent list
+as a trunk nobody bypasses. Mapping it therefore replaces an honest *forge not
+read* with a claim that the trunk is fully enforced, which on 2026-09-13 was
+false of this very repository. The token belongs there once the checker can
+tell an unread bypass list from an empty one. None of it is a finding: the
+remedy for a gap is a setting, and no failure of the read reaches an exit
+code.
 None of it is a finding: the remedy for a gap is a setting, and no failure of
 The configuration is schema 2. The checker reads
 a path's opening acceptance from the record's own `## Opening acceptance`

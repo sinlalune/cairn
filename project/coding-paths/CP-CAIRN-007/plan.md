@@ -16,6 +16,8 @@ tool has its failing test first; the post-mortem prints facts and no
 judgement. Each unit runs the review movement on its own diff, as the
 unit skill says.
 
+*Numbering: a repair took S03, so units 3 to 6 below run as S04 to S07.*
+
 1. **S01 — the post-mortem tool.** `tools/cairn-postmortem.mjs` and its
    test: for one path or the repository, the readings ADR-014 decision 1
    lists — registration commit and parent against `base_commit`, the

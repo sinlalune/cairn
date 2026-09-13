@@ -238,15 +238,17 @@ session. Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
-- **S01** — not started
+- **S01** — the post-mortem tool — complete
+- **S02** — one run per commit that can land — complete
+- **S03** — the gate stops certifying what it cannot see (repair of S02) — complete
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 94fb08b9362181f2cd03a37172bf8cc943b89c17
-unit   : 1 — S02 is committed on the push that follows this record, and S03 names its id
+commit : 2f216d0c9f4a3ac86a1b0f1e8e5bd4bb9a0f4e4f
+unit   : 2 — S03 is committed on the push that follows this record, and S04 names its id
 base   : 4255c4c6c74db01c06d9594b6765d02847c8978e
 trunk  : 4255c4c6c74db01c06d9594b6765d02847c8978e — origin/main at registration
 ```
@@ -254,7 +256,8 @@ trunk  : 4255c4c6c74db01c06d9594b6765d02847c8978e — origin/main at registratio
 ### Next action
 
 From the worktree `../cairn-cp-cairn-007` on branch `path/cp-cairn-007`:
-run S03 of the plan with `cairn-unit` — the two tools that speak to the
+run S04 — the plan's third unit, one behind its numbering since the
+repair took S03 — with `cairn-unit`: the two tools that speak to the
 owner, from ADR-021 decision 2, ADR-018 decision 2 and ADR-008 decision 5
 at their tables. `cairn-audit` prints the request's description in the
 order the template gives — three plain lines and the surface link as
@@ -266,40 +269,26 @@ installer's row. Failing test first for both; run the review movement on
 the unit's diff as the unit skill says.
 
 Note for movement 6: pushes to path branches no longer run on the forge
-(S02, ADR-005). Unless the owner has had the request opened as a draft,
-there is no run to read after a push, and the writer's bare gate is the
-whole of it.
+(S02, ADR-005), but the request is open as a draft — [#16](https://github.com/sinlalune/cairn/pull/16)
+— so every push is judged on the request head, and that run is the one to
+read.
 
 ### Blockers
 
-**One, and it stops the path.** S02 mapped `GITHUB_TOKEN` into the
-checker's step, as item 2 of the definition of done requires. The draft
-request opened at S02 produced the first real run of this branch,
-`34756757308` on `1505444`, and its profile line reads:
+None.
 
-```text
-profile — transports registration manual-git, integration pull-request; forge enforces everything these records name
-```
-
-That line is false. Read as the owner, this repository's trunk ruleset
-`22101008` carries `bypass_actors: [{actor_id: 5, actor_type:
-RepositoryRole, bypass_mode: always}]` — a repository role that bypasses
-the trunk's rules always. The honest line names that gap; the run reports
-none. The workflow's token cannot see the field: GitHub returns
-`bypass_actors` only to a requester with write access to the ruleset,
-which needs an `administration` scope that a workflow `permissions:`
-block cannot grant at all, and `forgeGaps` reads the absent list as a
-trunk nobody bypasses (`?? []`). A refused ruleset would have been
-reported as *forge not read*; an elided field is reported as safety.
-
-Before this unit there was no token on CI, so the line said *forge not
-read* and the defect never fired. The token did not create it; it made it
-speak. The remedy is in `tools/cairn-check.mjs`, which item 7 of the
-definition of done holds byte-identical, so this path cannot take it
-without a superseding acceptance — or the owner can give the step a token
-that may read the ruleset, which needs a secret only they can create.
-The question is with the owner; nothing else on this path proceeds until
-it is answered.
+**One item of the definition of done is knowingly unmet.** Item 2 asks
+that the checker's step carry `GITHUB_TOKEN` *so the profile line reads
+the trunk's rules on CI*. S02 carried it and S03 took it back out,
+because the token the forge gives a workflow cannot see a ruleset's
+bypass list and the checker reads the elided field as a trunk nobody
+bypasses — so carrying it made the gate certify a protection this
+repository does not have (run `34756757308`; ruleset `22101008` carries
+an always-bypass role). The clause cannot be satisfied natively until
+`forgeGaps` can tell an unread bypass list from an empty one, which is
+`tools/cairn-check.mjs` and which item 7 holds unchanged. The candidate
+names this item as unmet, with S03 as the reason; it is the owner's to
+rule on at the merge.
 
 ### Tried and rejected
 
