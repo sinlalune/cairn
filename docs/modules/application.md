@@ -1,9 +1,9 @@
 ---
 type: Cairn Module Note
 title: The reference tools
-description: What lives under tools/ — the checker, the live-view generator, the audit scaffold, the rule-catalogue generator, the initializer and the configuration loader — how they find the specification, and how they are tested.
+description: What lives under tools/ — the checker, the live-view generator, the audit scaffold, the post-mortem reader, the rule-catalogue generator, the initializer and the configuration loader — how they find the specification, and how they are tested.
 tags: [module, cairn, tools]
-timestamp: 2026-09-02T00:00:00Z
+timestamp: 2026-09-13T00:00:00Z
 ---
 
 # The reference tools
@@ -18,6 +18,7 @@ dependency-free Node scripts that evaluate the protocol the
 | `cairn-check.mjs` | the checker: every blocking and advisory rule, reported by exit code |
 | `cairn-active.mjs` | regenerates the live view of running paths, or checks that it is current |
 | `cairn-audit.mjs` | scaffolds the closing review of one exact candidate: the request's description on `pull-request`, the closing record in the path folder on `manual-git` |
+| `cairn-postmortem.mjs` | the mechanical half of a post-mortem, for one path or for every path record: the registration commit against `base_commit`, the shape of the `ready` commit the branch declares, the definition of done's digest against the acceptance in force, each step record against the blob that added it, and — with a token — the red runs of a branch and the time a request stayed open; facts only, and no exit code of its own |
 | `cairn-rules.mjs` | regenerates the rule catalogue and the rule-to-requirement linkage on the [conformance page](../../spec/reference/conformance.md); this repository's, not installed |
 | `cairn.mjs` | the `cairn` command: `init` installs the thin kit, `status` reads the lock, `update` rewrites pristine kit files and migrates the configuration, `adopt` turns a lock-less installation into one; the package's, not installed |
 | `cairn-pilot.mjs` | the greenfield pilot as a command: drives a throwaway repository from `init` to `done` on one transport, green at every gate, and counts the protocol files each stage writes; this repository's, not installed |

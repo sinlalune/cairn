@@ -244,20 +244,25 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : the registration commit — the trunk commit that adds this record, whose parent is base
-unit   : 0
+commit : f337bdb7fa4449e883f510ce784f8fdafa9ead46
+unit   : 0 — S01 is committed on the push that follows this record, and S02 names its id
 base   : 4255c4c6c74db01c06d9594b6765d02847c8978e
 trunk  : 4255c4c6c74db01c06d9594b6765d02847c8978e — origin/main at registration
 ```
 
 ### Next action
 
-In a fresh session, from the worktree `../cairn-cp-cairn-007` on branch
-`path/cp-cairn-007`: run S01 of the plan with `cairn-unit` — the
-post-mortem tool and its test, from ADR-014 decision 1 and ADR-021
-decision 3 at their tables, the readings imported from what
-`tools/cairn-check.mjs` exports; failing test first. Run the review
-movement on the unit's diff as the unit skill says.
+From the worktree `../cairn-cp-cairn-007` on branch `path/cp-cairn-007`:
+run S02 of the plan with `cairn-unit` — the workflow, from ADR-005 and
+ADR-014 at their tables. The `push` trigger's branch list becomes the
+trunk alone and the request's run judges the request head; the checker's
+step gains `GITHUB_TOKEN` so the profile line reads the trunk's rules; a
+step on the checker's failure runs `node tools/cairn-postmortem.mjs
+--branch <the run's branch>` into the log and, on a request, posts it
+once as a comment, committing nothing; this repository's suite runs
+before the checker as `cairn-test`, and `test` leaves `package.json`.
+Failing test first for anything the tools do; run the review movement on
+the unit's diff as the unit skill says.
 
 ### Blockers
 
@@ -274,6 +279,18 @@ None.
   functions; the tool imports them.
 - Pinning the register in `governs:` — a write surface, as in paths 1
   and 2.
+- S01: exporting the checker's private Git plumbing —
+  `recordShapes`, `recordHistory`, `frontAt`, `stepRecordOrigin` — so the
+  post-mortem could import it instead of repeating it. Item 7 of the
+  definition of done forbids a byte of `tools/cairn-check.mjs` moving,
+  and path 2 closed on that file. The repetition is named as a debt in
+  S01 and carried to this path's journal entry; the `--follow` guard
+  that the repetition had already dropped is restored in S01.
+- S01: reading `done` beside `ready` in the administrative-commit
+  reading. `done` is declared on the TRUNK by the integrating unit, never
+  on the branch, so a branch reading would print a fact no commit of the
+  branch carries; ADR-008 decision 2 gives the integration's shape to the
+  checker, and ADR-014 decision 1 asks this tool for the `ready` commit.
 
 ### Reading order
 

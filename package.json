@@ -18,6 +18,7 @@
     "tools/cairn-config.schema.json",
     "tools/cairn-active.mjs",
     "tools/cairn-audit.mjs",
+    "tools/cairn-postmortem.mjs",
     "tools/release.json",
     "skills/"
   ],
@@ -30,6 +31,7 @@
     "cairn-check": "node tools/cairn-check.mjs",
     "cairn-active": "node tools/cairn-active.mjs",
     "cairn-audit": "node tools/cairn-audit.mjs",
+    "cairn-postmortem": "node tools/cairn-postmortem.mjs",
     "cairn-rules": "node tools/cairn-rules.mjs",
     "test": "node --test 'tools/*.test.mjs'"
   }
