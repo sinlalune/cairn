@@ -17,6 +17,7 @@ cairn:
   resolution: null
   writes:
     - .github/workflows/cairn.yml
+    - .github/pull_request_template.md
     - tools/cairn-workflow.test.mjs
     - tools/cairn-postmortem.mjs
     - tools/cairn-postmortem.test.mjs
@@ -273,14 +274,15 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 - **S02** — one run per commit that can land — complete
 - **S03** — the gate stops certifying what it cannot see (repair of S02) — complete
 - **S04** — the register owns what this path found — complete
+- **S05** — the two tools that speak to the owner — complete
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : dcd8849f4e30e8b5c9d6b0c2a41f7e8d9b3c5a71
-unit   : 3 — S04 is committed on the push that follows this record, and S05 names its id
+commit : ca470c4d648c67880ae470bb78263d25fdf53a79
+unit   : 4 — S05 is committed on the push that follows this record, and S06 names its id
 base   : 4255c4c6c74db01c06d9594b6765d02847c8978e
 trunk  : 4255c4c6c74db01c06d9594b6765d02847c8978e — origin/main at registration
 ```
@@ -288,17 +290,20 @@ trunk  : 4255c4c6c74db01c06d9594b6765d02847c8978e — origin/main at registratio
 ### Next action
 
 From the worktree `../cairn-cp-cairn-007` on branch `path/cp-cairn-007`:
-run S05 — the plan's third unit, two behind its numbering since the
-repair took S03 and the register unit took S04 — with `cairn-unit`: the
-two tools that speak to the owner, from ADR-021 decision 2, ADR-018 decision 2 and ADR-008 decision 5
-at their tables. `cairn-audit` prints the request's description in the
-order the template gives — three plain lines and the surface link as
-placeholders, then one line per item of the definition of done read from
-the record, each with a place for the unit that advanced it and the
-command or page that shows it, then the ledger unchanged; `cairn-active`
-reports, beside the live view, a roadmap register that still carries the
-installer's row. Failing test first for both; run the review movement on
-the unit's diff as the unit skill says.
+run S06 — the plan's fourth unit — with `cairn-unit`: the sentences the
+skills and the path template still owe, one each, naming no record. The
+unit skill's resume movement sends the writer to a red run's post-mortem
+before the next unit (ADR-025) and its verify movement reads the
+request's run if one is open (ADR-005); its repair step, and the step
+shape in `spec/reference/path-template.md`, show how a same-branch step
+supersession is declared in the repair step's own block, both blob ids
+the ones the record carries (ADR-004 decision 6, repair 005 — read the
+`provisional` and `record-integrity` rows of
+`spec/reference/conformance.md` first, word for word); the open skill's
+owner review names the two answers to an overlap (ADR-003); the close
+skill forbids the integrating merge object and the two-path request
+(ADR-008 decision 2). Run the review movement on the unit's diff as the
+unit skill says.
 
 Note for movement 6: pushes to path branches no longer run on the forge
 (S02, ADR-005), but the request is open as a draft — [#16](https://github.com/sinlalune/cairn/pull/16)

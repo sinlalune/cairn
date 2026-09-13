@@ -36,7 +36,8 @@ import {
   METADATA_NAMESPACE,
   PATH_DIR,
   TRUNK_BASE_CANDIDATES,
-  readFrontmatter
+  readFrontmatter,
+  resolveScopeSection
 } from './cairn-check.mjs'
 import { REPO, metadataOf } from './cairn-config.mjs'
 
@@ -48,6 +49,64 @@ export const QUESTIONS = [
   'Did it introduce architecture that belongs in a decision record and has none?',
   'Is anything now documented in two places that will drift apart?'
 ]
+
+/** How much of an item leads its line. The record holds the item whole and the
+ *  digest seals it there; a request that reproduced eight paragraphs would bury
+ *  the three plain lines the owner is meant to read first. */
+const LEAD = 110
+
+/**
+ * The items of a record's definition of done, in order, each led by enough of
+ * its own words to be recognised.
+ *
+ * ADR-018 decision 2: the request answers the definition of done ITEM BY ITEM,
+ * and the lines are printed FROM THE RECORD for the writer to fill. Nothing
+ * here ticks a box — the record's checkboxes stay as the digest sealed them,
+ * and what the writer fills is beside them, in the description.
+ *
+ * Pure: the caller supplies the record's text.
+ */
+export function definitionItems(text) {
+  const section = resolveScopeSection(String(text ?? ''), '#definition-of-done')
+  if (!section) return []
+  const items = []
+  for (const line of section.split('\n')) {
+    const opening = /^(\s*)[-*+]\s+\[[ xX]\]\s*(.*)$/.exec(line)
+    // An INDENTED checkbox is a sub-item of the one above it, not a sibling:
+    // the writer who nests a list under an item did not add an item to the
+    // definition of done, and promoting it would renumber every item after it.
+    if (opening && !(opening[1] && items.length)) {
+      items.push(opening[2])
+      continue
+    }
+    if (!line.trim() || line.startsWith('#')) continue
+    if (!items.length) continue
+    // Indented, so it is this item wrapped or nested under it. Prose or a
+    // table at column zero is SKIPPED, not joined and not a stop: markdown's
+    // lazy continuation needs no indent, so a record that wraps without one
+    // would lose every item after the wrap if this ended the list.
+    if (/^\s/.test(line)) items[items.length - 1] += ` ${line.trim()}`
+  }
+  return items.map((item, index) => ({ n: index + 1, lead: leadOf(item) }))
+}
+
+/** The first words of an item, cut so the request stays readable. */
+function leadOf(item) {
+  const whole = item.replace(/\s+/g, ' ').trim()
+  if (whole.length <= LEAD) return whole
+  // Cut on a word where there is one. `lastIndexOf` answers -1 for an item
+  // whose first LEAD characters hold no space — a long backticked path is the
+  // real case — and `slice(0, -1)` would then return the whole item minus its
+  // last character, which is the opposite of a lead.
+  const space = whole.lastIndexOf(' ', LEAD)
+  const body = whole.slice(0, space === -1 ? LEAD : space)
+  // A cut inside a backtick span leaves the span open, and the next backtick
+  // on the rendered line closes it around the writer's own blanks — so the
+  // places they are meant to fill disappear into a code span. The repair goes
+  // BEFORE the ellipsis: inside it, a truncated command would render as a
+  // whole one, which is the lead reading as a thing it is not.
+  return (body.match(/`/g)?.length ?? 0) % 2 ? `${body}\`…` : `${body}…`
+}
 
 /** The closing record on `manual-git`: acceptance fields and the review in
  *  one file, named after the candidate it binds. */
@@ -96,9 +155,41 @@ Candidate accepted for administrative closure and exact integration.
 `
 }
 
-/** The request's description on `pull-request`: the same review, to paste. */
-export function requestDescription({ pathId, subjectCommit, base, scopeRef }) {
-  return `## Candidate
+/**
+ * The request's description on `pull-request`: the same review, to paste.
+ *
+ * The order is the template's, and it is the order the OWNER reads in (ADR-021
+ * decision 2): what the path did, why it is the least, what it does not do,
+ * and the page a newcomer opens for the surface it changed — then the
+ * definition of done item by item (ADR-018 decision 2) — and only then the
+ * ledger the checker's twin reads. On the first adopter a request was read in
+ * twenty seconds and a merge came twenty-nine seconds after the request
+ * opened; what was there to read was a ledger.
+ *
+ * The blanks of the two new sections are THIS REPOSITORY's request template's
+ * markers rather than the reviewer placeholder below, because a line that is
+ * mostly boilerplate is a line nobody reads. They are backticked: a bare
+ * `<unit>` matches an HTML open tag, and the forge's sanitiser strips it from
+ * the rendered description — leaving a blank that reads as an answered one,
+ * which is the failure this section exists to end. The kit's own generated
+ * template is the roadmap's row 4, and does not carry these sections yet.
+ */
+export function requestDescription({ pathId, subjectCommit, base, scopeRef, items = [] }) {
+  return `## What this path did
+
+- \`<what the path did>\`
+- \`<why it is the least>\`
+- \`<what it does not do>\`
+
+Surface: \`<the page a newcomer reads for the surface this path changed, or the README section>\`
+
+## Definition of done, item by item
+
+${items.length === 0
+  ? `*no item was read from the record — check that \`${scopeRef}\` still names a \`## Definition of done\` section*`
+  : items.map(({ n, lead }) => `- item ${n} — ${lead} — advanced by \`<unit>\` — shown by \`<command or page>\``).join('\n')}
+
+## Candidate
 
 - path: ${pathId}
 - candidate \`C\`: ${subjectCommit}
@@ -139,8 +230,9 @@ function currentPath(branch) {
     if (!entry.name.startsWith('CP-')) continue
     const file = entry.isDirectory() ? join(entry.name, 'index.md') : entry.name
     if (!file.endsWith('.md') || !existsSync(join(dir, file))) continue
-    const front = metadataOf(readFrontmatter(readFileSync(join(dir, file), 'utf8'))?.data)
-    if (front?.branch === branch) return { front, file: `${PATH_DIR}/${file}`, folder: entry.isDirectory() ? `${PATH_DIR}/${entry.name}` : null }
+    const text = readFileSync(join(dir, file), 'utf8')
+    const front = metadataOf(readFrontmatter(text)?.data)
+    if (front?.branch === branch) return { front, text, file: `${PATH_DIR}/${file}`, folder: entry.isDirectory() ? `${PATH_DIR}/${entry.name}` : null }
   }
   return null
 }
@@ -162,7 +254,11 @@ function main() {
   const fields = { pathId: path.front.id, branch, subjectCommit: subject, base, scopeRef }
 
   if (INTEGRATION_TRANSPORT === 'pull-request') {
-    console.log(requestDescription(fields))
+    // Only here: the closing record on `manual-git` carries the four questions
+    // and no item-by-item section — ADR-018 decision 2 is about the request's
+    // description, and parsing the record for the other transport would be
+    // work whose output nothing prints.
+    console.log(requestDescription({ ...fields, items: definitionItems(path.text) }))
     return
   }
   if (!path.folder) {

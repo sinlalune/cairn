@@ -1,29 +1,32 @@
 <!-- Cairn closing review. On pull-request transport this description IS the
 coherence review of one exact candidate and the approval IS the closing
-acceptance. `npm run cairn-audit` prints the ledger below, from `## Candidate`
-down, filled in for the current candidate; the two sections above it are yours
-to write. The checker proves the candidate, its closure surface, the opening
+acceptance. `npm run cairn-audit` prints this whole shape filled in for the
+current candidate, the items below read from the record; every `<blank>` is
+yours. The checker proves the candidate, its closure surface, the opening
 digest and the trunk drift from Git; it reads none of the text below, which is
-what the approver reads. -->
+what the approver reads.
+
+The blanks are backticked because a bare `<unit>` matches an HTML open tag and
+the forge strips it when it renders — leaving a blank that reads as answered. -->
 
 ## What this path did
 
-- <what the path did>
-- <why it is the least>
-- <what it does not do>
+- `<what the path did>`
+- `<why it is the least>`
+- `<what it does not do>`
 
-Surface: <the page a newcomer reads for the surface this path changed, or the README section>
+Surface: `<the page a newcomer reads for the surface this path changed, or the README section>`
 
 ## Definition of done, item by item
 
-- item 1 — advanced by <unit> — shown by <command or page>
+- item 1 — `<the item, as cairn-audit leads it from the record>` — advanced by `<unit>` — shown by `<command or page>`
 
 ## Candidate
 
-- path: CP-<ID>
-- candidate `C`: <full object id>
-- base `T`, the trunk tip merged into the candidate: <full object id>
-- scope digest at `C`: <output of node tools/cairn-check.mjs --scope-digest <record>#definition-of-done>; equals the opening acceptance: yes | no
+- path: `<CP-ID>`
+- candidate `C`: `<full object id>`
+- base `T`, the trunk tip merged into the candidate: `<full object id>`
+- scope digest at `C`: `<the digest cairn-check --scope-digest printed for this record>`; equals the opening acceptance: yes | no
 
 ## Coherence
 
@@ -39,4 +42,4 @@ deferred to a named owner and follow-up; or *none*.
 
 ## Roles
 
-- reviewer: <who approves>, holding the roles <initiator | writer | reviewer | integrator> on this path
+- reviewer: `<who approves>`, holding the roles `<initiator | writer | reviewer | integrator>` on this path
