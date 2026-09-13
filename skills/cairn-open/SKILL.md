@@ -58,8 +58,11 @@ on, each tagged by what it costs. Do nothing further on the path until the
 answer.
 
 The owner reviews the outcome, the route and its trigger, the definition of
-done, the surfaces and overlap, the exclusions and the initial writer. A
-change asked for before the go-ahead is written into the record first.
+done, the surfaces and overlap, the exclusions and the initial writer. An
+overlap with a path already running has two answers and the owner picks one:
+this path declares `depends_on` naming the one it waits for, or the race is
+accepted in one sentence of the opening acceptance. A change asked for before
+the go-ahead is written into the record first.
 
 The go-ahead in the chat is the opening acceptance. Compute the digest with
 the code that will verify it — never by hand:

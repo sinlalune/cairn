@@ -95,8 +95,12 @@ The request merges with `cairn-check`, its one required check, read green on
 the exact commit that will land, as a merge commit — never a squash, so the
 commit that lands is the commit that was checked. Then the integrating unit, from a clean trunk checkout:
 `status: done`, `resolution: completed`, the live view, and one journal entry
-under `project/log/`. On `manual-git` the integrating unit is the `--no-ff` merge
-itself, carrying those edits. A path branch never claims `done`.
+under `project/log/` — on `pull-request`, one commit, for one path, carrying
+only those, and never a merge object carrying the edit: land the candidate
+with the merge, then record `done` in a commit of its own. Two paths reaching
+`done` in one commit is refused; two honest integrations in one request are
+not. On `manual-git` the integrating unit is the `--no-ff` merge itself,
+carrying those edits. A path branch never claims `done`.
 
 ## 6. Prove it, then clean up
 

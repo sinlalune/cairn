@@ -242,6 +242,30 @@ remote      : origin/path/cp-example-001 @ <full commit>
 ```
 ````
 
+## The one line a repair adds
+
+A `repair` unit that answers a step record someone edited carries one line more
+in its own block, and no other unit carries it — the blob the record was added
+with, and the blob it carries now:
+
+```text
+supersedes: project/coding-paths/CP-EXAMPLE-001/steps/S05.md@64f13aa..35e6d65
+```
+
+Both ids are read, never chosen:
+
+```bash
+git log --diff-filter=A --format=%H -1 -- <file>   # the commit that added it
+git rev-parse <that commit>:<file>                 # the blob it was added with
+git hash-object -- <file>                          # the blob it carries now
+```
+
+Add `--follow` only for a record that was relocated, and only once its old path
+is gone: with the old path still there, `--follow` pairs two records written
+from one template and answers with the sibling's blob — which is a blob this
+record never had, and the refusal that follows names it. The superseding step
+lives in the same folder as the record it names.
+
 ## State-specific edits
 
 ### Registering

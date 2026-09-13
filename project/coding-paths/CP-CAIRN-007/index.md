@@ -275,14 +275,15 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 - **S03** — the gate stops certifying what it cannot see (repair of S02) — complete
 - **S04** — the register owns what this path found — complete
 - **S05** — the two tools that speak to the owner — complete
+- **S06** — the sentences the skills owed — complete
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : ca470c4d648c67880ae470bb78263d25fdf53a79
-unit   : 4 — S05 is committed on the push that follows this record, and S06 names its id
+commit : bfbc89d1d1ba47ba4e1ba9cbbd6e1a6c9ff1a0ea
+unit   : 5 — S06 is committed on the push that follows this record, and S07 names its id
 base   : 4255c4c6c74db01c06d9594b6765d02847c8978e
 trunk  : 4255c4c6c74db01c06d9594b6765d02847c8978e — origin/main at registration
 ```
@@ -290,20 +291,14 @@ trunk  : 4255c4c6c74db01c06d9594b6765d02847c8978e — origin/main at registratio
 ### Next action
 
 From the worktree `../cairn-cp-cairn-007` on branch `path/cp-cairn-007`:
-run S06 — the plan's fourth unit — with `cairn-unit`: the sentences the
-skills and the path template still owe, one each, naming no record. The
-unit skill's resume movement sends the writer to a red run's post-mortem
-before the next unit (ADR-025) and its verify movement reads the
-request's run if one is open (ADR-005); its repair step, and the step
-shape in `spec/reference/path-template.md`, show how a same-branch step
-supersession is declared in the repair step's own block, both blob ids
-the ones the record carries (ADR-004 decision 6, repair 005 — read the
-`provisional` and `record-integrity` rows of
-`spec/reference/conformance.md` first, word for word); the open skill's
-owner review names the two answers to an overlap (ADR-003); the close
-skill forbids the integrating merge object and the two-path request
-(ADR-008 decision 2). Run the review movement on the unit's diff as the
-unit skill says.
+run S07 — the plan's fifth unit — with `cairn-unit`: the module note.
+`docs/modules/application.md` describes the tools as they are at the
+candidate, the post-mortem included, with no history; and row 3 of the
+[roadmap register](../index.md) carries the files this path widened its
+writes by — `skills/cairn-unit/reference.md`, `skills/cairn-open/SKILL.md`,
+`skills/cairn-close/SKILL.md`, `spec/reference/path-template.md`,
+`tools/cairn-workflow.test.mjs` and `.github/pull_request_template.md`.
+Run the review movement on the unit's diff as the unit skill says.
 
 Note for movement 6: pushes to path branches no longer run on the forge
 (S02, ADR-005), but the request is open as a draft — [#16](https://github.com/sinlalune/cairn/pull/16)
@@ -313,6 +308,16 @@ read.
 ### Blockers
 
 None.
+
+**Three debts this path found and may not settle**, all named in S06 and
+bound for this path's journal entry: `spec/reference/conformance.md`
+still says the writer's half of the supersession *is not yet written*,
+which S06 wrote; ADR-008 decision 2 says *never two paths in one request*
+where the checker refuses two paths in one COMMIT and reasons in its own
+comment for the narrower rule; and the checker's refusal of a merge
+object carrying `done` is not gated by transport, while the close skill
+prescribes exactly that merge on `manual-git`. Item 7 of the definition
+of done holds all three files unchanged.
 
 **One item of the definition of done is knowingly unmet, and the work
 that lets it be met is now owned.** Row 5 of the
