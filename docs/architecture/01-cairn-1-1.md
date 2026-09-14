@@ -1,7 +1,7 @@
 ---
 type: Cairn Architecture
 title: Cairn 1.1 — a repository run by a sole owner with agents
-description: What a Cairn 1.1 repository is as a whole — how a path opens, runs and closes when one owner works with agents, what the checker reads at each transition, what the documentation plane holds and where, which tools exist, and what 1.1 removes from 1.0 — naming the decision record behind every statement; amended on 2026-09-07 with the coding guidelines, ADR-016 to ADR-020, on 2026-09-09 with the pedagogy, ADR-021 to ADR-023, on 2026-09-11 with the two records coding path 1 owed, ADR-024 and ADR-025, and on 2026-09-14 with the readings that must not lie, ADR-026.
+description: What a Cairn 1.1 repository is as a whole — how a path opens, runs and closes when one owner works with agents, what the checker reads at each transition, what the documentation plane holds and where, which tools exist, and what 1.1 removes from 1.0 — naming the decision record behind every statement; amended on 2026-09-07 with the coding guidelines, ADR-016 to ADR-020, on 2026-09-09 with the pedagogy, ADR-021 to ADR-023, on 2026-09-11 with the two records coding path 1 owed, ADR-024 and ADR-025, and on 2026-09-14 with the readings that must not lie, ADR-026, and the `ready` behind an integrating commit, ADR-027.
 tags: [cairn, architecture, 1.1, sole-owner, coding-guidelines, pedagogy]
 timestamp: 2026-09-14T00:00:00Z
 ---
@@ -79,6 +79,17 @@ unit the review rule reads, and ADR-008 decision 2 gains the transport its
 merge-object refusal binds on. A sentence this amendment adds is marked
 *since 2026-09-14* where it changes what an earlier sentence of this page
 said.
+
+**Amended again on 2026-09-14** by the `ready` behind an integrating commit,
+ADR-027, written from the debt [CP-CAIRN-008's
+S03](../../project/coding-paths/CP-CAIRN-008/steps/S03.md) raised at its
+boundary, at blob `2cc4f1a4f8ff1adfcaa8823977c9653ad9159e3a`. It stays exactly
+as it was. ADR-001 decision 7 gains the parent that `ready` is read from — any
+parent of the arrival, an octopus merge included — so the `--no-ff` merge
+prescribed on `manual-git` is judged where the declaration sits. One incidental
+refusal is given up with it, named in that record's consequences. This
+amendment's sentences are the ones marked *since 2026-09-14* that name ADR-027;
+the amendment above marks its own with ADR-026.
 
 ## What 1.1 is for
 
@@ -271,7 +282,10 @@ integrations reached in one request are not refused; the merge-object
 refusal binds on `pull-request` integration alone, the `--no-ff` merge
 being itself the integrating unit on `manual-git` (ADR-026, decisions 3
 and 4). A trunk commit that takes a path from `running` to
-`done` with no `ready` commit is refused (ADR-001, decision 7).
+`done` with no `ready` commit is refused (ADR-001, decision 7); since
+2026-09-14 that commit is looked for on every parent of the arrival, so the
+`--no-ff` merge of a `manual-git` closing is judged where the declaration sits
+(ADR-027).
 
 Then the writer proves `C` reachable from the remote trunk, deletes every
 branch the transport made except `path/<id>`, which stays until the path
@@ -290,7 +304,7 @@ The checker is the same tool, reading more.
 | every unit on the branch, since 2026-09-07 | the current unit's step record carries a `#### Review` section that is not empty, as the blocking rule `review`; the section's content is the owner's to read; since 2026-09-14 the current unit is the ledger's newest completed one | ADR-017 d2; ADR-026 d2 |
 | every run, any ref | the branch resolved as the local ref, else `HEAD` on the request head, else the remote-tracking ref; range rules reading only this path's records; the profile line naming what the forge does not enforce and, since 2026-09-14, what it could not read | ADR-004 d5, d3; ADR-001 d6; ADR-026 d1 |
 | the request's run at `C` and at `ready` | trunk containment, no provisional commit, the closure surface, the digest, drift since the base; the one administrative commit after `C` | 1.0, kept; ADR-008 d3 |
-| the integrating unit on the trunk | the digest again; one commit for one path, and not a merge where the declared integration transport is `pull-request`; a `ready` commit behind the `done`; the journal entry under `cairn.path` | ADR-002 d1; ADR-008 d2; ADR-026 d3, d4; ADR-001 d7; ADR-008 d4 |
+| the integrating unit on the trunk | the digest again; one commit for one path, and not a merge where the declared integration transport is `pull-request`; a `ready` commit behind the `done`, read since 2026-09-14 from any parent of the arrival; the journal entry under `cairn.path` | ADR-002 d1; ADR-008 d2; ADR-026 d3, d4; ADR-001 d7; ADR-027; ADR-008 d4 |
 | any refusal | the message names the remedy; a pushed record is corrected by a superseding step | ADR-008 d6 |
 
 Every blocking rule's fixture contains a merged trunk commit carrying

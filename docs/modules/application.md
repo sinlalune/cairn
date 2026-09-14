@@ -78,7 +78,8 @@ on.
 record reached `done`; whether that commit is a merge object carrying the edit,
 refused on `pull-request` integration alone, the `--no-ff` merge being the
 integrating unit on `manual-git`; and whether the `ready` the branch declared
-is behind it, read on the trunk's own line. Closure follows the configured transport: on `pull-request` the checker proves
+is behind it, read on the trunk's own line — from any parent of the arrival,
+by ADR-027. Closure follows the configured transport: on `pull-request` the checker proves
 the candidate, its closure surface, the opening digest and the trunk drift from
 Git and reads no review; on `manual-git` it also reads the closing record.
 

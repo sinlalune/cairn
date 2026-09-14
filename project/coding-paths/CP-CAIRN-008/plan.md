@@ -19,9 +19,10 @@ block is in the commit.
 
 *Numbering: units 1 to 5 landed as S01 to S05; a register correction the
 closing's own read found took S06, a correction a bot review of the first
-candidate found took S07, and item 13 — added by the amendment of 2026-09-14,
-the gate reading the integration it judges — is S08. Unit 6 below, and the
-`S06` that S02, S04 and S05 name as the candidate, runs as S09.*
+candidate found took S07, and the two amendments of 2026-09-14
+add S08 to S10 — ADR-027, then item 13's base, then item 14's rule, which
+lands with item 13 and not after it. Unit 6 below, and the `S06` that S02,
+S04 and S05 name as the candidate, runs as S11.*
 
 1. **S01 — ADR-026, the readings that must not lie.** Type `decision`.
    Four decisions, promoted from path 3's S03 and journal: a reading the

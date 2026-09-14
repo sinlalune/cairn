@@ -182,8 +182,8 @@ declared transport rather than assume one (ADR-026 decision 4). The refusal of
 two paths reaching `done` in one commit is not transport-shaped and binds on
 both. `transition` would still refuse that closing, reading the merge's first parent
 for the `ready` behind it and finding the trunk rather than the branch — one
-rule fixed does not make a transport work, and ADR-026 does not decide that
-one. It is the note's own warning turned on this change: an unsound rule was
+rule fixed does not make a transport work, and ADR-026 does not reach that one.
+ADR-027 does, and reads any parent. It is the note's own warning turned on this change: an unsound rule was
 replaced by a sound one beside a second rule nobody read. It is worse than
 that, and *What none of this proves* says how: neither rule is reached at all.
 

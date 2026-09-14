@@ -204,6 +204,25 @@ the record it writes, promoted from path 3's S03 and journal.
       `spec/reference/conformance.md` and `tools/soundness.md` name the
       rules this restores to an integration — `transition`, `acceptance`,
       `journal-entry` and `scope-digest` among them.
+- [ ] One decision record, ADR-027, says the `ready` behind an integrating
+      commit is read from any parent of it, an octopus merge included, and
+      the uncommitted case is left reading the head as today. It extends
+      ADR-001 decision
+      7, which names no parent while its own reasoning covers the
+      `manual-git` merge unit, and ends the debt this path's S03 raised at
+      its boundary. `integrationState` reads any parent instead of
+      `commit^`, and nothing is added to reach it; the
+      existing `manual-git` fixture, which today asserts `transition`
+      refuses the prescribed closing, has that assertion and its comment
+      inverted; the `pull-request` merge-object fixture gains the
+      assertion that `acceptance` alone now refuses it, the incidental
+      `transition` refusal being given up knowingly; the edge ADR-001
+      decision 7 closes — an arrival with no `ready` behind it — stays
+      closed, and its fixture still refuses. The 1.1 page carries
+      its own amendment paragraph for this record; the ADR index, the
+      catalogue, the conformance row, `tools/soundness.md`, the
+      `cairn-close` skill and its reference and `docs/modules/
+      application.md`, which all carry the debt as undecided, follow.
 
 ## Opening acceptance
 
@@ -233,7 +252,7 @@ token, the two rules, path 3's four leftovers widened in, `current_step`
 kept as decoration — and gave the go-ahead in the chat with the word
 "yes"; that go-ahead is this acceptance, and the record lands on the
 trunk directly. The owner said the units run in a fresh session.
-Amendments: one, below.
+Amendments: two, below.
 
 ### Amendment of 2026-09-14 — the gate reads the integration it judges
 
@@ -279,6 +298,39 @@ accepted_at: 2026-09-14T17:05:00Z
 scope_ref: project/coding-paths/CP-CAIRN-008/index.md#definition-of-done
 scope_digest: sha256:99b10b19aa4fab0a430b1b7e7ae72af121a4252d31f14b41fd6c1b55904cefa5
 supersedes: 2026-09-14T11:49:00Z
+```
+
+### Amendment of 2026-09-14 — the ready behind an integrating commit
+
+Item 13 gives `transition` its input, and the moment it has one it refuses an
+honest `manual-git` closing: `integrationState` reads `commit^`, the FIRST
+parent, and on that transport the `--no-ff` merge *is* the integrating unit, so
+the `ready` the branch declared sits on the second. Landing item 13 alone would
+take a `manual-git` adopter from silently unchecked to refused, for a reading
+no record decides. The two must land together or not at all.
+
+The owner was asked where the rule should look and ruled: **any parent**. A
+plain commit has one, a merge has two, an octopus merge has more, and the
+declaration may sit on any of them. That is one expression and no second place where the checker asks which
+transport it is judging — smaller than the transport gate ADR-026 decision 4
+used for `acceptance`, and it leaves nothing knowingly suppressed. The debt is
+this path's own, raised by S03 at its boundary; ADR-026 decided the
+`acceptance` half and does not reach this one.
+
+This acceptance supersedes the one above it. It adds a fourteenth item and
+nothing else: no surface is widened, because the record, the page, the checker,
+the fixtures, the catalogue, the conformance page and the soundness note are
+all already in `writes:`. The thirteen items above are the text they were last
+accepted with.
+
+```yaml
+decision: accepted
+accepted_by: sinlalune
+accepted_roles: [initiator, reviewer]
+accepted_at: 2026-09-14T17:40:00Z
+scope_ref: project/coding-paths/CP-CAIRN-008/index.md#definition-of-done
+scope_digest: sha256:d4bfa74b199ddff35c2046cecbf30b0f9729ed748065fa98ac4d900129801a1c
+supersedes: 2026-09-14T17:05:00Z
 ```
 
 ## Documentation coverage
@@ -341,42 +393,43 @@ trunk  : 99554f22cd64103a9e66dfd7b9af616543836082 — origin/main at S07
 
 ### Next action
 
-Run S08 with `cairn-unit`: item 13, added by the amendment of
-2026-09-14 — the unresolvable base reported rather than fatal, the
+Run S08 with `cairn-unit`: ADR-027, item 14's record, written before the
+rule moves as every record of this path has been — the `ready` behind an
+integrating commit read from any parent, extending ADR-001 decision 7.
+Then S09, item 13: the unresolvable base reported rather than fatal, the
 workflow's base on each event, the workflow test that today pins the
 defective expression, the fixture for an arrival, the kit's generated
-base, and the conformance and soundness lines that follow. Then the
-closing, unit 6 of the plan, which the plan's numbering note runs as
-S09, with `cairn-close`, not `cairn-unit`: it carries no step file and
-no review of its own (ADR-008 decision 1), and its unit type is
-`closure`. Candidate `a2489a9` is void; the new `C` is S08's commit.
-Merge the trunk in, run every gate bare on it,
+base. Then S10, item 14's rule — any parent of the arrival — and its
+`manual-git` fixture, which must land with S09 and not after it — item 13 alone would refuse an honest
+`manual-git` closing. Then the closing, unit 6 of the plan, which the
+plan's numbering note runs as S11, with `cairn-close`, not `cairn-unit`:
+it carries no step file and no review of its own (ADR-008 decision 1),
+and its unit type is `closure`. Candidate `a2489a9` is void; the new `C`
+is S10's commit. Merge the trunk in, run every gate bare on it,
 and update pull request #17's description with what `npm run cairn-audit` prints, in the order it
 prints: the three plain lines and the surface link, the definition of
 done item by item, then the ledger. Ask the owner to try the result —
 the profile line the request's run prints, with the token — signalled as
 a decision in the chat. Then the administrative commit on the branch,
 `ready` and `subject_commit` only, with its check green before the merge
-is asked for. The `transition` reading S03 found is named in the
-review's ledger as a debt this path did not decide.
+is asked for. The `transition` reading S03 found is no longer a debt: the
+amendment of 2026-09-14 made it item 14, and ADR-027 decides it.
 
 ### Blockers
 
-One decision is with the owner, raised at S03's boundary and not blocking
-the closing: the `transition` rule reads the merge's FIRST parent for the
-`ready` behind an integrating commit, so on `manual-git` — where the `--no-ff`
-merge is the integrating unit and the `ready` commit sits on the second parent
-— it would refuse an honest closing. ADR-026 decision 4 freed the `acceptance`
-refusal only. The reading is ADR-001 decision 7's, and changing it is a
-decision this path does not carry.
+One decision was with the owner, raised at S03's boundary: the `transition`
+rule reads the merge's FIRST parent for the `ready` behind an integrating
+commit, so on `manual-git` — where the `--no-ff` merge is the integrating unit
+and the `ready` commit sits on the second parent — it would refuse an honest
+closing. ADR-026 decision 4 freed the `acceptance` refusal only, and the
+reading is ADR-001 decision 7's.
 
-S07 found that it does not refuse anything today, because no run compares the
-trunk across an integrating commit and the rule is never reached. That is the
-amendment of 2026-09-14 and item 13, not a blocker. The two are separate: item
-13 gives the rule its input, and the `transition` reading — which will then
-fire on a `manual-git` closing — stays undecided and with the owner. Closing
-the first without the second leaves `manual-git` refused for a reason nobody
-ruled on.
+**Answered.** S07 found that it refuses nothing today, because no run compares
+the trunk across an integrating commit and the rule is never reached; item 13
+gives it input. The owner then ruled on the reading itself — any parent of the
+arrival — which is item 14 and ADR-027, written by S08. The two land together,
+S09 and S10, because item 13 alone would take a `manual-git` adopter from
+silently unchecked to refused. No decision is with the owner on this path.
 
 ### Tried and rejected
 

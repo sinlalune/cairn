@@ -105,8 +105,9 @@ Two paths reaching `done` in one commit is refused on both transports; two
 honest integrations in one request are not. The merge-object refusal is
 `pull-request`'s alone (ADR-008 decision 2; ADR-026 decisions 3 and 4). On
 `manual-git` one rule would refuse this shape — `transition`, reading the
-`ready` behind the arrival on the merge's first parent — which no record
-decides. It never fires: no run compares the trunk across an integrating
+`ready` behind the arrival on the merge's first parent — which ADR-027 decides:
+the `ready` is read from any parent, and the rule follows it. It never fires
+either way today: no run compares the trunk across an integrating
 commit, so no changed-file rule judges one, on either transport. The reference
 says why, and `tools/soundness.md` carries the finding.
 

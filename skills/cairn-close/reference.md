@@ -116,7 +116,8 @@ because this merge is the integrating unit (ADR-026 decision 4). `transition`
 *would* refuse this closing on any run that compared the trunk before the
 arrival with the trunk after it: it looks for the `ready` behind the arrival on
 the merge's FIRST parent and finds the trunk, where the branch declared it on
-the second. No record decides that reading.
+the second. ADR-027 decides that reading — any parent of the arrival — and the
+rule follows it.
 
 **No run makes that comparison, on either transport.** The gate above runs on
 the trunk, where the base resolves to none and the changed set is the working
