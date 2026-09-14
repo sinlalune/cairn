@@ -7,14 +7,14 @@ timestamp: 2026-09-12T00:00:00Z
 cairn:
   id: CP-CAIRN-007
   route: full
-  status: ready
+  status: done
   current_step: S08
   base_commit: 4255c4c6c74db01c06d9594b6765d02847c8978e
   branch: path/cp-cairn-007
   assigned_writer: cp-cairn-007-writer
   depends_on: []
   subject_commit: c57d11c22687aeee0a1301063b2ef98d25df387f
-  resolution: null
+  resolution: completed
   writes:
     - .github/workflows/cairn.yml
     - .github/pull_request_template.md
