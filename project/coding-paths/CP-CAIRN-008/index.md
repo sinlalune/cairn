@@ -20,6 +20,7 @@ cairn:
     - docs/architecture/01-cairn-1-1.md
     - docs/architecture/index.md
     - tools/cairn.mjs
+    - tools/cairn.test.mjs
     - tools/cairn-check.mjs
     - tools/cairn-check.test.mjs
     - tools/cairn-workflow.test.mjs
@@ -372,6 +373,8 @@ supersedes: 2026-09-14T17:05:00Z
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
+- **S09** — [the gate reads the integration it judges](./steps/S09.md) — complete. Item 13. One new blocking rule, `comparison`, standing behind *One invocation, one verdict* — a stated requirement that carried fixtures and no predicate: it reports a base that cannot be compared with this commit, and, off a path branch, one that already contains it; the forge's sentinel for a first push is advisory, not blocking. The workflow and the kit's generated workflow base a request run on its target branch, a trunk push on the commit it replaced, and a path-branch push on the trunk. Widened `writes:` by `tools/cairn.test.mjs`.
+- **S08** — [ADR-027, the ready behind an integrating commit](./steps/S08.md) — complete. The `ready` behind an arrival is read from any parent of it, extending ADR-001 decision 7, whose own reasoning covers the `manual-git` merge unit while its implementation read the first parent. The record names what it gives up: on `pull-request` the merge-object shape loses `transition`'s incidental refusal and keeps `acceptance`'s. Item 14's record half; the rule is S10's.
 - **S07** — [the refusal that never fires](./steps/S07.md) — complete. A bot review of candidate `a2489a9` found S04's sentence on the `manual-git` closing false: `transition` does not refuse it on the forge's run, because no run compares the trunk across an integrating commit. Measured on this repository's own trunk runs, which print `0 changed file(s)`, and true on both transports. The two skill documents and the soundness note say what is true; the rules, their fixtures and the workflow are untouched, and the base that spans the arrival is item 13's, added by the amendment of 2026-09-14 and implemented by S08. Candidate `a2489a9` void; advances the sixth item.
 - **S06** — [the register's widened file](./steps/S06.md) — complete. Row 5's writes column gains `tools/cairn-workflow.test.mjs`, which S02 widened the record's `writes:` by and the register, declaring the same scope, did not follow; the plan carries a numbering note, and the closing becomes S07. Found by the closing's own read of the candidate against the ninth item, which it advances and completes.
 - **S05** — [the module note](./steps/S05.md) — complete. `docs/modules/application.md` describes the checker and the post-mortem as they are: *The rules* split at the four subjects it had run together, and a section for the post-mortem, which had a table row and no paragraph. Two sentences inherited from that row were false and are corrected. Advances the eighth item of the definition of done.

@@ -1616,6 +1616,90 @@ test('parity: a committed edit to an immutable record is judged against the trun
   }
 })
 
+test('adversarial: comparison — the base the run was given does not resolve', () => {
+  COVERED.add('comparison')
+  // The checker used to hand `--base` straight to `git merge-base`, which
+  // throws on a ref that does not resolve, and died with a Node stack trace:
+  // a red gate carrying NO finding, which a reader cannot tell from a broken
+  // runner. CI supplies this flag from the forge's own event, and on a
+  // branch's first push that value is forty zeros, so the first adopter to
+  // install the workflow meets it on their first push to the trunk.
+  const { dir } = readyRepository()
+  try {
+    const found = check(dir, '--base', 'origin/never-fetched')
+    assert.ok(blocking(found).includes('comparison'), `findings were ${describe(found)}`)
+    assert.ok(found.findings.some((f) => f.rule === 'comparison' && f.outcome === 'inconclusive'),
+      `a base that cannot be compared is a reading NOT MADE, not a violation: ${describe(found)}`)
+    assert.ok(found.findings.some((f) => f.rule === 'comparison' && /fetch the ref/.test(f.message)),
+      `the refusal must name the remedy (ADR-008 d6): ${describe(found)}`)
+    // The forge's sentinel for "nothing precedes this" is NOT a broken input:
+    // it is a branch's first push, which a writer cannot avoid and which the
+    // gate must not fail. Advisory, and the run judges the working tree alone.
+    const first = check(dir, '--base', '0'.repeat(40))
+    assert.ok(!blocking(first).includes('comparison'),
+      `a first push must not be refused for having no predecessor: ${describe(first)}`)
+    assert.ok(advisory(first).includes('comparison'),
+      `but it must be reported, not silently narrowed: ${JSON.stringify(advisory(first))}`)
+    // A base that RESOLVES and shares no history: `refExists` would accept it,
+    // and `git merge-base` exits non-zero, which is the throwing call
+    // `changedFiles` makes. This is the shape that killed the process with no
+    // verdict at all, and the guard for it is in `main` BEFORE `changedFiles`.
+    git(dir, 'checkout', '-q', '--orphan', 'unrelated')
+    git(dir, 'commit', '-q', '--allow-empty', '-m', 'a root of its own')
+    const orphan = git(dir, 'rev-parse', 'HEAD').trim()
+    git(dir, 'checkout', '-q', 'path/cp-fixture-001')
+    const noHistory = check(dir, '--base', orphan)
+    assert.ok(blocking(noHistory).includes('comparison'),
+      `a base on an unrelated history must be reported, not thrown on: ${describe(noHistory)}`)
+    // A base nobody asked for is the fall-back `resolveBase` makes on purpose
+    // for a clone with no trunk ref; `trunk-containment` reports that one.
+    const unasked = check(dir)
+    assert.ok(!blocking(unasked).includes('comparison') && !advisory(unasked).includes('comparison'),
+      `no base was requested, so there is nothing to report about one: ${describe(unasked)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+test('adversarial: comparison — an arrival judged against itself is refused, not green', () => {
+  COVERED.add('comparison')
+  // THE case this rule exists for. Every fixture above hands the checker a
+  // base that predates the arrival, which is exactly what the deployed runs
+  // did not: `origin/<trunk>` after a push IS the pushed commit. So a
+  // dishonest integration — here the record taken to `done` on the branch,
+  // the arrival carried only by the merge object — went green in CI while its
+  // own fixture, given a real base, refused it.
+  const { dir } = integratedRepository({ shape: 'done on the branch' })
+  try {
+    // Given a base that spans the arrival, the rule that owns this shape
+    // refuses it. Naming the rule is the point: "something blocked" would pass
+    // on the old source too.
+    const spanning = check(dir, '--base', git(dir, 'rev-parse', 'HEAD^').trim())
+    assert.ok(blocking(spanning).includes('acceptance'),
+      `a base that spans the arrival must reach the rule that owns it: ${describe(spanning)}`)
+    // The deployed shape: the base already contains the commit under judgement.
+    const itself = check(dir, '--base', 'HEAD')
+    assert.ok(blocking(itself).includes('comparison'),
+      `an arrival judged against itself must be reported, not reported OK: ${describe(itself)}`)
+    assert.ok(!blocking(itself).includes('acceptance'),
+      `and the rule that owns it must be shown NOT to have fired, which is what makes the report necessary: ${describe(itself)}`)
+    assert.ok(itself.findings.some((f) => f.rule === 'comparison' && f.outcome === 'inconclusive'),
+      `an empty comparison is a reading NOT MADE, not a violation: ${describe(itself)}`)
+    // A DESCENDANT of HEAD gives the same empty comparison as HEAD itself, and
+    // a force-push that rewinds the trunk sends exactly that as the commit it
+    // replaced. Identity is not the test; the merge-base is.
+    git(dir, 'branch', '-f', 'ahead', 'HEAD')
+    git(dir, 'commit', '-q', '--allow-empty', '-m', 'a commit the trunk was rewound from')
+    const descendant = git(dir, 'rev-parse', 'HEAD').trim()
+    git(dir, 'reset', '-q', '--hard', 'HEAD~1')
+    const rewound = check(dir, '--base', descendant)
+    assert.ok(blocking(rewound).includes('comparison'),
+      `a base that already contains this commit is the same empty comparison: ${describe(rewound)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
 /** Blocking rules with no adversarial fixture. Declared rather than counted,
  *  so adding a blocking rule forces a choice: write its fixture, or add it here
  *  deliberately. Empty since Cairn 1.0, and the test keeps it honest in both

@@ -77,6 +77,7 @@ export function extractRules(source) {
  *  links and vocabulary, so those rows exist too.
  */
 export const RULE_CONFORMANCE = {
+  'comparison': 'One invocation, one verdict: local and CI agree on one tree',
   'branch-path': 'One path: one record, one branch, one worktree, one writer',
   'registration': 'Registration on the remote trunk before implementation',
   'registration-base': 'Registration on the remote trunk before implementation',
@@ -138,6 +139,10 @@ export function conformanceLinkage(rules, specSource) {
 }
 
 export const RULE_METADATA = {
+  'comparison': {
+    condition: 'A base was asked for and cannot be compared with this commit — it does not resolve, or shares no history with it — or, off a path branch, it already contains this commit, so every changed-file rule was narrowed to the working tree. The forge\'s sentinel for a branch\'s first push is advisory, not blocking: nothing precedes that commit',
+    enforcing: 'refExists(flag) && mergeBase(base, HEAD) !== null, else unresolvable; !onPath && mergeBase(base, HEAD) === HEAD => empty; /^0{40,}$/ => advisory. Reported inconclusive, never fatal'
+  },
   'route': {
     condition: 'A path declares no route, an unknown route, a lightweight route that meets a full-route trigger, or a descent from full',
     enforcing: 'configured new-path default + fullRouteTriggers(writes) + routeDescent(previous, current)'

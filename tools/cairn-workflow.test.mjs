@@ -67,7 +67,18 @@ test('the checker judges the base CI judges against, and reads the forge with th
   // it (ADR-026 decision 1).
   assert.match(checker, /^ +GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}$/m,
     'the profile line reports what this token can see and names what it cannot')
-  assert.match(checker, /CAIRN_BASE_REF: origin\/\$\{\{ github\.base_ref \|\| 'main' \}\}/)
+  // The expression this line used to pin — `origin/${{ github.base_ref ||
+  // 'main' }}` — was correct on a request and blind on a push: after the push
+  // `origin/main` IS the pushed commit, so every integrating unit this
+  // repository landed was judged against zero changed files. The base must
+  // span the arrival, which on a push is the commit it replaced.
+  // The WHOLE expression, not a grep for its parts: swapped arms, a dropped
+  // `format(...)`, or the wrong precedence would each satisfy a substring match
+  // and each would send the run a base that judges the wrong thing.
+  assert.ok(checker.includes(
+    "CAIRN_BASE_REF: ${{ github.base_ref && format('origin/{0}', github.base_ref) " +
+    "|| (github.ref_name == 'main' && github.event.before || 'origin/main') }}"),
+  'a request compares with its target branch; a push to the trunk with the commit it replaced; a push to a path branch with the trunk')
   assert.match(checker, /^ +run: node tools\/cairn-check\.mjs --base "\$CAIRN_BASE_REF"$/m, 'bare: a pipe would report the last command\'s status')
 })
 

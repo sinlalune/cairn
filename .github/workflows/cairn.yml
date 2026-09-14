@@ -47,7 +47,20 @@ jobs:
       - name: cairn-check
         id: cairn-check
         env:
-          CAIRN_BASE_REF: origin/${{ github.base_ref || 'main' }}
+          # The base must span the ARRIVAL. On a request that is the target
+          # branch; on a push to the trunk it is the commit the push replaced,
+          # because `origin/main` after the push already names the pushed
+          # commit and comparing it with itself is how every integrating unit
+          # this repository has landed reached ZERO changed files — no
+          # `transition`, no `acceptance`, no `journal-entry`, no
+          # `scope-digest`, over a green run. `github.event.before` is forty
+          # zeros on a repository's first push to the trunk, which the checker
+          # reports as an advisory — nothing precedes that commit — rather than
+          # dying on it. A push to a PATH branch keeps the trunk as its base:
+          # comparing a branch push with the push before it is the `--previous`
+          # form `comparisonRef` condemns, and is how twenty-six edited records
+          # went unjudged.
+          CAIRN_BASE_REF: ${{ github.base_ref && format('origin/{0}', github.base_ref) || (github.ref_name == 'main' && github.event.before || 'origin/main') }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # The token is back, because the READING changed. This token still
           # cannot see a ruleset's bypass list — GitHub returns `bypass_actors`

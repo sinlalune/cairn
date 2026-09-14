@@ -79,7 +79,15 @@ record reached `done`; whether that commit is a merge object carrying the edit,
 refused on `pull-request` integration alone, the `--no-ff` merge being the
 integrating unit on `manual-git`; and whether the `ready` the branch declared
 is behind it, read on the trunk's own line — from any parent of the arrival,
-by ADR-027. Closure follows the configured transport: on `pull-request` the checker proves
+by ADR-027.
+
+**The comparison every other rule inherits.** `comparison` judges the base the
+run was given before any changed-file rule reads it. A base that does not
+resolve is reported rather than thrown on; a base that resolves to the commit
+under judgement is reported too, off a path branch, because a push compared
+with itself yields no changed files and every rule keyed on them is skipped
+under a green run. Both are `inconclusive`: a reading not made, not a violation
+found. Closure follows the configured transport: on `pull-request` the checker proves
 the candidate, its closure surface, the opening digest and the trunk drift from
 Git and reads no review; on `manual-git` it also reads the closing record.
 

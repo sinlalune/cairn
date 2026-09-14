@@ -1262,6 +1262,11 @@ export const TRUNK_BASE_CANDIDATES = [`${REMOTE}/${TRUNK_BRANCH}`, TRUNK_BRANCH]
  * without a repository.
  */
 export function resolveBase({ flag = null, branch, refExists = () => false }) {
+  // A flag is taken as ASKED FOR, not as usable. Whether it can be compared
+  // with THIS commit is one question with one answer, and `main` asks it, once,
+  // with `merge-base`: a ref that does not resolve and a ref on an unrelated
+  // history both fail it. Checking resolvability here as well would be a second
+  // implementation of the same decision, and the weaker one.
   if (flag) return { base: flag, source: 'flag' }
   // Off a path branch there is no pending merge to decide, so the working
   // tree is the right question and no parity claim is being made.
@@ -1844,6 +1849,9 @@ export function evaluate({
   supersessions = [],
   integrationStateFor = null,
   branchSource = 'symbolic-ref',
+  baseSource = 'unresolvable',
+  baseRequested = null,
+  baseIsHead = false,
   workUnits = null,
   reviewFor = null,
   rewritingForbidden = REWRITING_FORBIDDEN,
@@ -1868,6 +1876,47 @@ export function evaluate({
   const touched = (prefix) => changed.filter((file) => file.startsWith(prefix))
   const onPath = isPathBranch(branch)
   const match = paths.find((p) => p.front?.branch === branch)
+
+  // 0. the COMPARISON itself. Every changed-file rule inherits it, so a base
+  //    that does not resolve is not a smaller run — it is no run at all, and
+  //    the old behaviour was to die inside `git merge-base` with a Node stack
+  //    trace: a red gate carrying no finding. CI supplies this from the forge's
+  //    own event, whose value on a branch's first push is forty zeros, so the
+  //    first adopter to install the workflow meets it. Reported, never guessed
+  //    at (ADR-026 decision 1's principle, one rule over).
+  // A base that RESOLVES can still be no comparison: if it is this very
+  // commit, `merge-base` is HEAD and the diff is empty. That is not a clean
+  // tree — it is a question asked of itself, and it is how every integrating
+  // unit this repository landed reached zero changed files under a green run.
+  // Only on the TRUNK. On a path branch a base equal to HEAD means the branch
+  // carries no commit yet, which is benign and which both invocations see
+  // alike — the parity fixtures for this very requirement caught the first
+  // draft of this rule reporting it on one invocation and not the other. On
+  // the trunk it is never benign: HEAD is an arrival or trunk work, and a base
+  // equal to it is a push compared with itself.
+  if (baseIsHead && !onPath) {
+    add('blocking', 'comparison',
+      'the base given already contains this commit, so the comparison is empty and every changed-file rule was narrowed to the working tree — provide a base that predates what you are judging: the target branch for a request, and for a push to the trunk the commit it replaced',
+      'inconclusive')
+  }
+  // Only where a base was ASKED for. `unresolvable` is also the answer for a
+  // checkout with no trunk ref and no flag, which `resolveBase` falls back on
+  // deliberately and `trunk-containment` reports; refusing there would refuse a
+  // clone for not having fetched yet.
+  if (baseSource === 'unresolvable' && baseRequested) {
+    // The forge's sentinel for "nothing precedes this": a branch's first push.
+    // That is a fact about the history, not a broken input, and failing a
+    // repository's first push to its trunk would be the gate refusing a state
+    // the writer cannot avoid.
+    if (/^0{40,}$/.test(baseRequested)) {
+      add('advisory', 'comparison',
+        'no commit precedes this push — the forge names none, so this run judged the working tree alone; the next push to this ref compares against this commit')
+    } else {
+      add('blocking', 'comparison',
+        `the base this run was asked to compare against cannot be compared with this commit (${baseRequested}), so every changed-file rule was narrowed to the working tree — fetch the ref first; where no ref reaches it, as after a force-push that rewound what the forge named, provide a --base that is still reachable`,
+        'inconclusive')
+    }
+  }
 
   // 1. branch → path — and FAIL CLOSED when the branch has no name -------
   // Every path-scoped rule is guarded by the branch name. A check that cannot
@@ -2048,9 +2097,11 @@ export function evaluate({
   // integrating unit — `cairn-close` step 5 and chapter 5 both prescribe it —
   // and this refusal does not reach there. It is not the only one that did —
   // see `tools/soundness.md` on the `transition` reading, which ADR-026 does
-  // not decide and which WOULD refuse that closing. It does not refuse it
-  // today: no run compares the trunk across an integrating commit, so neither
-  // rule is reached on either transport. That is item 13 of this path.
+  // not decide and which WOULD refuse that closing. Until 2026-09-14 it did
+  // not refuse anything: no run compared the trunk across an integrating
+  // commit, so neither rule was reached on either transport. Item 13 of this
+  // path gave them the comparison, and `comparison` reports when there is
+  // none.
   if (pullRequest) {
     for (const path of arrivingDone) {
       const integration = integrationOf.get(path.file)
@@ -3760,12 +3811,29 @@ async function main() {
     symbolicRef: gitOrNull(['symbolic-ref', '--short', 'HEAD']),
     abbrevRef: git(['rev-parse', '--abbrev-ref', 'HEAD'])
   })
-  const { base, source: baseSource } = resolveBase({
+  let { base, source: baseSource } = resolveBase({
     flag: baseFlag,
     branch,
     refExists
   })
+  // What the run was ASKED for, so an unusable base can name itself.
+  const baseRequested = baseFlag ?? null
+  // A base can RESOLVE and still not be comparable: two histories with no
+  // common ancestor make `git merge-base` exit non-zero, and `changedFiles`
+  // calls the throwing form. `refExists` answers "is this a commit", never
+  // "can it be compared with mine". This runs BEFORE `changedFiles`, because
+  // the whole point is that nothing downstream may throw on it.
+  if (base && gitOrNull(['merge-base', base, 'HEAD']) === null) {
+    base = null
+    baseSource = 'unresolvable'
+  }
   const changed = changedFiles(base)
+  // Resolved, and already containing this commit: the comparison is empty.
+  // IDENTITY is not the test — a base that is a DESCENDANT of HEAD gives the
+  // same empty diff, and a force-push that rewinds the trunk sends exactly
+  // that as the commit it replaced. The test is whether the merge-base is HEAD.
+  const baseIsHead = Boolean(base) &&
+    gitOrNull(['merge-base', base, 'HEAD']) === gitOrNull(['rev-parse', 'HEAD^{commit}'])
   const viewCurrent = activeViewCurrent()
   const paths = loadPaths()
   const pathForBranch = paths.find((path) => path.front?.branch === branch) ?? null
@@ -3802,6 +3870,9 @@ async function main() {
       supersessions: declaredSupersessions(workUnits),
       integrationStateFor: (file, id) => integrationState(file, previousRef, id),
       branchSource,
+      baseSource,
+      baseRequested,
+      baseIsHead,
       workUnits,
       reviewFor: (file) => reviewSection(readFileSync(join(REPO, file), 'utf8')),
       // Judged against the SAME comparison every other changed-file rule uses,

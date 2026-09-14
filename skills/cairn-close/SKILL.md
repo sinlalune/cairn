@@ -106,9 +106,9 @@ honest integrations in one request are not. The merge-object refusal is
 `pull-request`'s alone (ADR-008 decision 2; ADR-026 decisions 3 and 4). On
 `manual-git` one rule would refuse this shape — `transition`, reading the
 `ready` behind the arrival on the merge's first parent — which ADR-027 decides:
-the `ready` is read from any parent, and the rule follows it. It never fires
-either way today: no run compares the trunk across an integrating
-commit, so no changed-file rule judges one, on either transport. The reference
+the `ready` is read from any parent, and the rule follows it. Until 2026-09-14
+it never fired either way: no run compared the trunk across an integrating
+commit, so no changed-file rule judged one, on either transport. The reference
 says why, and `tools/soundness.md` carries the finding.
 
 ## 6. Prove it, then clean up

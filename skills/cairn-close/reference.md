@@ -95,6 +95,7 @@ the gate, and land that commit through the transport.
 ```bash
 git switch main
 git fetch origin main path/cp-example-001
+git rev-parse HEAD                 # the trunk BEFORE the arrival — the base below
 git merge --no-ff --no-commit origin/path/cp-example-001
 ```
 
@@ -107,9 +108,16 @@ git add project/coding-paths/ACTIVE.md
 git add project/log/YYYY-MM-DD-cp-example-001.md
 git commit -m "Integrate CP-EXAMPLE-001"
 git merge-base --is-ancestor <C> HEAD
-npm run cairn-check
+npm run cairn-check -- --base <the trunk sha from before the merge>
 npm test
 ```
+
+The `--base` is not optional here. A bare run on the trunk resolves no base and
+compares the working tree, which is clean once you have committed, so every
+changed-file rule — `transition`, `acceptance`, `journal-entry`, `scope-digest`
+— would see nothing and the run would print OK over an arrival it never read.
+The `comparison` rule reports a base that already contains what it judges, but
+it cannot report a base nobody asked for.
 
 No merge object is refused here — that refusal binds on `pull-request` alone,
 because this merge is the integrating unit (ADR-026 decision 4). `transition`
@@ -119,16 +127,16 @@ the merge's FIRST parent and finds the trunk, where the branch declared it on
 the second. ADR-027 decides that reading — any parent of the arrival — and the
 rule follows it.
 
-**No run makes that comparison, on either transport.** The gate above runs on
-the trunk, where the base resolves to none and the changed set is the working
-tree — clean, once you have committed. The installed workflow bases a push run
-on `origin/<trunk>`, which after that push already names the pushed commit.
-Both compare a commit with itself, so an integrating unit reaches no
-changed-file rule at all — `transition`, `acceptance`, `journal-entry` and
-`scope-digest` among them, and `journal-entry` exists for nothing else. This
-repository's own trunk runs print `0 changed file(s)`. Until the base spans the
-arrival, the sequence above and not the gate is what protects an integration;
-`tools/soundness.md` carries the finding.
+**Until 2026-09-14 no run made that comparison, on either transport**, so
+`transition`, `acceptance`, `journal-entry` and `scope-digest` never judged an
+arrival at all: the bare gate on the trunk resolves no base and sees the
+working tree, and the installed workflow based a push run on `origin/<trunk>`,
+which after that push already names the pushed commit. Trunk runs printed
+`0 changed file(s)`. The workflow now bases a push to the trunk on the commit
+it replaced, so the forge's run reaches these rules; and the `comparison` rule
+refuses to report OK over a base that already contains what it judges. A LOCAL
+run reaches them only if you give it the base — which is why the sequence above
+passes one. `tools/soundness.md` carries the finding.
 
 ```bash
 git push origin HEAD:main

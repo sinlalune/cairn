@@ -6,6 +6,7 @@ import { dirname, join } from 'node:path'
 import { tmpdir } from 'node:os'
 
 import {
+  workflow,
   applyAdopt, applyPlan, applyUpdate, buildConfig, defaultOptions, digest, fileState, installationStatus,
   migrateConfig, optionsFromConfig, outwardLinks, pinSpecLinks, planInstall, readLock, sourceCommit, specUrl, staleShapes,
   PROTOCOL_RELEASE, REFERENCE_TOOLS
@@ -29,6 +30,18 @@ const write = (dir, path, content) => {
 /* ------------------------------------------------------------------ *
  * init — the thin kit
  * ------------------------------------------------------------------ */
+
+test('cairn init: the generated gate names the adopter\'s own trunk, not ours', () => {
+  // `${options.trunk}` appears twice in one expression and nothing called the
+  // generator with a trunk that is not `main`, so a hard-coded 'main' — or one
+  // of the two occurrences left behind — would have shipped silently.
+  const yaml = workflow({ ...defaultOptions(), trunk: 'mainline' })
+  assert.ok(yaml.includes(
+    "CAIRN_BASE_REF: ${{ github.base_ref && format('origin/{0}', github.base_ref) " +
+    "|| (github.ref_name == 'mainline' && github.event.before || 'origin/mainline') }}"),
+  `both occurrences follow the declared trunk: ${yaml.split('\n').find((l) => l.includes('CAIRN_BASE_REF'))}`)
+  assert.ok(!yaml.includes("'origin/main'"), 'no occurrence of this repository\'s own trunk survives')
+})
 
 test('cairn init: a new repository is created in the shapes the protocol states now', () => {
   const config = buildConfig(defaultOptions())
@@ -130,7 +143,16 @@ test('cairn init: a freshly installed repository passes its own gate', () => {
     const output = check(dir)
     assert.match(output, /OK — protocol satisfied/)
     assert.match(output, /path history forbidden/)
-    assert.match(readFileSync(join(dir, '.github/workflows/cairn.yml'), 'utf8'), /path\/\*\*/)
+    const installed = readFileSync(join(dir, '.github/workflows/cairn.yml'), 'utf8')
+    assert.match(installed, /path\/\*\*/)
+    // The adopter's gate must compare across an arrival, not with itself. The
+    // kit shipped `origin/${{ github.base_ref || <trunk> }}`, which on a push
+    // names the pushed commit, so no changed-file rule judged an integration
+    // in any repository this kit installed.
+    assert.ok(installed.includes(
+      "CAIRN_BASE_REF: ${{ github.base_ref && format('origin/{0}', github.base_ref) " +
+      "|| (github.ref_name == 'main' && github.event.before || 'origin/main') }}"),
+    'the adopter gets the whole expression, not a base that judges the wrong thing')
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

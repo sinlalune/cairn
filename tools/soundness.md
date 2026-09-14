@@ -228,23 +228,38 @@ changed-file rules are judged on a comparison, and on the trunk that comparison
 is empty. A bare run resolves a base only on a path branch; on the trunk it
 falls back to the working tree, which is clean once the integration is
 committed. The installed workflow
-bases a push run on `origin/<trunk>`, which after that push already names the
-pushed commit, so the comparison is a commit against itself. An integrating
-unit is therefore judged by no changed-file rule on either transport —
-`transition`, `acceptance` and `scope-digest` receive nothing, and
-`journal-entry`, which exists only to bind an arrival, is disabled outright —
-while the run prints OK. This repository's own trunk runs say so in
+based a push run on `origin/<trunk>`, which after that push already names the
+pushed commit, so the comparison was a commit against itself. An integrating
+unit was therefore judged by no changed-file rule on either transport —
+`transition`, `acceptance` and `scope-digest` received nothing, and
+`journal-entry`, which exists only to bind an arrival, was disabled outright —
+while the run printed OK. This repository's own trunk runs say so in
 their header: the integration of CP-CAIRN-007 read `0 changed file(s)`. The
-fixtures are not wrong; they hand each rule a real comparison, which is exactly
-what the deployed runs do not. A rule with an adversarial fixture and no input
+fixtures were not wrong; they hand each rule a real comparison, which is exactly
+what the deployed runs did not. A rule with an adversarial fixture and no input
 is indistinguishable, from inside a green run, from a rule that passed —
 the same indistinguishability requirement 4 names, arrived at from the other
-side. The remedy is a base that spans the arrival, and it is not one line. The ref a
+side. **Fixed here, and the fix is a rule.** The remedy is a base that spans the
+arrival, and it was not one line. The ref a
 push replaced is the right base, but a branch's first push names none — the
-forge sends all zeros — and the checker today does not survive a base it cannot
-resolve: it exits through an uncaught Git error rather than reporting the run
+forge sends all zeros — and the checker did not survive a base it could not
+use: it exited through an uncaught Git error rather than reporting the run
 inconclusive, which is a red gate carrying no finding. So: an unresolvable base
 reported, then the base changed on push while a request run keeps its target
-branch, then the workflow test rewritten — it pins the defective expression
-today — then a fixture that drives an arrival through a trunk-shaped run, then
+branch, then the workflow test rewritten — it pinned the defective
+expression — then a fixture that drives an arrival through a trunk-shaped run,
+then
 the same base in the workflow the kit generates.
+
+The rule is `comparison`, and it stands behind *One invocation, one verdict:
+local and CI agree on one tree* — a stated requirement that had fixtures and no
+predicate, and that this defect violated exactly. It reports two shapes, both
+`inconclusive`, because each is a reading NOT MADE rather than a violation
+found: a base that does not resolve, which used to kill the process inside
+`git merge-base` with no finding at all; and a base that resolves to the commit
+under judgement, which is the shape the old workflow produced on every push to
+the trunk. The second is asked only off a path branch. On a path branch a base
+equal to `HEAD` means the branch carries no commit yet, which is benign and
+which both invocations see alike — the parity fixtures for this very
+requirement caught the first draft reporting it on one invocation and not the
+other, which is requirement 2 turned on the rule that enforces requirement 2.

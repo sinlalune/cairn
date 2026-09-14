@@ -409,7 +409,15 @@ jobs:
       # gate comes to pass over its own failure.
       - name: cairn-check
         env:
-          CAIRN_BASE_REF: origin/\${{ github.base_ref || '${options.trunk}' }}
+          # The base must span what the run judges. On a request that is the
+          # target branch. On a push to the TRUNK it is the commit the push
+          # replaced, because the trunk's own remote ref after that push
+          # already names the pushed commit, and comparing it with itself is
+          # how an integrating unit reaches zero changed files under a green
+          # run. On a push to a PATH branch it is the trunk: comparing a branch
+          # push with the push before it judges each unit against the last
+          # instead of against what it will merge into.
+          CAIRN_BASE_REF: \${{ github.base_ref && format('origin/{0}', github.base_ref) || (github.ref_name == '${options.trunk}' && github.event.before || 'origin/${options.trunk}') }}
         run: node tools/cairn-check.mjs --base "$CAIRN_BASE_REF"
 `
 }

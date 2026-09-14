@@ -2770,5 +2770,12 @@ test('there is one invocation form: no opt-out narrows the comparison', () => {
   assert.deepEqual(resolveBase({ workingTree: true, branch: 'path/cp-ex-010', refExists: () => true }), { base: `${REMOTE}/${TRUNK_BRANCH}`, source: 'default-trunk' })
   assert.deepEqual(resolveBase({ branch: 'path/cp-ex-010', refExists: () => false }), { base: null, source: 'unresolvable' })
   assert.deepEqual(resolveBase({ flag: 'origin/main', branch: 'path/cp-ex-010', refExists: () => true }), { base: 'origin/main', source: 'flag' })
+  // A flag is what was ASKED for; whether it can be compared with this commit
+  // is `main`'s one question, asked with `merge-base`, because a ref that does
+  // not resolve and a ref on an unrelated history fail the same way. This
+  // function does not second-guess it — the `comparison` rule reports the
+  // answer (ADR-026 decision 1's principle: a reading not made is reported,
+  // never answered for).
+  assert.deepEqual(resolveBase({ flag: '0'.repeat(40), branch: TRUNK_BRANCH, refExists: () => false }), { base: '0'.repeat(40), source: 'flag' })
   assert.deepEqual(resolveBase({ branch: TRUNK_BRANCH, refExists: () => true }), { base: null, source: 'trunk-work' })
 })
