@@ -2048,7 +2048,9 @@ export function evaluate({
   // integrating unit — `cairn-close` step 5 and chapter 5 both prescribe it —
   // and this refusal does not reach there. It is not the only one that did —
   // see `tools/soundness.md` on the `transition` reading, which ADR-026 does
-  // not decide and which still refuses that closing.
+  // not decide and which WOULD refuse that closing. It does not refuse it
+  // today: no run compares the trunk across an integrating commit, so neither
+  // rule is reached on either transport. That is item 13 of this path.
   if (pullRequest) {
     for (const path of arrivingDone) {
       const integration = integrationOf.get(path.file)

@@ -113,13 +113,21 @@ npm test
 
 No merge object is refused here — that refusal binds on `pull-request` alone,
 because this merge is the integrating unit (ADR-026 decision 4). `transition`
-still refuses this closing, on any run whose comparison predates the merge: it
-looks for the `ready` behind the arrival on the merge's FIRST parent and finds
-the trunk, where the branch declared it on the second. The bare gate above
-compares the trunk with itself and sees nothing to judge, so the refusal
-surfaces on the forge's run rather than here. No record decides that reading;
-`tools/soundness.md` names it, and until it is decided the answer is a ruling
-on the refusal, not a different commit.
+*would* refuse this closing on any run that compared the trunk before the
+arrival with the trunk after it: it looks for the `ready` behind the arrival on
+the merge's FIRST parent and finds the trunk, where the branch declared it on
+the second. No record decides that reading.
+
+**No run makes that comparison, on either transport.** The gate above runs on
+the trunk, where the base resolves to none and the changed set is the working
+tree — clean, once you have committed. The installed workflow bases a push run
+on `origin/<trunk>`, which after that push already names the pushed commit.
+Both compare a commit with itself, so an integrating unit reaches no
+changed-file rule at all — `transition`, `acceptance`, `journal-entry` and
+`scope-digest` among them, and `journal-entry` exists for nothing else. This
+repository's own trunk runs print `0 changed file(s)`. Until the base spans the
+arrival, the sequence above and not the gate is what protects an integration;
+`tools/soundness.md` carries the finding.
 
 ```bash
 git push origin HEAD:main

@@ -7,18 +7,19 @@ timestamp: 2026-09-14T00:00:00Z
 cairn:
   id: CP-CAIRN-008
   route: full
-  status: ready
-  current_step: S06
+  status: running
+  current_step: S07
   base_commit: 28169830081b7a09077696ff96345d3e6b4705d7
   branch: path/cp-cairn-008
   assigned_writer: cp-cairn-008-writer
   depends_on: []
-  subject_commit: a2489a91867bf7bc82aff3fcf1031c8f8a5f14df
+  subject_commit: null
   resolution: null
   writes:
     - docs/adr/**
     - docs/architecture/01-cairn-1-1.md
     - docs/architecture/index.md
+    - tools/cairn.mjs
     - tools/cairn-check.mjs
     - tools/cairn-check.test.mjs
     - tools/cairn-workflow.test.mjs
@@ -53,9 +54,10 @@ This path makes the gate say only what it read, and read the unit it
 claims to judge. It is the least because it changes two readings and
 returns one token, each behind one record it writes first, and the four
 leftovers it widens in are each one sentence, one condition or one
-import in a file the gate already owns. It does not touch the kit's
-installer, the specification's chapters, the layout, the README or the
-site: those are rows 4 and 6.
+import in a file the gate already owns. It does not touch the
+specification's chapters, the layout, the README or the site: those are rows 4
+and 6, and so is the kit's installer, of which the amendment of 2026-09-14
+takes one line — the base the workflow it generates gives the checker.
 
 **Why this row stands before the release.** Path 3 mapped the forge's
 token into the checker's step, and the gate printed *forge enforces
@@ -159,7 +161,9 @@ the record it writes, promoted from path 3's S03 and journal.
       same fixtures.
 - [ ] `docs/modules/application.md` describes the checker and the
       post-mortem as they are at the candidate, with no history.
-- [ ] Nothing under `tools/cairn.mjs`, `tools/cairn-audit.mjs`,
+- [ ] Nothing under `tools/cairn.mjs` except the base the workflow it
+      generates gives the checker, which item 13 requires, and nothing
+      under `tools/cairn-audit.mjs`,
       `tools/cairn-active.mjs`, `spec/index.md`,
       `spec/reference/repository-layout.md`, `skills/cairn-open`,
       `skills/cairn-unit`, `README.md` or `site/` changes; the six
@@ -185,6 +189,21 @@ the record it writes, promoted from path 3's S03 and journal.
       records done with one journal entry, the remote result is proved,
       and the clean secondary worktree is removed by the writer, or the
       failure to remove it is reported.
+- [ ] A run that judges an integrating commit compares the trunk across
+      the arrival. The checker reports a base it cannot resolve as
+      inconclusive and never crashes on one; `.github/workflows/cairn.yml`
+      bases a push run on a ref that predates the arrival and a request run
+      on its target branch, with the absence of such a ref — a branch's
+      first push — reported and not fatal; `tools/cairn-workflow.test.mjs`
+      asserts both, in place of the expression that made every trunk run
+      read zero changed files; a fixture drives an integrating commit
+      through a trunk-shaped run and fails without the change;
+      `tools/cairn.mjs` generates the same base for an adopter, its
+      installed-kit test asserting it; a case drives the unresolvable base
+      and fails on the crash; and
+      `spec/reference/conformance.md` and `tools/soundness.md` name the
+      rules this restores to an integration — `transition`, `acceptance`,
+      `journal-entry` and `scope-digest` among them.
 
 ## Opening acceptance
 
@@ -214,7 +233,53 @@ token, the two rules, path 3's four leftovers widened in, `current_step`
 kept as decoration — and gave the go-ahead in the chat with the word
 "yes"; that go-ahead is this acceptance, and the record lands on the
 trunk directly. The owner said the units run in a fresh session.
-Amendments: none.
+Amendments: one, below.
+
+### Amendment of 2026-09-14 — the gate reads the integration it judges
+
+A bot review of candidate `a2489a9` found the sentence S04 wrote about the
+`manual-git` closing false, and S07's own reading found the cause larger than
+the sentence: no run compares the trunk across an integrating commit, on either
+transport. A bare run off the trunk resolves no base and sees the working tree;
+the installed workflow bases a push run on `origin/main`, which after that push
+already names the pushed commit. This repository's own trunk runs print
+`0 changed file(s)` — CP-CAIRN-007's integration among them — so `transition`,
+`acceptance`, `journal-entry` and `scope-digest` have never judged an arrival
+here.
+
+The owner was asked whether to correct the documents and leave the reading to a
+new path, or to amend this path's scope and fix it here, and chose to fix it
+here. The reason is the one the fresh reader gave: every file the fix needs was
+already in `writes:` but one, and a gate reporting OK over a reading it never
+made is this path's own subject.
+
+This acceptance supersedes the one above it. It adds a thirteenth item to the
+definition of done and widens `writes:` by `tools/cairn.mjs`, which generates
+the same base line for every adopter. Item 10 is amended with it, by exactly
+that much: it listed `tools/cairn.mjs` among the files nothing may change, and
+now excepts the base the generated workflow gives the checker. The other eleven
+items are the text they were accepted with.
+
+Two sentences of the acceptance above are narrowed by this one, and are left
+standing as what was true when it was written. *Row 4 shares no file with it*
+and *it does not touch the kit's installer* are now false of one line:
+`tools/cairn.mjs` is row 4's file, and row 4 has no path, so nothing runs beside
+this one and `writes-overlap` — which reports only live paths — stays silent.
+Row 4 inherits a file this path has already moved, and its own registration
+reads this amendment. The Goal above says so.
+
+The `transition` reading itself — whose refusal would fire once the comparison
+spans the arrival — stays undecided and ADR-001 decision 7's.
+
+```yaml
+decision: accepted
+accepted_by: sinlalune
+accepted_roles: [initiator, reviewer]
+accepted_at: 2026-09-14T17:05:00Z
+scope_ref: project/coding-paths/CP-CAIRN-008/index.md#definition-of-done
+scope_digest: sha256:99b10b19aa4fab0a430b1b7e7ae72af121a4252d31f14b41fd6c1b55904cefa5
+supersedes: 2026-09-14T11:49:00Z
+```
 
 ## Documentation coverage
 
@@ -255,6 +320,7 @@ Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
+- **S07** — [the refusal that never fires](./steps/S07.md) — complete. A bot review of candidate `a2489a9` found S04's sentence on the `manual-git` closing false: `transition` does not refuse it on the forge's run, because no run compares the trunk across an integrating commit. Measured on this repository's own trunk runs, which print `0 changed file(s)`, and true on both transports. The two skill documents and the soundness note say what is true; the rules, their fixtures and the workflow are untouched, and the base that spans the arrival is item 13's, added by the amendment of 2026-09-14 and implemented by S08. Candidate `a2489a9` void; advances the sixth item.
 - **S06** — [the register's widened file](./steps/S06.md) — complete. Row 5's writes column gains `tools/cairn-workflow.test.mjs`, which S02 widened the record's `writes:` by and the register, declaring the same scope, did not follow; the plan carries a numbering note, and the closing becomes S07. Found by the closing's own read of the candidate against the ninth item, which it advances and completes.
 - **S05** — [the module note](./steps/S05.md) — complete. `docs/modules/application.md` describes the checker and the post-mortem as they are: *The rules* split at the four subjects it had run together, and a section for the post-mortem, which had a table row and no paragraph. Two sentences inherited from that row were false and are corrected. Advances the eighth item of the definition of done.
 - **S04** — [path 3's four leftovers](./steps/S04.md) — complete. The conformance page names where the supersession's writer half is written, and two rows S03 left behind are corrected; the close skill and its reference say what the checker refuses and allows by transport, and where a `manual-git` closing still meets the undecided `transition` refusal; the post-mortem imports the checker's readings and its Git plumbing — `gitOrNull`, `recordShapes`, `recordHistory`, `recordFrontAt`, `stepRecordOrigin`, `refExists` — and is 103 lines shorter, with its output byte-identical across every path record. Advances the rest of the fifth item, the sixth and the seventh.
@@ -267,19 +333,25 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : a2489a91867bf7bc82aff3fcf1031c8f8a5f14df — candidate C, on origin/path/cp-cairn-008
-unit   : 7 — the closing; C is checked green on the request's own run
+commit : a2489a91867bf7bc82aff3fcf1031c8f8a5f14df — S06, on origin/path/cp-cairn-008; void as a candidate
+unit   : 7 — S07 complete on push; the closing names the new candidate here
 base   : 28169830081b7a09077696ff96345d3e6b4705d7
-trunk  : 99554f22cd64103a9e66dfd7b9af616543836082 — origin/main at C
+trunk  : 99554f22cd64103a9e66dfd7b9af616543836082 — origin/main at S07
 ```
 
 ### Next action
 
-Run the closing — unit 6 of the plan, which the plan's numbering note
-runs as S07 — with `cairn-close`, not `cairn-unit`: the closing carries
-no step file and no review of its own (ADR-008 decision 1), and its unit
-type is `closure`. Merge the trunk in, run every gate bare on candidate
-`C`, and open pull request #17's description with what `npm run cairn-audit` prints, in the order it
+Run S08 with `cairn-unit`: item 13, added by the amendment of
+2026-09-14 — the unresolvable base reported rather than fatal, the
+workflow's base on each event, the workflow test that today pins the
+defective expression, the fixture for an arrival, the kit's generated
+base, and the conformance and soundness lines that follow. Then the
+closing, unit 6 of the plan, which the plan's numbering note runs as
+S09, with `cairn-close`, not `cairn-unit`: it carries no step file and
+no review of its own (ADR-008 decision 1), and its unit type is
+`closure`. Candidate `a2489a9` is void; the new `C` is S08's commit.
+Merge the trunk in, run every gate bare on it,
+and update pull request #17's description with what `npm run cairn-audit` prints, in the order it
 prints: the three plain lines and the surface link, the definition of
 done item by item, then the ledger. Ask the owner to try the result —
 the profile line the request's run prints, with the token — signalled as
@@ -291,12 +363,20 @@ review's ledger as a debt this path did not decide.
 ### Blockers
 
 One decision is with the owner, raised at S03's boundary and not blocking
-the closing: the `transition` rule reads the merge's FIRST parent for the `ready`
-behind an integrating commit, so on `manual-git` — where the `--no-ff`
-merge is the integrating unit and the `ready` commit sits on the second
-parent — an honest closing is still refused. ADR-026 decision 4 freed the
-`acceptance` refusal only. The reading is ADR-001 decision 7's, and
-changing it is a decision this path does not carry.
+the closing: the `transition` rule reads the merge's FIRST parent for the
+`ready` behind an integrating commit, so on `manual-git` — where the `--no-ff`
+merge is the integrating unit and the `ready` commit sits on the second parent
+— it would refuse an honest closing. ADR-026 decision 4 freed the `acceptance`
+refusal only. The reading is ADR-001 decision 7's, and changing it is a
+decision this path does not carry.
+
+S07 found that it does not refuse anything today, because no run compares the
+trunk across an integrating commit and the rule is never reached. That is the
+amendment of 2026-09-14 and item 13, not a blocker. The two are separate: item
+13 gives the rule its input, and the `transition` reading — which will then
+fire on a `manual-git` closing — stays undecided and with the owner. Closing
+the first without the second leaves `manual-git` refused for a reason nobody
+ruled on.
 
 ### Tried and rejected
 

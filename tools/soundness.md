@@ -180,11 +180,12 @@ it refused honest closings rather than passing dishonest ones, which is the
 rarer half of this note; the fix is the same either way, which is to read the
 declared transport rather than assume one (ADR-026 decision 4). The refusal of
 two paths reaching `done` in one commit is not transport-shaped and binds on
-both. That closing is still refused, by `transition`, which reads the merge's
-first parent for the `ready` behind it and finds the trunk rather than the
-branch — one rule fixed does not make a transport work, and ADR-026 does not
-decide that one. It is the note's own warning turned on this change: an
-unsound rule was replaced by a sound one beside a second rule nobody read.
+both. `transition` would still refuse that closing, reading the merge's first parent
+for the `ready` behind it and finding the trunk rather than the branch — one
+rule fixed does not make a transport work, and ADR-026 does not decide that
+one. It is the note's own warning turned on this change: an unsound rule was
+replaced by a sound one beside a second rule nobody read. It is worse than
+that, and *What none of this proves* says how: neither rule is reached at all.
 
 **4. A stated requirement with no predicate is listed as unenforced.** The
 conformance page is where that is said. An unenforced requirement and an
@@ -221,3 +222,29 @@ answer, and an unsound rule is unsound identically everywhere.
 A proxy that is exact today can become a proxy again when the model around it
 changes, without anybody editing it. Nothing in the rule changed; the world it
 described did.
+
+**And a sound rule proves nothing about a run that never reaches it.** The
+changed-file rules are judged on a comparison, and on the trunk that comparison
+is empty. A bare run resolves a base only on a path branch; on the trunk it
+falls back to the working tree, which is clean once the integration is
+committed. The installed workflow
+bases a push run on `origin/<trunk>`, which after that push already names the
+pushed commit, so the comparison is a commit against itself. An integrating
+unit is therefore judged by no changed-file rule on either transport —
+`transition`, `acceptance` and `scope-digest` receive nothing, and
+`journal-entry`, which exists only to bind an arrival, is disabled outright —
+while the run prints OK. This repository's own trunk runs say so in
+their header: the integration of CP-CAIRN-007 read `0 changed file(s)`. The
+fixtures are not wrong; they hand each rule a real comparison, which is exactly
+what the deployed runs do not. A rule with an adversarial fixture and no input
+is indistinguishable, from inside a green run, from a rule that passed —
+the same indistinguishability requirement 4 names, arrived at from the other
+side. The remedy is a base that spans the arrival, and it is not one line. The ref a
+push replaced is the right base, but a branch's first push names none — the
+forge sends all zeros — and the checker today does not survive a base it cannot
+resolve: it exits through an uncaught Git error rather than reporting the run
+inconclusive, which is a red gate carrying no finding. So: an unresolvable base
+reported, then the base changed on push while a request run keeps its target
+branch, then the workflow test rewritten — it pins the defective expression
+today — then a fixture that drives an arrival through a trunk-shaped run, then
+the same base in the workflow the kit generates.
