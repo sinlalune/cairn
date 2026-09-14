@@ -274,7 +274,9 @@ trunk  : 99554f22cd64103a9e66dfd7b9af616543836082 — origin/main at S05
 
 ### Next action
 
-Run S06 of the plan with `cairn-unit` — the candidate. Merge the trunk
+Run S06 of the plan with `cairn-close`, not `cairn-unit` — the closing
+carries no step file and no review of its own (ADR-008 decision 1), and
+its unit type is `closure`. Merge the trunk
 in, run every gate bare on candidate `C`, and open pull request #17's
 description with what `npm run cairn-audit` prints, in the order it
 prints: the three plain lines and the surface link, the definition of
@@ -288,7 +290,7 @@ review's ledger as a debt this path did not decide.
 ### Blockers
 
 One decision is with the owner, raised at S03's boundary and not blocking
-S04: the `transition` rule reads the merge's FIRST parent for the `ready`
+the closing: the `transition` rule reads the merge's FIRST parent for the `ready`
 behind an integrating commit, so on `manual-git` — where the `--no-ff`
 merge is the integrating unit and the `ready` commit sits on the second
 parent — an honest closing is still refused. ADR-026 decision 4 freed the
@@ -317,8 +319,8 @@ changing it is a decision this path does not carry.
 1. `AGENTS.md`, then `skills/cairn-unit/SKILL.md` as path 3 left it.
 2. `project/coding-paths/CP-CAIRN-007/steps/S03.md` and the journal entry at their pinned blobs — the lie and the debts.
 3. `docs/architecture/01-cairn-1-1.md` at its pinned blob — the three sections.
-4. `project/coding-paths/CP-CAIRN-008/plan.md`, then the records the unit extends, at their tables.
-5. `tools/cairn-check.mjs` — `forgeGaps`, `readForge`, the profile line, the `review` and `acceptance` rules — before S02.
+4. `project/coding-paths/CP-CAIRN-008/plan.md`, item 6 — what the closing owes.
+5. `skills/cairn-close/SKILL.md` and its reference, for the closing sequence on `pull-request`; the five step records under `./steps/`, whose summaries above say which item each advanced.
 
 ### Verify
 
