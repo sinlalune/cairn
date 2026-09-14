@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-008
   route: full
   status: running
-  current_step: S04
+  current_step: S05
   base_commit: 28169830081b7a09077696ff96345d3e6b4705d7
   branch: path/cp-cairn-008
   assigned_writer: cp-cairn-008-writer
@@ -255,6 +255,7 @@ Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
+- **S05** — [the module note](./steps/S05.md) — complete. `docs/modules/application.md` describes the checker and the post-mortem as they are: *The rules* split at the four subjects it had run together, and a section for the post-mortem, which had a table row and no paragraph. Two sentences inherited from that row were false and are corrected. Advances the eighth item of the definition of done.
 - **S04** — [path 3's four leftovers](./steps/S04.md) — complete. The conformance page names where the supersession's writer half is written, and two rows S03 left behind are corrected; the close skill and its reference say what the checker refuses and allows by transport, and where a `manual-git` closing still meets the undecided `transition` refusal; the post-mortem imports the checker's readings and its Git plumbing — `gitOrNull`, `recordShapes`, `recordHistory`, `recordFrontAt`, `stepRecordOrigin`, `refExists` — and is 103 lines shorter, with its output byte-identical across every path record. Advances the rest of the fifth item, the sixth and the seventh.
 - **S03** — [the two rules](./steps/S03.md) — complete. The `review` rule reads the newest unit kept in a ledger, the unit under review, and `current_step` selects nothing; the `acceptance` rule's merge-object refusal binds on `pull-request` integration alone, and its comment names one commit for one path as the reading that binds. Catalogue, conformance rows — generated and hand-written — and the soundness note follow. Advances the third and fourth items of the definition of done and the catalogue half of the fifth. Found: the `transition` rule refuses the same `manual-git` closing for its own reason, which ADR-026 does not decide.
 - **S02** — [the forge reading, and the token back](./steps/S02.md) — complete. `forgeGaps` returns `{ gaps, withheld }` and never sums the two; `readForge` names the half it could not read, with the reason where the forge gave one, instead of failing the whole read; the profile line prints read, withheld and unenforced where anything was withheld, and never claims the whole forge over an unread reading; a rule that names no ruleset is withheld rather than skipped. `GITHUB_TOKEN` is back in the checker's workflow step. Advances the second item of the definition of done, and closes item 2 of coding path 3's. Widened `writes:` by `tools/cairn-workflow.test.mjs`.
@@ -265,21 +266,24 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : bb3cb7db9b31bec831fa248aa4cbf48f647fc42a — S03, on origin/path/cp-cairn-008
-unit   : 4 — S04 complete on push; S05 names its commit here
+commit : f4fbf0ed35076d7912a6b40f22347e5efee62197 — S04, on origin/path/cp-cairn-008
+unit   : 5 — S05 complete on push; S06 names its commit here
 base   : 28169830081b7a09077696ff96345d3e6b4705d7
-trunk  : 99554f22cd64103a9e66dfd7b9af616543836082 — origin/main at S04
+trunk  : 99554f22cd64103a9e66dfd7b9af616543836082 — origin/main at S05
 ```
 
 ### Next action
 
-Run S05 of the plan with `cairn-unit` — the module note.
-`docs/modules/application.md` describes the checker and the post-mortem
-as they are at the candidate, with no history: the forge reading's three
-answers, the two rules this path changed, and the post-mortem reading
-through the checker's exports rather than beside them. Type
-`documentation`. Run the review movement on the unit's diff, and set
-`current_step` to S05.
+Run S06 of the plan with `cairn-unit` — the candidate. Merge the trunk
+in, run every gate bare on candidate `C`, and open pull request #17's
+description with what `npm run cairn-audit` prints, in the order it
+prints: the three plain lines and the surface link, the definition of
+done item by item, then the ledger. Ask the owner to try the result —
+the profile line the request's run prints, with the token — signalled as
+a decision in the chat. Then the administrative commit on the branch,
+`ready` and `subject_commit` only, with its check green before the merge
+is asked for. The `transition` reading S03 found is named in the
+review's ledger as a debt this path did not decide.
 
 ### Blockers
 

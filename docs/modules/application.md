@@ -3,7 +3,7 @@ type: Cairn Module Note
 title: The reference tools
 description: What lives under tools/ — the checker, the live-view generator, the audit scaffold, the post-mortem reader, the rule-catalogue generator, the greenfield pilot, the initializer and the configuration loader — how they find the specification, and how they are tested.
 tags: [module, cairn, tools]
-timestamp: 2026-09-13T00:00:00Z
+timestamp: 2026-09-14T00:00:00Z
 ---
 
 # The reference tools
@@ -18,7 +18,7 @@ covers: dependency-free Node scripts that evaluate the protocol the
 | `cairn-check.mjs` | the checker: every blocking and advisory rule, reported by exit code |
 | `cairn-active.mjs` | regenerates the live view of running paths, or checks that it is current; reports a roadmap register still carrying the installer's row while any path is registered |
 | `cairn-audit.mjs` | scaffolds the closing review of one exact candidate: on `pull-request` the request's description, in the order the template gives, with the definition of done read item by item from the record; on `manual-git` the closing record in the path folder |
-| `cairn-postmortem.mjs` | the mechanical half of a post-mortem, for one path or for every path record: the registration commit against `base_commit`, the shape of the `ready` commit the branch declares, the definition of done's digest against the acceptance in force, each step record against the blob that added it, and — with a token — the red runs of a branch and the time a request stayed open; facts only, and no reading of it reaches an exit code |
+| `cairn-postmortem.mjs` | the mechanical half of a post-mortem; facts only, and no reading of it reaches an exit code |
 | `cairn-rules.mjs` | regenerates the rule catalogue and the rule-to-requirement linkage on the [conformance page](../../spec/reference/conformance.md); this repository's, not installed |
 | `cairn.mjs` | the `cairn` command: `init` installs the thin kit, `status` reads the lock, `update` rewrites pristine kit files and migrates the configuration, `adopt` turns a lock-less installation into one; the package's, not installed |
 | `cairn-pilot.mjs` | the greenfield pilot as a command: drives a throwaway repository from `init` to `done` on one transport, green at every gate, and counts the protocol files each stage writes; this repository's, not installed |
@@ -42,42 +42,62 @@ inventoried on the [conformance page](../../spec/reference/conformance.md),
 which also records where every 0.2 name went. One invocation form judges a
 tree — `cairn-check [--base <ref>] [--branch <name>] [--json]`, and on a path
 branch the base defaults to the trunk — and one answers a question and exits:
-`cairn-check --scope-digest <record>#definition-of-done`. Every run reports
-the transports the configuration declares, what the forge does not enforce and
-what it could not read — as a third header line, or as the `profile` object
-under `--json`. The forge half is read from the rules that apply to the trunk
-when `GITHUB_TOKEN` or `GH_TOKEN` is set and the remote is a GitHub repository,
-and is reported as not read otherwise. A reading the forge WITHHELD is a third
-answer, neither a gap nor an absence: GitHub returns a ruleset's
-`bypass_actors` only to a caller with write access to the ruleset, so a
-workflow's own token is given a ruleset with the field elided, and the line
-names that list as not read rather than reporting a trunk nobody bypasses.
-Where a ruleset cannot be fetched at all, the same line is printed for it with
-the reason the forge gave, and the rules the branch endpoint did give are still
-reported. CI runs the checker with `secrets.GITHUB_TOKEN`, so its runs name
-that bypass list as not read and report whatever the rules do say beside it.
-None of it is a finding: the remedy for a gap is a setting, and no failure of
-the read reaches an exit code. The configuration is schema 2. The checker
-reads a path's opening acceptance from the record's own
-`## Opening acceptance` block, its checkpoint from the resume section, the
-registration commit as the trunk commit in which the record became `running`,
-and the branch's tip from the
-local ref, else `HEAD` when the checkout is detached, else the remote-tracking
-ref; the range from a path's base to its candidate is read as this path's own
-commits alone, where a draft is resolved by the later commit that publishes the
-unit it was drafting, and an edited step record is answered by a later step of
-the same path binding the blob it replaces to the blob it adds; it reads the
-integration from the same range — the commit in which a record reached `done`,
-whether that commit is a merge object carrying the edit — refused on
-`pull-request` integration alone, the `--no-ff` merge being the integrating
-unit on `manual-git` — and whether the `ready` the branch declared is behind
-it; it reads the record of the review movement in the newest unit kept in a
-ledger, the unit under review, and reads nothing of that section beyond whether
-it is empty; it validates `depends_on:` and knows two routes; the live-view
-generator marks each live path unblocked or names what it waits on. Closure follows the
-configured transport: on `pull-request` the checker proves the candidate, its
-closure surface, the opening digest and the trunk drift from Git and reads no
-review; on `manual-git` it also reads the closing record.
+`cairn-check --scope-digest <record>#definition-of-done`. The configuration is
+schema 2.
+
+**The profile line.** Every run reports the transports the configuration
+declares, what the forge does not enforce and what it could not read — as a
+third header line, or as the `profile` object under `--json`. The forge half is
+read from the rules that apply to the trunk when `GITHUB_TOKEN` or `GH_TOKEN`
+is set and the remote is a GitHub repository, and is reported as not read
+otherwise. A reading the forge WITHHELD is a third answer, neither a gap nor an
+absence: a ruleset that comes back without its bypass list is a list nobody
+read, and the line says so. Where a ruleset cannot be fetched at all, the same
+line is printed for it with the reason the forge gave, and the rules the branch
+endpoint did give are still reported. CI runs the checker with
+`secrets.GITHUB_TOKEN`, whose reach does not extend to a ruleset's bypass list,
+so its runs print that line and report the rules beside it. None of it is a
+finding: the remedy
+for a gap is a setting, and no failure of the read reaches an exit code.
+
+**What it reads of a path.** The opening acceptance from the record's own
+`## Opening acceptance` block; the checkpoint from the resume section; the
+registration commit as the trunk commit in which the record became `running`;
+the branch's tip from the local ref, else `HEAD` when the checkout is detached,
+else the remote-tracking ref. The range from a path's base to its candidate is
+read as this path's own commits alone, where a draft is resolved by the later
+commit that publishes the unit it was drafting, and an edited step record is
+answered by a later step of the same path binding the blob it replaces to the
+blob it adds. It reads the record of the review movement in the newest unit
+kept in a ledger — the unit under review — and reads nothing of that section
+beyond whether it is empty. It validates `depends_on:` and knows two routes;
+the live-view generator marks each live path unblocked or names what it waits
+on.
+
+**What it reads of an integration.** From the same range: the commit in which a
+record reached `done`; whether that commit is a merge object carrying the edit,
+refused on `pull-request` integration alone, the `--no-ff` merge being the
+integrating unit on `manual-git`; and whether the `ready` the branch declared
+is behind it, read on the trunk's own line. Closure follows the configured transport: on `pull-request` the checker proves
+the candidate, its closure surface, the opening digest and the trunk drift from
+Git and reads no review; on `manual-git` it also reads the closing record.
+
+## The post-mortem
+
+`cairn-postmortem.mjs` prints one line per reading, for one path or for every
+path record, and closes on a line saying where the judgement is. The readings
+are the ones [ADR-014](../adr/ADR-014-two-tools-of-1-1.md) decision 1 names,
+with one widening: it watches the branch for `ready` **or** `done`, because a
+branch that declared `done` is the incident a post-mortem is opened for, and a
+reading that watched for `ready` alone would answer *not written yet* about it.
+
+The predicates it judges with, and the Git plumbing under them, are imported
+from `cairn-check.mjs`: a record's two shapes, its history in a range, the
+metadata it declared at a commit, whether a ref exists, the blob that added a
+step record. Its own are the rendering of each fact into a line, the two forge
+readings — a branch's red runs, and how long a request stayed open — and what
+it takes from the working tree rather than from Git: every path record, and
+each step's current content.
 
 ## The kit
 
