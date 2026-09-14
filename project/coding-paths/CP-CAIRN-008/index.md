@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-008
   route: full
   status: running
-  current_step: S05
+  current_step: S06
   base_commit: 28169830081b7a09077696ff96345d3e6b4705d7
   branch: path/cp-cairn-008
   assigned_writer: cp-cairn-008-writer
@@ -255,6 +255,7 @@ Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
+- **S06** — [the register's widened file](./steps/S06.md) — complete. Row 5's writes column gains `tools/cairn-workflow.test.mjs`, which S02 widened the record's `writes:` by and the register, declaring the same scope, did not follow; the plan carries a numbering note, and the closing becomes S07. Found by the closing's own read of the candidate against the ninth item, which it advances and completes.
 - **S05** — [the module note](./steps/S05.md) — complete. `docs/modules/application.md` describes the checker and the post-mortem as they are: *The rules* split at the four subjects it had run together, and a section for the post-mortem, which had a table row and no paragraph. Two sentences inherited from that row were false and are corrected. Advances the eighth item of the definition of done.
 - **S04** — [path 3's four leftovers](./steps/S04.md) — complete. The conformance page names where the supersession's writer half is written, and two rows S03 left behind are corrected; the close skill and its reference say what the checker refuses and allows by transport, and where a `manual-git` closing still meets the undecided `transition` refusal; the post-mortem imports the checker's readings and its Git plumbing — `gitOrNull`, `recordShapes`, `recordHistory`, `recordFrontAt`, `stepRecordOrigin`, `refExists` — and is 103 lines shorter, with its output byte-identical across every path record. Advances the rest of the fifth item, the sixth and the seventh.
 - **S03** — [the two rules](./steps/S03.md) — complete. The `review` rule reads the newest unit kept in a ledger, the unit under review, and `current_step` selects nothing; the `acceptance` rule's merge-object refusal binds on `pull-request` integration alone, and its comment names one commit for one path as the reading that binds. Catalogue, conformance rows — generated and hand-written — and the soundness note follow. Advances the third and fourth items of the definition of done and the catalogue half of the fifth. Found: the `transition` rule refuses the same `manual-git` closing for its own reason, which ADR-026 does not decide.
@@ -266,19 +267,19 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : f4fbf0ed35076d7912a6b40f22347e5efee62197 — S04, on origin/path/cp-cairn-008
-unit   : 5 — S05 complete on push; S06 names its commit here
+commit : 46f44feaa21fd45ee3abf3a230a2cf811ca098e2 — the resume correction after S05, on origin/path/cp-cairn-008
+unit   : 6 — S06 complete on push; S07, the closing, names the candidate here
 base   : 28169830081b7a09077696ff96345d3e6b4705d7
-trunk  : 99554f22cd64103a9e66dfd7b9af616543836082 — origin/main at S05
+trunk  : 99554f22cd64103a9e66dfd7b9af616543836082 — origin/main at S06
 ```
 
 ### Next action
 
-Run S06 of the plan with `cairn-close`, not `cairn-unit` — the closing
-carries no step file and no review of its own (ADR-008 decision 1), and
-its unit type is `closure`. Merge the trunk
-in, run every gate bare on candidate `C`, and open pull request #17's
-description with what `npm run cairn-audit` prints, in the order it
+Run the closing — unit 6 of the plan, which the plan's numbering note
+runs as S07 — with `cairn-close`, not `cairn-unit`: the closing carries
+no step file and no review of its own (ADR-008 decision 1), and its unit
+type is `closure`. Merge the trunk in, run every gate bare on candidate
+`C`, and open pull request #17's description with what `npm run cairn-audit` prints, in the order it
 prints: the three plain lines and the surface link, the definition of
 done item by item, then the ledger. Ask the owner to try the result —
 the profile line the request's run prints, with the token — signalled as
@@ -319,8 +320,8 @@ changing it is a decision this path does not carry.
 1. `AGENTS.md`, then `skills/cairn-unit/SKILL.md` as path 3 left it.
 2. `project/coding-paths/CP-CAIRN-007/steps/S03.md` and the journal entry at their pinned blobs — the lie and the debts.
 3. `docs/architecture/01-cairn-1-1.md` at its pinned blob — the three sections.
-4. `project/coding-paths/CP-CAIRN-008/plan.md`, item 6 — what the closing owes.
-5. `skills/cairn-close/SKILL.md` and its reference, for the closing sequence on `pull-request`; the five step records under `./steps/`, whose summaries above say which item each advanced.
+4. `project/coding-paths/CP-CAIRN-008/plan.md`, its numbering note and item 6 — what the closing owes.
+5. `skills/cairn-close/SKILL.md` and its reference, for the closing sequence on `pull-request`; the six step records under `./steps/`, whose summaries above say which item each advanced.
 
 ### Verify
 

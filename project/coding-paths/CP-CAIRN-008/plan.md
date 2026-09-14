@@ -1,7 +1,7 @@
 ---
 type: Cairn Coding Path Plan
 title: CP-CAIRN-008 — forward plan
-description: The units of coding path 5 of 1.1 — the record first, then the forge reading and the token, then the two rules, then the leftovers widened in, then the module note and the candidate.
+description: The units of coding path 5 of 1.1 — the record first, then the forge reading and the token, then the two rules, then the leftovers widened in, then the module note, the register correction the closing's read found, and the candidate.
 tags: [coding-path, plan, implementation, checker, forge]
 timestamp: 2026-09-14T00:00:00Z
 cairn:
@@ -16,6 +16,10 @@ its failing test first; a withheld reading is reported, never refused
 and never answered for. Each unit runs the review movement on its own
 diff, as the unit skill says, and sets `current_step` to the unit whose
 block is in the commit.
+
+*Numbering: units 1 to 5 landed as S01 to S05; a register correction the
+closing's own read found took S06, so unit 6 below — and the `S06` that
+S02, S04 and S05 name as the candidate — runs as S07.*
 
 1. **S01 — ADR-026, the readings that must not lie.** Type `decision`.
    Four decisions, promoted from path 3's S03 and journal: a reading the
