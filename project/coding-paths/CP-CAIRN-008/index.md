@@ -7,13 +7,13 @@ timestamp: 2026-09-14T00:00:00Z
 cairn:
   id: CP-CAIRN-008
   route: full
-  status: running
+  status: ready
   current_step: S06
   base_commit: 28169830081b7a09077696ff96345d3e6b4705d7
   branch: path/cp-cairn-008
   assigned_writer: cp-cairn-008-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: a2489a91867bf7bc82aff3fcf1031c8f8a5f14df
   resolution: null
   writes:
     - docs/adr/**
@@ -267,10 +267,10 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 46f44feaa21fd45ee3abf3a230a2cf811ca098e2 — the resume correction after S05, on origin/path/cp-cairn-008
-unit   : 6 — S06 complete on push; S07, the closing, names the candidate here
+commit : a2489a91867bf7bc82aff3fcf1031c8f8a5f14df — candidate C, on origin/path/cp-cairn-008
+unit   : 7 — the closing; C is checked green on the request's own run
 base   : 28169830081b7a09077696ff96345d3e6b4705d7
-trunk  : 99554f22cd64103a9e66dfd7b9af616543836082 — origin/main at S06
+trunk  : 99554f22cd64103a9e66dfd7b9af616543836082 — origin/main at C
 ```
 
 ### Next action
