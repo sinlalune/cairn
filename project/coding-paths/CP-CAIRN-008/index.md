@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-008
   route: full
   status: running
-  current_step: S01
+  current_step: S02
   base_commit: 28169830081b7a09077696ff96345d3e6b4705d7
   branch: path/cp-cairn-008
   assigned_writer: cp-cairn-008-writer
@@ -21,6 +21,7 @@ cairn:
     - docs/architecture/index.md
     - tools/cairn-check.mjs
     - tools/cairn-check.test.mjs
+    - tools/cairn-workflow.test.mjs
     - tools/cairn-rules.mjs
     - tools/cairn-rules.test.mjs
     - tools/cairn-fixture.test.mjs
@@ -254,6 +255,7 @@ Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
+- **S02** — [the forge reading, and the token back](./steps/S02.md) — complete. `forgeGaps` returns `{ gaps, withheld }` and never sums the two; `readForge` names the half it could not read, with the reason where the forge gave one, instead of failing the whole read; the profile line prints read, withheld and unenforced where anything was withheld, and never claims the whole forge over an unread reading; a rule that names no ruleset is withheld rather than skipped. `GITHUB_TOKEN` is back in the checker's workflow step. Advances the second item of the definition of done, and closes item 2 of coding path 3's. Widened `writes:` by `tools/cairn-workflow.test.mjs`.
 - **S01** — [ADR-026, the readings that must not lie](./steps/S01.md) — complete. The four decisions of this path written as one record, promoted from path 3's S03 and journal entry at their pinned blobs, with the forge's documentation cited for the elision and for what a workflow's token may be granted; the 1.1 page amended in place and marked *since 2026-09-14*, the two indexes and the register's two rows following. Advances the first item of the definition of done.
 
 ## Resume
@@ -261,25 +263,27 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 99554f22cd64103a9e66dfd7b9af616543836082 — the registration commit, on origin/main and on this branch
-unit   : 1 — S01 complete on push; S02 names its commit here
+commit : 15909a72ca73a2fb94219a6ae866d3549e8f1c0f — S01, on origin/path/cp-cairn-008
+unit   : 2 — S02 complete on push; S03 names its commit here
 base   : 28169830081b7a09077696ff96345d3e6b4705d7
-trunk  : 99554f22cd64103a9e66dfd7b9af616543836082 — origin/main at S01
+trunk  : 99554f22cd64103a9e66dfd7b9af616543836082 — origin/main at S02
 ```
 
 ### Next action
 
-Run S02 of the plan with `cairn-unit` — the forge reading and the token.
-`forgeGaps` reports a bypass list the token could not read as *not
-read*, never as empty; `readForge` names the half it could not read; the
-profile line prints read, withheld and unenforced in one line; the
-`forgeGaps` and profile-line cases of `tools/cairn-check.test.mjs` are
-rewritten against the new reading, the withheld case written first and
-failing; then `GITHUB_TOKEN` returns to the checker's step of
-`.github/workflows/cairn.yml`, its comment rewritten to say why it is
-safe now, and the request's own run on this repository is read to see
-the bypass printed as unread. Type `implementation`. Run the review
-movement on the unit's diff, and set `current_step` to S02.
+Run S03 of the plan with `cairn-unit` — the two rules. `review` reads
+the review section of the ledger's newest completed unit, the
+`find(…) ??` gone, with a fixture whose `current_step` names an older
+unit than the one just written and whose newer unit carries an empty
+review section; `acceptance` gates the merge-object refusal by the
+declared integration transport, with a fixture for each, and its comment
+and test say one commit for one path. Then the catalogue
+`tools/cairn-rules.mjs` and the two rows of
+`spec/reference/conformance.md` — the generated one and the hand-written
+matrix row above the markers, which regenerating does not reach — and one
+line of `tools/soundness.md` per changed reading. Type `implementation`.
+Run the review movement on the unit's diff, and set `current_step` to
+S03.
 
 ### Blockers
 

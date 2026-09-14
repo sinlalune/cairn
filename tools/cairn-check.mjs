@@ -85,7 +85,13 @@ export function githubSlug(url) {
 
 /** What the forge does not enforce, from the three things ADR-001 decision 6
  *  names: a check that does not guard the exact commit that lands, a merge
- *  that rewrites it, and a role that bypasses the rules.
+ *  that rewrites it, and a role that bypasses the rules — and, beside it, what
+ *  could not be read at all (ADR-026 decision 1).
+ *
+ *  `{ gaps, withheld }`: a gap is a fact about a setting that WAS read; a
+ *  withheld entry is a reading that was not made. The two are never summed —
+ *  reading the second as the first is how the line came to certify a
+ *  protection this repository does not have.
  *
  *  Everything is read from the rules that apply TO THE TRUNK, never from the
  *  repository's own merge toggles: `allow_squash_merge` says what the
@@ -99,12 +105,25 @@ export function githubSlug(url) {
  *  allows it. */
 export function forgeGaps({ rules = [], rulesets = [] }) {
   const gaps = []
+  // One pass: a ruleset's bypass list was read or it was not. GitHub ELIDES
+  // `bypass_actors` below write access to the ruleset, which a workflow's own
+  // token always is; an unread one arrives with the reason, so that a token too
+  // small and a forge that was down do not read alike.
+  const withheld = []
+  const bypass = []
+  for (const ruleset of rulesets) {
+    if (Array.isArray(ruleset?.bypass_actors)) bypass.push(...ruleset.bypass_actors)
+    else {
+      const named = ruleset?.id != null ? `ruleset ${ruleset.id}` : 'a ruleset this read could not name'
+      withheld.push(`the bypass list of ${named}${ruleset?.why ? ` (${ruleset.why})` : ''}`)
+    }
+  }
   if (rules.length === 0) {
     // A private repository on a plan without rulesets is one way to arrive
     // here; a repository that simply configured none is another. The line
     // reports the fact it read and names no cause it did not.
     gaps.push('no rule of the forge guards the trunk')
-    return gaps
+    return { gaps, withheld }
   }
   const checks = rules.filter((rule) => rule.type === 'required_status_checks')
   if (checks.length === 0) gaps.push('no check is required before a merge')
@@ -122,11 +141,10 @@ export function forgeGaps({ rules = [], rulesets = [] }) {
       gaps.push(`${rewriting.join(' and ')} merges are allowed on the trunk, so the commit that lands is not the object the check ran on`)
     }
   }
-  const bypass = rulesets.flatMap((ruleset) => ruleset?.bypass_actors ?? [])
   if (bypass.length) {
     gaps.push(`${bypass.length} actor${bypass.length === 1 ? '' : 's'} bypass${bypass.length === 1 ? 'es' : ''} the trunk's rules`)
   }
-  return gaps
+  return { gaps, withheld }
 }
 
 /** Read the forge, or say why it was not read. `request` is a parameter so the
@@ -142,21 +160,38 @@ export async function readForge({ token, slug, trunk, request }) {
   const applied = Array.isArray(rules.value) ? rules.value : []
   // One request per DISTINCT ruleset behind the trunk's rules: the branch
   // endpoint gives the rules, and only the ruleset itself carries its bypasses.
-  // Together, so the wall time is one request's rather than one per ruleset,
-  // and a ruleset that could not be read makes the WHOLE read fail: a missing
-  // bypass list would otherwise be printed as a trunk nobody bypasses.
+  // Together, so the wall time is one request's rather than one per ruleset.
   const ids = [...new Set(applied.map((rule) => rule.ruleset_id).filter((id) => id != null))]
   const answers = await Promise.all(ids.map((id) => request(`${base}/rulesets/${id}`)))
-  const refused = answers.find((answer) => answer.error)
-  if (refused) return { read: false, why: `the forge answered ${refused.error} for a ruleset of the trunk` }
-  return { read: true, gaps: forgeGaps({ rules: applied, rulesets: answers.map((a) => a.value) }) }
+  // A ruleset is passed with the id it was asked for and, where it did not come
+  // back, the reason — so its bypass list is withheld by name while the rules
+  // the branch endpoint DID give are still reported. Failing the whole read
+  // here threw away the gaps the token can see to say nothing about the one it
+  // cannot (ADR-026 decision 1).
+  // A rule that names no ruleset is a bypass list that was never even asked
+  // for: the id is the only handle on it, and skipping it silently is the last
+  // route by which "enforces everything" could be printed over a list nobody
+  // read. The spread comes FIRST so the id asked for wins over the body's own.
+  const unnamed = applied.filter((rule) => rule.ruleset_id == null).length
+  const rulesets = ids.map((id, index) => ({ ...answers[index].value, id, why: answers[index].error }))
+  if (unnamed) rulesets.push({ id: null, why: `${unnamed} rule${unnamed === 1 ? '' : 's'} of the trunk name${unnamed === 1 ? 's' : ''} no ruleset` })
+  return { read: true, ...forgeGaps({ rules: applied, rulesets }) }
 }
 
 export function profileLine({ transports, forge }) {
   const declared = `transports registration ${transports.registration}, integration ${transports.integration}`
   if (!forge.read) return `profile — ${declared}; forge not read (${forge.why})`
-  return forge.gaps.length
-    ? `profile — ${declared}; forge does not enforce: ${forge.gaps.join('; ')}`
+  const withheld = forge.withheld ?? []
+  const gaps = forge.gaps ?? []
+  // Something was withheld, so the line says all three: what was read, what
+  // was not, and what is unenforced AMONG WHAT WAS READ. The sentence below
+  // claims the whole forge and may not be printed over an unread reading.
+  if (withheld.length) {
+    return `profile — ${declared}; forge read the trunk's rules; not read: ${withheld.join('; ')}; ` +
+      `unenforced among what was read: ${gaps.length ? gaps.join('; ') : 'nothing'}`
+  }
+  return gaps.length
+    ? `profile — ${declared}; forge does not enforce: ${gaps.join('; ')}`
     : `profile — ${declared}; forge enforces everything these records name`
 }
 

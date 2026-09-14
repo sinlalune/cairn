@@ -56,17 +56,17 @@ test('this repository\'s suite runs before the checker, under its own name', () 
   assert.ok(!('cairn-test' in scripts), 'and the kit ships no suite to run')
 })
 
-test('the checker judges the base CI judges against, and does not read the forge from here', () => {
+test('the checker judges the base CI judges against, and reads the forge with the token', () => {
   const checker = step('cairn-check', 'cairn-postmortem')
-  // The workflow's own token cannot see a ruleset's bypass list, and the
-  // checker reads an absent list as a trunk nobody bypasses. Mapped here, it
-  // turned an honest `forge not read` into `forge enforces everything these
-  // records name` on a trunk whose ruleset carries an always-bypass role
-  // (2026-09-13, run 34756757308). Unread is the answer that sends a human to
-  // look.
-  // The env KEY, not the word: the step's comment says why the token is absent,
-  // and a substring ban would read that explanation as the thing it forbids.
-  assert.ok(!/^ +GITHUB_TOKEN:/m.test(checker), 'the profile line is not read with a token that cannot see what it reports')
+  // The token was taken out on 2026-09-13 because the checker read an elided
+  // bypass list as a trunk nobody bypasses, and printed "forge enforces
+  // everything these records name" over an always-bypass role (run
+  // 34756757308). It is back because the reading changed, not because the
+  // token did: the profile line now names the bypass list as not read, and
+  // the three gaps this token CAN see are reported rather than withheld with
+  // it (ADR-026 decision 1).
+  assert.match(checker, /^ +GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}$/m,
+    'the profile line reports what this token can see and names what it cannot')
   assert.match(checker, /CAIRN_BASE_REF: origin\/\$\{\{ github\.base_ref \|\| 'main' \}\}/)
   assert.match(checker, /^ +run: node tools\/cairn-check\.mjs --base "\$CAIRN_BASE_REF"$/m, 'bare: a pipe would report the last command\'s status')
 })

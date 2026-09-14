@@ -43,17 +43,22 @@ which also records where every 0.2 name went. One invocation form judges a
 tree — `cairn-check [--base <ref>] [--branch <name>] [--json]`, and on a path
 branch the base defaults to the trunk — and one answers a question and exits:
 `cairn-check --scope-digest <record>#definition-of-done`. Every run reports
-the transports the configuration declares and what the forge does not enforce
-— as a third header line, or as the `profile` object under `--json`. The forge
-half is read from the rules that apply to the trunk when `GITHUB_TOKEN` or
-`GH_TOKEN` is set and the remote is a GitHub repository, and is reported as not
-read otherwise. On CI
-it is not read, deliberately: no token is mapped into the checker's step, and
-`.github/workflows/cairn.yml` says why at the step where it is not set. Row 5
-of the [roadmap register](../../project/coding-paths/index.md) carries the
-change that lets it return. None of it is a finding: the remedy for a gap is a
-setting, and no failure of the read reaches an exit code. The configuration is
-schema 2. The checker reads a path's opening acceptance from the record's own
+the transports the configuration declares, what the forge does not enforce and
+what it could not read — as a third header line, or as the `profile` object
+under `--json`. The forge half is read from the rules that apply to the trunk
+when `GITHUB_TOKEN` or `GH_TOKEN` is set and the remote is a GitHub repository,
+and is reported as not read otherwise. A reading the forge WITHHELD is a third
+answer, neither a gap nor an absence: GitHub returns a ruleset's
+`bypass_actors` only to a caller with write access to the ruleset, so a
+workflow's own token is given a ruleset with the field elided, and the line
+names that list as not read rather than reporting a trunk nobody bypasses.
+Where a ruleset cannot be fetched at all, the same line is printed for it with
+the reason the forge gave, and the rules the branch endpoint did give are still
+reported. CI runs the checker with `secrets.GITHUB_TOKEN`, so its runs name
+that bypass list as not read and report whatever the rules do say beside it.
+None of it is a finding: the remedy for a gap is a setting, and no failure of
+the read reaches an exit code. The configuration is schema 2. The checker
+reads a path's opening acceptance from the record's own
 `## Opening acceptance` block, its checkpoint from the resume section, the
 registration commit as the trunk commit in which the record became `running`,
 and the branch's tip from the
