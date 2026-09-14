@@ -1,9 +1,9 @@
 ---
 type: Cairn Architecture
 title: Cairn 1.1 — a repository run by a sole owner with agents
-description: What a Cairn 1.1 repository is as a whole — how a path opens, runs and closes when one owner works with agents, what the checker reads at each transition, what the documentation plane holds and where, which tools exist, and what 1.1 removes from 1.0 — naming the decision record behind every statement; amended on 2026-09-07 with the coding guidelines, ADR-016 to ADR-020, on 2026-09-09 with the pedagogy, ADR-021 to ADR-023, and on 2026-09-11 with the two records coding path 1 owed, ADR-024 and ADR-025.
+description: What a Cairn 1.1 repository is as a whole — how a path opens, runs and closes when one owner works with agents, what the checker reads at each transition, what the documentation plane holds and where, which tools exist, and what 1.1 removes from 1.0 — naming the decision record behind every statement; amended on 2026-09-07 with the coding guidelines, ADR-016 to ADR-020, on 2026-09-09 with the pedagogy, ADR-021 to ADR-023, on 2026-09-11 with the two records coding path 1 owed, ADR-024 and ADR-025, and on 2026-09-14 with the readings that must not lie, ADR-026.
 tags: [cairn, architecture, 1.1, sole-owner, coding-guidelines, pedagogy]
-timestamp: 2026-09-11T00:00:00Z
+timestamp: 2026-09-14T00:00:00Z
 ---
 
 # Cairn 1.1 — a repository run by a sole owner with agents
@@ -63,6 +63,21 @@ ADR-001 decision 1's clause keeping the kit's installed default at
 deleted the only sequence that default described; ADR-014 decision 1
 gains a reader, by ADR-025. A sentence this amendment adds is marked
 *since 2026-09-11* where it changes what an earlier sentence of this page
+said.
+
+**Amended on 2026-09-14** by the readings that must not lie, ADR-026,
+promoted from
+[CP-CAIRN-007 S03](../../project/coding-paths/CP-CAIRN-007/steps/S03.md)
+at blob `fe9805f030b7efe77b91a7a43c28e6a1d51b5442` and the
+[journal entry](../../project/log/2026-09-14-cp-cairn-007.md) of that path
+at blob `ad1ee64039293cb622014f654389b6adcc0dd4a3`. Both stay exactly as
+they were. One sentence is superseded: ADR-008 decision 2's *never two
+paths in one request*, by ADR-026 decision 3, because the checker refuses
+two paths in one commit and that is the reading that binds; ADR-001
+decision 6 gains what the forge withheld, ADR-017 decision 2 gains the
+unit the review rule reads, and ADR-008 decision 2 gains the transport its
+merge-object refusal binds on. A sentence this amendment adds is marked
+*since 2026-09-14* where it changes what an earlier sentence of this page
 said.
 
 ## What 1.1 is for
@@ -147,8 +162,10 @@ it still moves as one commit, pushed at once. The review is the writer's
 own agent in a fresh context, given the diff and two criteria and nothing
 else; its findings, each with its disposition, are a `#### Review`
 section of the step record, which the checker requires (ADR-017,
-decisions 1 and 2); a fix is read once more, on its own lines, and not a
-third time (ADR-017, decision 3). The
+decisions 1 and 2) — since 2026-09-14 in the ledger's newest completed
+unit, the unit under review, `current_step` selecting nothing (ADR-026,
+decision 2); a fix is read once more, on its own lines, and not a third
+time (ADR-017, decision 3). The
 two criteria of whoever reads a diff — that fresh context, a bot, the
 owner — are the decision ladder and correctness, nothing else (ADR-016,
 decision 4). The self-review before it is the writer's own, one line per
@@ -248,8 +265,12 @@ merge click is the closing acceptance; no other shape is added for a sole
 owner (ADR-001, decision 4). The integrating unit is one commit for one
 path from a clean trunk checkout — `done`, the resolution, the live view,
 one journal entry naming the path under `cairn.path` — never a merge
-object carrying the edit, never two paths in one request (ADR-008,
-decisions 2 and 4). A trunk commit that takes a path from `running` to
+object carrying the edit (ADR-008, decisions 2 and 4). Since 2026-09-14,
+one commit for one path is the reading that binds, and two honest
+integrations reached in one request are not refused; the merge-object
+refusal binds on `pull-request` integration alone, the `--no-ff` merge
+being itself the integrating unit on `manual-git` (ADR-026, decisions 3
+and 4). A trunk commit that takes a path from `running` to
 `done` with no `ready` commit is refused (ADR-001, decision 7).
 
 Then the writer proves `C` reachable from the remote trunk, deletes every
@@ -266,10 +287,10 @@ The checker is the same tool, reading more.
 | registration on the trunk | the record's schema and route; the registration commit is the trunk commit in which `status` became `running`, and `base_commit` its parent, a draft landed earlier notwithstanding; the trunk's own run judges the commit after it lands | ADR-004 d1; ADR-001 d1 |
 | registration and every unit | two live paths whose `writes:` intersect, as the advisory `writes-overlap`, silent under `depends_on` | ADR-003 |
 | every unit on the branch | the `cairn-unit` block; a running path's checkpoint names a remote commit once it has a unit; the scope digest of the definition of done, whatever the status | ADR-004 d2; ADR-002 d1 |
-| every unit on the branch, since 2026-09-07 | the current unit's step record carries a `#### Review` section that is not empty, as the blocking rule `review`; the section's content is the owner's to read | ADR-017 d2 |
-| every run, any ref | the branch resolved as the local ref, else `HEAD` on the request head, else the remote-tracking ref; range rules reading only this path's records; the profile line naming what the forge does not enforce | ADR-004 d5, d3; ADR-001 d6 |
+| every unit on the branch, since 2026-09-07 | the current unit's step record carries a `#### Review` section that is not empty, as the blocking rule `review`; the section's content is the owner's to read; since 2026-09-14 the current unit is the ledger's newest completed one | ADR-017 d2; ADR-026 d2 |
+| every run, any ref | the branch resolved as the local ref, else `HEAD` on the request head, else the remote-tracking ref; range rules reading only this path's records; the profile line naming what the forge does not enforce and, since 2026-09-14, what it could not read | ADR-004 d5, d3; ADR-001 d6; ADR-026 d1 |
 | the request's run at `C` and at `ready` | trunk containment, no provisional commit, the closure surface, the digest, drift since the base; the one administrative commit after `C` | 1.0, kept; ADR-008 d3 |
-| the integrating unit on the trunk | the digest again; one commit for one path, not a merge; a `ready` commit behind the `done`; the journal entry under `cairn.path` | ADR-002 d1; ADR-008 d2; ADR-001 d7; ADR-008 d4 |
+| the integrating unit on the trunk | the digest again; one commit for one path, and not a merge where the declared integration transport is `pull-request`; a `ready` commit behind the `done`; the journal entry under `cairn.path` | ADR-002 d1; ADR-008 d2; ADR-026 d3, d4; ADR-001 d7; ADR-008 d4 |
 | any refusal | the message names the remedy; a pushed record is corrected by a superseding step | ADR-008 d6 |
 
 Every blocking rule's fixture contains a merged trunk commit carrying
@@ -304,7 +325,7 @@ and the site that projects it (ADR-012).
 
 | Command | Does | Record |
 | :-- | :-- | :-- |
-| `cairn-check` | the blocking and advisory rules on the exact commit, with a profile line that says what the forge does not enforce | 1.0; ADR-001 d6 |
+| `cairn-check` | the blocking and advisory rules on the exact commit, with a profile line that says what the forge does not enforce and, since 2026-09-14, what it could not read | 1.0; ADR-001 d6; ADR-026 d1 |
 | `cairn-active` | the live view of running paths; reports a roadmap register still carrying the installer's row | 1.0; ADR-008 d5 |
 | `cairn-audit` | the request's description for one candidate, since 2026-09-07 with the definition of done item by item, since 2026-09-09 opening with three plain lines and the surface link | 1.0; ADR-018 d2; ADR-021 d2 |
 | `cairn-postmortem` | for one path or the repository, the mechanical reading the adopter notes did by hand; run by the workflow when the gate goes red, into the run's log and onto the request, and on demand; since 2026-09-09 it prints the facts a question to the owner is built from | ADR-014 d1; ADR-021 d3 |

@@ -63,8 +63,9 @@ that bypasses it always: a workflow's token may not read a ruleset's
 bypass list, the forge elides the field rather than refusing it, and
 `forgeGaps` read the silence as safety. Path 3 took the token out and
 closed item 2 of its definition of done knowingly unmet, on the owner's
-ruling; its S03 wrote the sentence this path promotes — *"not read" is
-an honest line; a wrong reading is not.* Beside it, the `review` rule
+ruling; its S03 named the reading that lied, and the sentence this path
+promotes — *"Not read" is an honest line; a wrong reading is not* — is
+the checker's own, read there by that path's S04. Beside it, the `review` rule
 selects the unit to read by `current_step` over a list sorted by
 ordinal, so the field can only ever point at a unit older than the one
 just written: on path 3 six units' review sections were never read by
@@ -253,29 +254,32 @@ Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
-- **S01** — not started
+- **S01** — [ADR-026, the readings that must not lie](./steps/S01.md) — complete. The four decisions of this path written as one record, promoted from path 3's S03 and journal entry at their pinned blobs, with the forge's documentation cited for the elision and for what a workflow's token may be granted; the 1.1 page amended in place and marked *since 2026-09-14*, the two indexes and the register's two rows following. Advances the first item of the definition of done.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — the trunk commit that adds this record, whose parent is base
-unit   : 0
+commit : 99554f22cd64103a9e66dfd7b9af616543836082 — the registration commit, on origin/main and on this branch
+unit   : 1 — S01 complete on push; S02 names its commit here
 base   : 28169830081b7a09077696ff96345d3e6b4705d7
-trunk  : 28169830081b7a09077696ff96345d3e6b4705d7 — origin/main at registration
+trunk  : 99554f22cd64103a9e66dfd7b9af616543836082 — origin/main at S01
 ```
 
 ### Next action
 
-In a fresh session, from the worktree `../cairn-cp-cairn-008` on branch
-`path/cp-cairn-008`: run S01 of the plan with `cairn-unit` — ADR-026,
-the readings that must not lie, four decisions promoted from path 3's
-S03 and journal entry at their pinned blobs, the forge's documentation
-on a workflow token's reach cited, the 1.1 page amended in place and
-marked *since 2026-09-14*, the two indexes, the register's row 5. Type
-`decision`. Run the review movement on the unit's diff as the unit skill
-says, and set `current_step` to S01.
+Run S02 of the plan with `cairn-unit` — the forge reading and the token.
+`forgeGaps` reports a bypass list the token could not read as *not
+read*, never as empty; `readForge` names the half it could not read; the
+profile line prints read, withheld and unenforced in one line; the
+`forgeGaps` and profile-line cases of `tools/cairn-check.test.mjs` are
+rewritten against the new reading, the withheld case written first and
+failing; then `GITHUB_TOKEN` returns to the checker's step of
+`.github/workflows/cairn.yml`, its comment rewritten to say why it is
+safe now, and the request's own run on this repository is read to see
+the bypass printed as unread. Type `implementation`. Run the review
+movement on the unit's diff, and set `current_step` to S02.
 
 ### Blockers
 
