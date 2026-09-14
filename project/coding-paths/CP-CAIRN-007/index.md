@@ -7,16 +7,18 @@ timestamp: 2026-09-12T00:00:00Z
 cairn:
   id: CP-CAIRN-007
   route: full
-  status: running
-  current_step: S01
+  status: ready
+  current_step: S08
   base_commit: 4255c4c6c74db01c06d9594b6765d02847c8978e
   branch: path/cp-cairn-007
   assigned_writer: cp-cairn-007-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: c57d11c22687aeee0a1301063b2ef98d25df387f
   resolution: null
   writes:
     - .github/workflows/cairn.yml
+    - .github/pull_request_template.md
+    - tools/cairn-workflow.test.mjs
     - tools/cairn-postmortem.mjs
     - tools/cairn-postmortem.test.mjs
     - tools/cairn-audit.mjs
@@ -152,8 +154,9 @@ reading of a red run (ADR-025).
       `docs/architecture/`, `README.md` or `site/` changes; the ten
       governing documents are byte-identical at the candidate to what they
       are at `base_commit`; the register, a write surface, gains this
-      path's id in row 3 and the three widened files in its writes column,
-      and nothing else.
+      path's id in row 3, the widened files in its writes column, one new
+      row for the readings that must not lie, and the kit halves of
+      ADR-005 and ADR-014 named on row 4 — and nothing else.
 - [ ] Every completed step has one self-contained step record naming the
       definition-of-done item it advances, a refreshed resume section, one
       commit, a remote checkpoint, a self-review in the five tags and a
@@ -200,6 +203,36 @@ with the word "yes"; that go-ahead is this acceptance, and the record
 lands on the trunk directly. The owner said the units run in a fresh
 session. Amendments: none.
 
+### Amendment of 2026-09-13 — the register may own what this path found
+
+S02 mapped the forge's token into the checker's step and the run that
+followed certified a protection this repository does not have; S03 took
+the token back out. The owner was asked where the durable answer should
+live, and answered: **its own row, before the release.** Asked first how
+to end it at all, the owner's steer was to *refer to the manifesto, don't
+build a messy complex factory, just do the simplest fluid native
+workflow* — which is what chose the deletion in S03 over a stored
+credential or a scope amendment reopening coding path 2's files.
+
+This acceptance supersedes the one above it. It widens item 7, and
+nothing else: the register may gain one row for the readings that must
+not lie — the record saying a reading the forge withheld is reported as
+unread and never as an answer, and the checker made to keep it — placed
+before the release row so that 1.1.0 cannot be cut with it open; and row
+4 may name the kit halves of ADR-005 and ADR-014, which this path found
+belong to no row. The definition of done is otherwise the text it was
+accepted with, and no other surface of this path moves.
+
+```yaml
+decision: accepted
+accepted_by: sinlalune
+accepted_roles: [initiator, reviewer]
+accepted_at: 2026-09-13T13:10:00Z
+scope_ref: project/coding-paths/CP-CAIRN-007/index.md#definition-of-done
+scope_digest: sha256:c6305ca2ad5917c4612c3135d224d749b5a0a8d28eb36b1cf5a2817b6b2414b4
+supersedes: 2026-09-13T08:53:36Z
+```
+
 ## Documentation coverage
 
 ### Required
@@ -237,31 +270,72 @@ session. Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
-- **S01** — not started
+- **S01** — the post-mortem tool — complete
+- **S02** — one run per commit that can land — complete
+- **S03** — the gate stops certifying what it cannot see (repair of S02) — complete
+- **S04** — the register owns what this path found — complete
+- **S05** — the two tools that speak to the owner — complete
+- **S06** — the sentences the skills owed — complete
+- **S07** — the tools as they are — complete
+- **S08** — the record says which step it is on (repair) — complete
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — the trunk commit that adds this record, whose parent is base
-unit   : 0
+commit : c57d11c22687aeee0a1301063b2ef98d25df387f
+unit   : 8 — the candidate C, checked bare and reviewed in the request
 base   : 4255c4c6c74db01c06d9594b6765d02847c8978e
 trunk  : 4255c4c6c74db01c06d9594b6765d02847c8978e — origin/main at registration
 ```
 
 ### Next action
 
-In a fresh session, from the worktree `../cairn-cp-cairn-007` on branch
-`path/cp-cairn-007`: run S01 of the plan with `cairn-unit` — the
-post-mortem tool and its test, from ADR-014 decision 1 and ADR-021
-decision 3 at their tables, the readings imported from what
-`tools/cairn-check.mjs` exports; failing test first. Run the review
-movement on the unit's diff as the unit skill says.
+From the worktree `../cairn-cp-cairn-007` on branch `path/cp-cairn-007`:
+close the path with `cairn-close`. `C` is S08's commit, the trunk tip
+already in it; regenerate the request's description with
+`npm run cairn-audit -- --subject <C>`, re-fill it — item 2 named as
+knowingly unmet, with S03 as the reason — then the administrative commit
+`A` declaring `ready` and `subject_commit`, with the gate run BEFORE
+committing and its check read green. Only then is the owner asked to
+merge, and the owner reads a post-mortem before it.
+
+Note for movement 6: pushes to path branches no longer run on the forge
+(S02, ADR-005), but the request is open as a draft — [#16](https://github.com/sinlalune/cairn/pull/16)
+— so every push is judged on the request head, and that run is the one to
+read.
 
 ### Blockers
 
 None.
+
+**Three debts this path found and may not settle**, all named in S06 and
+bound for this path's journal entry: `spec/reference/conformance.md`
+still says the writer's half of the supersession *is not yet written*,
+which S06 wrote; ADR-008 decision 2 says *never two paths in one request*
+where the checker refuses two paths in one COMMIT and reasons in its own
+comment for the narrower rule; and the checker's refusal of a merge
+object carrying `done` is not gated by transport, while the close skill
+prescribes exactly that merge on `manual-git`. Item 7 of the definition
+of done holds all three files unchanged.
+
+**One item of the definition of done is knowingly unmet, and the work
+that lets it be met is now owned.** Row 5 of the
+[roadmap register](../index.md) carries it — the record that makes the
+checker's own sentence bind, and the change that keeps it — and sits
+before the release row, so 1.1.0 cannot be cut with it open. Item 2 asks
+that the checker's step carry `GITHUB_TOKEN` *so the profile line reads
+the trunk's rules on CI*. S02 carried it and S03 took it back out,
+because the token the forge gives a workflow cannot see a ruleset's
+bypass list and the checker reads the elided field as a trunk nobody
+bypasses — so carrying it made the gate certify a protection this
+repository does not have (run `34756757308`; ruleset `22101008` carries
+an always-bypass role). The clause cannot be satisfied natively until
+`forgeGaps` can tell an unread bypass list from an empty one, which is
+`tools/cairn-check.mjs` and which item 7 holds unchanged. The candidate
+names this item as unmet, with S03 as the reason; it is the owner's to
+rule on at the merge.
 
 ### Tried and rejected
 
@@ -274,6 +348,23 @@ None.
   functions; the tool imports them.
 - Pinning the register in `governs:` — a write surface, as in paths 1
   and 2.
+- S01: exporting the checker's private Git plumbing —
+  `recordShapes`, `recordHistory`, `frontAt`, `stepRecordOrigin` — so the
+  post-mortem could import it instead of repeating it. Item 7 of the
+  definition of done forbids a byte of `tools/cairn-check.mjs` moving,
+  and path 2 closed on that file. The repetition is named as a debt in
+  S01 and carried to this path's journal entry; the `--follow` guard
+  that the repetition had already dropped is restored in S01.
+- S02: exporting or fixing `readForge`'s per-ruleset degradation so the
+  profile line cannot under-report a trunk's bypass actors when the
+  workflow's token may not see them — `tools/cairn-check.mjs`, which item
+  7 of the definition of done holds byte-identical. Named in S02's review
+  and with the owner.
+- S01: reading `done` beside `ready` in the administrative-commit
+  reading. `done` is declared on the TRUNK by the integrating unit, never
+  on the branch, so a branch reading would print a fact no commit of the
+  branch carries; ADR-008 decision 2 gives the integration's shape to the
+  checker, and ADR-014 decision 1 asks this tool for the `ready` commit.
 
 ### Reading order
 

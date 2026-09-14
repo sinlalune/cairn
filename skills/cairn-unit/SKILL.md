@@ -19,6 +19,10 @@ has no dependencies: install them before the first gate. Start the persisted
 next action. Conversation memory is never stronger than the record and the
 repository.
 
+A run that went red since the last unit is read before this one starts — and
+where the checker's own step is what failed, the post-mortem it printed, in the
+run's log or on the request. Reading it is the whole of the obligation.
+
 An agent you run inside your own session — a subagent, a second context, the
 fresh reader of movement 4 — is you, and you answer for what it edits as for
 your own hand.
@@ -47,6 +51,11 @@ Name the unit's **type** — it fixes what must move together:
 
 `repair` is for a violation of the protocol; a bug in the product is an
 `implementation` unit.
+
+Where the violation is a published step record that was edited, the repair's
+own `cairn-unit` block declares it, in the shape and with the two commands
+[the path template](../../spec/reference/path-template.md) gives. Both ids are
+read, never chosen.
 
 If the plan reveals a `full`-route trigger on a `lightweight` path, escalate
 now and say why in the step.
@@ -123,9 +132,10 @@ git push origin path/cp-example-001
 ```
 
 Never blind-add a live repository; a dirty file you did not write belongs to
-someone. Read the push's exit code, then read CI. A unit whose push failed is
-implemented locally, not complete. The full sequence, and the shape of a
-provisional commit for work that is not yet a unit, are in
+someone. Read the push's exit code, then read the request's run if a request is
+open — a push to a path branch produces no run of its own. A unit whose push
+failed is implemented locally, not complete. The full sequence, and the shape
+of a provisional commit for work that is not yet a unit, are in
 [reference.md](./reference.md).
 
 ## 7. Report the boundary

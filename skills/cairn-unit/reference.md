@@ -65,5 +65,5 @@ record on `manual-git` — is ever pushed under that trailer.
 ```text
 provisional commit pushed, awaiting inspection
 work unit committed, push failed — implemented locally, not complete
-unit pushed, CI red — not complete until the run is read green
+unit pushed, the request's run red — not complete until that run is read green
 ```
