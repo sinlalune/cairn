@@ -2644,7 +2644,7 @@ export async function githubRequest(url, { token, timeoutMs = 3000, doFetch = fe
 /** Raw stdout — for output whose LEADING whitespace is data, not padding. */
 /** Same, but a failure is an ANSWER (`null`), not an exception: a detached
  *  HEAD has no symbolic ref, and that fact is what the caller needs. */
-function gitOrNull(args) {
+export function gitOrNull(args) {
   try {
     // stderr is PIPED, not inherited: "ref HEAD is not a symbolic ref" is the
     // expected answer in a detached checkout, and printing it as an error
@@ -2662,6 +2662,10 @@ function gitOrNull(args) {
 function gitRaw(args) {
   return execFileSync('git', args, { cwd: REPO, encoding: 'utf8' })
 }
+
+/** Does this name resolve to a commit? Four readings spelled the same
+ *  expression — two here, `resolveBase`'s trunk guard, and the post-mortem. */
+export const refExists = (ref) => gitOrNull(['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]) != null
 
 function changedFiles(base) {
   // --untracked-files=all, because without it Git lists a NEW DIRECTORY as one
@@ -2834,7 +2838,7 @@ function pathClosureState(path, record) {
  *  declares — the file it is actually at. A record landed flat and sliced into
  *  a folder has its earlier states under one name and its later ones under the
  *  other, and a checker that reads one of them reads half a history. */
-function recordShapes(id, file = null) {
+export function recordShapes(id, file = null) {
   return [...new Set([`${PATH_DIR}/${id}.md`, `${PATH_DIR}/${id}/index.md`, ...(file ? [file] : [])])]
 }
 
@@ -2849,21 +2853,40 @@ function recordShapes(id, file = null) {
  * `--topo-order` because the question is always about ancestry, and `--reverse`
  * alone orders by commit date, which a rebase or a skewed clock can invert.
  */
-function recordHistory(range, shapes, firstParent = false) {
+export function recordHistory(range, shapes, firstParent = false) {
   const raw = gitOrNull([
     'log', '--format=%H', '--topo-order', '--reverse',
     ...(firstParent ? ['--first-parent'] : []), range, '--', ...shapes
   ])
   return {
     commits: raw?.split('\n').filter(Boolean) ?? [],
-    statusAt: (commit) => {
-      for (const shape of shapes) {
-        const text = gitOrNull(['show', `${commit}:${shape}`])
-        if (text != null) return metadataOf(readFrontmatter(text)?.data)?.status
-      }
-      return undefined
+    statusAt: (commit) => recordFrontAt(commit, shapes)?.status
+  }
+}
+
+/** A record's own metadata block as of one commit, read from the first of the
+ *  shapes that exists there. `null` where the record was not under any of them
+ *  yet, which is a fact about that commit and not a failure to read.
+ *
+ *  Memoised for the life of the process, on the name the caller gave rather
+ *  than a resolved id: a range is walked as `c` and `c^`, which are two names
+ *  for one commit, and callers pass `HEAD` and `<sha>^` unresolved. Git objects
+ *  do not change under a run, so the only cost of the weaker key is a miss. */
+const FRONT_AT = new Map()
+export function recordFrontAt(commit, shapes) {
+  if (!commit) return null
+  const key = `${commit}\u0000${shapes.join('\u0000')}`
+  if (FRONT_AT.has(key)) return FRONT_AT.get(key)
+  let front = null
+  for (const shape of shapes) {
+    const text = gitOrNull(['show', `${commit}:${shape}`])
+    if (text != null) {
+      front = metadataOf(readFrontmatter(text)?.data)
+      break
     }
   }
+  FRONT_AT.set(key, front)
+  return front
 }
 
 /**
@@ -2971,7 +2994,7 @@ export function recordOriginFromFollowLog(raw) {
   return entries.at(-1) ?? null
 }
 
-function stepRecordOrigin(file) {
+export function stepRecordOrigin(file) {
   const addedAt = (...flags) => {
     const raw = gitOrNull(['log', ...flags, '--diff-filter=A', '--format=%H', '--name-only', '--', file])
     return raw == null ? null : recordOriginFromFollowLog(raw)
@@ -3242,7 +3265,7 @@ function unresolvedProvisionalCommits(path, trunkRef) {
   // No trunk, no scoping — and an unscoped range is the reading this rule
   // exists to stop, so the run says it could not decide rather than deciding
   // on the broader question.
-  if (!trunkRef || gitOrNull(['rev-parse', '--verify', '--quiet', `${trunkRef}^{commit}`]) == null) return null
+  if (!trunkRef || !refExists(trunkRef)) return null
   const range = [`${from}..${to}`, '--not', trunkRef]
   const raw = gitOrNull(['log', '--format=%H', `--grep=^${PROVISIONAL_TRAILER}:`, ...range])
   if (raw == null) return null
@@ -3347,7 +3370,6 @@ function pathRemoteCheckpoint(branch) {
   // reported "no upstream" on the one run that is the merge gate. Resolve the
   // branch's own ref instead: the local one, else the remote-tracking one,
   // else HEAD.
-  const refExists = (ref) => gitOrNull(['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]) != null
   const resolved = resolveBranchRef({
     branch,
     detached: gitOrNull(['symbolic-ref', '--short', '-q', 'HEAD']) == null,
@@ -3739,7 +3761,7 @@ async function main() {
   const { base, source: baseSource } = resolveBase({
     flag: baseFlag,
     branch,
-    refExists: (ref) => gitOrNull(['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]) != null
+    refExists
   })
   const changed = changedFiles(base)
   const viewCurrent = activeViewCurrent()

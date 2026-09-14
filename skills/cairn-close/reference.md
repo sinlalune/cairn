@@ -109,6 +109,19 @@ git commit -m "Integrate CP-EXAMPLE-001"
 git merge-base --is-ancestor <C> HEAD
 npm run cairn-check
 npm test
+```
+
+No merge object is refused here — that refusal binds on `pull-request` alone,
+because this merge is the integrating unit (ADR-026 decision 4). `transition`
+still refuses this closing, on any run whose comparison predates the merge: it
+looks for the `ready` behind the arrival on the merge's FIRST parent and finds
+the trunk, where the branch declared it on the second. The bare gate above
+compares the trunk with itself and sees nothing to judge, so the refusal
+surfaces on the forge's run rather than here. No record decides that reading;
+`tools/soundness.md` names it, and until it is decided the answer is a ruling
+on the refusal, not a different commit.
+
+```bash
 git push origin HEAD:main
 git fetch origin main
 git merge-base --is-ancestor HEAD origin/main
