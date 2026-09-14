@@ -83,14 +83,18 @@ Nothing branches on the declared transport. `manual-git` passes because the
 parent carrying the branch's `ready` is now looked at; `pull-request`'s
 prescribed shape is a plain commit, where "any parent" is the only parent.
 
-What ADR-001 decision 7 forbids is unchanged: a trunk commit taking a path to
-`done` with **no** `ready` behind it. The checker's own comment refines that
-into why it reads one commit rather than a range — *"a `ready` somewhere in the
-range", which an abandoned earlier `ready` would satisfy* — and that refinement
-survives too. A parent is an immediate predecessor, not a point in a range:
-widening from the first parent to any admits exactly the commits the arrival was
-made from, and nothing older. The fixture for the no-`ready` case refuses as it
-did.
+What ADR-001 decision 7 forbids is unchanged in the case it was written for: a
+trunk commit taking a path to `done` with **no** `ready` behind it at all. That
+fixture refuses as it did.
+
+**It is not unchanged in every case, and the first draft of this record claimed
+it was.** That draft argued that a parent is an immediate predecessor rather
+than a point in a range, so widening admits "exactly the commits the arrival was
+made from, and nothing older". Topological immediacy says nothing about the age
+of the RECORD a side parent carries. A merge parent can be arbitrarily stale,
+which is precisely the abandoned `ready` that ADR-001 decision 7's one-commit
+reading exists to exclude. The consequence is named below, measured
+rather than argued.
 
 ## Consequences
 
@@ -115,6 +119,34 @@ prove it is the `manual-git` one, which asserts `transition` refuses and must
 be inverted; and the `pull-request` merge-object fixture should assert that
 `acceptance` alone now refuses, so the refusal this decision gives up cannot
 come back unnoticed.
+
+**A second refusal is given up, and this one is a real loss.** `ready → running`
+is a legal withdrawal: a path that reopens after its closure was accepted goes
+back to `running` on the trunk. Under the first-parent reading, re-integrating
+it from a branch still sitting at the old `ready` was refused, because the
+trunk's own line said `running`. Under any-parent that stale `ready` satisfies
+the rule and the arrival is green — verified by building it, not reasoned about:
+the whole checker reports zero blocking findings, and reverting this one line
+restores the refusal.
+
+**This gap is inside what chapter 5 claims, not outside it.** A draft of this
+paragraph argued the opposite — that a writer withdrawing a closure and then
+integrating from a stale branch is not among the four things the checks protect
+against. It is: a branch that never saw the withdrawal is *staleness*, and
+integrating from it is *coordination error*, which are two of the four named.
+The non-goal that would excuse it, *"defending against an authorised writer"*,
+does not fit either, because nothing here requires bad intent. Claiming
+otherwise would have been the same move this record already retracts once —
+reaching for an argument instead of a measurement.
+
+So it is accepted as a **debt**, on cost, and recorded as one. Closing it means
+dating each parent's last state change and taking the most recent: a record
+history walk per parent, inside the rule this path spent two units making
+smaller, to catch a sequence nobody has performed. The owner weighed that and
+chose the gap. What the acceptance buys is honesty about it — a fixture pins the
+shape as **not refused**, with a message telling whoever makes it refuse to come
+back and delete both the fixture and this paragraph, so the gap cannot be
+mistaken for coverage or quietly outlive its reason.
 
 Both halves of `manual-git` integration are now decided: the merge object by
 ADR-026 decision 4, the `ready` behind it here. A repository declaring that
@@ -141,6 +173,12 @@ transport can close a path past the checker.
   remove, arrived at deliberately instead of by accident.
 - **Searching the whole range for a `ready`**: reopens the edge ADR-001
   decision 7 closes, which is the one thing this record must not do.
+- **Dating each parent's last state change and taking the most recent**: the
+  reading that would keep the refusal named in *Consequences*. It is correct,
+  and it is a record history walk per parent inside a rule two units of this
+  path worked to shrink. Refused on cost, not on principle — the gap it leaves
+  is a real one inside what chapter 5 claims, carried as a debt with a fixture
+  rather than argued away.
 
 ## What the manifesto's test weighed
 
@@ -148,8 +186,10 @@ One decision, no rule added, one expression widened: `commit^` becomes the
 parent list `integrationState` already computes. Nothing is added to reach it.
 The alternative that branches on transport was refused for being larger and no
 more correct; reading a pending `MERGE_HEAD` was refused for being plumbing no
-prescribed sequence reaches; and the refusal this decision gives up is named in
-*Consequences* rather than left for a later reader to find.
+prescribed sequence reaches. Two refusals are given up, not one, and both are
+named in *Consequences* rather than left for a later reader to find: an
+incidental one that fired on a parent layout, and a real one carried as a debt
+with a fixture.
 
 ## What implements this record
 

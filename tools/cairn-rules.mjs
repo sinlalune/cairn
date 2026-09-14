@@ -208,8 +208,8 @@ export const RULE_METADATA = {
     enforcing: "trunkContained(trunkRef) === false"
   },
   'transition': {
-    condition: 'Changed path state is not an allowed lifecycle transition, a path branch claims done, a declaration was deleted rather than archived, or the prior state is unavailable. A range that holds the merge as well reads what the record declared in the commit before the arrival, on the trunk\'s own line, rather than at the base (ADR-008 d2)',
-    enforcing: 'transitionErrors(previous, current, onPathBranch, integrationState(record, comparisonRef, id).readyBehind)'
+    condition: 'Changed path state is not an allowed lifecycle transition, a path branch claims done, a declaration was deleted rather than archived, or the prior state is unavailable. A range that holds the merge as well reads what the record declared in a commit immediately behind the arrival — any parent of it, a merge having two and an octopus more (ADR-027) — rather than at the base (ADR-008 d2)',
+    enforcing: 'transitionErrors(previous, current, onPathBranch, integrationState(record, comparisonRef, id).readyBehind), readyBehind = (commit ? parents : [HEAD]).some(statusAt === ready)'
   },
   'acceptance': {
     condition: 'A ready path\'s candidate is not an ancestor, or is followed by anything but one administrative commit, or implementation changed after it, or the closure moved a field acceptance was measured against; a done path\'s candidate is not reachable, one commit takes two paths to done, or — on `pull-request` integration alone — its arrival is carried by a merge object, the `--no-ff` merge being the integrating unit on `manual-git` (ADR-008 d2; ADR-026 d3, d4). On manual-git additionally: the closing record in the path folder is missing, names another candidate, lacks its fields, is not a completed review, or its dispositions do not match the advisories attested at the candidate (advisory: a collapsed reviewer, or a prose disposition on a grandfathered path). On pull-request the request\'s description and approval are the record and are not read',

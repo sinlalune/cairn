@@ -180,12 +180,38 @@ it refused honest closings rather than passing dishonest ones, which is the
 rarer half of this note; the fix is the same either way, which is to read the
 declared transport rather than assume one (ADR-026 decision 4). The refusal of
 two paths reaching `done` in one commit is not transport-shaped and binds on
-both. `transition` would still refuse that closing, reading the merge's first parent
-for the `ready` behind it and finding the trunk rather than the branch — one
-rule fixed does not make a transport work, and ADR-026 does not reach that one.
-ADR-027 does, and reads any parent. It is the note's own warning turned on this change: an unsound rule was
-replaced by a sound one beside a second rule nobody read. It is worse than
-that, and *What none of this proves* says how: neither rule is reached at all.
+both. `transition` refused that closing too, reading the merge's first parent for the
+`ready` behind it and finding the trunk rather than the branch — one rule fixed
+did not make a transport work, and ADR-026 does not reach that one. ADR-027
+does: any parent of the arrival, one expression over the parent list
+`integrationState` already computes. Both halves of `manual-git` integration are
+decided now, and the fixture that pinned the debt asserts the closing green.
+
+The giving-up is the part worth recording. On `pull-request` an arrival carried
+by a merge object was refused by `acceptance` AND by `transition`, the second
+only because the merge's first parent held `running`. That was not defence in
+depth: it fired on the parent layout, not on the violation, and a second opinion
+reached for the wrong reason is worth less than the one rule that names the
+shape. The `pull-request` fixture now asserts `transition` does NOT fire there,
+so the accident cannot return as a feature.
+
+**And one refusal is given up that was not an accident.** `ready` → `running` is
+a legal withdrawal, and under the first-parent reading re-integrating a withdrawn
+closure from a branch still sitting at the old `ready` was refused, because the
+trunk's own line said `running`. Any parent means a merge parent's arbitrarily
+stale record satisfies it, and that arrival is green. ADR-027 accepts the gap
+rather than date each parent's last state change, on the ground chapter 5
+states: these checks are for omission, staleness, coordination error and silent
+loss of state, and a writer withdrawing a closure and then integrating from a
+stale branch is none of the four. What the note requires of an accepted gap is
+that it not read as coverage, so a fixture pins it as NOT refused and says in
+its own message what to do if it ever starts refusing.
+
+This is the note's own warning turned on the change that answered it: an unsound
+rule was replaced by a sound one beside a second rule nobody read, and the
+second rule's own widening had a cost that only a reader building the case
+found. Neither of them was reached at all until the comparison was fixed, which
+is what *What none of this proves* records.
 
 **4. A stated requirement with no predicate is listed as unenforced.** The
 conformance page is where that is said. An unenforced requirement and an

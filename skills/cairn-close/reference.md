@@ -120,12 +120,12 @@ The `comparison` rule reports a base that already contains what it judges, but
 it cannot report a base nobody asked for.
 
 No merge object is refused here — that refusal binds on `pull-request` alone,
-because this merge is the integrating unit (ADR-026 decision 4). `transition`
-*would* refuse this closing on any run that compared the trunk before the
-arrival with the trunk after it: it looks for the `ready` behind the arrival on
-the merge's FIRST parent and finds the trunk, where the branch declared it on
-the second. ADR-027 decides that reading — any parent of the arrival — and the
-rule follows it.
+because this merge is the integrating unit (ADR-026 decision 4). `transition` does
+not refuse it either: since ADR-027 it looks for the `ready` behind the arrival
+on ANY parent, so the merge that carries this closing is judged where the branch
+declared it, on the second. Until 2026-09-14 it read the first parent alone,
+which refused every honest closing on this transport. Both halves of `manual-git`
+integration are decided.
 
 **Until 2026-09-14 no run made that comparison, on either transport**, so
 `transition`, `acceptance`, `journal-entry` and `scope-digest` never judged an

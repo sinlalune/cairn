@@ -1255,6 +1255,14 @@ test('adversarial: acceptance — the integrating commit is a merge object carry
     assert.ok(blocking(found).includes('acceptance'), `findings were ${describe(found)}`)
     assert.ok(found.findings.some((f) => f.rule === 'acceptance' && /merge object/.test(f.message)),
       `the refusal must name the shape: ${describe(found)}`)
+    // `acceptance` ALONE. Before ADR-027 this shape was refused twice over:
+    // `transition` too, because the merge's first parent is the trunk at
+    // `running` while its second carries the branch's `ready`. That second
+    // refusal fired on the parent layout, not on the violation, and the record
+    // gives it up knowingly. It is asserted gone so it cannot come back as an
+    // accident, and so the rule that owns the shape is the one holding it.
+    assert.ok(!blocking(found).includes('transition'),
+      `the shape is refused by the rule that names it, not by a parent layout: ${describe(found)}`)
   } finally {
     cleanup(dir, `${dir}.git`)
   }
@@ -1272,13 +1280,16 @@ test('on manual-git the --no-ff merge IS the integrating unit, and carrying the 
     const found = check(dir, '--base', trunkBefore)
     assert.ok(!blocking(found).includes('acceptance'),
       `the shape the close skill prescribes on this transport must not be refused as a merge object: ${describe(found)}`)
-    // `transition` STILL refuses this shape, and ADR-026 does not decide it:
-    // `readyBehind` reads the merge's FIRST parent, the trunk tip, where the
-    // record was `running`, while the `ready` commit this closing made sits on
-    // the second. That is ADR-001 decision 7's reading, one rule over, and it
-    // is named for the owner rather than fixed here.
-    assert.ok(blocking(found).includes('transition'),
-      `this is the debt this fixture pins, and it changed: ${describe(found)}`)
+    // `transition` does not refuse it either, since ADR-027. `readyBehind`
+    // reads ANY parent of the arrival: on this transport the merge IS the
+    // integrating unit, its first parent is the trunk where the record was
+    // `running`, and the `ready` this closing declared sits on its second.
+    // Reading the first parent alone refused every honest closing on this
+    // transport — the debt this fixture pinned until that record decided it.
+    assert.ok(!blocking(found).includes('transition'),
+      `the ready is on the merge's second parent, and any parent counts: ${describe(found)}`)
+    assert.deepEqual(blocking(found), [],
+      `an honest manual-git closing is green on both halves now: ${describe(found)}`)
   } finally {
     cleanup(dir, `${dir}.git`)
   }
@@ -1695,6 +1706,67 @@ test('adversarial: comparison — an arrival judged against itself is refused, n
     const rewound = check(dir, '--base', descendant)
     assert.ok(blocking(rewound).includes('comparison'),
       `a base that already contains this commit is the same empty comparison: ${describe(rewound)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+test('KNOWN GAP: a withdrawn ready is resurrected from a stale side parent (ADR-027)', () => {
+  // NOT coverage. This pins a refusal ADR-027 gives up ON PURPOSE, so that the
+  // day someone reads `readyBehind` and assumes it guards this, the assertion
+  // says otherwise in their own suite.
+  //
+  // `ready -> running` is a legal withdrawal: a path that reopens after its
+  // closure was accepted goes back to `running` on the trunk. The first-parent
+  // reading refused re-integrating it from a branch still sitting at the old
+  // `ready`, because the trunk's own line said `running`. Any-parent does not:
+  // a merge parent carries an arbitrarily stale record, and that stale `ready`
+  // satisfies the rule.
+  //
+  // Closing it means dating each parent's last state change. Chapter 5 puts a
+  // writer doing two deliberate things in sequence outside what these checks
+  // are for — they protect against omission, staleness, coordination error and
+  // silent loss of state, and this is none of the four.
+  const { dir } = readyRepository({ transport: 'manual-git' })
+  try {
+    commit(dir, 'Close CP-FIXTURE-001')
+    git(dir, 'push', '-q', 'origin', 'path/cp-fixture-001')
+    git(dir, 'checkout', '-q', 'main')
+    git(dir, 'merge', '-q', '--no-ff', '-m', 'Merge request #1', 'path/cp-fixture-001')
+    // The closure is WITHDRAWN on the trunk: the path reopened.
+    write(dir, RECORD, readFileSync(join(dir, RECORD), 'utf8')
+      .replace('  status: ready\n', '  status: running\n'))
+    regenerateView(dir)
+    commit(dir, 'CP-FIXTURE-001 reopens: the closure is withdrawn')
+    const trunkBefore = git(dir, 'rev-parse', 'HEAD').trim()
+    // A branch still at the old `ready`, plus one commit of its own.
+    git(dir, 'checkout', '-q', 'path/cp-fixture-001')
+    // NOT a source file: `work-unit` would refuse the arrival for a missing
+    // module note, and a fixture that blocks for an unrelated reason proves
+    // nothing about the rule it names — this file's own rule, at the top.
+    write(dir, 'docs/notes.md', 'a note the branch added\n')
+    commit(dir, 'a commit on a branch that never saw the withdrawal')
+    git(dir, 'checkout', '-q', 'main')
+    git(dir, 'merge', '--no-ff', '--no-commit', 'path/cp-fixture-001')
+    // Not `recordDone`: it rewrites `status: ready`, and the trunk's record is
+    // at `running` after the withdrawal. The whole point is the jump the stale
+    // parent launders, so the edit has to start from what the trunk says.
+    write(dir, RECORD, readFileSync(join(dir, RECORD), 'utf8')
+      .replace('  status: running\n', '  status: done\n  resolution: completed\n'))
+    write(dir, `project/log/${TODAY}-cp-fixture-001.md`, JOURNAL_ENTRY('CP-FIXTURE-001'))
+    regenerateView(dir)
+    commit(dir, 'Integrate CP-FIXTURE-001, again')
+    const found = check(dir, '--base', trunkBefore)
+    // Positive controls FIRST. An assertion that something does not happen
+    // passes just as well when the case was never built: rename a field, and
+    // the record silently never reaches `done`, `transition` has nothing to
+    // judge, and this test goes green having tested nothing.
+    assert.match(readFileSync(join(dir, RECORD), 'utf8'), /^ {2}status: done$/m,
+      'the arrival must actually take the record to done, or nothing here is under test')
+    assert.deepEqual(blocking(found), [],
+      `the withdrawn closure is accepted whole, which is the gap: ${describe(found)}`)
+    assert.ok(!blocking(found).includes('transition'),
+      `if this now REFUSES, the gap ADR-027 accepted has been closed — update that record and delete this fixture: ${describe(found)}`)
   } finally {
     cleanup(dir, `${dir}.git`)
   }

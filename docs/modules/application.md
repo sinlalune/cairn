@@ -78,8 +78,8 @@ on.
 record reached `done`; whether that commit is a merge object carrying the edit,
 refused on `pull-request` integration alone, the `--no-ff` merge being the
 integrating unit on `manual-git`; and whether the `ready` the branch declared
-is behind it, read on the trunk's own line — from any parent of the arrival,
-by ADR-027.
+is behind it, read from any parent of the arrival — a merge has two and an
+octopus more, and the declaration may sit on any (ADR-027).
 
 **The comparison every other rule inherits.** `comparison` judges the base the
 run was given before any changed-file rule reads it. A base that does not

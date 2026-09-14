@@ -2945,7 +2945,9 @@ export function recordFrontAt(commit, shapes) {
 /**
  * ADR-008 decision 2. What this comparison holds about a record's integration:
  * the commit in which the TRUNK came to say `done`, whether that commit is a
- * merge object, and what the record said in the commit before it.
+ * merge object, and what the record said in any commit immediately behind it —
+ * ANY PARENT since ADR-027, not the first, because on `manual-git` the
+ * integrating unit IS the merge and the branch's `ready` sits on its second.
  *
  * `--first-parent`, which is the opposite of what `pathRegistrationBaseState`
  * needs and for the opposite reason. There the question is which commit the
@@ -2956,6 +2958,12 @@ export function recordFrontAt(commit, shapes) {
  * that had already declared `done` is TREESAME to that branch and never
  * appears, so the arrival looks like an ordinary commit and the merge object
  * carrying it goes unread.
+ *
+ * That walk and `readyBehind` answer different questions and take different
+ * views on purpose: WHICH commit the trunk came to say `done` in is a fact
+ * about the trunk's own line, so the walk follows first parents; what the
+ * record said behind that commit is a fact about the commits it was made from,
+ * so the reading looks at all of them (ADR-027).
  *
  * `commit` is null when the arrival is not committed yet — the writer
  * preparing the integrating commit in the working tree has no commit to judge,
@@ -2972,12 +2980,32 @@ function integrationState(file, ref, id) {
   return {
     commit,
     merge: parents.length > 1,
-    // What the record said in the commit BEFORE this one on the trunk's own
-    // line — not "a `ready` somewhere in the range", which an abandoned earlier
-    // `ready` would satisfy and which would reopen the edge ADR-001 decision 7
-    // closes. Where nothing is committed yet, the trunk's current state is that
+    // What the record said in a commit IMMEDIATELY BEHIND this one — not "a
+    // `ready` somewhere in the range", which would reopen the edge ADR-001
+    // decision 7 closes.
+    //
+    // ANY parent, and that is a WIDENING with a cost, not a free one: a merge
+    // parent can carry an arbitrarily stale record, so a `ready` that the trunk
+    // later withdrew (`ready` → `running` is legal) is resurrected by merging a
+    // branch still sitting at it, and the arrival goes green. ADR-027 accepts
+    // that, names it in its consequences, and `tools/cairn-fixture.test.mjs`
+    // pins it as NOT refused so it cannot be mistaken for coverage. Closing it
+    // means dating each parent's last state change; the trust boundary
+    // (chapter 5) puts a writer doing two deliberate things in sequence outside
+    // what these checks are for.
+    //
+    // Any, not the first (ADR-027). `commit^` was the shorthand for "the commit
+    // before", written when every arrival in view was a plain one. On
+    // `manual-git` the `--no-ff` merge IS the integrating unit: its first parent
+    // is the trunk, where the record still read `running`, and the `ready` the
+    // branch declared sits on its SECOND — so the first-parent reading refused
+    // every honest closing on that transport, which is what ADR-001 decision
+    // 7's own reasoning says cannot happen ("on both transports the
+    // administrative commit has already put the path at `ready` on its
+    // branch"). An octopus merge has more than two, and any of them may carry
+    // it. Where nothing is committed yet, the trunk's current state is that
     // commit's parent-to-be.
-    readyBehind: statusAt(commit ? `${commit}^` : 'HEAD') === 'ready'
+    readyBehind: (commit ? parents : ['HEAD']).some((parent) => statusAt(parent) === 'ready')
   }
 }
 

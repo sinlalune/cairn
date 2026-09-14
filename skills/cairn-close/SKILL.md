@@ -104,12 +104,12 @@ branch never claims `done`.
 Two paths reaching `done` in one commit is refused on both transports; two
 honest integrations in one request are not. The merge-object refusal is
 `pull-request`'s alone (ADR-008 decision 2; ADR-026 decisions 3 and 4). On
-`manual-git` one rule would refuse this shape — `transition`, reading the
-`ready` behind the arrival on the merge's first parent — which ADR-027 decides:
-the `ready` is read from any parent, and the rule follows it. Until 2026-09-14
-it never fired either way: no run compared the trunk across an integrating
-commit, so no changed-file rule judged one, on either transport. The reference
-says why, and `tools/soundness.md` carries the finding.
+`manual-git` nothing else is in the way: `transition` reads the `ready` behind
+the arrival from any parent of it, so the merge that carries the closing is
+judged where the branch declared it (ADR-027). Both halves of that transport
+are decided. Until 2026-09-14 neither rule fired at all, because no run compared
+the trunk across an integrating commit; the reference says how that is fixed and
+`tools/soundness.md` carries the finding.
 
 ## 6. Prove it, then clean up
 
