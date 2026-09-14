@@ -68,9 +68,13 @@ commits alone, where a draft is resolved by the later commit that publishes the
 unit it was drafting, and an edited step record is answered by a later step of
 the same path binding the blob it replaces to the blob it adds; it reads the
 integration from the same range — the commit in which a record reached `done`,
-whether that commit is a merge object carrying the edit, and whether the
-`ready` the branch declared is behind it; it reads the current unit's step record for the record of the review movement, and reads nothing of that section beyond whether it is empty; it validates `depends_on:` and knows two routes; the live-view generator
-marks each live path unblocked or names what it waits on. Closure follows the
+whether that commit is a merge object carrying the edit — refused on
+`pull-request` integration alone, the `--no-ff` merge being the integrating
+unit on `manual-git` — and whether the `ready` the branch declared is behind
+it; it reads the record of the review movement in the newest unit kept in a
+ledger, the unit under review, and reads nothing of that section beyond whether
+it is empty; it validates `depends_on:` and knows two routes; the live-view
+generator marks each live path unblocked or names what it waits on. Closure follows the
 configured transport: on `pull-request` the checker proves the candidate, its
 closure surface, the opening digest and the trunk drift from Git and reads no
 review; on `manual-git` it also reads the closing record.

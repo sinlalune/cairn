@@ -1543,8 +1543,24 @@ test('a unit is not complete until its diff was read by someone who did not writ
   })
   assert.ok(!rules(closing, 'blocking').includes('review'))
 
-  // `current_step` is a convenience no rule requires, so a record that drops it
-  // is judged on the ledger's newest unit rather than going unjudged.
+  // A stale `current_step` selecting nothing is pinned end to end by the
+  // fixture `a newer unit whose review is empty, behind a current_step left on
+  // the older one`; a unit case here would pass with the change reverted.
+  const stale = { ...A_PATH, front: { ...A_PATH.front, current_step: 'S01' } }
+
+  // A block in the `index.md` of a FOLDER record answers for no unit, so it
+  // cannot stand in front of the step record and skip the rule — which taking
+  // the newest unit unconditionally allowed.
+  const folderRecord = { ...stale, file: `${PATH_DIR}/CP-EX-010/index.md` }
+  const shadowed = run([folderRecord.file], 'path/cp-ex-010', [folderRecord], {
+    workUnits: [...units, { step: 'S03', unit: '03', type: 'implementation', verified: 'test', __file: folderRecord.file }],
+    checkpointFor: () => 'a'.repeat(40),
+    reviewFor: (file) => (file === step ? '' : 'read')
+  })
+  assert.ok(rules(shadowed, 'blocking').includes('review'),
+    `the newest LEDGER unit is still S02: ${JSON.stringify(messages(shadowed, 'review', 'blocking'))}`)
+
+  // A record that drops the field entirely is judged the same way.
   const dropped = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], {
     workUnits: [{ step: 'S01', unit: '01', type: 'implementation', verified: 'test', __file: `${PATH_DIR}/CP-EX-010/steps/S01.md` }, ...units],
     checkpointFor: () => 'a'.repeat(40),

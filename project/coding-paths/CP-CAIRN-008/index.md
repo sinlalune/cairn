@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-008
   route: full
   status: running
-  current_step: S02
+  current_step: S03
   base_commit: 28169830081b7a09077696ff96345d3e6b4705d7
   branch: path/cp-cairn-008
   assigned_writer: cp-cairn-008-writer
@@ -255,6 +255,7 @@ Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
+- **S03** — [the two rules](./steps/S03.md) — complete. The `review` rule reads the newest unit kept in a ledger, the unit under review, and `current_step` selects nothing; the `acceptance` rule's merge-object refusal binds on `pull-request` integration alone, and its comment names one commit for one path as the reading that binds. Catalogue, conformance rows — generated and hand-written — and the soundness note follow. Advances the third and fourth items of the definition of done and the catalogue half of the fifth. Found: the `transition` rule refuses the same `manual-git` closing for its own reason, which ADR-026 does not decide.
 - **S02** — [the forge reading, and the token back](./steps/S02.md) — complete. `forgeGaps` returns `{ gaps, withheld }` and never sums the two; `readForge` names the half it could not read, with the reason where the forge gave one, instead of failing the whole read; the profile line prints read, withheld and unenforced where anything was withheld, and never claims the whole forge over an unread reading; a rule that names no ruleset is withheld rather than skipped. `GITHUB_TOKEN` is back in the checker's workflow step. Advances the second item of the definition of done, and closes item 2 of coding path 3's. Widened `writes:` by `tools/cairn-workflow.test.mjs`.
 - **S01** — [ADR-026, the readings that must not lie](./steps/S01.md) — complete. The four decisions of this path written as one record, promoted from path 3's S03 and journal entry at their pinned blobs, with the forge's documentation cited for the elision and for what a workflow's token may be granted; the 1.1 page amended in place and marked *since 2026-09-14*, the two indexes and the register's two rows following. Advances the first item of the definition of done.
 
@@ -263,31 +264,39 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 15909a72ca73a2fb94219a6ae866d3549e8f1c0f — S01, on origin/path/cp-cairn-008
-unit   : 2 — S02 complete on push; S03 names its commit here
+commit : 9c6a80ec0a4c06f7021dc558783cee9539db18a5 — S02, on origin/path/cp-cairn-008
+unit   : 3 — S03 complete on push; S04 names its commit here
 base   : 28169830081b7a09077696ff96345d3e6b4705d7
-trunk  : 99554f22cd64103a9e66dfd7b9af616543836082 — origin/main at S02
+trunk  : 99554f22cd64103a9e66dfd7b9af616543836082 — origin/main at S03
 ```
 
 ### Next action
 
-Run S03 of the plan with `cairn-unit` — the two rules. `review` reads
-the review section of the ledger's newest completed unit, the
-`find(…) ??` gone, with a fixture whose `current_step` names an older
-unit than the one just written and whose newer unit carries an empty
-review section; `acceptance` gates the merge-object refusal by the
-declared integration transport, with a fixture for each, and its comment
-and test say one commit for one path. Then the catalogue
-`tools/cairn-rules.mjs` and the two rows of
-`spec/reference/conformance.md` — the generated one and the hand-written
-matrix row above the markers, which regenerating does not reach — and one
-line of `tools/soundness.md` per changed reading. Type `implementation`.
-Run the review movement on the unit's diff, and set `current_step` to
-S03.
+Run S04 of the plan with `cairn-unit` — path 3's four leftovers. The
+conformance page's sentence saying the writer's half of a step
+supersession *is not yet written*, pointed at `skills/cairn-unit`, where
+path 3 wrote it; `skills/cairn-close/SKILL.md` and its reference saying
+what the checker refuses and allows by transport, in ADR-008 decision 2's
+sentences — and, from S03's reading, that the `transition` rule still
+refuses the `manual-git` integration the reference walks an adopter
+through, so the page does not send them into a gate that fails; and
+`tools/cairn-postmortem.mjs` reading the registration commit, the `ready`
+shape, the digest and each step's integrity through functions
+`tools/cairn-check.mjs` exports, calling Git for nothing the checker
+already reads, with the checker exporting what the tool needed and
+nothing more and the post-mortem's tests green on the same fixtures.
+Type `implementation`. Run the review movement on the unit's diff, and
+set `current_step` to S04.
 
 ### Blockers
 
-None.
+One decision is with the owner, raised at S03's boundary and not blocking
+S04: the `transition` rule reads the merge's FIRST parent for the `ready`
+behind an integrating commit, so on `manual-git` — where the `--no-ff`
+merge is the integrating unit and the `ready` commit sits on the second
+parent — an honest closing is still refused. ADR-026 decision 4 freed the
+`acceptance` refusal only. The reading is ADR-001 decision 7's, and
+changing it is a decision this path does not carry.
 
 ### Tried and rejected
 

@@ -499,6 +499,23 @@ pathFixture('a unit whose step carries no record of the review movement', 'revie
   appendFileSync(join(dir, RECORD), RESUME(git(dir, 'rev-parse', 'HEAD').trim()))
 }, { remedy: /hand this unit's diff to a fresh context/ })
 
+pathFixture('a newer unit whose review is empty, behind a current_step left on the older one', 'review', (dir) => {
+  // Coding path 3's own defect, as a fixture: two units, both complete, S01
+  // with an honest review and S02 — the unit under review — with the heading
+  // and nothing under it, and `current_step` left on S01, which is the one
+  // thing a writer forgets. The rule read the unit the field named, so S01's
+  // review was re-read and passed while S02's was never looked at
+  // (ADR-026 decision 2).
+  write(dir, STEP, STEP_RECORD)
+  write(dir, STEP.replace('S01.md', 'S02.md'), STEP_RECORD
+    .replace(/S01/g, 'S02')
+    .replace('unit: 01', 'unit: 02')
+    .replace(/#### Review\n[\s\S]*$/, '#### Review\n'))
+  appendFileSync(join(dir, RECORD), RESUME(git(dir, 'rev-parse', 'HEAD').trim()))
+  // `full` because two units on a `lightweight` path is a route trigger, and
+  // this fixture is about which unit the review rule reads, not about the route.
+}, { remedy: /hand this unit's diff to a fresh context/, record: { route: 'full' } })
+
 pathFixture('a work unit declaring a type the vocabulary does not have', 'work-unit', (dir) => {
   // The first adopter's closing unit declared `review`. The refusal named the
   // vocabulary and stopped, so the agent edited the pushed record to change the
@@ -1187,8 +1204,8 @@ function recordDone(dir, { record = RECORD, id = 'CP-FIXTURE-001' } = {}) {
  *  `--no-ff` merge, and `done` recorded — in one commit of its own, or, when
  *  `mergeCarriesTheEdit`, inside the merge object itself, which is the shape
  *  the adopter produced twice. */
-function integratedRepository({ shape = 'one commit for one path' } = {}) {
-  const { dir } = readyRepository()
+function integratedRepository({ shape = 'one commit for one path', transport = 'pull-request' } = {}) {
+  const { dir } = readyRepository({ transport })
   if (shape === 'done on the branch') {
     // The record is taken to `done` on the branch itself, so the merge is
     // TREESAME to it and a walk that follows the branch side never sees the
@@ -1238,6 +1255,30 @@ test('adversarial: acceptance — the integrating commit is a merge object carry
     assert.ok(blocking(found).includes('acceptance'), `findings were ${describe(found)}`)
     assert.ok(found.findings.some((f) => f.rule === 'acceptance' && /merge object/.test(f.message)),
       `the refusal must name the shape: ${describe(found)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+test('on manual-git the --no-ff merge IS the integrating unit, and carrying the edit is green', () => {
+  // ADR-026 decision 4. `cairn-close` step 5 and chapter 5 both prescribe
+  // exactly this shape on `manual-git`: the merge is the integrating unit and
+  // carries `done`, the resolution, the live view and the journal entry. The
+  // refusal below binds on `pull-request`, where the candidate lands with the
+  // merge and `done` is recorded in a commit of its own; ungated, it refused
+  // every `manual-git` closing the skill beside it prescribes.
+  const { dir, trunkBefore } = integratedRepository({ shape: 'merge carries the edit', transport: 'manual-git' })
+  try {
+    const found = check(dir, '--base', trunkBefore)
+    assert.ok(!blocking(found).includes('acceptance'),
+      `the shape the close skill prescribes on this transport must not be refused as a merge object: ${describe(found)}`)
+    // `transition` STILL refuses this shape, and ADR-026 does not decide it:
+    // `readyBehind` reads the merge's FIRST parent, the trunk tip, where the
+    // record was `running`, while the `ready` commit this closing made sits on
+    // the second. That is ADR-001 decision 7's reading, one rule over, and it
+    // is named for the owner rather than fixed here.
+    assert.ok(blocking(found).includes('transition'),
+      `this is the debt this fixture pins, and it changed: ${describe(found)}`)
   } finally {
     cleanup(dir, `${dir}.git`)
   }

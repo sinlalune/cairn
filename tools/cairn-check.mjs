@@ -2024,10 +2024,12 @@ export function evaluate({
   // some earlier change, and this one has no integrating commit of its own.
   const integrationOf = new Map(arrivingDone
     .map((path) => [path.file, integrationStateFor?.(path.file, path.front?.id) ?? null]))
-  // Two arrivals in one COMMIT is the refusal; two in one comparison is an
-  // ordinary request that spans two honest integrations, and refusing it would
-  // tell the author to do what they already did. An arrival with no commit yet
-  // is the one being prepared in the working tree, and there is one of those.
+  // One commit for one path is the reading that binds (ADR-026 decision 3,
+  // superseding ADR-008 decision 2's *never two paths in one request*). Two
+  // arrivals in one COMMIT is the refusal; two in one comparison is an ordinary
+  // request spanning two honest integrations, and refusing it would tell the
+  // author to do what they already did. An arrival with no commit yet is the
+  // one being prepared in the working tree, and there is one of those.
   const perCommit = new Map()
   for (const path of arrivingDone) {
     const key = integrationOf.get(path.file)?.commit ?? null
@@ -2040,11 +2042,20 @@ export function evaluate({
         `${ids.join(', ')} reach done in ${commit ?? 'the commit being prepared'} — integrate one path per commit, from a clean trunk checkout, so that each integration can be read, reverted and journalled on its own`)
     }
   }
-  for (const path of arrivingDone) {
-    const integration = integrationOf.get(path.file)
-    if (integration?.merge) {
-      add('blocking', 'acceptance',
-        `${path.file} reaches done in ${integration.commit}, which is a merge object carrying the edit — land the candidate with the merge, then record done in one commit of its own on the trunk`)
+  // ADR-026 decision 4. On `pull-request` the candidate lands with the merge and
+  // `done` follows in a commit of its own, so a merge object carrying the edit
+  // is the shape ADR-008 decision 2 refuses. On `manual-git` that merge IS the
+  // integrating unit — `cairn-close` step 5 and chapter 5 both prescribe it —
+  // and this refusal does not reach there. It is not the only one that did —
+  // see `tools/soundness.md` on the `transition` reading, which ADR-026 does
+  // not decide and which still refuses that closing.
+  if (pullRequest) {
+    for (const path of arrivingDone) {
+      const integration = integrationOf.get(path.file)
+      if (integration?.merge) {
+        add('blocking', 'acceptance',
+          `${path.file} reaches done in ${integration.commit}, which is a merge object carrying the edit — land the candidate with the merge, then record done in one commit of its own on the trunk`)
+      }
     }
   }
 
@@ -2330,10 +2341,12 @@ export function evaluate({
     // Only the CURRENT unit's step, so a step written before this rule existed
     // is not refused when a later unit is judged. `closure` carries no step
     // file, so it carries no review.
-    // `current_step` is a convenience, not a guarantee: nothing requires it,
-    // and keying the rule on it alone would let a record drop one optional line
-    // and go unjudged. Where it names no unit the current one is the ledger's
-    // newest, which `pathWorkUnits` has already sorted last.
+    //
+    // The current unit is the newest one kept in a LEDGER, which `pathWorkUnits`
+    // has already sorted last. `current_step` used to select it over that same
+    // sorted list, so a field left behind could only ever point at an OLDER
+    // unit, never a newer one; it stays in the schema, where `work-unit` reads
+    // it, and selects nothing here (ADR-026 decision 2).
     //
     // Read in the unit's own ledger — its step record, or the flat record that
     // is one. Never in the `index.md` of a folder record: a block put there
@@ -2342,8 +2355,11 @@ export function evaluate({
     // shape one section answers for every unit, which the conformance page
     // states as the gap it is.
     if (changed.includes(match.file) && reviewFor && workUnits.length > 0) {
-      const current = workUnits.find((unit) => unit.step === match.front.current_step) ?? workUnits.at(-1)
-      if (isUnitLedger(current.__file, match.file) && current.type !== 'closure') {
+      // Filtered, not just `at(-1)`: a block in the `index.md` of a folder
+      // record answers for no unit, and taking the newest unconditionally let
+      // such a block stand in front of the step record and skip the rule.
+      const current = workUnits.filter((unit) => isUnitLedger(unit.__file, match.file)).at(-1)
+      if (current && current.type !== 'closure') {
         const review = reviewFor(current.__file)
         if (!review) {
           add('blocking', 'review',

@@ -151,6 +151,41 @@ remains is narrow and says so: a writer who types the heading and one word
 satisfies it. What it removes is the silent case — a unit that skipped the
 movement and said nothing — and the owner reads the section at the candidate.
 
+That rule also carried the fourth shape of the same error, and it is the one
+worth naming: **a proxy that selects the wrong subject passes soundly over the
+right one.** `review` read the unit `current_step` named, over a ledger already
+sorted by ordinal, so a field left behind pointed it at a unit OLDER than the
+one being judged — never a newer one, because none exists. Every assertion the
+rule made was true of the unit it read; it was reading the wrong unit, and on
+coding path 3, where the field said `S01` from registration through S08, every
+unit after the first was judged on S01's section while the gate reported OK. A
+predicate whose subject is chosen by a field nothing
+verifies is unsound however sound its test is, and the remedy was deletion: the
+subject is the newest unit kept in a ledger, last in the sort
+`pathWorkUnits` applies (ADR-026 decision 2). What remains is narrower and
+stated here rather than claimed away. That sort is on the `unit:` ordinal, which
+the checker validates as digits and not for uniqueness or monotonicity, so a
+writer who numbers a new unit at or below an older one moves the subject back;
+and a newest unit typed `closure` skips the rule for the whole record, because
+ADR-017 decision 2 excepts the type that writes no step file and nothing forbids
+that block in a step record. The field a writer forgets no longer selects; a
+field a writer mistypes still can.
+
+A rule that reads a transport-shaped fact asks which transport. `acceptance`
+refused an integrating commit that is a merge object carrying `done` — true on
+`pull-request`, where the candidate lands with the merge and `done` follows in
+a commit of its own, and false on `manual-git`, where `cairn-close` prescribes
+exactly that merge as the integrating unit. Unsound in the other direction, so
+it refused honest closings rather than passing dishonest ones, which is the
+rarer half of this note; the fix is the same either way, which is to read the
+declared transport rather than assume one (ADR-026 decision 4). The refusal of
+two paths reaching `done` in one commit is not transport-shaped and binds on
+both. That closing is still refused, by `transition`, which reads the merge's
+first parent for the `ready` behind it and finds the trunk rather than the
+branch — one rule fixed does not make a transport work, and ADR-026 does not
+decide that one. It is the note's own warning turned on this change: an
+unsound rule was replaced by a sound one beside a second rule nobody read.
+
 **4. A stated requirement with no predicate is listed as unenforced.** The
 conformance page is where that is said. An unenforced requirement and an
 unsound gate are indistinguishable from inside a green run — both are a passing
