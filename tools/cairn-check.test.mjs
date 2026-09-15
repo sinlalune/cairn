@@ -1543,8 +1543,24 @@ test('a unit is not complete until its diff was read by someone who did not writ
   })
   assert.ok(!rules(closing, 'blocking').includes('review'))
 
-  // `current_step` is a convenience no rule requires, so a record that drops it
-  // is judged on the ledger's newest unit rather than going unjudged.
+  // A stale `current_step` selecting nothing is pinned end to end by the
+  // fixture `a newer unit whose review is empty, behind a current_step left on
+  // the older one`; a unit case here would pass with the change reverted.
+  const stale = { ...A_PATH, front: { ...A_PATH.front, current_step: 'S01' } }
+
+  // A block in the `index.md` of a FOLDER record answers for no unit, so it
+  // cannot stand in front of the step record and skip the rule — which taking
+  // the newest unit unconditionally allowed.
+  const folderRecord = { ...stale, file: `${PATH_DIR}/CP-EX-010/index.md` }
+  const shadowed = run([folderRecord.file], 'path/cp-ex-010', [folderRecord], {
+    workUnits: [...units, { step: 'S03', unit: '03', type: 'implementation', verified: 'test', __file: folderRecord.file }],
+    checkpointFor: () => 'a'.repeat(40),
+    reviewFor: (file) => (file === step ? '' : 'read')
+  })
+  assert.ok(rules(shadowed, 'blocking').includes('review'),
+    `the newest LEDGER unit is still S02: ${JSON.stringify(messages(shadowed, 'review', 'blocking'))}`)
+
+  // A record that drops the field entirely is judged the same way.
   const dropped = run([A_PATH.file], 'path/cp-ex-010', [A_PATH], {
     workUnits: [{ step: 'S01', unit: '01', type: 'implementation', verified: 'test', __file: `${PATH_DIR}/CP-EX-010/steps/S01.md` }, ...units],
     checkpointFor: () => 'a'.repeat(40),
@@ -1939,40 +1955,57 @@ test('the forge gaps are read from the trunk\'s rules, and this repository\'s ow
   // The bypass, and ONLY the bypass: `allow_squash_merge` and
   // `allow_rebase_merge` are both true on this repository, and the trunk's
   // ruleset allows neither onto the trunk. The toggles are not read.
-  assert.deepEqual(gaps, ['1 actor bypasses the trunk\'s rules'])
+  assert.deepEqual(gaps.gaps, ['1 actor bypasses the trunk\'s rules'])
+  assert.deepEqual(gaps.withheld, [])
+})
+
+test('a bypass list the token could not see is reported as not read, never as no bypass', () => {
+  // The lie of 2026-09-13, as a case. GitHub returns a ruleset with 200 and
+  // ELIDES `bypass_actors` unless the caller has write access to the ruleset,
+  // which a workflow's own token can never have. An absent list read as an
+  // empty one printed "forge enforces everything these records name" over a
+  // trunk whose ruleset carries an always-bypass role.
+  const elided = forgeGaps({ rules: TRUNK_RULES, rulesets: [{ id: 7 }] })
+  assert.deepEqual(elided.gaps, [])
+  assert.deepEqual(elided.withheld, ['the bypass list of ruleset 7'])
+  // An empty list is a reading: this trunk has no bypass actor, and saying so
+  // is not the same as saying nothing was read.
+  const empty = forgeGaps({ rules: TRUNK_RULES, rulesets: [{ id: 7, bypass_actors: [] }] })
+  assert.deepEqual(empty.gaps, [])
+  assert.deepEqual(empty.withheld, [])
 })
 
 test('a merge method lands only if EVERY applying rule allows it', () => {
   const permissive = TRUNK_RULES.map((rule) => rule.type === 'pull_request' ? pullRequestRule('merge', 'squash', 'rebase') : rule)
-  assert.deepEqual(forgeGaps({ rules: permissive, rulesets: [] }),
+  assert.deepEqual(forgeGaps({ rules: permissive, rulesets: [] }).gaps,
     ['squash and rebase merges are allowed on the trunk, so the commit that lands is not the object the check ran on'])
   // GitHub applies the MOST RESTRICTIVE form of a rule defined more than once,
   // so merge methods intersect. Unioning them reported a squash the forge
   // would refuse.
-  assert.deepEqual(forgeGaps({ rules: [...permissive, pullRequestRule('merge')], rulesets: [] }), [])
+  assert.deepEqual(forgeGaps({ rules: [...permissive, pullRequestRule('merge')], rulesets: [] }).gaps, [])
   // And an absent parameter is GitHub's own default, all three — never the
   // restrictive answer.
-  assert.deepEqual(forgeGaps({ rules: [{ type: 'pull_request', ruleset_id: 9 }], rulesets: [] }),
+  assert.deepEqual(forgeGaps({ rules: [{ type: 'pull_request', ruleset_id: 9 }], rulesets: [] }).gaps,
     ['no check is required before a merge', 'squash and rebase merges are allowed on the trunk, so the commit that lands is not the object the check ran on'])
 })
 
 test('a strict policy on any applying rule is enough, and none on any is the gap', () => {
   const lax = { type: 'required_status_checks', ruleset_id: 7, parameters: { strict_required_status_checks_policy: false } }
   const laxOnly = [lax, pullRequestRule('merge')]
-  assert.deepEqual(forgeGaps({ rules: laxOnly, rulesets: [] }),
+  assert.deepEqual(forgeGaps({ rules: laxOnly, rulesets: [] }).gaps,
     ['a required check is not required on the exact commit that lands'])
   // The strict form is the more restrictive one, so a strict rule behind a lax
   // one still makes the check strict. Reading only the first rule found
   // reported this as unenforced.
   const strict = { type: 'required_status_checks', ruleset_id: 9, parameters: { strict_required_status_checks_policy: true } }
-  assert.deepEqual(forgeGaps({ rules: [...laxOnly, strict], rulesets: [] }), [])
+  assert.deepEqual(forgeGaps({ rules: [...laxOnly, strict], rulesets: [] }).gaps, [])
 })
 
 test('a trunk guarded by rules that require no check, or no request, is said so', () => {
   const noCheck = TRUNK_RULES.filter((rule) => rule.type !== 'required_status_checks')
-  assert.deepEqual(forgeGaps({ rules: noCheck, rulesets: [] }), ['no check is required before a merge'])
+  assert.deepEqual(forgeGaps({ rules: noCheck, rulesets: [] }).gaps, ['no check is required before a merge'])
   const noRequest = TRUNK_RULES.filter((rule) => rule.type !== 'pull_request')
-  assert.deepEqual(forgeGaps({ rules: noRequest, rulesets: [] }), ['a direct push to the trunk needs no pull request'])
+  assert.deepEqual(forgeGaps({ rules: noRequest, rulesets: [] }).gaps, ['a direct push to the trunk needs no pull request'])
 })
 
 test('a trunk with no rule at all is said to be unguarded, once, and no cause is invented for it', () => {
@@ -1980,7 +2013,7 @@ test('a trunk with no rule at all is said to be unguarded, once, and no cause is
   // that one absence, not four findings. A private repository on a plan
   // without rulesets arrives here too, and the line does not claim to know
   // which it is: the plan is not readable from what this reads.
-  assert.deepEqual(forgeGaps({ rules: [], rulesets: [] }), ['no rule of the forge guards the trunk'])
+  assert.deepEqual(forgeGaps({ rules: [], rulesets: [] }).gaps, ['no rule of the forge guards the trunk'])
 })
 
 test('the forge is not read without a token, without GitHub, or when it answers badly', async () => {
@@ -1994,18 +2027,55 @@ test('the forge is not read without a token, without GitHub, or when it answers 
   assert.match(refused.why, /HTTP 404/)
 })
 
-test('a ruleset the token cannot read fails the whole read, rather than reporting no bypass', async () => {
-  // A fine-grained token without administration access reads the branch's
-  // rules and is refused the ruleset. Reporting `read: true` there printed
-  // "the forge enforces everything these records name" over a bypass list
-  // nobody had seen.
+test('an elided bypass list survives the whole read as withheld, not as no bypass', async () => {
+  // The end-to-end shape of the lie: the forge answers 200 for the ruleset and
+  // simply omits `bypass_actors`. This is what a workflow's own token gets on
+  // this repository, and the hand-off from `readForge` to `forgeGaps` is the
+  // only place it can be turned back into an empty list.
+  const request = async (url) => url.includes('/rules/branches/')
+    ? { value: TRUNK_RULES }
+    : { value: { id: 7, name: 'trunk', enforcement: 'active' } }
+  const read = await readForge({ token: 't', slug: { owner: 'o', repo: 'r' }, trunk: 'main', request })
+  assert.equal(read.read, true)
+  assert.deepEqual(read.gaps, [])
+  assert.deepEqual(read.withheld, ['the bypass list of ruleset 7'])
+  assert.match(profileLine({ transports: { registration: 'manual-git', integration: 'pull-request' }, forge: read }),
+    /not read: the bypass list of ruleset 7; unenforced among what was read: nothing/)
+})
+
+test('a rule that names no ruleset is a bypass list nobody asked for, and says so', async () => {
+  // The id is the only handle on a ruleset, so a rule without one is skipped by
+  // the request loop. Skipped silently, it was the last route by which "forge
+  // enforces everything these records name" could be printed over a list nobody
+  // read; the read has no id to name and says that much.
+  const request = async (url) => url.includes('/rules/branches/')
+    ? { value: [...TRUNK_RULES, { type: 'required_signatures', ruleset_id: null }] }
+    : { value: { id: 7, bypass_actors: [] } }
+  const read = await readForge({ token: 't', slug: { owner: 'o', repo: 'r' }, trunk: 'main', request })
+  assert.equal(read.read, true)
+  assert.deepEqual(read.gaps, [])
+  assert.deepEqual(read.withheld,
+    ['the bypass list of a ruleset this read could not name (1 rule of the trunk names no ruleset)'])
+})
+
+test('a ruleset the token cannot read is the half that is withheld, not the whole read', async () => {
+  // A token without administration access reads the branch's rules and is
+  // refused the ruleset. Reporting no bypass there printed "forge enforces
+  // everything these records name" over a list nobody had seen; failing the
+  // whole read instead threw away the gaps the token CAN see. The rules are
+  // reported, the bypass list is named as unread (ADR-026 decision 1).
   const request = async (url) => {
     if (url.includes('/rules/branches/')) return { value: [{ type: 'pull_request', ruleset_id: 7, parameters: { allowed_merge_methods: ['merge'] } }] }
     return { error: 'HTTP 403' }
   }
   const read = await readForge({ token: 't', slug: { owner: 'o', repo: 'r' }, trunk: 'main', request })
-  assert.equal(read.read, false)
-  assert.match(read.why, /HTTP 403 for a ruleset of the trunk/)
+  assert.equal(read.read, true)
+  // The reason is carried, so a token too small and a forge that was down do
+  // not read alike.
+  assert.deepEqual(read.withheld, ['the bypass list of ruleset 7 (HTTP 403)'])
+  // And the reading the branch endpoint did give is still made: this trunk
+  // requires no check.
+  assert.deepEqual(read.gaps, ['no check is required before a merge'])
 })
 
 test('the forge read never throws: a refusal, a timeout and a broken fetch are all answers', async () => {
@@ -2057,6 +2127,13 @@ test('the profile line names the declared transports and what the forge does not
     /forge does not enforce: a bypass; a squash/)
   assert.match(profileLine({ transports, forge: { read: true, gaps: [] } }),
     /forge enforces everything these records name/)
+  // Withheld: all three parts, and never the sentence that claims the whole
+  // forge. This is the line this repository's own run prints.
+  const withheld = profileLine({ transports, forge: { read: true, gaps: ['a squash'], withheld: ['the bypass list of ruleset 7'] } })
+  assert.match(withheld, /forge read the trunk's rules; not read: the bypass list of ruleset 7; unenforced among what was read: a squash/)
+  assert.ok(!/enforces everything/.test(withheld))
+  assert.match(profileLine({ transports, forge: { read: true, gaps: [], withheld: ['the bypass list of ruleset 7'] } }),
+    /unenforced among what was read: nothing/)
 })
 
 /* ------------------------------------------------------------------ *
@@ -2693,5 +2770,12 @@ test('there is one invocation form: no opt-out narrows the comparison', () => {
   assert.deepEqual(resolveBase({ workingTree: true, branch: 'path/cp-ex-010', refExists: () => true }), { base: `${REMOTE}/${TRUNK_BRANCH}`, source: 'default-trunk' })
   assert.deepEqual(resolveBase({ branch: 'path/cp-ex-010', refExists: () => false }), { base: null, source: 'unresolvable' })
   assert.deepEqual(resolveBase({ flag: 'origin/main', branch: 'path/cp-ex-010', refExists: () => true }), { base: 'origin/main', source: 'flag' })
+  // A flag is what was ASKED for; whether it can be compared with this commit
+  // is `main`'s one question, asked with `merge-base`, because a ref that does
+  // not resolve and a ref on an unrelated history fail the same way. This
+  // function does not second-guess it — the `comparison` rule reports the
+  // answer (ADR-026 decision 1's principle: a reading not made is reported,
+  // never answered for).
+  assert.deepEqual(resolveBase({ flag: '0'.repeat(40), branch: TRUNK_BRANCH, refExists: () => false }), { base: '0'.repeat(40), source: 'flag' })
   assert.deepEqual(resolveBase({ branch: TRUNK_BRANCH, refExists: () => true }), { base: null, source: 'trunk-work' })
 })

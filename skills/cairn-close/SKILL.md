@@ -97,10 +97,19 @@ commit that lands is the commit that was checked. Then the integrating unit, fro
 `status: done`, `resolution: completed`, the live view, and one journal entry
 under `project/log/` — on `pull-request`, one commit, for one path, carrying
 only those, and never a merge object carrying the edit: land the candidate
-with the merge, then record `done` in a commit of its own. Two paths reaching
-`done` in one commit is refused; two honest integrations in one request are
-not. On `manual-git` the integrating unit is the `--no-ff` merge itself,
-carrying those edits. A path branch never claims `done`.
+with the merge, then record `done` in a commit of its own. On `manual-git` the
+integrating unit is the `--no-ff` merge itself, carrying those edits. A path
+branch never claims `done`.
+
+Two paths reaching `done` in one commit is refused on both transports; two
+honest integrations in one request are not. The merge-object refusal is
+`pull-request`'s alone (ADR-008 decision 2; ADR-026 decisions 3 and 4). On
+`manual-git` nothing else is in the way: `transition` reads the `ready` behind
+the arrival from any parent of it, so the merge that carries the closing is
+judged where the branch declared it (ADR-027). Both halves of that transport
+are decided. Until 2026-09-14 neither rule fired at all, because no run compared
+the trunk across an integrating commit; the reference says how that is fixed and
+`tools/soundness.md` carries the finding.
 
 ## 6. Prove it, then clean up
 

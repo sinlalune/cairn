@@ -47,17 +47,32 @@ jobs:
       - name: cairn-check
         id: cairn-check
         env:
-          CAIRN_BASE_REF: origin/${{ github.base_ref || 'main' }}
-          # No token here, deliberately. The forge hands a workflow only
-          # `secrets.GITHUB_TOKEN`, and that token may not read a ruleset's
-          # bypass list — GitHub ELIDES the field rather than refusing it, and
-          # the checker reads an absent list as a trunk nobody bypasses. On
-          # 2026-09-13 that made this repository's own run print "forge
-          # enforces everything these records name" while the trunk's ruleset
-          # carried a role that bypasses it always. `forge not read` is the
-          # honest line, and the one that sends a human to look. The token
-          # belongs here once the checker can tell an unread bypass list from
-          # an empty one; until then this is a reading nobody should trust.
+          # The base must span the ARRIVAL. On a request that is the target
+          # branch; on a push to the trunk it is the commit the push replaced,
+          # because `origin/main` after the push already names the pushed
+          # commit and comparing it with itself is how every integrating unit
+          # this repository has landed reached ZERO changed files — no
+          # `transition`, no `acceptance`, no `journal-entry`, no
+          # `scope-digest`, over a green run. `github.event.before` is forty
+          # zeros on a repository's first push to the trunk, which the checker
+          # reports as an advisory — nothing precedes that commit — rather than
+          # dying on it. A push to a PATH branch keeps the trunk as its base:
+          # comparing a branch push with the push before it is the `--previous`
+          # form `comparisonRef` condemns, and is how twenty-six edited records
+          # went unjudged.
+          CAIRN_BASE_REF: ${{ github.base_ref && format('origin/{0}', github.base_ref) || (github.ref_name == 'main' && github.event.before || 'origin/main') }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The token is back, because the READING changed. This token still
+          # cannot see a ruleset's bypass list — GitHub returns `bypass_actors`
+          # only to a caller with write access to the ruleset and ELIDES it
+          # otherwise, and `administration` is not among the permissions a
+          # workflow's own token can be granted — but the checker no longer
+          # reads that silence as a trunk nobody bypasses. The profile line
+          # names the bypass list as NOT READ and reports the gaps this token
+          # can see beside it, so the run says exactly what it saw (ADR-026
+          # decision 1). It was out from 2026-09-13, when run 34756757308
+          # printed "forge enforces everything these records name" over an
+          # always-bypass role, until that reading was fixed.
         run: node tools/cairn-check.mjs --base "$CAIRN_BASE_REF"
       # Only on the CHECKER's failure, so the incident is written while it
       # happens (ADR-014 decision 1). A red suite is a different incident, and

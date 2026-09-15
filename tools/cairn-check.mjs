@@ -85,7 +85,13 @@ export function githubSlug(url) {
 
 /** What the forge does not enforce, from the three things ADR-001 decision 6
  *  names: a check that does not guard the exact commit that lands, a merge
- *  that rewrites it, and a role that bypasses the rules.
+ *  that rewrites it, and a role that bypasses the rules — and, beside it, what
+ *  could not be read at all (ADR-026 decision 1).
+ *
+ *  `{ gaps, withheld }`: a gap is a fact about a setting that WAS read; a
+ *  withheld entry is a reading that was not made. The two are never summed —
+ *  reading the second as the first is how the line came to certify a
+ *  protection this repository does not have.
  *
  *  Everything is read from the rules that apply TO THE TRUNK, never from the
  *  repository's own merge toggles: `allow_squash_merge` says what the
@@ -99,12 +105,25 @@ export function githubSlug(url) {
  *  allows it. */
 export function forgeGaps({ rules = [], rulesets = [] }) {
   const gaps = []
+  // One pass: a ruleset's bypass list was read or it was not. GitHub ELIDES
+  // `bypass_actors` below write access to the ruleset, which a workflow's own
+  // token always is; an unread one arrives with the reason, so that a token too
+  // small and a forge that was down do not read alike.
+  const withheld = []
+  const bypass = []
+  for (const ruleset of rulesets) {
+    if (Array.isArray(ruleset?.bypass_actors)) bypass.push(...ruleset.bypass_actors)
+    else {
+      const named = ruleset?.id != null ? `ruleset ${ruleset.id}` : 'a ruleset this read could not name'
+      withheld.push(`the bypass list of ${named}${ruleset?.why ? ` (${ruleset.why})` : ''}`)
+    }
+  }
   if (rules.length === 0) {
     // A private repository on a plan without rulesets is one way to arrive
     // here; a repository that simply configured none is another. The line
     // reports the fact it read and names no cause it did not.
     gaps.push('no rule of the forge guards the trunk')
-    return gaps
+    return { gaps, withheld }
   }
   const checks = rules.filter((rule) => rule.type === 'required_status_checks')
   if (checks.length === 0) gaps.push('no check is required before a merge')
@@ -122,11 +141,10 @@ export function forgeGaps({ rules = [], rulesets = [] }) {
       gaps.push(`${rewriting.join(' and ')} merges are allowed on the trunk, so the commit that lands is not the object the check ran on`)
     }
   }
-  const bypass = rulesets.flatMap((ruleset) => ruleset?.bypass_actors ?? [])
   if (bypass.length) {
     gaps.push(`${bypass.length} actor${bypass.length === 1 ? '' : 's'} bypass${bypass.length === 1 ? 'es' : ''} the trunk's rules`)
   }
-  return gaps
+  return { gaps, withheld }
 }
 
 /** Read the forge, or say why it was not read. `request` is a parameter so the
@@ -142,21 +160,38 @@ export async function readForge({ token, slug, trunk, request }) {
   const applied = Array.isArray(rules.value) ? rules.value : []
   // One request per DISTINCT ruleset behind the trunk's rules: the branch
   // endpoint gives the rules, and only the ruleset itself carries its bypasses.
-  // Together, so the wall time is one request's rather than one per ruleset,
-  // and a ruleset that could not be read makes the WHOLE read fail: a missing
-  // bypass list would otherwise be printed as a trunk nobody bypasses.
+  // Together, so the wall time is one request's rather than one per ruleset.
   const ids = [...new Set(applied.map((rule) => rule.ruleset_id).filter((id) => id != null))]
   const answers = await Promise.all(ids.map((id) => request(`${base}/rulesets/${id}`)))
-  const refused = answers.find((answer) => answer.error)
-  if (refused) return { read: false, why: `the forge answered ${refused.error} for a ruleset of the trunk` }
-  return { read: true, gaps: forgeGaps({ rules: applied, rulesets: answers.map((a) => a.value) }) }
+  // A ruleset is passed with the id it was asked for and, where it did not come
+  // back, the reason — so its bypass list is withheld by name while the rules
+  // the branch endpoint DID give are still reported. Failing the whole read
+  // here threw away the gaps the token can see to say nothing about the one it
+  // cannot (ADR-026 decision 1).
+  // A rule that names no ruleset is a bypass list that was never even asked
+  // for: the id is the only handle on it, and skipping it silently is the last
+  // route by which "enforces everything" could be printed over a list nobody
+  // read. The spread comes FIRST so the id asked for wins over the body's own.
+  const unnamed = applied.filter((rule) => rule.ruleset_id == null).length
+  const rulesets = ids.map((id, index) => ({ ...answers[index].value, id, why: answers[index].error }))
+  if (unnamed) rulesets.push({ id: null, why: `${unnamed} rule${unnamed === 1 ? '' : 's'} of the trunk name${unnamed === 1 ? 's' : ''} no ruleset` })
+  return { read: true, ...forgeGaps({ rules: applied, rulesets }) }
 }
 
 export function profileLine({ transports, forge }) {
   const declared = `transports registration ${transports.registration}, integration ${transports.integration}`
   if (!forge.read) return `profile — ${declared}; forge not read (${forge.why})`
-  return forge.gaps.length
-    ? `profile — ${declared}; forge does not enforce: ${forge.gaps.join('; ')}`
+  const withheld = forge.withheld ?? []
+  const gaps = forge.gaps ?? []
+  // Something was withheld, so the line says all three: what was read, what
+  // was not, and what is unenforced AMONG WHAT WAS READ. The sentence below
+  // claims the whole forge and may not be printed over an unread reading.
+  if (withheld.length) {
+    return `profile — ${declared}; forge read the trunk's rules; not read: ${withheld.join('; ')}; ` +
+      `unenforced among what was read: ${gaps.length ? gaps.join('; ') : 'nothing'}`
+  }
+  return gaps.length
+    ? `profile — ${declared}; forge does not enforce: ${gaps.join('; ')}`
     : `profile — ${declared}; forge enforces everything these records name`
 }
 
@@ -1227,6 +1262,11 @@ export const TRUNK_BASE_CANDIDATES = [`${REMOTE}/${TRUNK_BRANCH}`, TRUNK_BRANCH]
  * without a repository.
  */
 export function resolveBase({ flag = null, branch, refExists = () => false }) {
+  // A flag is taken as ASKED FOR, not as usable. Whether it can be compared
+  // with THIS commit is one question with one answer, and `main` asks it, once,
+  // with `merge-base`: a ref that does not resolve and a ref on an unrelated
+  // history both fail it. Checking resolvability here as well would be a second
+  // implementation of the same decision, and the weaker one.
   if (flag) return { base: flag, source: 'flag' }
   // Off a path branch there is no pending merge to decide, so the working
   // tree is the right question and no parity claim is being made.
@@ -1809,6 +1849,9 @@ export function evaluate({
   supersessions = [],
   integrationStateFor = null,
   branchSource = 'symbolic-ref',
+  baseSource = 'unresolvable',
+  baseRequested = null,
+  baseIsHead = false,
   workUnits = null,
   reviewFor = null,
   rewritingForbidden = REWRITING_FORBIDDEN,
@@ -1833,6 +1876,47 @@ export function evaluate({
   const touched = (prefix) => changed.filter((file) => file.startsWith(prefix))
   const onPath = isPathBranch(branch)
   const match = paths.find((p) => p.front?.branch === branch)
+
+  // 0. the COMPARISON itself. Every changed-file rule inherits it, so a base
+  //    that does not resolve is not a smaller run — it is no run at all, and
+  //    the old behaviour was to die inside `git merge-base` with a Node stack
+  //    trace: a red gate carrying no finding. CI supplies this from the forge's
+  //    own event, whose value on a branch's first push is forty zeros, so the
+  //    first adopter to install the workflow meets it. Reported, never guessed
+  //    at (ADR-026 decision 1's principle, one rule over).
+  // A base that RESOLVES can still be no comparison: if it is this very
+  // commit, `merge-base` is HEAD and the diff is empty. That is not a clean
+  // tree — it is a question asked of itself, and it is how every integrating
+  // unit this repository landed reached zero changed files under a green run.
+  // Only on the TRUNK. On a path branch a base equal to HEAD means the branch
+  // carries no commit yet, which is benign and which both invocations see
+  // alike — the parity fixtures for this very requirement caught the first
+  // draft of this rule reporting it on one invocation and not the other. On
+  // the trunk it is never benign: HEAD is an arrival or trunk work, and a base
+  // equal to it is a push compared with itself.
+  if (baseIsHead && !onPath) {
+    add('blocking', 'comparison',
+      'the base given already contains this commit, so the comparison is empty and every changed-file rule was narrowed to the working tree — provide a base that predates what you are judging: the target branch for a request, and for a push to the trunk the commit it replaced',
+      'inconclusive')
+  }
+  // Only where a base was ASKED for. `unresolvable` is also the answer for a
+  // checkout with no trunk ref and no flag, which `resolveBase` falls back on
+  // deliberately and `trunk-containment` reports; refusing there would refuse a
+  // clone for not having fetched yet.
+  if (baseSource === 'unresolvable' && baseRequested) {
+    // The forge's sentinel for "nothing precedes this": a branch's first push.
+    // That is a fact about the history, not a broken input, and failing a
+    // repository's first push to its trunk would be the gate refusing a state
+    // the writer cannot avoid.
+    if (/^0{40,}$/.test(baseRequested)) {
+      add('advisory', 'comparison',
+        'no commit precedes this push — the forge names none, so this run judged the working tree alone; the next push to this ref compares against this commit')
+    } else {
+      add('blocking', 'comparison',
+        `the base this run was asked to compare against cannot be compared with this commit (${baseRequested}), so every changed-file rule was narrowed to the working tree — fetch the ref first; where no ref reaches it, as after a force-push that rewound what the forge named, provide a --base that is still reachable`,
+        'inconclusive')
+    }
+  }
 
   // 1. branch → path — and FAIL CLOSED when the branch has no name -------
   // Every path-scoped rule is guarded by the branch name. A check that cannot
@@ -1989,10 +2073,12 @@ export function evaluate({
   // some earlier change, and this one has no integrating commit of its own.
   const integrationOf = new Map(arrivingDone
     .map((path) => [path.file, integrationStateFor?.(path.file, path.front?.id) ?? null]))
-  // Two arrivals in one COMMIT is the refusal; two in one comparison is an
-  // ordinary request that spans two honest integrations, and refusing it would
-  // tell the author to do what they already did. An arrival with no commit yet
-  // is the one being prepared in the working tree, and there is one of those.
+  // One commit for one path is the reading that binds (ADR-026 decision 3,
+  // superseding ADR-008 decision 2's *never two paths in one request*). Two
+  // arrivals in one COMMIT is the refusal; two in one comparison is an ordinary
+  // request spanning two honest integrations, and refusing it would tell the
+  // author to do what they already did. An arrival with no commit yet is the
+  // one being prepared in the working tree, and there is one of those.
   const perCommit = new Map()
   for (const path of arrivingDone) {
     const key = integrationOf.get(path.file)?.commit ?? null
@@ -2005,11 +2091,24 @@ export function evaluate({
         `${ids.join(', ')} reach done in ${commit ?? 'the commit being prepared'} — integrate one path per commit, from a clean trunk checkout, so that each integration can be read, reverted and journalled on its own`)
     }
   }
-  for (const path of arrivingDone) {
-    const integration = integrationOf.get(path.file)
-    if (integration?.merge) {
-      add('blocking', 'acceptance',
-        `${path.file} reaches done in ${integration.commit}, which is a merge object carrying the edit — land the candidate with the merge, then record done in one commit of its own on the trunk`)
+  // ADR-026 decision 4. On `pull-request` the candidate lands with the merge and
+  // `done` follows in a commit of its own, so a merge object carrying the edit
+  // is the shape ADR-008 decision 2 refuses. On `manual-git` that merge IS the
+  // integrating unit — `cairn-close` step 5 and chapter 5 both prescribe it —
+  // and this refusal does not reach there. It is not the only one that did —
+  // see `tools/soundness.md` on the `transition` reading, which ADR-026 does
+  // not decide and which WOULD refuse that closing. Until 2026-09-14 it did
+  // not refuse anything: no run compared the trunk across an integrating
+  // commit, so neither rule was reached on either transport. Item 13 of this
+  // path gave them the comparison, and `comparison` reports when there is
+  // none.
+  if (pullRequest) {
+    for (const path of arrivingDone) {
+      const integration = integrationOf.get(path.file)
+      if (integration?.merge) {
+        add('blocking', 'acceptance',
+          `${path.file} reaches done in ${integration.commit}, which is a merge object carrying the edit — land the candidate with the merge, then record done in one commit of its own on the trunk`)
+      }
     }
   }
 
@@ -2295,10 +2394,12 @@ export function evaluate({
     // Only the CURRENT unit's step, so a step written before this rule existed
     // is not refused when a later unit is judged. `closure` carries no step
     // file, so it carries no review.
-    // `current_step` is a convenience, not a guarantee: nothing requires it,
-    // and keying the rule on it alone would let a record drop one optional line
-    // and go unjudged. Where it names no unit the current one is the ledger's
-    // newest, which `pathWorkUnits` has already sorted last.
+    //
+    // The current unit is the newest one kept in a LEDGER, which `pathWorkUnits`
+    // has already sorted last. `current_step` used to select it over that same
+    // sorted list, so a field left behind could only ever point at an OLDER
+    // unit, never a newer one; it stays in the schema, where `work-unit` reads
+    // it, and selects nothing here (ADR-026 decision 2).
     //
     // Read in the unit's own ledger — its step record, or the flat record that
     // is one. Never in the `index.md` of a folder record: a block put there
@@ -2307,8 +2408,11 @@ export function evaluate({
     // shape one section answers for every unit, which the conformance page
     // states as the gap it is.
     if (changed.includes(match.file) && reviewFor && workUnits.length > 0) {
-      const current = workUnits.find((unit) => unit.step === match.front.current_step) ?? workUnits.at(-1)
-      if (isUnitLedger(current.__file, match.file) && current.type !== 'closure') {
+      // Filtered, not just `at(-1)`: a block in the `index.md` of a folder
+      // record answers for no unit, and taking the newest unconditionally let
+      // such a block stand in front of the step record and skip the rule.
+      const current = workUnits.filter((unit) => isUnitLedger(unit.__file, match.file)).at(-1)
+      if (current && current.type !== 'closure') {
         const review = reviewFor(current.__file)
         if (!review) {
           add('blocking', 'review',
@@ -2593,7 +2697,7 @@ export async function githubRequest(url, { token, timeoutMs = 3000, doFetch = fe
 /** Raw stdout — for output whose LEADING whitespace is data, not padding. */
 /** Same, but a failure is an ANSWER (`null`), not an exception: a detached
  *  HEAD has no symbolic ref, and that fact is what the caller needs. */
-function gitOrNull(args) {
+export function gitOrNull(args) {
   try {
     // stderr is PIPED, not inherited: "ref HEAD is not a symbolic ref" is the
     // expected answer in a detached checkout, and printing it as an error
@@ -2611,6 +2715,10 @@ function gitOrNull(args) {
 function gitRaw(args) {
   return execFileSync('git', args, { cwd: REPO, encoding: 'utf8' })
 }
+
+/** Does this name resolve to a commit? Four readings spelled the same
+ *  expression — two here, `resolveBase`'s trunk guard, and the post-mortem. */
+export const refExists = (ref) => gitOrNull(['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]) != null
 
 function changedFiles(base) {
   // --untracked-files=all, because without it Git lists a NEW DIRECTORY as one
@@ -2783,7 +2891,7 @@ function pathClosureState(path, record) {
  *  declares — the file it is actually at. A record landed flat and sliced into
  *  a folder has its earlier states under one name and its later ones under the
  *  other, and a checker that reads one of them reads half a history. */
-function recordShapes(id, file = null) {
+export function recordShapes(id, file = null) {
   return [...new Set([`${PATH_DIR}/${id}.md`, `${PATH_DIR}/${id}/index.md`, ...(file ? [file] : [])])]
 }
 
@@ -2798,27 +2906,48 @@ function recordShapes(id, file = null) {
  * `--topo-order` because the question is always about ancestry, and `--reverse`
  * alone orders by commit date, which a rebase or a skewed clock can invert.
  */
-function recordHistory(range, shapes, firstParent = false) {
+export function recordHistory(range, shapes, firstParent = false) {
   const raw = gitOrNull([
     'log', '--format=%H', '--topo-order', '--reverse',
     ...(firstParent ? ['--first-parent'] : []), range, '--', ...shapes
   ])
   return {
     commits: raw?.split('\n').filter(Boolean) ?? [],
-    statusAt: (commit) => {
-      for (const shape of shapes) {
-        const text = gitOrNull(['show', `${commit}:${shape}`])
-        if (text != null) return metadataOf(readFrontmatter(text)?.data)?.status
-      }
-      return undefined
+    statusAt: (commit) => recordFrontAt(commit, shapes)?.status
+  }
+}
+
+/** A record's own metadata block as of one commit, read from the first of the
+ *  shapes that exists there. `null` where the record was not under any of them
+ *  yet, which is a fact about that commit and not a failure to read.
+ *
+ *  Memoised for the life of the process, on the name the caller gave rather
+ *  than a resolved id: a range is walked as `c` and `c^`, which are two names
+ *  for one commit, and callers pass `HEAD` and `<sha>^` unresolved. Git objects
+ *  do not change under a run, so the only cost of the weaker key is a miss. */
+const FRONT_AT = new Map()
+export function recordFrontAt(commit, shapes) {
+  if (!commit) return null
+  const key = `${commit}\u0000${shapes.join('\u0000')}`
+  if (FRONT_AT.has(key)) return FRONT_AT.get(key)
+  let front = null
+  for (const shape of shapes) {
+    const text = gitOrNull(['show', `${commit}:${shape}`])
+    if (text != null) {
+      front = metadataOf(readFrontmatter(text)?.data)
+      break
     }
   }
+  FRONT_AT.set(key, front)
+  return front
 }
 
 /**
  * ADR-008 decision 2. What this comparison holds about a record's integration:
  * the commit in which the TRUNK came to say `done`, whether that commit is a
- * merge object, and what the record said in the commit before it.
+ * merge object, and what the record said in any commit immediately behind it —
+ * ANY PARENT since ADR-027, not the first, because on `manual-git` the
+ * integrating unit IS the merge and the branch's `ready` sits on its second.
  *
  * `--first-parent`, which is the opposite of what `pathRegistrationBaseState`
  * needs and for the opposite reason. There the question is which commit the
@@ -2829,6 +2958,12 @@ function recordHistory(range, shapes, firstParent = false) {
  * that had already declared `done` is TREESAME to that branch and never
  * appears, so the arrival looks like an ordinary commit and the merge object
  * carrying it goes unread.
+ *
+ * That walk and `readyBehind` answer different questions and take different
+ * views on purpose: WHICH commit the trunk came to say `done` in is a fact
+ * about the trunk's own line, so the walk follows first parents; what the
+ * record said behind that commit is a fact about the commits it was made from,
+ * so the reading looks at all of them (ADR-027).
  *
  * `commit` is null when the arrival is not committed yet — the writer
  * preparing the integrating commit in the working tree has no commit to judge,
@@ -2845,12 +2980,32 @@ function integrationState(file, ref, id) {
   return {
     commit,
     merge: parents.length > 1,
-    // What the record said in the commit BEFORE this one on the trunk's own
-    // line — not "a `ready` somewhere in the range", which an abandoned earlier
-    // `ready` would satisfy and which would reopen the edge ADR-001 decision 7
-    // closes. Where nothing is committed yet, the trunk's current state is that
+    // What the record said in a commit IMMEDIATELY BEHIND this one — not "a
+    // `ready` somewhere in the range", which would reopen the edge ADR-001
+    // decision 7 closes.
+    //
+    // ANY parent, and that is a WIDENING with a cost, not a free one: a merge
+    // parent can carry an arbitrarily stale record, so a `ready` that the trunk
+    // later withdrew (`ready` → `running` is legal) is resurrected by merging a
+    // branch still sitting at it, and the arrival goes green. ADR-027 accepts
+    // that, names it in its consequences, and `tools/cairn-fixture.test.mjs`
+    // pins it as NOT refused so it cannot be mistaken for coverage. Closing it
+    // means dating each parent's last state change; the trust boundary
+    // (chapter 5) puts a writer doing two deliberate things in sequence outside
+    // what these checks are for.
+    //
+    // Any, not the first (ADR-027). `commit^` was the shorthand for "the commit
+    // before", written when every arrival in view was a plain one. On
+    // `manual-git` the `--no-ff` merge IS the integrating unit: its first parent
+    // is the trunk, where the record still read `running`, and the `ready` the
+    // branch declared sits on its SECOND — so the first-parent reading refused
+    // every honest closing on that transport, which is what ADR-001 decision
+    // 7's own reasoning says cannot happen ("on both transports the
+    // administrative commit has already put the path at `ready` on its
+    // branch"). An octopus merge has more than two, and any of them may carry
+    // it. Where nothing is committed yet, the trunk's current state is that
     // commit's parent-to-be.
-    readyBehind: statusAt(commit ? `${commit}^` : 'HEAD') === 'ready'
+    readyBehind: (commit ? parents : ['HEAD']).some((parent) => statusAt(parent) === 'ready')
   }
 }
 
@@ -2920,7 +3075,7 @@ export function recordOriginFromFollowLog(raw) {
   return entries.at(-1) ?? null
 }
 
-function stepRecordOrigin(file) {
+export function stepRecordOrigin(file) {
   const addedAt = (...flags) => {
     const raw = gitOrNull(['log', ...flags, '--diff-filter=A', '--format=%H', '--name-only', '--', file])
     return raw == null ? null : recordOriginFromFollowLog(raw)
@@ -3191,7 +3346,7 @@ function unresolvedProvisionalCommits(path, trunkRef) {
   // No trunk, no scoping — and an unscoped range is the reading this rule
   // exists to stop, so the run says it could not decide rather than deciding
   // on the broader question.
-  if (!trunkRef || gitOrNull(['rev-parse', '--verify', '--quiet', `${trunkRef}^{commit}`]) == null) return null
+  if (!trunkRef || !refExists(trunkRef)) return null
   const range = [`${from}..${to}`, '--not', trunkRef]
   const raw = gitOrNull(['log', '--format=%H', `--grep=^${PROVISIONAL_TRAILER}:`, ...range])
   if (raw == null) return null
@@ -3296,7 +3451,6 @@ function pathRemoteCheckpoint(branch) {
   // reported "no upstream" on the one run that is the merge gate. Resolve the
   // branch's own ref instead: the local one, else the remote-tracking one,
   // else HEAD.
-  const refExists = (ref) => gitOrNull(['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]) != null
   const resolved = resolveBranchRef({
     branch,
     detached: gitOrNull(['symbolic-ref', '--short', '-q', 'HEAD']) == null,
@@ -3685,12 +3839,29 @@ async function main() {
     symbolicRef: gitOrNull(['symbolic-ref', '--short', 'HEAD']),
     abbrevRef: git(['rev-parse', '--abbrev-ref', 'HEAD'])
   })
-  const { base, source: baseSource } = resolveBase({
+  let { base, source: baseSource } = resolveBase({
     flag: baseFlag,
     branch,
-    refExists: (ref) => gitOrNull(['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]) != null
+    refExists
   })
+  // What the run was ASKED for, so an unusable base can name itself.
+  const baseRequested = baseFlag ?? null
+  // A base can RESOLVE and still not be comparable: two histories with no
+  // common ancestor make `git merge-base` exit non-zero, and `changedFiles`
+  // calls the throwing form. `refExists` answers "is this a commit", never
+  // "can it be compared with mine". This runs BEFORE `changedFiles`, because
+  // the whole point is that nothing downstream may throw on it.
+  if (base && gitOrNull(['merge-base', base, 'HEAD']) === null) {
+    base = null
+    baseSource = 'unresolvable'
+  }
   const changed = changedFiles(base)
+  // Resolved, and already containing this commit: the comparison is empty.
+  // IDENTITY is not the test — a base that is a DESCENDANT of HEAD gives the
+  // same empty diff, and a force-push that rewinds the trunk sends exactly
+  // that as the commit it replaced. The test is whether the merge-base is HEAD.
+  const baseIsHead = Boolean(base) &&
+    gitOrNull(['merge-base', base, 'HEAD']) === gitOrNull(['rev-parse', 'HEAD^{commit}'])
   const viewCurrent = activeViewCurrent()
   const paths = loadPaths()
   const pathForBranch = paths.find((path) => path.front?.branch === branch) ?? null
@@ -3727,6 +3898,9 @@ async function main() {
       supersessions: declaredSupersessions(workUnits),
       integrationStateFor: (file, id) => integrationState(file, previousRef, id),
       branchSource,
+      baseSource,
+      baseRequested,
+      baseIsHead,
       workUnits,
       reviewFor: (file) => reviewSection(readFileSync(join(REPO, file), 'utf8')),
       // Judged against the SAME comparison every other changed-file rule uses,

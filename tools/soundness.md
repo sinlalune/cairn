@@ -151,6 +151,68 @@ remains is narrow and says so: a writer who types the heading and one word
 satisfies it. What it removes is the silent case — a unit that skipped the
 movement and said nothing — and the owner reads the section at the candidate.
 
+That rule also carried the fourth shape of the same error, and it is the one
+worth naming: **a proxy that selects the wrong subject passes soundly over the
+right one.** `review` read the unit `current_step` named, over a ledger already
+sorted by ordinal, so a field left behind pointed it at a unit OLDER than the
+one being judged — never a newer one, because none exists. Every assertion the
+rule made was true of the unit it read; it was reading the wrong unit, and on
+coding path 3, where the field said `S01` from registration through S08, every
+unit after the first was judged on S01's section while the gate reported OK. A
+predicate whose subject is chosen by a field nothing
+verifies is unsound however sound its test is, and the remedy was deletion: the
+subject is the newest unit kept in a ledger, last in the sort
+`pathWorkUnits` applies (ADR-026 decision 2). What remains is narrower and
+stated here rather than claimed away. That sort is on the `unit:` ordinal, which
+the checker validates as digits and not for uniqueness or monotonicity, so a
+writer who numbers a new unit at or below an older one moves the subject back;
+and a newest unit typed `closure` skips the rule for the whole record, because
+ADR-017 decision 2 excepts the type that writes no step file and nothing forbids
+that block in a step record. The field a writer forgets no longer selects; a
+field a writer mistypes still can.
+
+A rule that reads a transport-shaped fact asks which transport. `acceptance`
+refused an integrating commit that is a merge object carrying `done` — true on
+`pull-request`, where the candidate lands with the merge and `done` follows in
+a commit of its own, and false on `manual-git`, where `cairn-close` prescribes
+exactly that merge as the integrating unit. Unsound in the other direction, so
+it refused honest closings rather than passing dishonest ones, which is the
+rarer half of this note; the fix is the same either way, which is to read the
+declared transport rather than assume one (ADR-026 decision 4). The refusal of
+two paths reaching `done` in one commit is not transport-shaped and binds on
+both. `transition` refused that closing too, reading the merge's first parent for the
+`ready` behind it and finding the trunk rather than the branch — one rule fixed
+did not make a transport work, and ADR-026 does not reach that one. ADR-027
+does: any parent of the arrival, one expression over the parent list
+`integrationState` already computes. Both halves of `manual-git` integration are
+decided now, and the fixture that pinned the debt asserts the closing green.
+
+The giving-up is the part worth recording. On `pull-request` an arrival carried
+by a merge object was refused by `acceptance` AND by `transition`, the second
+only because the merge's first parent held `running`. That was not defence in
+depth: it fired on the parent layout, not on the violation, and a second opinion
+reached for the wrong reason is worth less than the one rule that names the
+shape. The `pull-request` fixture now asserts `transition` does NOT fire there,
+so the accident cannot return as a feature.
+
+**And one refusal is given up that was not an accident.** `ready` → `running` is
+a legal withdrawal, and under the first-parent reading re-integrating a withdrawn
+closure from a branch still sitting at the old `ready` was refused, because the
+trunk's own line said `running`. Any parent means a merge parent's arbitrarily
+stale record satisfies it, and that arrival is green. ADR-027 accepts the gap
+rather than date each parent's last state change, on the ground chapter 5
+states: these checks are for omission, staleness, coordination error and silent
+loss of state, and a writer withdrawing a closure and then integrating from a
+stale branch is none of the four. What the note requires of an accepted gap is
+that it not read as coverage, so a fixture pins it as NOT refused and says in
+its own message what to do if it ever starts refusing.
+
+This is the note's own warning turned on the change that answered it: an unsound
+rule was replaced by a sound one beside a second rule nobody read, and the
+second rule's own widening had a cost that only a reader building the case
+found. Neither of them was reached at all until the comparison was fixed, which
+is what *What none of this proves* records.
+
 **4. A stated requirement with no predicate is listed as unenforced.** The
 conformance page is where that is said. An unenforced requirement and an
 unsound gate are indistinguishable from inside a green run — both are a passing
@@ -186,3 +248,44 @@ answer, and an unsound rule is unsound identically everywhere.
 A proxy that is exact today can become a proxy again when the model around it
 changes, without anybody editing it. Nothing in the rule changed; the world it
 described did.
+
+**And a sound rule proves nothing about a run that never reaches it.** The
+changed-file rules are judged on a comparison, and on the trunk that comparison
+is empty. A bare run resolves a base only on a path branch; on the trunk it
+falls back to the working tree, which is clean once the integration is
+committed. The installed workflow
+based a push run on `origin/<trunk>`, which after that push already names the
+pushed commit, so the comparison was a commit against itself. An integrating
+unit was therefore judged by no changed-file rule on either transport —
+`transition`, `acceptance` and `scope-digest` received nothing, and
+`journal-entry`, which exists only to bind an arrival, was disabled outright —
+while the run printed OK. This repository's own trunk runs say so in
+their header: the integration of CP-CAIRN-007 read `0 changed file(s)`. The
+fixtures were not wrong; they hand each rule a real comparison, which is exactly
+what the deployed runs did not. A rule with an adversarial fixture and no input
+is indistinguishable, from inside a green run, from a rule that passed —
+the same indistinguishability requirement 4 names, arrived at from the other
+side. **Fixed here, and the fix is a rule.** The remedy is a base that spans the
+arrival, and it was not one line. The ref a
+push replaced is the right base, but a branch's first push names none — the
+forge sends all zeros — and the checker did not survive a base it could not
+use: it exited through an uncaught Git error rather than reporting the run
+inconclusive, which is a red gate carrying no finding. So: an unresolvable base
+reported, then the base changed on push while a request run keeps its target
+branch, then the workflow test rewritten — it pinned the defective
+expression — then a fixture that drives an arrival through a trunk-shaped run,
+then
+the same base in the workflow the kit generates.
+
+The rule is `comparison`, and it stands behind *One invocation, one verdict:
+local and CI agree on one tree* — a stated requirement that had fixtures and no
+predicate, and that this defect violated exactly. It reports two shapes, both
+`inconclusive`, because each is a reading NOT MADE rather than a violation
+found: a base that does not resolve, which used to kill the process inside
+`git merge-base` with no finding at all; and a base that resolves to the commit
+under judgement, which is the shape the old workflow produced on every push to
+the trunk. The second is asked only off a path branch. On a path branch a base
+equal to `HEAD` means the branch carries no commit yet, which is benign and
+which both invocations see alike — the parity fixtures for this very
+requirement caught the first draft reporting it on one invocation and not the
+other, which is requirement 2 turned on the rule that enforces requirement 2.

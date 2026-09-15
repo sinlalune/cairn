@@ -499,6 +499,23 @@ pathFixture('a unit whose step carries no record of the review movement', 'revie
   appendFileSync(join(dir, RECORD), RESUME(git(dir, 'rev-parse', 'HEAD').trim()))
 }, { remedy: /hand this unit's diff to a fresh context/ })
 
+pathFixture('a newer unit whose review is empty, behind a current_step left on the older one', 'review', (dir) => {
+  // Coding path 3's own defect, as a fixture: two units, both complete, S01
+  // with an honest review and S02 — the unit under review — with the heading
+  // and nothing under it, and `current_step` left on S01, which is the one
+  // thing a writer forgets. The rule read the unit the field named, so S01's
+  // review was re-read and passed while S02's was never looked at
+  // (ADR-026 decision 2).
+  write(dir, STEP, STEP_RECORD)
+  write(dir, STEP.replace('S01.md', 'S02.md'), STEP_RECORD
+    .replace(/S01/g, 'S02')
+    .replace('unit: 01', 'unit: 02')
+    .replace(/#### Review\n[\s\S]*$/, '#### Review\n'))
+  appendFileSync(join(dir, RECORD), RESUME(git(dir, 'rev-parse', 'HEAD').trim()))
+  // `full` because two units on a `lightweight` path is a route trigger, and
+  // this fixture is about which unit the review rule reads, not about the route.
+}, { remedy: /hand this unit's diff to a fresh context/, record: { route: 'full' } })
+
 pathFixture('a work unit declaring a type the vocabulary does not have', 'work-unit', (dir) => {
   // The first adopter's closing unit declared `review`. The refusal named the
   // vocabulary and stopped, so the agent edited the pushed record to change the
@@ -1187,8 +1204,8 @@ function recordDone(dir, { record = RECORD, id = 'CP-FIXTURE-001' } = {}) {
  *  `--no-ff` merge, and `done` recorded — in one commit of its own, or, when
  *  `mergeCarriesTheEdit`, inside the merge object itself, which is the shape
  *  the adopter produced twice. */
-function integratedRepository({ shape = 'one commit for one path' } = {}) {
-  const { dir } = readyRepository()
+function integratedRepository({ shape = 'one commit for one path', transport = 'pull-request' } = {}) {
+  const { dir } = readyRepository({ transport })
   if (shape === 'done on the branch') {
     // The record is taken to `done` on the branch itself, so the merge is
     // TREESAME to it and a walk that follows the branch side never sees the
@@ -1238,6 +1255,41 @@ test('adversarial: acceptance — the integrating commit is a merge object carry
     assert.ok(blocking(found).includes('acceptance'), `findings were ${describe(found)}`)
     assert.ok(found.findings.some((f) => f.rule === 'acceptance' && /merge object/.test(f.message)),
       `the refusal must name the shape: ${describe(found)}`)
+    // `acceptance` ALONE. Before ADR-027 this shape was refused twice over:
+    // `transition` too, because the merge's first parent is the trunk at
+    // `running` while its second carries the branch's `ready`. That second
+    // refusal fired on the parent layout, not on the violation, and the record
+    // gives it up knowingly. It is asserted gone so it cannot come back as an
+    // accident, and so the rule that owns the shape is the one holding it.
+    assert.ok(!blocking(found).includes('transition'),
+      `the shape is refused by the rule that names it, not by a parent layout: ${describe(found)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+test('on manual-git the --no-ff merge IS the integrating unit, and carrying the edit is green', () => {
+  // ADR-026 decision 4. `cairn-close` step 5 and chapter 5 both prescribe
+  // exactly this shape on `manual-git`: the merge is the integrating unit and
+  // carries `done`, the resolution, the live view and the journal entry. The
+  // refusal below binds on `pull-request`, where the candidate lands with the
+  // merge and `done` is recorded in a commit of its own; ungated, it refused
+  // every `manual-git` closing the skill beside it prescribes.
+  const { dir, trunkBefore } = integratedRepository({ shape: 'merge carries the edit', transport: 'manual-git' })
+  try {
+    const found = check(dir, '--base', trunkBefore)
+    assert.ok(!blocking(found).includes('acceptance'),
+      `the shape the close skill prescribes on this transport must not be refused as a merge object: ${describe(found)}`)
+    // `transition` does not refuse it either, since ADR-027. `readyBehind`
+    // reads ANY parent of the arrival: on this transport the merge IS the
+    // integrating unit, its first parent is the trunk where the record was
+    // `running`, and the `ready` this closing declared sits on its second.
+    // Reading the first parent alone refused every honest closing on this
+    // transport — the debt this fixture pinned until that record decided it.
+    assert.ok(!blocking(found).includes('transition'),
+      `the ready is on the merge's second parent, and any parent counts: ${describe(found)}`)
+    assert.deepEqual(blocking(found), [],
+      `an honest manual-git closing is green on both halves now: ${describe(found)}`)
   } finally {
     cleanup(dir, `${dir}.git`)
   }
@@ -1570,6 +1622,151 @@ test('parity: a committed edit to an immutable record is judged against the trun
     // Committed AND pushed: the working tree is clean, so only a comparison
     // reaching back to the trunk can see the mutation.
     assert.ok(blocking(check(dir)).includes('record-integrity'))
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+test('adversarial: comparison — the base the run was given does not resolve', () => {
+  COVERED.add('comparison')
+  // The checker used to hand `--base` straight to `git merge-base`, which
+  // throws on a ref that does not resolve, and died with a Node stack trace:
+  // a red gate carrying NO finding, which a reader cannot tell from a broken
+  // runner. CI supplies this flag from the forge's own event, and on a
+  // branch's first push that value is forty zeros, so the first adopter to
+  // install the workflow meets it on their first push to the trunk.
+  const { dir } = readyRepository()
+  try {
+    const found = check(dir, '--base', 'origin/never-fetched')
+    assert.ok(blocking(found).includes('comparison'), `findings were ${describe(found)}`)
+    assert.ok(found.findings.some((f) => f.rule === 'comparison' && f.outcome === 'inconclusive'),
+      `a base that cannot be compared is a reading NOT MADE, not a violation: ${describe(found)}`)
+    assert.ok(found.findings.some((f) => f.rule === 'comparison' && /fetch the ref/.test(f.message)),
+      `the refusal must name the remedy (ADR-008 d6): ${describe(found)}`)
+    // The forge's sentinel for "nothing precedes this" is NOT a broken input:
+    // it is a branch's first push, which a writer cannot avoid and which the
+    // gate must not fail. Advisory, and the run judges the working tree alone.
+    const first = check(dir, '--base', '0'.repeat(40))
+    assert.ok(!blocking(first).includes('comparison'),
+      `a first push must not be refused for having no predecessor: ${describe(first)}`)
+    assert.ok(advisory(first).includes('comparison'),
+      `but it must be reported, not silently narrowed: ${JSON.stringify(advisory(first))}`)
+    // A base that RESOLVES and shares no history: `refExists` would accept it,
+    // and `git merge-base` exits non-zero, which is the throwing call
+    // `changedFiles` makes. This is the shape that killed the process with no
+    // verdict at all, and the guard for it is in `main` BEFORE `changedFiles`.
+    git(dir, 'checkout', '-q', '--orphan', 'unrelated')
+    git(dir, 'commit', '-q', '--allow-empty', '-m', 'a root of its own')
+    const orphan = git(dir, 'rev-parse', 'HEAD').trim()
+    git(dir, 'checkout', '-q', 'path/cp-fixture-001')
+    const noHistory = check(dir, '--base', orphan)
+    assert.ok(blocking(noHistory).includes('comparison'),
+      `a base on an unrelated history must be reported, not thrown on: ${describe(noHistory)}`)
+    // A base nobody asked for is the fall-back `resolveBase` makes on purpose
+    // for a clone with no trunk ref; `trunk-containment` reports that one.
+    const unasked = check(dir)
+    assert.ok(!blocking(unasked).includes('comparison') && !advisory(unasked).includes('comparison'),
+      `no base was requested, so there is nothing to report about one: ${describe(unasked)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+test('adversarial: comparison — an arrival judged against itself is refused, not green', () => {
+  COVERED.add('comparison')
+  // THE case this rule exists for. Every fixture above hands the checker a
+  // base that predates the arrival, which is exactly what the deployed runs
+  // did not: `origin/<trunk>` after a push IS the pushed commit. So a
+  // dishonest integration — here the record taken to `done` on the branch,
+  // the arrival carried only by the merge object — went green in CI while its
+  // own fixture, given a real base, refused it.
+  const { dir } = integratedRepository({ shape: 'done on the branch' })
+  try {
+    // Given a base that spans the arrival, the rule that owns this shape
+    // refuses it. Naming the rule is the point: "something blocked" would pass
+    // on the old source too.
+    const spanning = check(dir, '--base', git(dir, 'rev-parse', 'HEAD^').trim())
+    assert.ok(blocking(spanning).includes('acceptance'),
+      `a base that spans the arrival must reach the rule that owns it: ${describe(spanning)}`)
+    // The deployed shape: the base already contains the commit under judgement.
+    const itself = check(dir, '--base', 'HEAD')
+    assert.ok(blocking(itself).includes('comparison'),
+      `an arrival judged against itself must be reported, not reported OK: ${describe(itself)}`)
+    assert.ok(!blocking(itself).includes('acceptance'),
+      `and the rule that owns it must be shown NOT to have fired, which is what makes the report necessary: ${describe(itself)}`)
+    assert.ok(itself.findings.some((f) => f.rule === 'comparison' && f.outcome === 'inconclusive'),
+      `an empty comparison is a reading NOT MADE, not a violation: ${describe(itself)}`)
+    // A DESCENDANT of HEAD gives the same empty comparison as HEAD itself, and
+    // a force-push that rewinds the trunk sends exactly that as the commit it
+    // replaced. Identity is not the test; the merge-base is.
+    git(dir, 'branch', '-f', 'ahead', 'HEAD')
+    git(dir, 'commit', '-q', '--allow-empty', '-m', 'a commit the trunk was rewound from')
+    const descendant = git(dir, 'rev-parse', 'HEAD').trim()
+    git(dir, 'reset', '-q', '--hard', 'HEAD~1')
+    const rewound = check(dir, '--base', descendant)
+    assert.ok(blocking(rewound).includes('comparison'),
+      `a base that already contains this commit is the same empty comparison: ${describe(rewound)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+test('KNOWN GAP: a withdrawn ready is resurrected from a stale side parent (ADR-027)', () => {
+  // NOT coverage. This pins a refusal ADR-027 gives up ON PURPOSE, so that the
+  // day someone reads `readyBehind` and assumes it guards this, the assertion
+  // says otherwise in their own suite.
+  //
+  // `ready -> running` is a legal withdrawal: a path that reopens after its
+  // closure was accepted goes back to `running` on the trunk. The first-parent
+  // reading refused re-integrating it from a branch still sitting at the old
+  // `ready`, because the trunk's own line said `running`. Any-parent does not:
+  // a merge parent carries an arbitrarily stale record, and that stale `ready`
+  // satisfies the rule.
+  //
+  // Closing it means dating each parent's last state change. Chapter 5 puts a
+  // writer doing two deliberate things in sequence outside what these checks
+  // are for — they protect against omission, staleness, coordination error and
+  // silent loss of state, and this is none of the four.
+  const { dir } = readyRepository({ transport: 'manual-git' })
+  try {
+    commit(dir, 'Close CP-FIXTURE-001')
+    git(dir, 'push', '-q', 'origin', 'path/cp-fixture-001')
+    git(dir, 'checkout', '-q', 'main')
+    git(dir, 'merge', '-q', '--no-ff', '-m', 'Merge request #1', 'path/cp-fixture-001')
+    // The closure is WITHDRAWN on the trunk: the path reopened.
+    write(dir, RECORD, readFileSync(join(dir, RECORD), 'utf8')
+      .replace('  status: ready\n', '  status: running\n'))
+    regenerateView(dir)
+    commit(dir, 'CP-FIXTURE-001 reopens: the closure is withdrawn')
+    const trunkBefore = git(dir, 'rev-parse', 'HEAD').trim()
+    // A branch still at the old `ready`, plus one commit of its own.
+    git(dir, 'checkout', '-q', 'path/cp-fixture-001')
+    // NOT a source file: `work-unit` would refuse the arrival for a missing
+    // module note, and a fixture that blocks for an unrelated reason proves
+    // nothing about the rule it names — this file's own rule, at the top.
+    write(dir, 'docs/notes.md', 'a note the branch added\n')
+    commit(dir, 'a commit on a branch that never saw the withdrawal')
+    git(dir, 'checkout', '-q', 'main')
+    git(dir, 'merge', '--no-ff', '--no-commit', 'path/cp-fixture-001')
+    // Not `recordDone`: it rewrites `status: ready`, and the trunk's record is
+    // at `running` after the withdrawal. The whole point is the jump the stale
+    // parent launders, so the edit has to start from what the trunk says.
+    write(dir, RECORD, readFileSync(join(dir, RECORD), 'utf8')
+      .replace('  status: running\n', '  status: done\n  resolution: completed\n'))
+    write(dir, `project/log/${TODAY}-cp-fixture-001.md`, JOURNAL_ENTRY('CP-FIXTURE-001'))
+    regenerateView(dir)
+    commit(dir, 'Integrate CP-FIXTURE-001, again')
+    const found = check(dir, '--base', trunkBefore)
+    // Positive controls FIRST. An assertion that something does not happen
+    // passes just as well when the case was never built: rename a field, and
+    // the record silently never reaches `done`, `transition` has nothing to
+    // judge, and this test goes green having tested nothing.
+    assert.match(readFileSync(join(dir, RECORD), 'utf8'), /^ {2}status: done$/m,
+      'the arrival must actually take the record to done, or nothing here is under test')
+    assert.deepEqual(blocking(found), [],
+      `the withdrawn closure is accepted whole, which is the gap: ${describe(found)}`)
+    assert.ok(!blocking(found).includes('transition'),
+      `if this now REFUSES, the gap ADR-027 accepted has been closed — update that record and delete this fixture: ${describe(found)}`)
   } finally {
     cleanup(dir, `${dir}.git`)
   }

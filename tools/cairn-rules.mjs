@@ -77,6 +77,7 @@ export function extractRules(source) {
  *  links and vocabulary, so those rows exist too.
  */
 export const RULE_CONFORMANCE = {
+  'comparison': 'One invocation, one verdict: local and CI agree on one tree',
   'branch-path': 'One path: one record, one branch, one worktree, one writer',
   'registration': 'Registration on the remote trunk before implementation',
   'registration-base': 'Registration on the remote trunk before implementation',
@@ -138,6 +139,10 @@ export function conformanceLinkage(rules, specSource) {
 }
 
 export const RULE_METADATA = {
+  'comparison': {
+    condition: 'A base was asked for and cannot be compared with this commit — it does not resolve, or shares no history with it — or, off a path branch, it already contains this commit, so every changed-file rule was narrowed to the working tree. The forge\'s sentinel for a branch\'s first push is advisory, not blocking: nothing precedes that commit',
+    enforcing: 'refExists(flag) && mergeBase(base, HEAD) !== null, else unresolvable; !onPath && mergeBase(base, HEAD) === HEAD => empty; /^0{40,}$/ => advisory. Reported inconclusive, never fatal'
+  },
   'route': {
     condition: 'A path declares no route, an unknown route, a lightweight route that meets a full-route trigger, or a descent from full',
     enforcing: 'configured new-path default + fullRouteTriggers(writes) + routeDescent(previous, current)'
@@ -203,16 +208,16 @@ export const RULE_METADATA = {
     enforcing: "trunkContained(trunkRef) === false"
   },
   'transition': {
-    condition: 'Changed path state is not an allowed lifecycle transition, a path branch claims done, a declaration was deleted rather than archived, or the prior state is unavailable. A range that holds the merge as well reads what the record declared in the commit before the arrival, on the trunk\'s own line, rather than at the base (ADR-008 d2)',
-    enforcing: 'transitionErrors(previous, current, onPathBranch, integrationState(record, comparisonRef, id).readyBehind)'
+    condition: 'Changed path state is not an allowed lifecycle transition, a path branch claims done, a declaration was deleted rather than archived, or the prior state is unavailable. A range that holds the merge as well reads what the record declared in a commit immediately behind the arrival — any parent of it, a merge having two and an octopus more (ADR-027) — rather than at the base (ADR-008 d2)',
+    enforcing: 'transitionErrors(previous, current, onPathBranch, integrationState(record, comparisonRef, id).readyBehind), readyBehind = (commit ? parents : [HEAD]).some(statusAt === ready)'
   },
   'acceptance': {
-    condition: 'A ready path\'s candidate is not an ancestor, or is followed by anything but one administrative commit, or implementation changed after it, or the closure moved a field acceptance was measured against; a done path\'s candidate is not reachable, its arrival is carried by a merge object, or one commit takes two paths to done (ADR-008 d2). On manual-git additionally: the closing record in the path folder is missing, names another candidate, lacks its fields, is not a completed review, or its dispositions do not match the advisories attested at the candidate (advisory: a collapsed reviewer, or a prose disposition on a grandfathered path). On pull-request the request\'s description and approval are the record and are not read',
-    enforcing: 'pathClosureState(path) + integrationState(record, comparisonRef, id).merge + one arrival at done per commit + closureFieldErrors(recordAtC, current) [+ manual-git: closingAcceptanceErrors(record) + fillErrors(record) + dispositionErrors(disposition, advisories_at_candidate, raised) + opening.accepted_by === closing.accepted_by]'
+    condition: 'A ready path\'s candidate is not an ancestor, or is followed by anything but one administrative commit, or implementation changed after it, or the closure moved a field acceptance was measured against; a done path\'s candidate is not reachable, one commit takes two paths to done, or — on `pull-request` integration alone — its arrival is carried by a merge object, the `--no-ff` merge being the integrating unit on `manual-git` (ADR-008 d2; ADR-026 d3, d4). On manual-git additionally: the closing record in the path folder is missing, names another candidate, lacks its fields, is not a completed review, or its dispositions do not match the advisories attested at the candidate (advisory: a collapsed reviewer, or a prose disposition on a grandfathered path). On pull-request the request\'s description and approval are the record and are not read',
+    enforcing: 'pathClosureState(path) + one arrival at done per commit + closureFieldErrors(recordAtC, current) [+ pull-request: integrationState(record, comparisonRef, id).merge] [+ manual-git: closingAcceptanceErrors(record) + fillErrors(record) + dispositionErrors(disposition, advisories_at_candidate, raised) + opening.accepted_by === closing.accepted_by]'
   },
   'review': {
     condition: 'The ledger of a path\'s current unit — its step record, or the flat record that is one — carries no `#### Review` section, or carries it empty; the `closure` type, which writes no step file, is excepted (ADR-017 d2)',
-    enforcing: "reviewSection(the current unit's ledger) — the unit `current_step` names, else the ledger's newest; presence and emptiness only, and never the `index.md` of a folder record; the findings and their dispositions are the owner's to read at the candidate"
+    enforcing: "reviewSection(the current unit's ledger) — the ledger's NEWEST completed unit, the unit under review, `current_step` selecting nothing (ADR-026 d2); presence and emptiness only, and never the `index.md` of a folder record; the findings and their dispositions are the owner's to read at the candidate"
   },
   'record-integrity': {
     condition: 'An immutable event/history record changed, or a born-sliced step no longer preserves its adding blob as a prefix and no later step of this path binds the blob it replaces to the blob it adds (repair 005)',

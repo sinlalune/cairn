@@ -14,14 +14,13 @@
  * (ADR-021, decision 3). A reading that recommends is not a reading, and the
  * owner's options are written by whoever read the incident.
  *
- * No READING here is recomputed: `cairn-check` exports its readings as pure
- * functions and this tool imports every one of them, so the two cannot drift
- * into two answers about one fact. The Git plumbing AROUND them — a record's
- * two shapes, its history in a range, the status it declared at a commit, the
- * blob that added a step record — is repeated, because the checker keeps it
- * private and no path of 1.1 writes the checker. That repetition is the one
- * place this tool can drift, and the `--follow` guard below is where it
- * already had.
+ * Nothing here is recomputed. `cairn-check` exports its readings as pure
+ * functions and this tool imports every one of them, and since 2026-09-14 the
+ * Git plumbing AROUND them too — a record's two shapes, its history in a
+ * range, the metadata it declared at a commit, whether a ref exists, the blob
+ * that added a step record (ADR-026; ADR-014 decision 1). What it still asks
+ * Git itself is the plainly local half: where this checkout stands, a commit's
+ * parent, and the files under a path's `steps/` folder.
  *
  *   node tools/cairn-postmortem.mjs                 # the path of this branch, else every path
  *   node tools/cairn-postmortem.mjs --path CP-X-001
@@ -33,7 +32,6 @@
  * malformed invocation does.
  */
 
-import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -44,15 +42,20 @@ import {
   closureFieldErrors,
   githubRequest,
   githubSlug,
+  gitOrNull,
   isAppendOnlyStepRecord,
   openingFromRecord,
   preservesAppendOnlyRecord,
   readFrontmatter,
-  recordOriginFromFollowLog,
+  recordFrontAt,
+  recordHistory,
+  recordShapes,
+  refExists,
   resolveBranchRef,
   resolveScopeSection,
   scopeDigest,
-  statusCommit
+  statusCommit,
+  stepRecordOrigin
 } from './cairn-check.mjs'
 import { REPO, metadataOf } from './cairn-config.mjs'
 
@@ -223,54 +226,11 @@ export async function readRequests({ token, slug, branch, request }) {
  * the repository — every read is an answer, never an exception
  * ------------------------------------------------------------------ */
 
-function git(args) {
-  try {
-    return execFileSync('git', args, { cwd: REPO, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
-  } catch {
-    return null
-  }
-}
 
-const refExists = (ref) => git(['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]) != null
 
 /** A record with no branch is a fact, not a blank. `null` reaches the readings
  *  that need one, which say so rather than asking the forge about a sentence. */
 const branchOf = (record) => record.front.branch ?? null
-
-/** Both shapes a declaration takes, and the file it is actually at: a record's
- *  history is not erased by moving the file that carries it. */
-function recordShapes(id, file) {
-  return [...new Set([`${PATH_DIR}/${id}.md`, `${PATH_DIR}/${id}/index.md`, file])]
-}
-
-/** The record at one commit, read once per object for the life of the process.
- *  Keyed on a resolved id, because a range is walked as `c` and `c^` and those
- *  are two names for one commit — without the resolution the cache never hits
- *  and every record in the range is read twice. */
-const READ = new Map()
-function frontAt(commit, shapes) {
-  if (!commit) return null
-  const key = `${commit}\u0000${shapes.join('\u0000')}`
-  if (READ.has(key)) return READ.get(key)
-  let front = null
-  for (const shape of shapes) {
-    const text = git(['show', `${commit}:${shape}`])
-    if (text != null) {
-      front = metadataOf(readFrontmatter(text)?.data)
-      break
-    }
-  }
-  READ.set(key, front)
-  return front
-}
-
-function recordHistory(range, shapes) {
-  const raw = git(['log', '--format=%H', '--topo-order', '--reverse', range, '--', ...shapes])
-  return {
-    commits: raw?.split('\n').filter(Boolean) ?? [],
-    statusAt: (commit) => frontAt(commit, shapes)?.status
-  }
-}
 
 /** Every path declaration, in either shape, in id order. */
 function pathRecords() {
@@ -294,26 +254,6 @@ function pathRecords() {
   return records.sort((a, b) => String(a.front.id).localeCompare(String(b.front.id)))
 }
 
-/**
- * The blob that added a step record, with the guard `tools/cairn-check.mjs`
- * puts on `--follow` and for its reason: rename detection pairs two step
- * records written from one template, so a new `S02.md` is reported as a rename
- * of `S01.md` and its adding blob is the SIBLING's, which no valid record
- * carries as a prefix. A relocation removes its source; a followed source that
- * still sits there was never moved, and the narrower question is the right one.
- * Without this the tool fabricates a rewrite, in the one document that exists
- * so that nobody argues from a fabricated fact.
- */
-function stepRecordOrigin(file) {
-  const addedAt = (...flags) => {
-    const raw = git(['log', ...flags, '--diff-filter=A', '--format=%H', '--name-only', '--', file])
-    return raw == null ? null : recordOriginFromFollowLog(raw)
-  }
-  const followed = addedAt('--follow')
-  if (followed && followed.file !== file && existsSync(join(REPO, followed.file))) return addedAt()
-  return followed
-}
-
 /** The committed step records of a path, each with the blob that added it.
  *  A record Git has no commit for is not yet a record with an adding blob, and
  *  is left out rather than reported as unreadable. */
@@ -334,10 +274,10 @@ function stepsOf(record) {
     // record of the very unit that added this tool read as a record whose
     // adding blob could not be found. A record Git has no commit for is not
     // yet a record with an adding blob; one Git has and cannot resolve is.
-    .filter(({ file, origin }) => origin || Boolean(git(['log', '--format=%H', '-1', '--', file])))
+    .filter(({ file, origin }) => origin || Boolean(gitOrNull(['log', '--format=%H', '-1', '--', file])))
     .map(({ file, origin }) => ({
       file,
-      before: origin ? git(['show', `${origin.commit}:${origin.file}`]) : null,
+      before: origin ? gitOrNull(['show', `${origin.commit}:${origin.file}`]) : null,
       after: readFileSync(join(REPO, file), 'utf8'),
       relocated: Boolean(origin && origin.file !== file)
     }))
@@ -369,8 +309,8 @@ async function readingsFor(record, forge, { detached, head }) {
   const moves = commits
     .map((commit) => ({
       commit,
-      previous: frontAt(git(['rev-parse', `${commit}^`]), shapes),
-      current: frontAt(commit, shapes)
+      previous: recordFrontAt(gitOrNull(['rev-parse', `${commit}^`]), shapes),
+      current: recordFrontAt(commit, shapes)
     }))
     .filter(({ previous, current }) =>
       ADMINISTRATIVE_STATUSES.includes(current?.status) && !ADMINISTRATIVE_STATUSES.includes(previous?.status))
@@ -378,8 +318,8 @@ async function readingsFor(record, forge, { detached, head }) {
   return [
     ['registration', registrationReading({
       registration,
-      parent: registration ? git(['rev-parse', `${registration}^`]) : null,
-      declaredBase: declared ? git(['rev-parse', declared]) ?? declared : null
+      parent: registration ? gitOrNull(['rev-parse', `${registration}^`]) : null,
+      declaredBase: declared ? gitOrNull(['rev-parse', declared]) ?? declared : null
     })],
     ['administrative commit', closureReading({ moves, reachable })],
     ['definition of done', scopeReading({
@@ -414,7 +354,7 @@ async function main() {
     process.exit(2)
   }
   const id = flag('--path')
-  const branch = flag('--branch') ?? git(['rev-parse', '--abbrev-ref', 'HEAD'])
+  const branch = flag('--branch') ?? gitOrNull(['rev-parse', '--abbrev-ref', 'HEAD'])
   const records = pathRecords()
   const named = id
     ? records.filter((record) => record.front.id === id)
@@ -438,10 +378,10 @@ async function main() {
   const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || ''
   const forge = {
     token,
-    slug: githubSlug(git(['remote', 'get-url', REMOTE])),
+    slug: githubSlug(gitOrNull(['remote', 'get-url', REMOTE])),
     request: (url) => githubRequest(url, { token })
   }
-  const where = { detached: git(['symbolic-ref', '--quiet', 'HEAD']) == null, head: branch }
+  const where = { detached: gitOrNull(['symbolic-ref', '--quiet', 'HEAD']) == null, head: branch }
   for (const record of wanted) {
     console.log(renderReadings({
       pathId: record.front.id,
