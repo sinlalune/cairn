@@ -7,13 +7,13 @@ timestamp: 2026-09-15T00:00:00Z
 cairn:
   id: CP-CAIRN-009
   route: full
-  status: ready
+  status: running
   current_step: S08
   base_commit: 76512dc75b1940a54388ff4e7fdabb53a662179a
   branch: path/cp-cairn-009
   assigned_writer: cp-cairn-009-writer
   depends_on: []
-  subject_commit: 7f7b1aa1471ab2883db92313ce85026b8e7a9785
+  subject_commit: null
   resolution: null
   writes:
     - tools/cairn.mjs
@@ -301,8 +301,8 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 7f7b1aa1471ab2883db92313ce85026b8e7a9785 — S08, the candidate C; the trunk tip is contained
-unit   : 7 — S08 was the last; closing adds no implementation commit
+commit : 7f7b1aa1471ab2883db92313ce85026b8e7a9785 — the void candidate, on origin/path/cp-cairn-009
+unit   : 7 — S09 fixes three defects a reviewer on the request found
 base   : 76512dc75b1940a54388ff4e7fdabb53a662179a
 trunk  : 3c42237147ed783e68f301626fd9637a58f3fad3 — origin/main, unmoved since registration
 ```
