@@ -7,13 +7,13 @@ timestamp: 2026-09-15T00:00:00Z
 cairn:
   id: CP-CAIRN-009
   route: full
-  status: running
+  status: ready
   current_step: S06
   base_commit: 76512dc75b1940a54388ff4e7fdabb53a662179a
   branch: path/cp-cairn-009
   assigned_writer: cp-cairn-009-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 5bd3afa5cd5527d78e722319d15d471d08679bd2
   resolution: null
   writes:
     - tools/cairn.mjs
@@ -300,8 +300,8 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 0e443527c59b853e2f8b7b0d9385a5dafbbfbdd7 — S06, on origin/path/cp-cairn-009
-unit   : 6 — the last implementation unit; the candidate is rebuilt on the moved trunk
+commit : 5bd3afa5cd5527d78e722319d15d471d08679bd2 — the candidate C, the trunk merged into S06's commit
+unit   : 6 — the last implementation unit; closing added no implementation commit
 base   : 76512dc75b1940a54388ff4e7fdabb53a662179a
 trunk  : 3c42237147ed783e68f301626fd9637a58f3fad3 — origin/main, unmoved since registration
 ```
