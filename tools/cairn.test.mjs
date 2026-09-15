@@ -454,6 +454,18 @@ test('cairn update: a pristine file is rewritten whoever owns it, and an edited 
       'the difference between the release\'s template and the file is printed')
     // ADR-015 d2: the pointer page carries the same list, on disk.
     assert.ok(readFileSync(join(dir, 'cairn/README.md'), 'utf8').includes('skills/cairn-code/SKILL.md'))
+    // And it stands until the file is settled. The lock records what the kit
+    // WOULD have written, so a second update at the same release used to find
+    // template and lock equal and drop the file — the page then said
+    // "Nothing" over a file still carrying the adopter's edit.
+    const again = applyUpdate(dir, (() => {
+      const p2 = planInstall()
+      p2.files.set('skills/cairn-code/SKILL.md', Buffer.from('the release\'s stance\n', 'utf8'))
+      return p2
+    })(), readLock(dir))
+    assert.deepEqual(again.reconcile, ['skills/cairn-code/SKILL.md'],
+      'still unreconciled on the second update, because the file still differs from the template')
+    assert.ok(readFileSync(join(dir, 'cairn/README.md'), 'utf8').includes('skills/cairn-code/SKILL.md'))
     // and the lock agrees with what was written, or the next status lies
     assert.equal(fileState(dir, 'cairn/README.md', readLock(dir).manifest['cairn/README.md']), 'pristine')
   } finally {
@@ -474,6 +486,22 @@ test('cairn update --take: the owner takes the release\'s version of one named f
       'the file that was not named is untouched')
     assert.equal(fileState(dir, 'skills/cairn-code/SKILL.md', readLock(dir).manifest['skills/cairn-code/SKILL.md']), 'pristine')
     assert.throws(() => cairn(dir, 'update', '--take', 'nothing/here.md'), /not a file this release carries|no such/i)
+
+    // A file the kit PLANNED but this installation never received. `init`
+    // drops package.json when the adopter already has one, so it is absent
+    // from the lock — and taking "the release's version" of a file the
+    // release never installed here overwrites the adopter's own product
+    // manifest, scripts and dependencies and all.
+    const theirs = target()
+    try {
+      write(theirs, 'package.json', '{"name":"theirs","scripts":{"build":"vite build"}}')
+      cairn(theirs, 'init')
+      assert.ok(!readLock(theirs).manifest['package.json'], 'init left it out of the lock')
+      assert.throws(() => cairn(theirs, 'update', '--take', 'package.json'), /this installation does not carry/i)
+      assert.match(readFileSync(join(theirs, 'package.json'), 'utf8'), /vite build/, 'and the adopter still has theirs')
+    } finally {
+      rmSync(theirs, { recursive: true, force: true })
+    }
 
     // ADR-015 d3 says the file becomes pristine AT THE NEW RELEASE, so the
     // lock has to learn the template it now holds. Without that the owner

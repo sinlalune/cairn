@@ -1050,13 +1050,20 @@ export function applyUpdate(target, plan, lock, { dryRun = false } = {}) {
   const read = (path, recorded) => fileState(target, path, recorded)
 
   // Read once to find what this release cannot rewrite, because the pointer
-  // page has to name it...
+  // page has to name it.
+  //
+  // Unreconciled means the file on disk DIFFERS FROM THE TEMPLATE — a fact
+  // about now, recomputed every run. The obvious test, that the template moved
+  // since the lock, evaporates: `writeLock` records what the kit WOULD have
+  // written, deliberately, so `status` can still see the edit — and a second
+  // update at the same release then finds template and lock equal and drops
+  // the file, leaving the page saying "Nothing" over an edit nobody settled.
   const reconcile = []
   const diffs = {}
   for (const file of installationStatus(lock, plan, read).files) {
     if (file.action !== 'keep' || file.state !== 'edited') continue
     const template = plan.files.get(file.path)
-    if (digest(template) === lock.manifest[file.path]) continue
+    if (digest(template) === digest(readFileSync(join(target, file.path)))) continue
     reconcile.push(file.path)
     diffs[file.path] = templateDiff(target, file.path, template)
   }
@@ -1094,6 +1101,17 @@ export function applyUpdate(target, plan, lock, { dryRun = false } = {}) {
 export function takeRelease(target, plan, lock, path, { dryRun = false } = {}) {
   if (!plan.files.has(path)) {
     throw new Error(`cairn: ${path} is not a file this release carries — \`status\` lists the ones it does`)
+  }
+  // The PLAN says what the release would install; the LOCK says what this
+  // repository actually received. `init` drops `package.json` when the adopter
+  // already has one, so the plan carries it and the lock does not — and taking
+  // "the release's version" of a file the release never installed here
+  // overwrites the adopter's own manifest, scripts and dependencies with a
+  // four-line template. Reproduced before this guard existed.
+  if (lock.manifest[path] === undefined) {
+    throw new Error(
+      `cairn: this installation does not carry ${path} — the kit never wrote it here, so there is no release version of it to take. ` +
+      'A file the kit skipped at `init`, like a package.json you already had, stays yours')
   }
   const template = plan.files.get(path)
   const state = fileState(target, path, lock.manifest[path])
@@ -1220,9 +1238,12 @@ function main(argv) {
     mkdirSync(target, { recursive: true })
     let scriptsNotice = null
     if (existsSync(join(target, 'package.json'))) {
+      // Read off the manifest the kit would have written, so a script added
+      // there cannot go unmentioned to the adopters who never receive the file.
+      const scripts = JSON.parse(plan.files.get('package.json').toString('utf8')).scripts
       plan.files.delete('package.json')
       scriptsNotice = 'package.json already exists and was left alone — add: ' +
-        '"cairn-check": "node tools/cairn-check.mjs", "cairn-active": "node tools/cairn-active.mjs", "cairn-audit": "node tools/cairn-audit.mjs"'
+        Object.entries(scripts).map(([name, run]) => `"${name}": "${run}"`).join(', ')
     }
     applyPlan(plan, target, { dryRun })
     console.log(`cairn — ${dryRun ? 'would install' : 'installed'} ${plan.files.size} file(s) and the lock into ${target}`)

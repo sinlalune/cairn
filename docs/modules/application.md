@@ -167,7 +167,17 @@ in a temporary file rather than a diff written here, and ends its report with
 the files to settle by hand. The pointer page carries that same list to disk,
 so the work outlives the terminal. `update --take <path>` replaces one named
 edited file with the release's version, shows the lines it discards, moves
-that file's lock entry with it, and touches nothing else.
+that file's lock entry with it, and touches nothing else. It refuses a path
+the **lock** does not carry: the plan says what the release would install,
+the lock says what this repository received, and `init` skips a
+`package.json` the adopter already had — so taking "the release's version"
+of that would overwrite a real manifest with the kit's template.
+
+A file counts as **to reconcile** while what is on disk differs from the
+release's template. That is a fact about now, recomputed each run, rather
+than a comparison with the lock: the lock records what the kit *would* have
+written, so a second update at the same release would find it equal to the
+template and drop a file nobody had settled.
 
 **What `adopt` does.** It is the migration from a 0.2 installation: it keeps
 the host's answers, replaces the tools, adds the skills, and reports the
