@@ -116,12 +116,12 @@ each step's current content.
 
 ## The kit
 
-`npx cairn-protocol init` installs the five reference tools, the nine skill
+`npx cairn-protocol init` installs the six reference tools, the nine skill
 files of six skills, the folder indexes of the documentation and project
 planes, and the host files — the configuration, the bootloader, the binding,
 the package scripts, the live view, this note, the workflow and the request
-template. What that comes to is 32 files and the lock on the `ci` profile and
-31 on `local`, which has no workflow; the number is measured here and bounds
+template. What that comes to is 33 files and the lock on the `ci` profile and
+32 on `local`, which has no workflow; the number is measured here and bounds
 nothing (ADR-022 d2). The documentation plane it writes is the one 1.1
 decided: `docs/inputs/` for what the project had before the protocol,
 `docs/architecture/` with its index, `docs/modules/`, and a concept root of
@@ -130,7 +130,14 @@ no index at the root. The documentation index is the map: it links them, says
 where a surface page goes and that such a page opens with one worked example
 and links its API's documentation.
 It copies no specification: every link it writes into the specification is
-pinned to the commit the kit was cut from. `cairn.lock.json` records the
+pinned to the commit the kit was cut from. It copies no Ponytail either: the
+coding stance is named in the lock and on the pointer page at the tag this
+release was checked against, and installed in the adopter's harness beside the
+skills (ADR-016 d1). The two files ADR-013 offered for removal are kept, each
+for its own worth and neither for a number: the configuration schema, which no
+tool reads but every editor does, on the one file an adopter hand-edits; and
+the project plane's index, because the manifesto commits to a tree where every
+folder is navigable from its index. `cairn.lock.json` records the
 digest of every kit file as the kit wrote it, which is what lets `status`
 tell an edit from an installation and `update` rewrite the first and keep the
 second. `cairn/README.md` is generated at `init` and at every `update`, and nothing on
@@ -149,6 +156,14 @@ the files to settle by hand. The pointer page carries that same list to disk,
 so the work outlives the terminal. `update --take <path>` replaces one named
 edited file with the release's version, says what it discards, and touches
 nothing else.
+
+The workflow it generates matches this repository's own where the two are
+meant to: the push trigger on the trunk alone, the base per event, and the
+post-mortem step that runs on the checker's failure and posts once on the
+request. It differs in one place, and the test says so — this repository runs
+its own suite before the gate, and the kit installs no suite and names none.
+The request template it generates opens with the three plain lines and the
+surface link, then the definition of done item by item, before the ledger.
 
 `adopt` is the migration from a 0.2 installation: it keeps the host's
 answers, replaces the tools, adds the skills, and reports the shapes the kit

@@ -75,8 +75,15 @@ export const REFERENCE_TOOLS = [
   'cairn-config.mjs',
   'cairn-config.schema.json',
   'cairn-active.mjs',
-  'cairn-audit.mjs'
+  'cairn-audit.mjs',
+  'cairn-postmortem.mjs'
 ]
+
+/** The coding stance is Ponytail's, named at the tag this release was checked
+ *  against and copied nowhere (ADR-016 d1). The adopter installs it in their
+ *  harness beside the skills; the tag moves only with a release of the kit, so
+ *  a repository's stance is the one its release was proved with. */
+export const DEPENDENCIES = { 'DietrichGebert/ponytail': 'v4.9.0' }
 
 /** The procedures, as Agent Skills: copied whole, one folder per skill. */
 export const SKILLS = 'skills'
@@ -518,6 +525,10 @@ ${chapters}
 
 ${skills}
 
+## What this needs beside it
+
+${Object.entries(DEPENDENCIES).map(([name, tag]) => `- \`${name}\` at \`${tag}\` — the coding stance and its review tags, installed in your harness as that repository says. The kit names it and copies nothing of it, so the tag moves only when this release does.`).join('\n')}
+
 ## What the kit owns
 
 \`update\` rewrites any of these that still holds exactly what the kit wrote,
@@ -588,10 +599,28 @@ name: cairn
 on:
   pull_request:
   push:
-    branches: [${options.trunk}, "path/**"]
+    # The trunk alone. Two runs on one commit can disagree and only the
+    # request's is the merge gate, so a unit on a path branch is judged by the
+    # writer's bare gate and by the request's run once one is open — as a draft
+    # from the first unit, for a writer who wants the forge on every one
+    # (ADR-005).
+    branches: [${options.trunk}]
 jobs:
   protocol:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # The red-run reading asks the forge how many runs of this branch went
+      # red, which is \`actions: read\`. An explicit block sets every scope it
+      # does not name to \`none\`, so leaving this out would refuse exactly the
+      # reading the post-mortem step exists to write.
+      actions: read
+      # The request reading and the one comment. Nothing here writes to the
+      # REPOSITORY: a branch has one writer, and it is the writer of the path,
+      # never this job. On a request from a fork the token is read-only
+      # whatever this block says, so \`gh pr comment\` ends the step with a 403
+      # instead of posting — the reading is still printed into the log.
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -604,7 +633,11 @@ jobs:
           node-version: 22
       # Bare. A pipe would report the LAST command's exit code, which is how a
       # gate comes to pass over its own failure.
+      #
+      # No test step: the kit installs no suite and names none, and your own
+      # \`npm test\` is yours to add here if you keep one (ADR-014 decision 2).
       - name: cairn-check
+        id: cairn-check
         env:
           # The base must span what the run judges. On a request that is the
           # target branch. On a push to the TRUNK it is the commit the push
@@ -616,6 +649,26 @@ jobs:
           # instead of against what it will merge into.
           CAIRN_BASE_REF: \${{ github.base_ref && format('origin/{0}', github.base_ref) || (github.ref_name == '${options.trunk}' && github.event.before || 'origin/${options.trunk}') }}
         run: node tools/cairn-check.mjs --base "$CAIRN_BASE_REF"
+      # Only on the CHECKER's failure, so the incident is written while it
+      # happens (ADR-014 decision 1). It prints, and commits nothing: a branch
+      # has one writer, and the writer copies the reading into a learning note
+      # when the incident deserves one.
+      - name: cairn-postmortem
+        if: failure() && steps.cairn-check.conclusion == 'failure'
+        env:
+          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+          CAIRN_BRANCH: \${{ github.head_ref || github.ref_name }}
+          CAIRN_REQUEST: \${{ github.event.pull_request.number }}
+        run: |
+          # The shell is \`bash -e\`, so a non-zero exit would abort the step
+          # before the reading is printed or posted, losing it on the one run
+          # it was written for. stderr is captured with it: where the tool
+          # stops, the reason it gives is written there.
+          node tools/cairn-postmortem.mjs --branch "$CAIRN_BRANCH" > postmortem.txt 2>&1 || true
+          cat postmortem.txt
+          if [ -n "$CAIRN_REQUEST" ]; then
+            gh pr comment "$CAIRN_REQUEST" --body-file postmortem.txt
+          fi
 `
 }
 
@@ -624,17 +677,33 @@ jobs:
 export function requestTemplate() {
   return `<!-- Cairn closing review. On pull-request transport this description IS the
 coherence review of one exact candidate and the approval IS the closing
-acceptance. \`npm run cairn-audit\` prints this shape filled in for the current
-candidate. The checker proves the candidate, its closure surface, the opening
+acceptance. \`npm run cairn-audit\` prints this whole shape filled in for the
+current candidate, the items below read from the record; every \`<blank>\` is
+yours. The checker proves the candidate, its closure surface, the opening
 digest and the trunk drift from Git; it reads none of the text below, which is
-what the approver reads. -->
+what the approver reads.
+
+The blanks are backticked because a bare \`<unit>\` matches an HTML open tag and
+the forge strips it when it renders — leaving a blank that reads as answered. -->
+
+## What this path did
+
+- \`<what the path did>\`
+- \`<why it is the least>\`
+- \`<what it does not do>\`
+
+Surface: \`<the page a newcomer reads for the surface this path changed, or the README section>\`
+
+## Definition of done, item by item
+
+- item 1 — \`<the item, as cairn-audit leads it from the record>\` — advanced by \`<unit>\` — shown by \`<command or page>\`
 
 ## Candidate
 
-- path: CP-<ID>
-- candidate \`C\`: <full object id>
-- base \`T\`, the trunk tip merged into the candidate: <full object id>
-- scope digest at \`C\`: <output of node tools/cairn-check.mjs --scope-digest <record>#definition-of-done>; equals the opening acceptance: yes | no
+- path: \`<CP-ID>\`
+- candidate \`C\`: \`<full object id>\`
+- base \`T\`, the trunk tip merged into the candidate: \`<full object id>\`
+- scope digest at \`C\`: \`<the digest cairn-check --scope-digest printed for this record>\`; equals the opening acceptance: yes | no
 
 ## Coherence
 
@@ -713,7 +782,8 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
     scripts: {
       'cairn-check': 'node tools/cairn-check.mjs',
       'cairn-active': 'node tools/cairn-active.mjs',
-      'cairn-audit': 'node tools/cairn-audit.mjs'
+      'cairn-audit': 'node tools/cairn-audit.mjs',
+      'cairn-postmortem': 'node tools/cairn-postmortem.mjs'
     }
   }, null, 2)}\n`, 'host')
 
@@ -796,6 +866,9 @@ export function lockFor(plan, target) {
     release: PROTOCOL_RELEASE,
     sourceCommit: plan.sourceCommit,
     installedAt: new Date().toISOString(),
+    // Named, never copied: what the adopter installs beside the kit, at the
+    // tag this release was checked against (ADR-016 d1).
+    dependencies: DEPENDENCIES,
     host: [...plan.host].sort(),
     manifest
   }

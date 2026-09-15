@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path'
 import { tmpdir } from 'node:os'
 
 import {
-  bootloader, hostBinding, pointerPage, takeRelease, workflow,
+  bootloader, hostBinding, pointerPage, requestTemplate, takeRelease, workflow,
   applyAdopt, applyPlan, applyUpdate, buildConfig, defaultOptions, digest, fileState, installationStatus,
   migrateConfig, optionsFromConfig, outwardLinks, pinSpecLinks, planInstall, readLock, sourceCommit, specUrl, staleShapes,
   PROTOCOL_RELEASE, REFERENCE_TOOLS
@@ -233,7 +233,8 @@ test('cairn init: a freshly installed repository passes its own gate', () => {
     assert.match(output, /OK — protocol satisfied/)
     assert.match(output, /path history forbidden/)
     const installed = readFileSync(join(dir, '.github/workflows/cairn.yml'), 'utf8')
-    assert.match(installed, /path\/\*\*/)
+    // The trunk alone since ADR-005: one run per commit that can land.
+    assert.match(installed, /^ {4}branches: \[main\]$/m)
     // The adopter's gate must compare across an arrival, not with itself. The
     // kit shipped `origin/${{ github.base_ref || <trunk> }}`, which on a push
     // names the pushed commit, so no changed-file rule judged an integration
@@ -265,6 +266,117 @@ test('cairn init: the command refuses a protected profile and leaves an existing
 /* ------------------------------------------------------------------ *
  * status and update — against the lock
  * ------------------------------------------------------------------ */
+
+test('cairn init: the kit ships the post-mortem, and names Ponytail without copying it', () => {
+  const plan = planInstall({ ...defaultOptions(), profile: 'ci' })
+  // ADR-014 d1: the tool joins the manifest, and the script the kit writes.
+  assert.ok(REFERENCE_TOOLS.includes('cairn-postmortem.mjs'))
+  assert.ok(plan.files.has('tools/cairn-postmortem.mjs'))
+  const scripts = JSON.parse(plan.files.get('package.json').toString('utf8')).scripts
+  assert.equal(scripts['cairn-postmortem'], 'node tools/cairn-postmortem.mjs')
+  assert.ok(!scripts.test && !scripts['cairn-test'], 'the kit installs no suite and names none (ADR-014 d2)')
+
+  // ADR-016 d1: named at a pinned tag, copied nowhere.
+  const paths = [...plan.files.keys()]
+  assert.ok(!paths.some((p) => p.includes('ponytail')), 'Ponytail is a dependency, not a file the kit copies')
+  const page = plan.files.get('cairn/README.md').toString('utf8')
+  assert.ok(page.includes('DietrichGebert/ponytail') && page.includes('v4.9.0'),
+    'the pointer page names it at its tag, so an adopter knows what to install beside the skills')
+
+  // ADR-022 d2: the two candidates ADR-013 named, each kept for its own reason.
+  assert.ok(plan.files.has('tools/cairn-config.schema.json'))
+  assert.ok(plan.files.has('project/index.md'))
+})
+
+test('cairn init: the lock records the release, the source commit and the dependency it does not carry', () => {
+  const dir = target()
+  try {
+    const plan = planInstall()
+    applyPlan(plan, dir)
+    const lock = readLock(dir)
+    assert.deepEqual(lock.dependencies, { 'DietrichGebert/ponytail': 'v4.9.0' },
+      'what the adopter must install beside the kit, at the tag this release was checked against (ADR-016 d1)')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('the generated workflow runs once per commit that can land, and reads a red run', () => {
+  const yaml = workflow({ ...defaultOptions(), trunk: 'main' })
+  // ADR-005: the push trigger is the trunk alone. Two runs on one commit can
+  // disagree, and only the request's is the merge gate.
+  assert.match(yaml, /^ {4}branches: \[main\]$/m)
+  assert.doesNotMatch(yaml, /path\/\*\*/, 'no push run on a path branch')
+  // ADR-014 d1: the post-mortem step, on the checker's failure alone.
+  assert.match(yaml, /- name: cairn-postmortem/)
+  assert.match(yaml, /if: failure\(\) && steps\.cairn-check\.conclusion == 'failure'/)
+  assert.match(yaml, /actions: read/, 'the red-run reading needs it, and an explicit block denies what it omits')
+  assert.match(yaml, /pull-requests: write/, 'the one comment on the request')
+  assert.doesNotMatch(yaml, /npm run cairn-test|- name: cairn-test/,
+    'the kit installs no suite, so its workflow runs no test step (ADR-014 d2)')
+  // Path 5 left this line; it is kept as it stands.
+  assert.ok(yaml.includes(
+    "CAIRN_BASE_REF: ${{ github.base_ref && format('origin/{0}', github.base_ref) " +
+    "|| (github.ref_name == 'main' && github.event.before || 'origin/main') }}"))
+})
+
+test('the generated request template opens with what a reader needs before the ledger', () => {
+  const text = requestTemplate()
+  // ADR-021 d2: three plain lines and the surface link, before anything else.
+  const done = text.indexOf('## What this path did')
+  const items = text.indexOf('## Definition of done, item by item')
+  const candidate = text.indexOf('## Candidate')
+  assert.ok(done !== -1 && items !== -1 && candidate !== -1, 'all three sections exist')
+  assert.ok(done < items && items < candidate, 'in that order, the ledger last (ADR-021 d2, ADR-018 d2)')
+  assert.match(text, /what the path did/i)
+  assert.match(text, /why it is the least/i)
+  assert.match(text, /what it does not do/i)
+  assert.match(text, /Surface:/)
+  // The blanks are backticked, or the forge strips them as HTML tags and the
+  // blank reads as answered.
+  assert.doesNotMatch(text.split('## Candidate')[0], /(^|[^`])<[a-z]/m,
+    'every blank is backticked')
+})
+
+test('the generated host files and this repository\'s own differ only where they are meant to', () => {
+  // Paths 3 and 5 fixed these two files HERE; the kit wrote the 1.0 ones for
+  // an adopter until this unit. Equality is asserted where the two are meant
+  // to be the same, and every difference is named with its reason — a diff
+  // nobody has read is how the kit drifts from the repository that proves it.
+  const generated = workflow({ ...defaultOptions(), trunk: 'main' })
+  const ours = readFileSync(join(REPO, '.github/workflows/cairn.yml'), 'utf8')
+  for (const shared of [
+    '    branches: [main]',
+    '      actions: read',
+    '      pull-requests: write',
+    '      - name: cairn-postmortem',
+    "        if: failure() && steps.cairn-check.conclusion == 'failure'",
+    'node tools/cairn-postmortem.mjs --branch "$CAIRN_BRANCH" > postmortem.txt 2>&1 || true',
+    'gh pr comment "$CAIRN_REQUEST" --body-file postmortem.txt',
+    "CAIRN_BASE_REF: ${{ github.base_ref && format('origin/{0}', github.base_ref) " +
+      "|| (github.ref_name == 'main' && github.event.before || 'origin/main') }}"
+  ]) {
+    assert.ok(generated.includes(shared), `the kit's workflow is missing: ${shared}`)
+    assert.ok(ours.includes(shared), `this repository's workflow is missing: ${shared}`)
+  }
+  // The one difference, and its reason: this repository runs its own suite
+  // before the gate; the kit installs no suite and names none (ADR-014 d2).
+  assert.ok(ours.includes('- name: cairn-test') && ours.includes('npm run cairn-test'))
+  assert.doesNotMatch(generated, /cairn-test/)
+
+  // The request template: the same shape, the same order, blanks backticked.
+  const template = requestTemplate()
+  const theirs = readFileSync(join(REPO, '.github/pull_request_template.md'), 'utf8')
+  for (const heading of ['## What this path did', '## Definition of done, item by item',
+    '## Candidate', '## Coherence', '## Advisories at', '## Roles']) {
+    assert.ok(template.includes(heading), `the kit's template is missing ${heading}`)
+    assert.ok(theirs.includes(heading), `this repository's template is missing ${heading}`)
+    assert.equal(
+      template.indexOf(heading) < template.indexOf('## Candidate'),
+      theirs.indexOf(heading) < theirs.indexOf('## Candidate'),
+      `${heading} sits on the same side of the ledger in both`)
+  }
+})
 
 test('cairn init: the pointer page says which release this is and what the kit owns', () => {
   // ADR-013: one page, found by name at the root, nothing on it written by

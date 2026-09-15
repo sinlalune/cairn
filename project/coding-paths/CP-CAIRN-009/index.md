@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-009
   route: full
   status: running
-  current_step: S03
+  current_step: S04
   base_commit: 76512dc75b1940a54388ff4e7fdabb53a662179a
   branch: path/cp-cairn-009
   assigned_writer: cp-cairn-009-writer
@@ -291,43 +291,47 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 - **S01** — [what `init` writes, and the bootloader](./steps/S01.md) — complete. `cairn init` declares `transport.registration: manual-git` whatever `--transport` answers for the integration transport, from one constant the generated binding's new row prints too, and the run names both; the bootloader the kit writes names the sixth skill and gains the concept-note and explanation rules, and this repository's `AGENTS.md` carries the same two beside the `cairn-test` alias. Advances the first and second items of the definition of done.
 - **S02** — [the documentation plane the kit installs, and the concept rules' read](./steps/S02.md) — complete. The kit installs `docs/inputs/`, a concept root of three folders — `cairn`, `product`, `learning`, the owner naming the second in the chat — an architecture index carrying the dependency sentence and the diagram, a documentation index that maps the plane and states the worked example and the API link, and a module note template that describes only now; `concept-orphan` and `concept-growth` read that root recursively and name a note by its path under it, the conformance rows and their generator saying so. Advances the third and fourth items of the definition of done.
 - **S03** — [the pointer page, `update` and `status`](./steps/S03.md) — complete. `cairn/README.md` generated at `init` and every `update`, the bootloader pointing at it; a pristine file is rewritten whoever owns it, an edited one is kept and what the release changed in it printed from Git's own diff, the list to settle by hand carried to disk on the page; `update --take <path>` hands over one file and moves its lock entry with it; `adopt` locks the configuration it actually wrote. Advances the fifth and sixth items of the definition of done.
+- **S04** — [the manifest, the generated adapter and template](./steps/S04.md) — complete. `cairn-postmortem` in the manifest and the kit's scripts; Ponytail named at `v4.9.0` in the lock and on the pointer page, copied nowhere; the schema and the project index kept, each for its own worth; the generated workflow on the trunk alone with the red-run step, and the request template opening with the three plain lines and the definition of done before the ledger, both proved against this repository's own. Advances the seventh and eighth items of the definition of done.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : d9d62dbeec5053fc604d68336c2216ac40a66b9c — S02, on origin/path/cp-cairn-009
-unit   : 3 — S03 complete on push; S04 names its commit here
+commit : c2406ff5af074782c6c7f2349f6aa44c57d33ed9 — S03, on origin/path/cp-cairn-009
+unit   : 4 — S04 complete on push; S05 names its commit here
 base   : 76512dc75b1940a54388ff4e7fdabb53a662179a
 trunk  : 3c42237147ed783e68f301626fd9637a58f3fad3 — origin/main, unmoved since registration
 ```
 
 ### Next action
 
-Run S04 of the plan with `cairn-unit` — the manifest, the generated
-adapter and template. `cairn-postmortem.mjs` in `REFERENCE_TOOLS` and in
-the scripts the kit writes, `skills/cairn-learn` already copied by the
-walk; Ponytail named at the tag ADR-016 d1 states, in the lock and on the
-pointer page; the configuration schema and the project index kept or
-removed each for its own worth and never for a number (ADR-022 d2); the
-generated workflow's push trigger on the trunk alone with the base per
-event as path 5 left it and the red-run post-mortem step (ADR-005,
-ADR-014 d1); the generated request template opening with the three plain
-lines and the surface link before `## Candidate` (ADR-021 d2, ADR-018
-d2); tests proving byte equality with this repository's own files where
-the two are meant to be the same, and saying where they differ and why.
-The kit's count is re-measured wherever it is reported — the module note
-and the conformance row — because this unit moves it again. Type
-`implementation`. Set `current_step` to S04.
+Run S05 of the plan with `cairn-unit` — chapters 3 and 6, the concepts
+and the layout, all in the specification's voice. Chapter 3: promotion
+writes the surface page and adds its line to the README, a flow is a
+kind of architecture page, a surface page opens with a worked example
+and links an API's documentation (ADR-012, ADR-023 d1–d4). Chapter 6:
+the scopes table names the three folders — `cairn`, **`product`**,
+`learning`, the owner's name for the second — its learning-notes
+paragraph says a learning note is a concept note with an order written
+by `cairn-learn`, and its weight budget's kit line is a measurement with
+no target (ADR-011 d2, ADR-022 d1–d2). Then `spec/concepts/architecture.md`
+for the flow page's shape, the diagram and the dependency sentence
+(ADR-019 d2, ADR-023 d2–d3), and `spec/concepts/concept-template.md` for
+a note that teaches a sequence (ADR-022 d1). Last the layout reference's
+tree, table and workflow row — the inputs folder, the three concept
+folders, the pointer page, the post-mortem tool and the sixth skill, and
+a workflow row true of runs since ADR-005; its `skills/<name>/SKILL.md`
+row still enumerates four procedures and the stance, with no
+`cairn-learn`, which S01's review named. Type `documentation`: no source
+changes, so no new test, and the plan says so. Set `current_step` to S05.
 
-**On the review movement, before S04 starts.** Seven of eleven fresh
-contexts hung across S01 to S03, and S03's read was made by the writing
-context and says so. Launch the reader first, do the unit's work while it
-runs, and stop it at about six minutes of silence — the ones that return
-take between 140 and 495 seconds. If it hangs again, record how the read
-was made rather than implying a verdict nobody gave. The owner has raised
-the movement's own design; a record may supersede it.
+**On the review movement.** Ten of fourteen fresh contexts hung across
+S01 to S04, and S03's and S04's reads were made by the writing context
+and say so. Launch the reader first, do the unit's work while it runs,
+stop it at about six minutes of silence. If it hangs, record how the
+read was made rather than implying a verdict nobody gave. The owner has
+ruled the movement's missing fallback gets a record in its own path.
 
 ### Blockers
 
