@@ -7,13 +7,13 @@ timestamp: 2026-09-15T00:00:00Z
 cairn:
   id: CP-CAIRN-010
   route: full
-  status: running
+  status: ready
   current_step: S03
   base_commit: 8632ccc7014a5c573cf249eb04c824557533d760
   branch: path/cp-cairn-010
   assigned_writer: cp-cairn-010-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 407d0295344f0c75cb8c04cf8db271d33a182c7c
   resolution: null
   writes:
     - docs/adr/**
@@ -274,10 +274,10 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : ca79c17f23b284d8e6d5b171a7802544b14fd475 — S02, on origin/path/cp-cairn-010; S03's own commit is named here by the closing
-unit   : 2 — S03 is the commit after this checkpoint
+commit : 407d0295344f0c75cb8c04cf8db271d33a182c7c — candidate C, S03's commit with the trunk contained, on origin/path/cp-cairn-010
+unit   : 3 — the closing follows; C is checked bare, 334 tests passing
 base   : 8632ccc7014a5c573cf249eb04c824557533d760
-trunk  : 120c98c0171a04104e7dbdc1a53c257f8728b011 — origin/main at S03, the registration commit
+trunk  : 120c98c0171a04104e7dbdc1a53c257f8728b011 — origin/main at C
 ```
 
 ### Next action
