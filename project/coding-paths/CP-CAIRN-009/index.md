@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-009
   route: full
   status: running
-  current_step: S04
+  current_step: S05
   base_commit: 76512dc75b1940a54388ff4e7fdabb53a662179a
   branch: path/cp-cairn-009
   assigned_writer: cp-cairn-009-writer
@@ -292,46 +292,48 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 - **S02** — [the documentation plane the kit installs, and the concept rules' read](./steps/S02.md) — complete. The kit installs `docs/inputs/`, a concept root of three folders — `cairn`, `product`, `learning`, the owner naming the second in the chat — an architecture index carrying the dependency sentence and the diagram, a documentation index that maps the plane and states the worked example and the API link, and a module note template that describes only now; `concept-orphan` and `concept-growth` read that root recursively and name a note by its path under it, the conformance rows and their generator saying so. Advances the third and fourth items of the definition of done.
 - **S03** — [the pointer page, `update` and `status`](./steps/S03.md) — complete. `cairn/README.md` generated at `init` and every `update`, the bootloader pointing at it; a pristine file is rewritten whoever owns it, an edited one is kept and what the release changed in it printed from Git's own diff, the list to settle by hand carried to disk on the page; `update --take <path>` hands over one file and moves its lock entry with it; `adopt` locks the configuration it actually wrote. Advances the fifth and sixth items of the definition of done.
 - **S04** — [the manifest, the generated adapter and template](./steps/S04.md) — complete. `cairn-postmortem` in the manifest and the kit's scripts; Ponytail named at `v4.9.0` in the lock and on the pointer page, copied nowhere; the schema and the project index kept, each for its own worth; the generated workflow on the trunk alone with the red-run step, and the request template opening with the three plain lines and the definition of done before the ledger, both proved against this repository's own. Advances the seventh and eighth items of the definition of done.
+- **S05** — [chapters 3 and 6, the concepts, the layout](./steps/S05.md) — complete. Chapter 3 gains the flow kind, the surface page with its worked example and API link, and the promotion outputs; chapter 6's scopes table becomes the three folders with the owner's `product` among them, its learning-notes paragraph says a learning note is a concept note with an order, and the kit's weight-budget line loses its target; the architecture concept states what a page carries and what a flow page is; the template says a note that teaches a sequence orders its body; the layout's tree and table show what `init` now writes. Advances the ninth item of the definition of done.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : c2406ff5af074782c6c7f2349f6aa44c57d33ed9 — S03, on origin/path/cp-cairn-009
-unit   : 4 — S04 complete on push; S05 names its commit here
+commit : f831e3d9aa561345399382832363904ac776de20 — S04, on origin/path/cp-cairn-009
+unit   : 5 — S05 complete on push; S06 names its commit here
 base   : 76512dc75b1940a54388ff4e7fdabb53a662179a
 trunk  : 3c42237147ed783e68f301626fd9637a58f3fad3 — origin/main, unmoved since registration
 ```
 
 ### Next action
 
-Run S05 of the plan with `cairn-unit` — chapters 3 and 6, the concepts
-and the layout, all in the specification's voice. Chapter 3: promotion
-writes the surface page and adds its line to the README, a flow is a
-kind of architecture page, a surface page opens with a worked example
-and links an API's documentation (ADR-012, ADR-023 d1–d4). Chapter 6:
-the scopes table names the three folders — `cairn`, **`product`**,
-`learning`, the owner's name for the second — its learning-notes
-paragraph says a learning note is a concept note with an order written
-by `cairn-learn`, and its weight budget's kit line is a measurement with
-no target (ADR-011 d2, ADR-022 d1–d2). Then `spec/concepts/architecture.md`
-for the flow page's shape, the diagram and the dependency sentence
-(ADR-019 d2, ADR-023 d2–d3), and `spec/concepts/concept-template.md` for
-a note that teaches a sequence (ADR-022 d1). Last the layout reference's
-tree, table and workflow row — the inputs folder, the three concept
-folders, the pointer page, the post-mortem tool and the sixth skill, and
-a workflow row true of runs since ADR-005; its `skills/<name>/SKILL.md`
-row still enumerates four procedures and the stance, with no
-`cairn-learn`, which S01's review named. Type `documentation`: no source
-changes, so no new test, and the plan says so. Set `current_step` to S05.
+Run S06 of the plan with `cairn-unit` — this repository's own. Three
+surfaces, all of them this repository describing itself now that the kit
+and the specification have moved.
 
-**On the review movement.** Ten of fourteen fresh contexts hung across
-S01 to S04, and S03's and S04's reads were made by the writing context
-and say so. Launch the reader first, do the unit's work while it runs,
-stop it at about six minutes of silence. If it hangs, record how the
-read was made rather than implying a verdict nobody gave. The owner has
-ruled the movement's missing fallback gets a record in its own path.
+1. `docs/architecture/index.md`: flow pages live here, and what an
+   architecture page states — the direction of dependencies in one
+   sentence and one Mermaid diagram saying the same thing (ADR-019 d2,
+   ADR-023 d2, d3). S05 wrote that into `spec/concepts/architecture.md`;
+   this is the index of this repository's own folder saying it too.
+2. `docs/modules/application.md`: read the whole note against the
+   candidate and make it describe the installer and the checker **as they
+   are**, with no history (ADR-010 d1). S01 to S04 each refreshed the
+   paragraphs they touched; this is the read-through that catches what
+   four units left inconsistent.
+3. `project/coding-paths/index.md`, the roadmap register: row 4 carries
+   this path's id and the widened writes — `tools/cairn-rules.mjs`, added
+   in S02 because the conformance rows are generated from it.
+
+Type `documentation`. Then S07 opens the candidate.
+
+**On the review movement.** Twelve of sixteen fresh contexts hung across
+S01 to S05; S03, S04 and S05 were read by the writing context and each
+says so. Launch the reader first, do the unit's work while it runs, stop
+it at about six minutes of silence. If it hangs, record how the read was
+made rather than implying a verdict nobody gave, and make the read earn
+its place some other way — S05's was a real `cairn init` proving every
+file the specification claims.
 
 ### Blockers
 

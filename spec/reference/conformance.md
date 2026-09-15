@@ -30,11 +30,16 @@ bound is a count, not a constraint.
 | :-- | --: | --: |
 | `spec/index.md` | under 8,000 words | **5,630 words** |
 | the required entry chain — bootloader, path convention, binding, execution protocol | under 3,000 words | **2,895 words** |
-| files the kit installs | under 30 | **26 and the lock** on the `ci` profile, 25 on `local` |
+| files the kit installs | *none since ADR-022 d2 — measured, never a target* | **26 and the lock** on the `ci` profile, 25 on `local` |
 | protocol files one lightweight unit writes | under 6 | **2** — the step record and the record's resume section; a whole lifecycle from registration to `done` touches 4 on `pull-request` transport and 5 on `manual-git`, measured by `tools/cairn-pilot.mjs` |
 
-Every target bound. The numbers are counted by the tools and the pilot, not
-estimated; a release that moves one of them past its target has to say so here.
+Every target that has one bound. The numbers are counted by the tools and the
+pilot, not estimated; a release that moves one past its target has to say so
+here. Every figure is the reading taken at 1.0.0, and each release takes them
+again. The kit's row lost its target at ADR-022 decision 2 — a file that earns
+its place is added and the number follows — so that row is a reading and
+nothing is asked of it; what the release installs today is on the
+*Installation, update and adoption* row above.
 
 ## Where the matrix stands
 
