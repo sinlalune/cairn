@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-011
   route: full
   status: running
-  current_step: S02
+  current_step: S03
   base_commit: 471fa71b27a2334f40f6fb4fa01c682ac923e323
   branch: path/cp-cairn-011
   assigned_writer: cp-cairn-011-writer
@@ -236,30 +236,42 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
   one count the site hard-codes, *five skills* in the shell's meta
   description, made the README's; the module note refreshed, `writes:`
   widened by it. Advances the second item.
+- **S03** — [the weight measured at 1.1.0](./steps/S03.md) — complete. The
+  conformance page's budget table gains the 1.1.0 column beside 1.0.0's:
+  6,112 words of specification, 2,964 in the entry chain and 36 under its
+  target, 33 files and the lock on `ci` and 32 on `local` with no target,
+  2 protocol files per unit and 4 or 5 per lifecycle; every target bound;
+  the counting method named. Advances the third item.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 00c0e7894c09691d8c4f4b511f134f73966421e4 — S01, on origin/path/cp-cairn-011; S02's own commit is named here by S03
-unit   : 01 — S02 is the commit after this checkpoint
+commit : 689647baa3434842c3ac0821601e6f8d1f4e1b6f — S02, on origin/path/cp-cairn-011; S03's own commit is named here by S04
+unit   : 02 — S03 is the commit after this checkpoint
 base   : 471fa71b27a2334f40f6fb4fa01c682ac923e323
-trunk  : 471fa71b27a2334f40f6fb4fa01c682ac923e323 — origin/main at S02
+trunk  : 471fa71b27a2334f40f6fb4fa01c682ac923e323 — origin/main at S03
 ```
 
 ### Next action
 
 In a fresh session, from the worktree `../cairn-cp-cairn-011` on branch
-`path/cp-cairn-011`: run S03 of the plan with `cairn-unit` — the weight
-measured at 1.1.0. The conformance page's budget table gains the 1.1.0
-column beside the 1.0.0 one, which stays: the specification's words, the
-required entry chain's words, the files the kit installs on each profile
-with no target, the protocol files one lightweight unit writes by
-`tools/cairn-pilot.mjs`; each target that has one reported bound or not
-(ADR-022 d2); every number read off a tool and its command kept in the
-step. Type `documentation`. The review section's first line names the
-reader, as ADR-017 decision 4 says.
+`path/cp-cairn-011`: run S04 of the plan with `cairn-unit` — this
+repository updated with its own kit. Run `node tools/cairn.mjs status`
+then `node tools/cairn.mjs update` here, quote both reports in the step;
+pristine kit files are rewritten, edited ones left and listed with what
+the release changes in them; `cairn/README.md` exists naming the release
+and the commit; `cairn.lock.json` records what the kit installs at 1.1;
+any file `update` would add that this repository's binding does not want
+— the concept folders under `docs/concepts/`, since this repository's
+wiki is `spec/concepts/`; `docs/inputs/`; anything else the report names
+— is named with the reason it is or is not taken (ADR-013, ADR-015). The
+report will say *this package is 1.0.0* until S05. Type `implementation`
+if a tool file is rewritten, else `documentation`; `writes:` already
+holds `cairn/**`, `docs/inputs/**`, `docs/index.md` and the lock, and
+widens for anything else `update` rewrites, with the reason. The review
+section's first line names the reader, as ADR-017 decision 4 says.
 
 ### Blockers
 
@@ -293,13 +305,18 @@ None.
   the owner asked for, and a link it does not bundle opens the file on
   GitHub at the bundled commit, which is what it does for every reference
   link already (S02).
+- Restating the 1.1.0 figures in chapter 6's *Conformance and weight*,
+  which still says *Cairn 1.0 is measured against* — `spec/index.md` is
+  excluded from this path's writes; the chapter names no figure but the
+  targets, and the sentence is one of the restated facts the 1.2 row
+  carries (S03).
 
 ### Reading order
 
 1. `AGENTS.md`, then `skills/cairn-unit/SKILL.md`.
-2. `spec/reference/conformance.md`, *The weight budget* — the table the 1.1.0 column joins, and the row already saying 33.
-3. `tools/cairn-pilot.mjs` — the measurement of protocol files a unit writes; `docs/adr/ADR-022-the-learning-note-and-the-learning-session.md` decision 2 — the count with no target.
-4. `project/coding-paths/CP-CAIRN-011/plan.md`, then `project/coding-paths/CP-CAIRN-011/steps/S01.md` for the counts S01 already read off the tools.
+2. `docs/adr/ADR-013-a-local-pointer-to-the-protocol.md` and `docs/adr/ADR-015-a-release-reaches-an-edited-file.md` — what `update` owes this repository.
+3. `tools/cairn.mjs`, `applyUpdate` and the pointer page it writes — read for what they print and write, never written; `cairn.lock.json` as it is, the 1.0.0 manifest of 26.
+4. `project/coding-paths/CP-CAIRN-011/plan.md`, then `project/coding-paths/CP-CAIRN-011/steps/S01.md` for the `update` report a 1.0.0 installation gave.
 
 ### Verify
 
