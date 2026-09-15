@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-010
   route: full
   status: running
-  current_step: S02
+  current_step: S03
   base_commit: 8632ccc7014a5c573cf249eb04c824557533d760
   branch: path/cp-cairn-010
   assigned_writer: cp-cairn-010-writer
@@ -31,6 +31,9 @@ cairn:
     - tools/soundness.md
     - tools/cairn.mjs
     - tools/cairn.test.mjs
+    - tools/cairn-postmortem.mjs
+    - tools/cairn-postmortem.test.mjs
+    - tools/cairn-workflow.test.mjs
     - .github/workflows/cairn.yml
     - project/coding-paths/index.md
     - project/coding-paths/CP-CAIRN-010/**
@@ -262,6 +265,7 @@ The owner said the units run in a fresh session. Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
+- **S03** — [the deletion](./steps/S03.md) — complete. `forgeGaps`, `readForge` and the host half of `profileLine` are gone from the checker with the lines of `main` that read the token; `githubSlug` and `githubRequest` live in the post-mortem, the one tool that asks GitHub anything; the profile line prints the enforcement profile and the two transports and nothing about the host; a fixture proves the checker green with every network entry point made to throw and a token offered; the token and its comment are off the checker's step of this repository's workflow, the kit's generated step is pinned without one, the post-mortem step keeps its own; the conformance row, the catalogue, the soundness note and the module note follow. `writes:` widened by the post-mortem, its test and the workflow test. Advances the fifth item's checker half.
 - **S02** — [the skill, the template, the first feedback file](./steps/S02.md) — complete. `cairn-unit` movement 4 says what the writer does when no fresh context can be obtained and that the section opens with the line naming the reader, its fix paragraph puts the second read under its own line, and the skill's *Report the boundary* section points at `feedbacks/`; the path template's review section shows the reader line for both reads; `feedbacks/index.md` says the folder holds the owner's pages and the agents' files and lists the first agent file, written from what path 4's writer observed: the placeholder nothing resolved, the count in five documents and the hand-kept register status, the item contradicting its record, the mechanism no release produces. Advances the second and fourth items of the definition of done and ADR-028's half of the third.
 - **S01** — [the records: ADR-017 decision 4, ADR-028, ADR-029](./steps/S01.md) — complete. ADR-017 gains its fourth decision in place — the writer reads the diff when no fresh context can be obtained, the review section's first line names the reader, the rule reads presence and nothing more; ADR-028 makes a file under `feedbacks/` the channel an agent writes when the gate stayed green and the protocol still cost more than it should, no tool, skill, rule or ritual; ADR-029 deletes the GitHub reading from the checker, superseding ADR-001 decision 6 and ADR-026 decision 1, with the reading's cost measured and the post-mortem's two functions moved rather than broken. The 1.1 page amended in place and marked *since 2026-09-15*, the two superseded decisions marked, the two indexes and the register's rows following. Advances the first, third and sixth items, the record half of the fifth and the register clause of the seventh.
 
@@ -270,38 +274,32 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 9c9ce3e68840bb29c0055816e8ed44667b403f19 — S01, on origin/path/cp-cairn-010; S02's own commit is named here by S03
-unit   : 1 — S02 is the commit after this checkpoint
+commit : ca79c17f23b284d8e6d5b171a7802544b14fd475 — S02, on origin/path/cp-cairn-010; S03's own commit is named here by the closing
+unit   : 2 — S03 is the commit after this checkpoint
 base   : 8632ccc7014a5c573cf249eb04c824557533d760
-trunk  : 120c98c0171a04104e7dbdc1a53c257f8728b011 — origin/main at S02, the registration commit
+trunk  : 120c98c0171a04104e7dbdc1a53c257f8728b011 — origin/main at S03, the registration commit
 ```
 
 ### Next action
 
 In a fresh session, from the worktree `../cairn-cp-cairn-010` on branch
-`path/cp-cairn-010`: run S03 of the plan with `cairn-unit` — the
-deletion, type `implementation`, every behaviour change with its failing
-test first. Widen `writes:` first, in the record and in the register's
-row 6, by `tools/cairn-postmortem.mjs`, `tools/cairn-postmortem.test.mjs`
-and `tools/cairn-workflow.test.mjs`, and say why in the step: ADR-029
-moves `githubSlug` and `githubRequest` to the post-mortem that calls them,
-and the workflow test asserts the token on the checker's step today. Then:
-`forgeGaps`, `readForge` and the host half of `profileLine` deleted from
-`tools/cairn-check.mjs` with the eight lines of `main` that read the token
-and call the read; the profile line printing
-`profile — ci; transports registration manual-git, integration pull-request`;
-eleven tests deleted from `tools/cairn-check.test.mjs`, the profile line's
-rewritten, the `githubSlug` and `githubRequest` tests moved with their
-functions; a test that runs the checker with the runtime's network entry
-points made to throw and reads a green verdict; `GITHUB_TOKEN` and its
-twelve-line comment removed from the checker's step of
-`.github/workflows/cairn.yml`, the post-mortem step's token kept, the
-workflow test inverted, and one assertion in `tools/cairn.test.mjs` that
-the generated checker step carries none; the profile row of
-`spec/reference/conformance.md`, the catalogue and the matrix,
-`tools/soundness.md` and `docs/modules/application.md`'s *The profile
-line* paragraph following. The review section's first line names the
-reader.
+`path/cp-cairn-010`: run S04, the candidate, with `cairn-close`, not
+`cairn-unit` — it carries no step file and no review of its own (ADR-008
+decision 1), and its unit type is `closure`. Merge the trunk in
+(`git fetch origin main && git merge origin/main`; never rebase), run
+every gate bare on the merge, and open the pull request from
+`path/cp-cairn-010` with the description `npm run cairn-audit` prints, in
+the order it prints: the three plain lines and the surface link, the
+definition of done item by item, then the ledger. Then the administrative
+commit on the branch — `ready` and `subject_commit`, the live view, the
+checkpoint, nothing else — and read the request's run green on that exact
+commit BEFORE asking the owner. Then ask the owner, signalled as a
+decision in the chat, to try the result: read the first feedback file,
+`feedbacks/2026-09-15-cp-cairn-009-writer-feedback.md`, and the profile
+line the request's run prints —
+`profile — ci; transports registration manual-git, integration pull-request`,
+with no host half. The merge is the acceptance; after it, the integrating
+unit runs from a clean trunk checkout, then the worktree is removed.
 
 ### Blockers
 
@@ -330,11 +328,10 @@ None.
 
 ### Reading order
 
-1. `AGENTS.md`, then `skills/cairn-unit/SKILL.md` as S02 left it — movement 4 now carries the fallback this unit's own review follows.
-2. `docs/adr/ADR-029` — the decision S03 implements, its measured table and its *What this changes* list.
-3. `tools/cairn-check.mjs` lines 64 to 196 and the `main` lines that call `readForge`; `tools/cairn-check.test.mjs` from the `githubSlug` test to the profile line's; `tools/cairn-postmortem.mjs` at its import list and its two `api.github.com` reads.
-4. `.github/workflows/cairn.yml` at the checker step's `env:` and `tools/cairn-workflow.test.mjs` at its token assertions; `tools/cairn.mjs` at the generated checker step.
-5. `spec/reference/conformance.md` at the profile row and the generated markers, `tools/cairn-rules.mjs`, `tools/soundness.md`, `docs/modules/application.md` at *The profile line*.
+1. `AGENTS.md`, then `skills/cairn-close/SKILL.md` and its reference — the closing sequence on `pull-request` transport.
+2. This record's definition of done, item by item, against the three step records under `./steps/` — the request's description answers each.
+3. `docs/adr/ADR-029` *What implements this record*, against `git diff 8632ccc..HEAD --stat` — every surface named, touched.
+4. `feedbacks/2026-09-15-cp-cairn-009-writer-feedback.md` — what the owner is asked to read before the merge.
 
 ### Verify
 

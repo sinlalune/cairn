@@ -40,8 +40,6 @@ import {
   REMOTE,
   TRUNK_BASE_CANDIDATES,
   closureFieldErrors,
-  githubRequest,
-  githubSlug,
   gitOrNull,
   isAppendOnlyStepRecord,
   openingFromRecord,
@@ -190,6 +188,40 @@ export function renderReadings({ pathId, branch, readings }) {
  * the forge — `request` is a parameter, so the suite proves the shape
  * without a network
  * ------------------------------------------------------------------ */
+
+/** The owner and repository of a GitHub remote, or `null` for anything else —
+ *  a self-hosted forge, and the local bare repositories the fixtures push to.
+ *  "Not read" is an honest line; a wrong reading is not. */
+export function githubSlug(url) {
+  const match = /^(?:(?:https?|ssh|git)(?::\/\/)(?:[^@/]+@)?|(?:[^@/\s]+@))github\.com[:/]([^/\s]+)\/([^/\s]+?)(?:\.git)?$/i
+    .exec(String(url ?? '').trim())
+  return match ? { owner: match[1], repo: match[2] } : null
+}
+
+/** One GitHub read. An error is an ANSWER, never an exception: a reading must
+ *  not be able to change an exit code, and an offline laptop must not wait on
+ *  a socket. */
+export async function githubRequest(url, { token, timeoutMs = 3000, doFetch = fetch } = {}) {
+  const abort = new AbortController()
+  const timer = setTimeout(() => abort.abort(), timeoutMs)
+  try {
+    const response = await doFetch(url, {
+      signal: abort.signal,
+      headers: {
+        accept: 'application/vnd.github+json',
+        authorization: `Bearer ${token}`,
+        'user-agent': 'cairn-postmortem',
+        'x-github-api-version': '2022-11-28'
+      }
+    })
+    if (!response.ok) return { error: `HTTP ${response.status}` }
+    return { value: await response.json() }
+  } catch (error) {
+    return { error: error?.name === 'AbortError' ? `no answer in ${timeoutMs}ms` : String(error?.message ?? error) }
+  } finally {
+    clearTimeout(timer)
+  }
+}
 
 const NO_TOKEN = 'no token; set GITHUB_TOKEN or GH_TOKEN to read this branch\'s runs and requests'
 const NOT_GITHUB = 'the configured remote is not a GitHub repository'

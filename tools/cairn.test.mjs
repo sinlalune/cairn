@@ -314,6 +314,13 @@ test('the generated workflow runs once per commit that can land, and reads a red
   assert.match(yaml, /pull-requests: write/, 'the one comment on the request')
   assert.doesNotMatch(yaml, /npm run cairn-test|- name: cairn-test/,
     'the kit installs no suite, so its workflow runs no test step (ADR-014 d2)')
+  // ADR-029: the checker asks the host nothing, so its step carries no token;
+  // the post-mortem's step keeps its own for the red-run reading and the comment.
+  const checkStep = yaml.indexOf('- name: cairn-check')
+  const incidentStep = yaml.indexOf('- name: cairn-postmortem')
+  assert.ok(checkStep !== -1 && incidentStep > checkStep, 'both steps exist, in that order')
+  assert.doesNotMatch(yaml.slice(checkStep, incidentStep), /GITHUB_TOKEN|GH_TOKEN/, 'no token on the checker\'s step')
+  assert.match(yaml.slice(incidentStep), /GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}/)
   // Path 5 left this line; it is kept as it stands.
   assert.ok(yaml.includes(
     "CAIRN_BASE_REF: ${{ github.base_ref && format('origin/{0}', github.base_ref) " +

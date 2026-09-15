@@ -140,7 +140,7 @@ export function conformanceLinkage(rules, specSource) {
 
 export const RULE_METADATA = {
   'comparison': {
-    condition: 'A base was asked for and cannot be compared with this commit — it does not resolve, or shares no history with it — or, off a path branch, it already contains this commit, so every changed-file rule was narrowed to the working tree. The forge\'s sentinel for a branch\'s first push is advisory, not blocking: nothing precedes that commit',
+    condition: 'A base was asked for and cannot be compared with this commit — it does not resolve, or shares no history with it — or, off a path branch, it already contains this commit, so every changed-file rule was narrowed to the working tree. GitHub\'s sentinel for a branch\'s first push is advisory, not blocking: nothing precedes that commit',
     enforcing: 'refExists(flag) && mergeBase(base, HEAD) !== null, else unresolvable; !onPath && mergeBase(base, HEAD) === HEAD => empty; /^0{40,}$/ => advisory. Reported inconclusive, never fatal'
   },
   'route': {

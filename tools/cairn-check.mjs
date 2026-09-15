@@ -62,137 +62,18 @@ export function effectiveBinding(config = CAIRN_CONFIG) {
 }
 
 /* ------------------------------------------------------------------ *
- * The profile line — ADR-001 decision 6.
+ * The profile line — ADR-029.
  *
- * A profile is a CLAIM about host settings, and the enforcement-profile
- * concept already says such settings need independent evidence. This prints
- * that evidence beside the claim.
- *
- * It is output and never a finding: the remedy for a gap is a setting, not a
- * commit. So nothing below can change an exit code — every read answers, none
- * throws, and a forge that is unreachable, unauthorised or not GitHub is
- * reported as "not read" rather than guessed at.
+ * The checker asks the host nothing. This line names the enforcement profile
+ * the configuration declares and its two transports, and claims nothing about
+ * what the host enforces: a profile is a claim about settings, and the
+ * evidence for it is read on the host's own settings page, not here. The
+ * GitHub reading that stood here is deleted; ADR-029 supersedes the two
+ * decisions that asked for it.
  * ------------------------------------------------------------------ */
 
-/** The owner and repository of a GitHub remote, or `null` for anything else —
- *  a self-hosted forge, and the local bare repositories the fixtures push to.
- *  "Not read" is an honest line; a wrong reading is not. */
-export function githubSlug(url) {
-  const match = /^(?:(?:https?|ssh|git)(?::\/\/)(?:[^@/]+@)?|(?:[^@/\s]+@))github\.com[:/]([^/\s]+)\/([^/\s]+?)(?:\.git)?$/i
-    .exec(String(url ?? '').trim())
-  return match ? { owner: match[1], repo: match[2] } : null
-}
-
-/** What the forge does not enforce, from the three things ADR-001 decision 6
- *  names: a check that does not guard the exact commit that lands, a merge
- *  that rewrites it, and a role that bypasses the rules — and, beside it, what
- *  could not be read at all (ADR-026 decision 1).
- *
- *  `{ gaps, withheld }`: a gap is a fact about a setting that WAS read; a
- *  withheld entry is a reading that was not made. The two are never summed —
- *  reading the second as the first is how the line came to certify a
- *  protection this repository does not have.
- *
- *  Everything is read from the rules that apply TO THE TRUNK, never from the
- *  repository's own merge toggles: `allow_squash_merge` says what the
- *  repository permits somewhere, and a ruleset that allows only `merge` on the
- *  trunk overrides it. Reading the toggles reported this very repository as
- *  allowing squash and rebase onto a trunk whose ruleset allows neither.
- *
- *  Where several rulesets apply, GitHub applies the MOST RESTRICTIVE form of a
- *  rule defined more than once. So a check is strict if any applying rule
- *  makes it strict, and a merge method lands only if every applying rule
- *  allows it. */
-export function forgeGaps({ rules = [], rulesets = [] }) {
-  const gaps = []
-  // One pass: a ruleset's bypass list was read or it was not. GitHub ELIDES
-  // `bypass_actors` below write access to the ruleset, which a workflow's own
-  // token always is; an unread one arrives with the reason, so that a token too
-  // small and a forge that was down do not read alike.
-  const withheld = []
-  const bypass = []
-  for (const ruleset of rulesets) {
-    if (Array.isArray(ruleset?.bypass_actors)) bypass.push(...ruleset.bypass_actors)
-    else {
-      const named = ruleset?.id != null ? `ruleset ${ruleset.id}` : 'a ruleset this read could not name'
-      withheld.push(`the bypass list of ${named}${ruleset?.why ? ` (${ruleset.why})` : ''}`)
-    }
-  }
-  if (rules.length === 0) {
-    // A private repository on a plan without rulesets is one way to arrive
-    // here; a repository that simply configured none is another. The line
-    // reports the fact it read and names no cause it did not.
-    gaps.push('no rule of the forge guards the trunk')
-    return { gaps, withheld }
-  }
-  const checks = rules.filter((rule) => rule.type === 'required_status_checks')
-  if (checks.length === 0) gaps.push('no check is required before a merge')
-  else if (!checks.some((rule) => rule.parameters?.strict_required_status_checks_policy === true)) {
-    gaps.push('a required check is not required on the exact commit that lands')
-  }
-  const requests = rules.filter((rule) => rule.type === 'pull_request')
-  if (requests.length === 0) gaps.push('a direct push to the trunk needs no pull request')
-  else {
-    // Absent parameters mean GitHub's own default, which is all three: an
-    // unread field must never read as the restrictive answer.
-    const rewriting = ['squash', 'rebase'].filter((method) => requests.every(
-      (rule) => (rule.parameters?.allowed_merge_methods ?? ['merge', 'squash', 'rebase']).includes(method)))
-    if (rewriting.length) {
-      gaps.push(`${rewriting.join(' and ')} merges are allowed on the trunk, so the commit that lands is not the object the check ran on`)
-    }
-  }
-  if (bypass.length) {
-    gaps.push(`${bypass.length} actor${bypass.length === 1 ? '' : 's'} bypass${bypass.length === 1 ? 'es' : ''} the trunk's rules`)
-  }
-  return { gaps, withheld }
-}
-
-/** Read the forge, or say why it was not read. `request` is a parameter so the
- *  suite proves this against payloads and never over the network. */
-export async function readForge({ token, slug, trunk, request }) {
-  if (!token) {
-    return { read: false, why: 'no token; set GITHUB_TOKEN or GH_TOKEN to read the trunk\'s rules and this repository\'s merge settings' }
-  }
-  if (!slug) return { read: false, why: 'the configured remote is not a GitHub repository' }
-  const base = `https://api.github.com/repos/${slug.owner}/${slug.repo}`
-  const rules = await request(`${base}/rules/branches/${encodeURIComponent(trunk)}`)
-  if (rules.error) return { read: false, why: `the forge answered ${rules.error}` }
-  const applied = Array.isArray(rules.value) ? rules.value : []
-  // One request per DISTINCT ruleset behind the trunk's rules: the branch
-  // endpoint gives the rules, and only the ruleset itself carries its bypasses.
-  // Together, so the wall time is one request's rather than one per ruleset.
-  const ids = [...new Set(applied.map((rule) => rule.ruleset_id).filter((id) => id != null))]
-  const answers = await Promise.all(ids.map((id) => request(`${base}/rulesets/${id}`)))
-  // A ruleset is passed with the id it was asked for and, where it did not come
-  // back, the reason — so its bypass list is withheld by name while the rules
-  // the branch endpoint DID give are still reported. Failing the whole read
-  // here threw away the gaps the token can see to say nothing about the one it
-  // cannot (ADR-026 decision 1).
-  // A rule that names no ruleset is a bypass list that was never even asked
-  // for: the id is the only handle on it, and skipping it silently is the last
-  // route by which "enforces everything" could be printed over a list nobody
-  // read. The spread comes FIRST so the id asked for wins over the body's own.
-  const unnamed = applied.filter((rule) => rule.ruleset_id == null).length
-  const rulesets = ids.map((id, index) => ({ ...answers[index].value, id, why: answers[index].error }))
-  if (unnamed) rulesets.push({ id: null, why: `${unnamed} rule${unnamed === 1 ? '' : 's'} of the trunk name${unnamed === 1 ? 's' : ''} no ruleset` })
-  return { read: true, ...forgeGaps({ rules: applied, rulesets }) }
-}
-
-export function profileLine({ transports, forge }) {
-  const declared = `transports registration ${transports.registration}, integration ${transports.integration}`
-  if (!forge.read) return `profile — ${declared}; forge not read (${forge.why})`
-  const withheld = forge.withheld ?? []
-  const gaps = forge.gaps ?? []
-  // Something was withheld, so the line says all three: what was read, what
-  // was not, and what is unenforced AMONG WHAT WAS READ. The sentence below
-  // claims the whole forge and may not be printed over an unread reading.
-  if (withheld.length) {
-    return `profile — ${declared}; forge read the trunk's rules; not read: ${withheld.join('; ')}; ` +
-      `unenforced among what was read: ${gaps.length ? gaps.join('; ') : 'nothing'}`
-  }
-  return gaps.length
-    ? `profile — ${declared}; forge does not enforce: ${gaps.join('; ')}`
-    : `profile — ${declared}; forge enforces everything these records name`
+export function profileLine({ enforcementProfile, transports }) {
+  return `profile — ${enforcementProfile}; transports registration ${transports.registration}, integration ${transports.integration}`
 }
 
 /** The running-paths view in ACTIVE.md is DERIVED from path declarations
@@ -2693,31 +2574,6 @@ function git(args) {
   return execFileSync('git', args, { cwd: REPO, encoding: 'utf8' }).trim()
 }
 
-/** One GitHub read. An error is an ANSWER, never an exception: the profile
- *  line must not be able to change an exit code, and an offline laptop must
- *  not wait on a socket. */
-export async function githubRequest(url, { token, timeoutMs = 3000, doFetch = fetch } = {}) {
-  const abort = new AbortController()
-  const timer = setTimeout(() => abort.abort(), timeoutMs)
-  try {
-    const response = await doFetch(url, {
-      signal: abort.signal,
-      headers: {
-        accept: 'application/vnd.github+json',
-        authorization: `Bearer ${token}`,
-        'user-agent': 'cairn-check',
-        'x-github-api-version': '2022-11-28'
-      }
-    })
-    if (!response.ok) return { error: `HTTP ${response.status}` }
-    return { value: await response.json() }
-  } catch (error) {
-    return { error: error?.name === 'AbortError' ? `no answer in ${timeoutMs}ms` : String(error?.message ?? error) }
-  } finally {
-    clearTimeout(timer)
-  }
-}
-
 /** Raw stdout — for output whose LEADING whitespace is data, not padding. */
 /** Same, but a failure is an ANSWER (`null`), not an exception: a detached
  *  HEAD has no symbolic ref, and that fact is what the caller needs. */
@@ -3958,14 +3814,7 @@ async function main() {
   // the line people paste into ledgers.
   const baseLabel = base ? `${base} (${baseSource})` : `working tree vs HEAD (${baseSource})`
   const binding = effectiveBinding()
-  const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || null
-  const forge = await readForge({
-    token,
-    slug: githubSlug(gitOrNull(['remote', 'get-url', REMOTE])),
-    trunk: TRUNK_BRANCH,
-    request: (url) => githubRequest(url, { token })
-  })
-  const profile = { transports: { ...CAIRN_CONFIG.transport }, forge }
+  const profile = { enforcementProfile: ENFORCEMENT_PROFILE, transports: { ...CAIRN_CONFIG.transport } }
   if (asJson) {
     console.log(JSON.stringify(
       { binding, profile, branch, base, baseSource, changed: changed.length, findings }, null, 2))

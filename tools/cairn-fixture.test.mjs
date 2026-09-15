@@ -23,9 +23,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { appendFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { tmpdir } from 'node:os'
+import { pathToFileURL } from 'node:url'
 
 import { applyPlan, defaultOptions, planInstall } from './cairn.mjs'
 
@@ -1803,4 +1804,49 @@ test('adversarial coverage is declared, not assumed', async () => {
 
   const stale = [...UNCOVERED].filter((rule) => !blockingRules.has(rule))
   assert.deepEqual(stale, [], 'UNCOVERED names a rule that no longer blocks — remove it')
+})
+
+/* ------------------------------------------------------------------ *
+ * ADR-029 — the checker asks the host nothing
+ * ------------------------------------------------------------------ */
+
+test('the checker makes no network call: fetch, http, https and net are made to throw, a token is offered, and the run is green with no host claim', () => {
+  const dir = repository({ profile: 'ci' })
+  // The preload and the marker live BESIDE the fixture, so the verdict is
+  // about the fixture repository alone; the exports are synced so a named
+  // import sees the same stubs. The marker file is the proof: a call that was
+  // CAUGHT somewhere inside the checker would still have written it.
+  const beside = mkdtempSync(join(tmpdir(), 'cairn-no-network-'))
+  const marker = join(beside, 'network-was-asked')
+  writeFileSync(join(beside, 'no-network.mjs'), `
+import { appendFileSync } from 'node:fs'
+import { syncBuiltinESMExports } from 'node:module'
+import http from 'node:http'
+import https from 'node:https'
+import net from 'node:net'
+const refuse = (what) => () => { appendFileSync(${JSON.stringify(marker)}, what + '\\n'); throw new Error('network: ' + what) }
+globalThis.fetch = refuse('fetch')
+http.request = refuse('http.request'); http.get = refuse('http.get')
+https.request = refuse('https.request'); https.get = refuse('https.get')
+net.connect = refuse('net.connect'); net.createConnection = refuse('net.createConnection')
+syncBuiltinESMExports()
+`)
+  const env = {
+    ...process.env,
+    NODE_OPTIONS: `--import=${pathToFileURL(join(beside, 'no-network.mjs')).href}`,
+    // Offered, never read: the reading a token used to unlock is gone.
+    GITHUB_TOKEN: 'a-token-the-checker-must-not-use',
+    GH_TOKEN: 'a-token-the-checker-must-not-use'
+  }
+  try {
+    const verdict = checkWithEnv(dir, env)
+    assert.deepEqual(blocking(verdict), [], describe(verdict))
+    const asked = existsSync(marker) ? readFileSync(marker, 'utf8') : null
+    assert.equal(asked, null, `the checker asked the network: ${asked}`)
+    assert.deepEqual(Object.keys(verdict.profile).sort(), ['enforcementProfile', 'transports'],
+      'the profile object carries the declaration and no host reading')
+    assert.equal(verdict.profile.enforcementProfile, 'ci')
+  } finally {
+    cleanup(dir, beside)
+  }
 })

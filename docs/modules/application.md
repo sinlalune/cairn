@@ -51,20 +51,13 @@ branch the base defaults to the trunk — and one answers a question and exits:
 `cairn-check --scope-digest <record>#definition-of-done`. The configuration is
 schema 2.
 
-**The profile line.** Every run reports the transports the configuration
-declares, what the forge does not enforce and what it could not read — as a
-third header line, or as the `profile` object under `--json`. The forge half is
-read from the rules that apply to the trunk when `GITHUB_TOKEN` or `GH_TOKEN`
-is set and the remote is a GitHub repository, and is reported as not read
-otherwise. A reading the forge WITHHELD is a third answer, neither a gap nor an
-absence: a ruleset that comes back without its bypass list is a list nobody
-read, and the line says so. Where a ruleset cannot be fetched at all, the same
-line is printed for it with the reason the forge gave, and the rules the branch
-endpoint did give are still reported. CI runs the checker with
-`secrets.GITHUB_TOKEN`, whose reach does not extend to a ruleset's bypass list,
-so its runs print that line and report the rules beside it. None of it is a
-finding: the remedy
-for a gap is a setting, and no failure of the read reaches an exit code.
+**The profile line.** Every run reports the enforcement profile and the two
+transports the configuration declares — as a third header line, or as the
+`profile` object under `--json` — and nothing about the host. The checker
+asks the host nothing and makes no network call (ADR-029): the reading of
+GitHub's trunk rules that stood behind this line, with the token its workflow
+step carried, is deleted, and a fixture proves the run green with `fetch`,
+`http`, `https` and `net` made to throw and a token offered.
 
 **What it reads of a path.** The opening acceptance from the record's own
 `## Opening acceptance` block; the checkpoint from the resume section; the
@@ -109,10 +102,10 @@ reading that watched for `ready` alone would answer *not written yet* about it.
 The predicates it judges with, and the Git plumbing under them, are imported
 from `cairn-check.mjs`: a record's two shapes, its history in a range, the
 metadata it declared at a commit, whether a ref exists, the blob that added a
-step record. Its own are the rendering of each fact into a line, the two forge
-readings — a branch's red runs, and how long a request stayed open — and what
-it takes from the working tree rather than from Git: every path record, and
-each step's current content.
+step record. Its own are the rendering of each fact into a line, the two
+GitHub readings — a branch's red runs, and how long a request stayed open —
+and what it takes from the working tree rather than from Git: every path
+record, and each step's current content.
 
 ## The kit
 
@@ -189,7 +182,7 @@ the host's own declaration, so a repository that declared `pull-request`
 registration keeps it, and the binding generated beside it — which prints both
 transports — never contradicts the file it sits next to.
 
-**The two host files an adopter's forge reads.** The workflow matches this
+**The two host files an adopter's host reads.** The workflow matches this
 repository's own where the two are meant to: the push trigger on the trunk
 alone, the base per event, and the post-mortem step that runs on the checker's
 failure and posts once on the request. It differs in one place, and the test

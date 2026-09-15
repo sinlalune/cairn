@@ -7,7 +7,7 @@
  * went red a minute later; ADR-014 decision 1 exists because the reading of a
  * red run was done by hand, five times, after the fact. Neither is a predicate
  * a tool can hold, so they are held here: the triggers, the order of the steps,
- * the token the checker reads the trunk with, and the condition the post-mortem
+ * the checker's step carrying no token, and the condition the post-mortem
  * step runs under.
  *
  * Read as text on purpose. This package declares no dependency, and a YAML
@@ -56,17 +56,12 @@ test('this repository\'s suite runs before the checker, under its own name', () 
   assert.ok(!('cairn-test' in scripts), 'and the kit ships no suite to run')
 })
 
-test('the checker judges the base CI judges against, and reads the forge with the token', () => {
+test('the checker judges the base CI judges against, and carries no token', () => {
   const checker = step('cairn-check', 'cairn-postmortem')
-  // The token was taken out on 2026-09-13 because the checker read an elided
-  // bypass list as a trunk nobody bypasses, and printed "forge enforces
-  // everything these records name" over an always-bypass role (run
-  // 34756757308). It is back because the reading changed, not because the
-  // token did: the profile line now names the bypass list as not read, and
-  // the three gaps this token CAN see are reported rather than withheld with
-  // it (ADR-026 decision 1).
-  assert.match(checker, /^ +GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}$/m,
-    'the profile line reports what this token can see and names what it cannot')
+  // ADR-029: the checker asks the host nothing, so its step has no token to
+  // ask with. The post-mortem's step below keeps its own.
+  assert.doesNotMatch(checker, /GITHUB_TOKEN|GH_TOKEN/,
+    'the checker reads the repository alone; a token here is a reading nobody asked for')
   // The expression this line used to pin — `origin/${{ github.base_ref ||
   // 'main' }}` — was correct on a request and blind on a push: after the push
   // `origin/main` IS the pushed commit, so every integrating unit this

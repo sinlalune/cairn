@@ -267,8 +267,8 @@ is indistinguishable, from inside a green run, from a rule that passed —
 the same indistinguishability requirement 4 names, arrived at from the other
 side. **Fixed here, and the fix is a rule.** The remedy is a base that spans the
 arrival, and it was not one line. The ref a
-push replaced is the right base, but a branch's first push names none — the
-forge sends all zeros — and the checker did not survive a base it could not
+push replaced is the right base, but a branch's first push names none —
+GitHub sends all zeros — and the checker did not survive a base it could not
 use: it exited through an uncaught Git error rather than reporting the run
 inconclusive, which is a red gate carrying no finding. So: an unresolvable base
 reported, then the base changed on push while a request run keeps its target
