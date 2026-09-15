@@ -6,12 +6,12 @@ import { dirname, join } from 'node:path'
 import { tmpdir } from 'node:os'
 
 import {
-  workflow,
+  bootloader, hostBinding, workflow,
   applyAdopt, applyPlan, applyUpdate, buildConfig, defaultOptions, digest, fileState, installationStatus,
   migrateConfig, optionsFromConfig, outwardLinks, pinSpecLinks, planInstall, readLock, sourceCommit, specUrl, staleShapes,
   PROTOCOL_RELEASE, REFERENCE_TOOLS
 } from './cairn.mjs'
-import { configErrors } from './cairn-config.mjs'
+import { REPO, configErrors } from './cairn-config.mjs'
 
 const CAIRN = 'tools/cairn.mjs'
 const target = () => mkdtempSync(join(tmpdir(), 'cairn-kit-'))
@@ -51,7 +51,9 @@ test('cairn init: a new repository is created in the shapes the protocol states 
   assert.equal(config.defaultRoute, 'lightweight')
   assert.equal(config.version, 2)
   assert.equal(config.roots.concepts, 'docs/concepts', "the adopter's own wiki, never the protocol's")
-  assert.deepEqual(config.transport, { registration: 'pull-request', integration: 'pull-request' })
+  // ADR-024 d1: `--transport` answers the integration transport alone, so a
+  // sole owner's registration no longer costs the forge's review and check.
+  assert.deepEqual(config.transport, { registration: 'manual-git', integration: 'pull-request' })
   assert.deepEqual(buildConfig({ ...defaultOptions(), transport: 'manual-git' }).transport, { registration: 'manual-git', integration: 'manual-git' })
   assert.throws(() => planInstall({ ...defaultOptions(), transport: 'carrier-pigeon' }), /generated configuration is invalid/)
 })
@@ -81,11 +83,40 @@ test('cairn init: every link the kit writes resolves inside it or is pinned to t
   const skill = plan.files.get('skills/cairn-open/SKILL.md').toString('utf8')
   assert.doesNotMatch(skill, /\]\(\.\.\/\.\.\/spec\//, 'a relative link into a specification the adopter does not have')
   assert.match(skill, new RegExp(specUrl(plan.sourceCommit).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '/reference/path-template.md'))
-  const bootloader = plan.files.get('AGENTS.md').toString('utf8')
-  assert.match(bootloader, /reference\/paths\.md\)/)
-  assert.match(bootloader, new RegExp(`release ${PROTOCOL_RELEASE.replace(/\./g, '\\.')}`))
+  const agents = plan.files.get('AGENTS.md').toString('utf8')
+  assert.match(agents, /reference\/paths\.md\)/)
+  assert.match(agents, new RegExp(`release ${PROTOCOL_RELEASE.replace(/\./g, '\\.')}`))
   assert.equal(pinSpecLinks('see [x](../../spec/index.md) and [y](./local.md)', 'abc'), 'see [x](https://github.com/sinlalune/cairn/blob/abc/spec/index.md) and [y](./local.md)')
   assert.equal(specUrl('unknown'), 'https://github.com/sinlalune/cairn/blob/main/spec')
+})
+
+test('the generated binding prints the transports the configuration declares, not the ones the kit prefers', () => {
+  // `adopt` writes a missing binding.md beside a configuration it did NOT
+  // rewrite. A row that printed the kit's own default there would contradict
+  // the file next to it — the defect the page it sits on calls a binding
+  // defect. So both rows are read from the declaration.
+  assert.match(hostBinding(defaultOptions(), 'abc123'), /^\| registration transport \| `manual-git` \|$/m)
+  assert.match(hostBinding(defaultOptions(), 'abc123'), /^\| integration transport \| `pull-request` \|$/m)
+  const installedAt10 = optionsFromConfig(buildConfig({ ...defaultOptions(), transport: 'pull-request', registrationTransport: 'pull-request' }))
+  assert.equal(buildConfig(installedAt10).transport.registration, 'pull-request', 'update and adopt plan from the host\'s own answer')
+  assert.match(hostBinding(installedAt10, 'abc123'), /^\| registration transport \| `pull-request` \|$/m)
+  assert.match(hostBinding({ ...defaultOptions(), transport: 'manual-git' }, 'abc123'), /^\| integration transport \| `manual-git` \|$/m)
+})
+
+test('the bootloader carries the two lines of 1.1 that reach every session, in the kit and here', () => {
+  // A tone and a concept note are not predicates, so nothing but this test
+  // stands between the two records and a bootloader that never says them.
+  const kit = bootloader(defaultOptions(), 'abc123')
+  const here = readFileSync(join(REPO, 'AGENTS.md'), 'utf8')
+  for (const [text, where] of [[kit, 'the kit\'s bootloader'], [here, 'this repository\'s AGENTS.md']]) {
+    assert.match(text, /- An explanation is written for the reader who is learning it/, `${where}: ADR-021 d1`)
+    assert.match(text, /- An abstraction explained persists as a concept note/, `${where}: ADR-011 d3`)
+    assert.match(text, /`cairn-learn`/, `${where}: the sixth skill (ADR-022 d2)`)
+  }
+  // ADR-014 d2: the kit installs no suite and names none; this repository
+  // keeps `npm test` as an alias of `cairn-test` and says so here.
+  assert.doesNotMatch(kit, /npm test/, 'the kit names no suite of the adopter\'s')
+  assert.match(here, /npm test +# alias of cairn-test/)
 })
 
 test('cairn init: an existing file is refused rather than overwritten, and a lock refuses a second init', () => {
@@ -165,6 +196,7 @@ test('cairn init: the command refuses a protected profile and leaves an existing
     writeFileSync(join(dir, 'package.json'), '{"name":"theirs"}')
     const output = cairn(dir, 'init')
     assert.match(output, /package\.json already exists and was left alone/)
+    assert.match(output, /registration manual-git, integration pull-request/, 'the run names both transports (ADR-024)')
     assert.equal(JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')).name, 'theirs')
     assert.ok(existsSync(join(dir, 'cairn.config.json')))
   } finally {

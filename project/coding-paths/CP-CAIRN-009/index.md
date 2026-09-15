@@ -287,28 +287,36 @@ session. Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
-- **S01** — not started
+- **S01** — [what `init` writes, and the bootloader](./steps/S01.md) — complete. `cairn init` declares `transport.registration: manual-git` whatever `--transport` answers for the integration transport, from one constant the generated binding's new row prints too, and the run names both; the bootloader the kit writes names the sixth skill and gains the concept-note and explanation rules, and this repository's `AGENTS.md` carries the same two beside the `cairn-test` alias. Advances the first and second items of the definition of done.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — the trunk commit that adds this record, whose parent is base
-unit   : 0
+commit : 3c42237147ed783e68f301626fd9637a58f3fad3 — the registration commit, on origin/main and on this branch
+unit   : 1 — S01 complete on push; S02 names its commit here
 base   : 76512dc75b1940a54388ff4e7fdabb53a662179a
-trunk  : 76512dc75b1940a54388ff4e7fdabb53a662179a — origin/main at registration
+trunk  : 3c42237147ed783e68f301626fd9637a58f3fad3 — origin/main at S01
 ```
 
 ### Next action
 
-In a fresh session, from the worktree `../cairn-cp-cairn-009` on branch
-`path/cp-cairn-009`: run S01 of the plan with `cairn-unit` — what `init`
-writes and the bootloader, from ADR-024, ADR-021 decision 1, ADR-011
-decision 3, ADR-022 decision 2 and ADR-014 decision 2 at their tables;
-failing test first on an installation the test builds; this repository's
-`AGENTS.md` carrying the same lines. Run the review movement on the
-unit's diff as the unit skill says, and set `current_step` to S01.
+Run S02 of the plan with `cairn-unit` — the documentation plane the kit
+installs, and the concept rules' read. `docs/inputs/` and its index
+(ADR-011 d1); the concept root in three folders — `cairn`, the project's,
+`learning` — with their indexes and `roots.concepts` as their parent
+(ADR-011 d2, ADR-022 d1); the documentation index naming the inputs
+folder, the three folders, the surface pages' place with the worked
+example and the API link, and the architecture folder as the flow pages'
+home (ADR-012, ADR-023 d2–d4); the architecture index the kit writes with
+the one sentence and the one diagram (ADR-019 d2, ADR-023 d3); the module
+note template describing now (ADR-010 d1). Then `concept-orphan` and
+`concept-growth` read the concept root recursively — one function of
+`tools/cairn-check.mjs`, its fixture with an orphan inside a folder
+written first and failing — and the conformance page's two rows say so.
+Type `implementation`. Run the review movement on the unit's diff, and
+set `current_step` to S02.
 
 ### Blockers
 
@@ -316,6 +324,15 @@ None.
 
 ### Tried and rejected
 
+- Two literals for the registration transport, one in `buildConfig` and
+  one in the generated binding row — the defect the workflow test was
+  written about, where one of two occurrences is left behind; one
+  exported constant, printed by both (S01's self-review).
+- Adding `cairn-learn` to the manifest in S01, because the bootloader it
+  writes now names six skills — `planInstall` walks `skills/`, so the
+  sixth file has been copied since path 1 landed it; the manifest,
+  `REFERENCE_TOOLS` and the lock are S04's, and nothing was owed here but
+  the list item.
 - Two paths, the kit and the chapters — the chapters say what the kit
   installs, and a reader who finds them disagreeing for a week has two
   authorities; one path, the kit first and the chapters after it, in
@@ -337,6 +354,7 @@ None.
 3. `tools/cairn.mjs` — the generators, `planInstall`, the lock.
 4. `project/coding-paths/CP-CAIRN-009/plan.md`, then the records the unit implements, at their tables.
 5. This repository's `AGENTS.md`, workflow, request template and `docs/index.md` — what the generated files must match.
+6. `tools/cairn-check.mjs` — the corpus the two concept rules read, before S02.
 
 ### Verify
 

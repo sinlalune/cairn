@@ -11,10 +11,13 @@
  *   npx cairn-protocol update [--target <dir>] [--dry-run]
  *   npx cairn-protocol adopt  [--target <dir>] [--dry-run]
  *
+ * `--transport` names the INTEGRATION transport alone; `init` declares
+ * `transport.registration` from `REGISTRATION_TRANSPORT` (ADR-024).
+ *
  * The npm name `cairn` belongs to another package, so the package is
  * `cairn-protocol` and its binary is `cairn`.
  *
- * THE KIT IS THIN. It installs the reference tools, the five skills, the host
+ * THE KIT IS THIN. It installs the reference tools, the six skills, the host
  * files — bootloader, configuration, binding, workflow, request template — and
  * the folder indexes the roles need: under thirty files. It does not copy the
  * specification: an adopter reads it at the release the kit was cut from, by
@@ -75,6 +78,12 @@ export const REFERENCE_TOOLS = [
 
 /** The procedures, as Agent Skills: copied whole, one folder per skill. */
 export const SKILLS = 'skills'
+
+/** What `init` declares for `transport.registration`: the one registration
+ *  sequence `cairn-open` ships, the commit landing on the trunk directly, and
+ *  it is that whichever transport integrates the candidate (ADR-024). A
+ *  repository that declared the other value keeps it — see `optionsFromConfig`. */
+export const REGISTRATION_TRANSPORT = 'manual-git'
 
 /** Portable text the kit LINKS rather than copies. */
 export const PORTABLE_DOCS = 'spec'
@@ -144,10 +153,10 @@ export function defaultOptions() {
     projectRoot: 'project',
     docsRoot: 'docs',
     sourceRoots: ['src'],
-    // The pull request is the default transport: a review that is recorded, a
-    // required check on the exact commit that lands, and a merge that is the
-    // same object CI tested are native there. `manual-git` is the fallback for
-    // a repository with no forge.
+    // The INTEGRATION transport, and the pull request is its default: a review
+    // that is recorded, a required check on the exact commit that lands, and a
+    // merge that is the same object CI tested are native there. `manual-git` is
+    // the fallback for a repository with no forge.
     transport: 'pull-request'
   }
 }
@@ -164,6 +173,7 @@ export function optionsFromConfig(config) {
     docsRoot: config.roots.documentation,
     sourceRoots: [...config.roots.source],
     transport: config.transport?.integration ?? 'pull-request',
+    registrationTransport: config.transport?.registration ?? REGISTRATION_TRANSPORT,
     conceptsRoot: config.roots.concepts
   }
 }
@@ -198,7 +208,9 @@ export function buildConfig(options) {
     checkpointRetentionRef: null,
     pathHistoryPolicy: 'forbidden',
     scopeDigestAlgorithm: 'sha256',
-    transport: { registration: options.transport, integration: options.transport },
+    // `pull-request` stays a value the field accepts, so a repository that
+    // declared it keeps it: `update` and `adopt` plan from its own answers.
+    transport: { registration: options.registrationTransport ?? REGISTRATION_TRANSPORT, integration: options.transport },
     migration: { unregisteredPaths: [], undeclaredOpenings: [], v02Records: [] }
   }
 }
@@ -251,7 +263,8 @@ This file points; it does not carry project memory.
 4. \`${options.projectRoot}/coding-paths/ACTIVE.md\` — what is running now. It is
    generated; never hand-edit it.
 5. \`${SKILLS}/\` — the procedures as Agent Skills: \`cairn-brainstorm\`,
-   \`cairn-open\`, \`cairn-unit\`, \`cairn-close\`, and the \`cairn-code\` stance.
+   \`cairn-open\`, \`cairn-unit\`, \`cairn-close\`, \`cairn-learn\`, and the
+   \`cairn-code\` stance.
 
 The [specification](${spec}/index.md) is read at the release this repository
 installed, release ${PROTOCOL_RELEASE}; \`npx cairn-protocol status\` says whether a
@@ -280,6 +293,11 @@ npm run cairn-audit     # the closing review: the request's description to paste
   \`${options.trunk}\` in. This repository declares
   \`pathHistoryPolicy: forbidden\`.
 - Progress persists in files, never in a conversation.
+- An abstraction explained persists as a concept note, in the folder its scope
+  names, linked from where the explanation was needed.
+- An explanation is written for the reader who is learning it — the plain
+  meaning first, the failure it prevents, the shortest example — and stops
+  there.
 `
 }
 
@@ -305,6 +323,7 @@ paths, command names and runtime details. Portable protocol text never does.
 | remote | \`${options.remote}\` |
 | metadata namespace | \`${options.namespace}\` |
 | enforcement profile | \`${options.profile}\` |
+| registration transport | \`${options.registrationTransport ?? REGISTRATION_TRANSPORT}\` |
 | integration transport | \`${options.transport}\` |
 | path-history policy | **forbidden** — a published branch is never rewritten |
 | path branch | \`path/<lowercase-path-id>\` |
@@ -860,7 +879,7 @@ function main(argv) {
     }
     applyPlan(plan, target, { dryRun })
     console.log(`cairn — ${dryRun ? 'would install' : 'installed'} ${plan.files.size} file(s) and the lock into ${target}`)
-    console.log(`release ${PROTOCOL_RELEASE} from ${plan.sourceCommit.slice(0, 7)}; trunk ${options.trunk} via ${options.remote}; profile ${options.profile}; transport ${options.transport}; path history forbidden`)
+    console.log(`release ${PROTOCOL_RELEASE} from ${plan.sourceCommit.slice(0, 7)}; trunk ${options.trunk} via ${options.remote}; profile ${options.profile}; registration ${plan.config.transport.registration}, integration ${plan.config.transport.integration}; path history forbidden`)
     if (scriptsNotice) console.log(scriptsNotice)
     if (!dryRun) console.log('next — commit this installation, then read AGENTS.md and open your first path')
     return

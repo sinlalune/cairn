@@ -123,6 +123,18 @@ second. `adopt` is the migration from a 0.2 installation: it keeps the host's
 answers, replaces the tools, adds the skills, and reports the shapes the kit
 no longer defines rather than deleting anything of the adopter's.
 
+At `init` the configuration it writes declares
+`transport.registration: manual-git`, the one registration sequence
+`cairn-open` ships, whatever `--transport` answers for
+`transport.integration`; `update` and `adopt` plan from the host's own
+declaration instead, so a repository that declared `pull-request`
+registration keeps it and the binding generated beside it — which prints
+both transports — never contradicts the file it sits next to. The
+bootloader carries the five absolute rules of 1.0 about paths and two that
+reach a session with no path open: an abstraction explained persists as a
+concept note, and an explanation is written for the reader who is learning
+it.
+
 ## Testing
 
 `npm run cairn-test` runs Node's own runner over `tools/*.test.mjs`, and

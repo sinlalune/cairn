@@ -27,7 +27,12 @@ transactionally and writes this file (`init`), reads the lock to say which kit
 files are pristine, edited or missing and whether a newer release exists
 (`status`), rewrites the pristine ones, migrates this file field by field from
 schema 1 and reports the rest (`update`), and turns a repository that carries
-the protocol without a lock into an installation (`adopt`). The checked-in
+the protocol without a lock into an installation (`adopt`). At `init` it
+declares `transport.registration: manual-git` — the one registration sequence
+the open skill ships — and gives `--transport`, whose default is
+`pull-request`, to `transport.integration` alone; a repository that declared
+`pull-request` registration keeps it, because `update` and `adopt` plan from
+the host's own answers. The checked-in
 workflow is an installed host adapter. What remains open is on the
 [conformance page](./conformance.md).
 
@@ -62,7 +67,7 @@ workflow is an installed host adapter. What remains open is on the
   "pathHistoryPolicy": "forbidden",
   "scopeDigestAlgorithm": "sha256",
   "transport": {
-    "registration": "pull-request",
+    "registration": "manual-git",
     "integration": "pull-request"
   },
   "migration": {
@@ -102,7 +107,7 @@ parent-traversing, dot-segment, empty-segment, and backslash forms are rejected.
 | `checkpointRetentionRef` | ref prefix for [checkpoint retention](../concepts/checkpoint-retention.md), which the host's own tooling maintains — the reference checker does not read it | a ref prefix the remote accepts, or `null` where the repository forbids rewriting pushes instead |
 | `pathHistoryPolicy` | which conforming rewrite policy the host chose | `retained` with a ref prefix, or `forbidden` with a null prefix |
 | `scopeDigestAlgorithm` | digest used for [scope digests](../concepts/scope-digest.md) | a named algorithm; the digest is never abbreviated |
-| `transport` | how a registration and an accepted candidate reach the trunk, and where closing acceptance is recorded | `pull-request` — the default; the request is the record — or `manual-git` — a checked local merge, and one closing record in the path folder |
+| `transport` | two independent fields: how a registration reaches the trunk, and how an accepted candidate reaches it and where its closing acceptance is recorded | each `pull-request` — the request is the record — or `manual-git` — a checked local merge, and one closing record in the path folder |
 | `migration` | finite exceptions for records predating installed predicates | three explicit path-id arrays; not a schema-version migration mechanism |
 
 A second `areas` entry is added when one area's note is touched by every path,
