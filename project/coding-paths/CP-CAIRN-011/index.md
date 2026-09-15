@@ -7,13 +7,13 @@ timestamp: 2026-09-15T00:00:00Z
 cairn:
   id: CP-CAIRN-011
   route: full
-  status: running
+  status: ready
   current_step: S05
   base_commit: 471fa71b27a2334f40f6fb4fa01c682ac923e323
   branch: path/cp-cairn-011
   assigned_writer: cp-cairn-011-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 7f41d127a76b64bb916b26e48f58b8f48c32c3bd
   resolution: null
   writes:
     - README.md
@@ -266,32 +266,26 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 0e9c22f734cd5f9778ca0c6784663796a60e57cc — S04, on origin/path/cp-cairn-011; S05's own commit is named here by S06
-unit   : 04 — S05 is the commit after this checkpoint
+commit : 7f41d127a76b64bb916b26e48f58b8f48c32c3bd — candidate C, S05's commit with the trunk contained; on origin/path/cp-cairn-011; this administrative commit follows it
+unit   : 05 — the last unit; the close adds no unit
 base   : 471fa71b27a2334f40f6fb4fa01c682ac923e323
-trunk  : 471fa71b27a2334f40f6fb4fa01c682ac923e323 — origin/main at S05
+trunk  : 891b07de4afb4239a26ecccfa1f250a046701c34 — origin/main, T, the registration commit; unmoved since the branch was cut
 ```
 
 ### Next action
 
-In a fresh session, from the worktree `../cairn-cp-cairn-011` on branch
-`path/cp-cairn-011`: run S06 of the plan with `cairn-close` — the
-candidate. Merge `origin/main` in (it has not moved since the base; say
-so if it still has not), produce candidate `C`, run `cairn-check` and
-`cairn-test` on it bare, rebuild the site from it, open the pull request
-from the branch with the description `npm run cairn-audit` prints, make
-the one administrative commit — `ready`, `subject_commit: C`, the live
-view, the checkpoint — and read its check green; then ask the owner, in
-the chat and signalled as a decision, to open the site and the README and
-run one quick start before the merge. The seventh item is checked at `C`:
-`git diff base..C --stat` shows nothing under `skills/`, `tools/`,
-`.github/`, `spec/index.md`, `spec/concepts/`, `spec/reference/` but the
-conformance page, `docs/adr/` or `feedbacks/`, and the seven governing
-documents other than the page byte-identical. There is no step file for
-the close. After the merge: the integrating unit from a clean trunk
-checkout, the tag `1.1.0` on the integrating commit, `npm publish` by the
-owner, the journal entry naming both and Crumbz's update as the next
-path, on their register.
+The owner opens the site built from `C`, reads the README, runs one quick
+start, and merges pull request #20 as a merge commit once its check on
+the `ready` commit is read green; the merge click is the acceptance. Then,
+from a clean trunk checkout: the integrating unit — `status: done`,
+`resolution: completed`, `subject_commit` kept, the live view, one journal
+entry `project/log/2026-09-15-cp-cairn-011.md` — landed on the trunk
+directly; `C` proved reachable from `origin/main`; the tag `1.1.0` set on
+the integrating commit and pushed, as `1.0.0` was; `npm publish` by the
+owner from that commit; the journal entry naming the tag, the package and
+the first adopter's update as the next path, on Crumbz's register; the
+worktree `../cairn-cp-cairn-011` removed from another checkout, or the
+failure reported.
 
 ### Blockers
 
