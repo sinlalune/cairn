@@ -6,12 +6,12 @@ import { dirname, join } from 'node:path'
 import { tmpdir } from 'node:os'
 
 import {
-  workflow,
+  bootloader, hostBinding, pointerPage, requestTemplate, takeRelease, workflow,
   applyAdopt, applyPlan, applyUpdate, buildConfig, defaultOptions, digest, fileState, installationStatus,
   migrateConfig, optionsFromConfig, outwardLinks, pinSpecLinks, planInstall, readLock, sourceCommit, specUrl, staleShapes,
   PROTOCOL_RELEASE, REFERENCE_TOOLS
 } from './cairn.mjs'
-import { configErrors } from './cairn-config.mjs'
+import { REPO, configErrors } from './cairn-config.mjs'
 
 const CAIRN = 'tools/cairn.mjs'
 const target = () => mkdtempSync(join(tmpdir(), 'cairn-kit-'))
@@ -51,14 +51,18 @@ test('cairn init: a new repository is created in the shapes the protocol states 
   assert.equal(config.defaultRoute, 'lightweight')
   assert.equal(config.version, 2)
   assert.equal(config.roots.concepts, 'docs/concepts', "the adopter's own wiki, never the protocol's")
-  assert.deepEqual(config.transport, { registration: 'pull-request', integration: 'pull-request' })
+  // ADR-024 d1: `--transport` answers the integration transport alone, so a
+  // sole owner's registration no longer costs the forge's review and check.
+  assert.deepEqual(config.transport, { registration: 'manual-git', integration: 'pull-request' })
   assert.deepEqual(buildConfig({ ...defaultOptions(), transport: 'manual-git' }).transport, { registration: 'manual-git', integration: 'manual-git' })
   assert.throws(() => planInstall({ ...defaultOptions(), transport: 'carrier-pigeon' }), /generated configuration is invalid/)
 })
 
-test('cairn init: the kit is thin — under thirty files with the lock, and it copies no specification', () => {
+test('cairn init: the kit is thin — it carries the roles, and copies no specification', () => {
+  // No count is asserted. ADR-022 d2 superseded ADR-013's cap on the kit's
+  // files: what the kit installs is measured and reported, never a target, so
+  // a file that earns its place is added and the number follows.
   const plan = planInstall({ ...defaultOptions(), profile: 'ci' })
-  assert.ok(plan.files.size + 1 < 30, `${plan.files.size} files and the lock is not under thirty`)
   const paths = [...plan.files.keys()]
   assert.ok(!paths.some((p) => p.startsWith('spec/')), 'the specification is linked at the release, not copied')
   assert.ok(!paths.some((p) => p.endsWith('.test.mjs') || p.endsWith('cairn.mjs') || p.endsWith('cairn-rules.mjs') || p.endsWith('soundness.md')))
@@ -67,7 +71,7 @@ test('cairn init: the kit is thin — under thirty files with the lock, and it c
     assert.ok(plan.files.has(`skills/${skill}/SKILL.md`), skill)
   }
   assert.ok(plan.files.has('.github/workflows/cairn.yml') && plan.files.has('.github/pull_request_template.md'))
-  assert.ok(plan.files.has('docs/concepts/index.md') && plan.files.has('docs/modules/application.md') && plan.files.has('project/coding-paths/index.md'))
+  assert.ok(plan.files.has('docs/modules/application.md') && plan.files.has('project/coding-paths/index.md'))
   for (const folder of ['project/briefs/', 'project/sessions/', 'project/audits/', 'project/log/']) {
     assert.ok(!paths.some((p) => p.startsWith(folder)), folder)
   }
@@ -81,11 +85,96 @@ test('cairn init: every link the kit writes resolves inside it or is pinned to t
   const skill = plan.files.get('skills/cairn-open/SKILL.md').toString('utf8')
   assert.doesNotMatch(skill, /\]\(\.\.\/\.\.\/spec\//, 'a relative link into a specification the adopter does not have')
   assert.match(skill, new RegExp(specUrl(plan.sourceCommit).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '/reference/path-template.md'))
-  const bootloader = plan.files.get('AGENTS.md').toString('utf8')
-  assert.match(bootloader, /reference\/paths\.md\)/)
-  assert.match(bootloader, new RegExp(`release ${PROTOCOL_RELEASE.replace(/\./g, '\\.')}`))
+  const agents = plan.files.get('AGENTS.md').toString('utf8')
+  assert.match(agents, /reference\/paths\.md\)/)
+  assert.match(agents, new RegExp(`release ${PROTOCOL_RELEASE.replace(/\./g, '\\.')}`))
   assert.equal(pinSpecLinks('see [x](../../spec/index.md) and [y](./local.md)', 'abc'), 'see [x](https://github.com/sinlalune/cairn/blob/abc/spec/index.md) and [y](./local.md)')
   assert.equal(specUrl('unknown'), 'https://github.com/sinlalune/cairn/blob/main/spec')
+})
+
+test('the generated binding prints the transports the configuration declares, not the ones the kit prefers', () => {
+  // `adopt` writes a missing binding.md beside a configuration it did NOT
+  // rewrite. A row that printed the kit's own default there would contradict
+  // the file next to it — the defect the page it sits on calls a binding
+  // defect. So both rows are read from the declaration.
+  assert.match(hostBinding(defaultOptions(), 'abc123'), /^\| registration transport \| `manual-git` \|$/m)
+  assert.match(hostBinding(defaultOptions(), 'abc123'), /^\| integration transport \| `pull-request` \|$/m)
+  const installedAt10 = optionsFromConfig(buildConfig({ ...defaultOptions(), transport: 'pull-request', registrationTransport: 'pull-request' }))
+  assert.equal(buildConfig(installedAt10).transport.registration, 'pull-request', 'update and adopt plan from the host\'s own answer')
+  assert.match(hostBinding(installedAt10, 'abc123'), /^\| registration transport \| `pull-request` \|$/m)
+  assert.match(hostBinding({ ...defaultOptions(), transport: 'manual-git' }, 'abc123'), /^\| integration transport \| `manual-git` \|$/m)
+})
+
+test('the bootloader carries the two lines of 1.1 that reach every session, in the kit and here', () => {
+  // A tone and a concept note are not predicates, so nothing but this test
+  // stands between the two records and a bootloader that never says them.
+  const kit = bootloader(defaultOptions(), 'abc123')
+  const here = readFileSync(join(REPO, 'AGENTS.md'), 'utf8')
+  for (const [text, where] of [[kit, 'the kit\'s bootloader'], [here, 'this repository\'s AGENTS.md']]) {
+    assert.match(text, /- An explanation is written for the reader who is learning it/, `${where}: ADR-021 d1`)
+    assert.match(text, /- An abstraction explained persists as a concept note/, `${where}: ADR-011 d3`)
+    assert.match(text, /`cairn-learn`/, `${where}: the sixth skill (ADR-022 d2)`)
+  }
+  // ADR-014 d2: the kit installs no suite and names none; this repository
+  // keeps `npm test` as an alias of `cairn-test` and says so here.
+  assert.doesNotMatch(kit, /npm test/, 'the kit names no suite of the adopter\'s')
+  assert.match(here, /npm test +# alias of cairn-test/)
+})
+
+test('cairn init: the documentation plane of 1.1 is installed, not left for the adopter to guess', () => {
+  const plan = planInstall()
+  const files = plan.files
+  const text = (path) => files.get(path).toString('utf8')
+
+  // ADR-011 d1: the folder the first session reads before it plans anything.
+  assert.ok(files.has('docs/inputs/index.md'), 'docs/inputs/ and its index')
+  assert.match(text('docs/inputs/index.md'), /any format/i)
+  assert.match(text('docs/inputs/index.md'), /never edited|as they came|unedited/i,
+    'the index says the inputs are kept as they came')
+
+  // ADR-011 d2: three folders, each with an index; no index at the root.
+  for (const folder of ['cairn', 'product', 'learning']) {
+    assert.ok(files.has(`docs/concepts/${folder}/index.md`), `docs/concepts/${folder}/index.md`)
+  }
+  assert.ok(!files.has('docs/concepts/index.md'),
+    'the root index is replaced by the three folder indexes, not kept beside them')
+  assert.match(text('docs/concepts/cairn/index.md'), /what this repository actually does with it/i,
+    'the cairn scope, not one of its neighbours')
+  assert.match(text('docs/concepts/product/index.md'), /this product's architecture uses/i)
+  // ADR-022 d1: a learning note is a concept note with an order.
+  assert.match(text('docs/concepts/learning/index.md'), /learning note/i)
+  assert.match(text('docs/concepts/learning/index.md'), /order/i)
+
+  // ADR-019 d2 + ADR-023 d2, d3: the index the kit writes for an adopter.
+  assert.ok(files.has('docs/architecture/index.md'), 'the architecture folder gets its index')
+  assert.match(text('docs/architecture/index.md'), /one sentence/i, 'which way dependencies point')
+  assert.match(text('docs/architecture/index.md'), /mermaid/i, 'one diagram')
+  assert.match(text('docs/architecture/index.md'), /flow/i, 'flow pages live here')
+
+  // ADR-012 + ADR-023 d3, d4: the documentation index is the map.
+  const docs = text('docs/index.md')
+  for (const target of ['./inputs/index.md', './concepts/cairn/index.md', './concepts/product/index.md',
+    './concepts/learning/index.md', './architecture/index.md', './modules/index.md']) {
+    assert.ok(docs.includes(target), `the documentation index links ${target}`)
+  }
+  assert.match(docs, /opens with one worked example/i, 'before any explanation (ADR-023 d3)')
+  assert.match(docs, /links that API's documentation/i,
+    'the surface page links it; Cairn installs no API page of its own (ADR-023 d4)')
+
+  // ADR-010 d1: the template describes now.
+  const note = text('docs/modules/application.md')
+  assert.match(note, /as it is now/i)
+  assert.match(note, /no dated paragraphs/i)
+  assert.match(note, /belongs to the journal/i, 'history is the journal\'s, not the note\'s')
+
+  assert.deepEqual(outwardLinks(files), [], 'every link the new indexes carry resolves inside the kit')
+
+  // A host may bind its wiki outside the documentation plane — this repository
+  // does — and a hard-coded `./concepts/` in the index would point at nothing.
+  const bound = planInstall({ ...defaultOptions(), conceptsRoot: 'spec/concepts' })
+  assert.ok(bound.files.has('spec/concepts/learning/index.md'))
+  assert.ok(bound.files.get('docs/index.md').toString('utf8').includes('../spec/concepts/learning/index.md'))
+  assert.deepEqual(outwardLinks(bound.files), [], 'and the link still resolves inside the kit')
 })
 
 test('cairn init: an existing file is refused rather than overwritten, and a lock refuses a second init', () => {
@@ -144,7 +233,8 @@ test('cairn init: a freshly installed repository passes its own gate', () => {
     assert.match(output, /OK — protocol satisfied/)
     assert.match(output, /path history forbidden/)
     const installed = readFileSync(join(dir, '.github/workflows/cairn.yml'), 'utf8')
-    assert.match(installed, /path\/\*\*/)
+    // The trunk alone since ADR-005: one run per commit that can land.
+    assert.match(installed, /^ {4}branches: \[main\]$/m)
     // The adopter's gate must compare across an arrival, not with itself. The
     // kit shipped `origin/${{ github.base_ref || <trunk> }}`, which on a push
     // names the pushed commit, so no changed-file rule judged an integration
@@ -165,6 +255,7 @@ test('cairn init: the command refuses a protected profile and leaves an existing
     writeFileSync(join(dir, 'package.json'), '{"name":"theirs"}')
     const output = cairn(dir, 'init')
     assert.match(output, /package\.json already exists and was left alone/)
+    assert.match(output, /registration manual-git, integration pull-request/, 'the run names both transports (ADR-024)')
     assert.equal(JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')).name, 'theirs')
     assert.ok(existsSync(join(dir, 'cairn.config.json')))
   } finally {
@@ -175,6 +266,281 @@ test('cairn init: the command refuses a protected profile and leaves an existing
 /* ------------------------------------------------------------------ *
  * status and update — against the lock
  * ------------------------------------------------------------------ */
+
+test('cairn init: the kit ships the post-mortem, and names Ponytail without copying it', () => {
+  const plan = planInstall({ ...defaultOptions(), profile: 'ci' })
+  // ADR-014 d1: the tool joins the manifest, and the script the kit writes.
+  assert.ok(REFERENCE_TOOLS.includes('cairn-postmortem.mjs'))
+  assert.ok(plan.files.has('tools/cairn-postmortem.mjs'))
+  const scripts = JSON.parse(plan.files.get('package.json').toString('utf8')).scripts
+  assert.equal(scripts['cairn-postmortem'], 'node tools/cairn-postmortem.mjs')
+  assert.ok(!scripts.test && !scripts['cairn-test'], 'the kit installs no suite and names none (ADR-014 d2)')
+
+  // ADR-016 d1: named at a pinned tag, copied nowhere.
+  const paths = [...plan.files.keys()]
+  assert.ok(!paths.some((p) => p.includes('ponytail')), 'Ponytail is a dependency, not a file the kit copies')
+  const page = plan.files.get('cairn/README.md').toString('utf8')
+  assert.ok(page.includes('DietrichGebert/ponytail') && page.includes('v4.9.0'),
+    'the pointer page names it at its tag, so an adopter knows what to install beside the skills')
+
+  // ADR-022 d2: the two candidates ADR-013 named, each kept for its own reason.
+  assert.ok(plan.files.has('tools/cairn-config.schema.json'))
+  assert.ok(plan.files.has('project/index.md'))
+})
+
+test('cairn init: the lock records the release, the source commit and the dependency it does not carry', () => {
+  const dir = target()
+  try {
+    const plan = planInstall()
+    applyPlan(plan, dir)
+    const lock = readLock(dir)
+    assert.deepEqual(lock.dependencies, { 'DietrichGebert/ponytail': 'v4.9.0' },
+      'what the adopter must install beside the kit, at the tag this release was checked against (ADR-016 d1)')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('the generated workflow runs once per commit that can land, and reads a red run', () => {
+  const yaml = workflow({ ...defaultOptions(), trunk: 'main' })
+  // ADR-005: the push trigger is the trunk alone. Two runs on one commit can
+  // disagree, and only the request's is the merge gate.
+  assert.match(yaml, /^ {4}branches: \[main\]$/m)
+  assert.doesNotMatch(yaml, /path\/\*\*/, 'no push run on a path branch')
+  // ADR-014 d1: the post-mortem step, on the checker's failure alone.
+  assert.match(yaml, /- name: cairn-postmortem/)
+  assert.match(yaml, /if: failure\(\) && steps\.cairn-check\.conclusion == 'failure'/)
+  assert.match(yaml, /actions: read/, 'the red-run reading needs it, and an explicit block denies what it omits')
+  assert.match(yaml, /pull-requests: write/, 'the one comment on the request')
+  assert.doesNotMatch(yaml, /npm run cairn-test|- name: cairn-test/,
+    'the kit installs no suite, so its workflow runs no test step (ADR-014 d2)')
+  // Path 5 left this line; it is kept as it stands.
+  assert.ok(yaml.includes(
+    "CAIRN_BASE_REF: ${{ github.base_ref && format('origin/{0}', github.base_ref) " +
+    "|| (github.ref_name == 'main' && github.event.before || 'origin/main') }}"))
+})
+
+test('the generated request template opens with what a reader needs before the ledger', () => {
+  const text = requestTemplate()
+  // ADR-021 d2: three plain lines and the surface link, before anything else.
+  const done = text.indexOf('## What this path did')
+  const items = text.indexOf('## Definition of done, item by item')
+  const candidate = text.indexOf('## Candidate')
+  assert.ok(done !== -1 && items !== -1 && candidate !== -1, 'all three sections exist')
+  assert.ok(done < items && items < candidate, 'in that order, the ledger last (ADR-021 d2, ADR-018 d2)')
+  assert.match(text, /what the path did/i)
+  assert.match(text, /why it is the least/i)
+  assert.match(text, /what it does not do/i)
+  assert.match(text, /Surface:/)
+  // The blanks are backticked, or the forge strips them as HTML tags and the
+  // blank reads as answered.
+  assert.doesNotMatch(text.split('## Candidate')[0], /(^|[^`])<[a-z]/m,
+    'every blank is backticked')
+})
+
+test('the generated host files and this repository\'s own differ only where they are meant to', () => {
+  // Paths 3 and 5 fixed these two files HERE; the kit wrote the 1.0 ones for
+  // an adopter until this unit. Equality is asserted where the two are meant
+  // to be the same, and every difference is named with its reason — a diff
+  // nobody has read is how the kit drifts from the repository that proves it.
+  const generated = workflow({ ...defaultOptions(), trunk: 'main' })
+  const ours = readFileSync(join(REPO, '.github/workflows/cairn.yml'), 'utf8')
+  for (const shared of [
+    '    branches: [main]',
+    '      actions: read',
+    '      pull-requests: write',
+    '      - name: cairn-postmortem',
+    "        if: failure() && steps.cairn-check.conclusion == 'failure'",
+    'node tools/cairn-postmortem.mjs --branch "$CAIRN_BRANCH" > postmortem.txt 2>&1 || true',
+    'gh pr comment "$CAIRN_REQUEST" --body-file postmortem.txt',
+    "CAIRN_BASE_REF: ${{ github.base_ref && format('origin/{0}', github.base_ref) " +
+      "|| (github.ref_name == 'main' && github.event.before || 'origin/main') }}"
+  ]) {
+    assert.ok(generated.includes(shared), `the kit's workflow is missing: ${shared}`)
+    assert.ok(ours.includes(shared), `this repository's workflow is missing: ${shared}`)
+  }
+  // The one difference, and its reason: this repository runs its own suite
+  // before the gate; the kit installs no suite and names none (ADR-014 d2).
+  assert.ok(ours.includes('- name: cairn-test') && ours.includes('npm run cairn-test'))
+  assert.doesNotMatch(generated, /cairn-test/)
+
+  // The request template: the same shape, the same order, blanks backticked.
+  const template = requestTemplate()
+  const theirs = readFileSync(join(REPO, '.github/pull_request_template.md'), 'utf8')
+  for (const heading of ['## What this path did', '## Definition of done, item by item',
+    '## Candidate', '## Coherence', '## Advisories at', '## Roles']) {
+    assert.ok(template.includes(heading), `the kit's template is missing ${heading}`)
+    assert.ok(theirs.includes(heading), `this repository's template is missing ${heading}`)
+    assert.equal(
+      template.indexOf(heading) < template.indexOf('## Candidate'),
+      theirs.indexOf(heading) < theirs.indexOf('## Candidate'),
+      `${heading} sits on the same side of the ledger in both`)
+  }
+})
+
+test('cairn init: the pointer page says which release this is and what the kit owns', () => {
+  // ADR-013: one page, found by name at the root, nothing on it written by
+  // hand. It is what an adopter reads before they read anything of Cairn's.
+  const plan = planInstall()
+  assert.ok(plan.files.has('cairn/README.md'))
+  const page = plan.files.get('cairn/README.md').toString('utf8')
+  assert.match(page, new RegExp(`release ${PROTOCOL_RELEASE.replace(/\./g, '\\.')}`), 'the installed release')
+  assert.ok(page.includes(plan.sourceCommit), 'and the commit it was cut from, in full')
+  for (const skill of ['cairn-brainstorm', 'cairn-open', 'cairn-unit', 'cairn-close', 'cairn-learn', 'cairn-code']) {
+    assert.ok(page.includes(`${skill}/SKILL.md`), `${skill} is linked`)
+  }
+  // ADR-013 d1 asks for the six chapters, EACH one link. The owner's try of
+  // 2026-09-15 found six labels over one URL: every chapter went to the top of
+  // the specification, so the page listed six destinations and had one.
+  const chapters = [...page.matchAll(/^- \[(\d)\. [^\]]+\]\(([^)]+)\)/gm)]
+  assert.equal(chapters.length, 6, 'six chapter lines')
+  const targets = chapters.map(([, , url]) => url)
+  assert.equal(new Set(targets).size, 6, `six chapters, six destinations — got ${new Set(targets).size}`)
+  // Distinct is not enough: six distinct anchors that land nowhere are still
+  // six broken links. Each is checked against the headings the specification
+  // actually carries, slugged as the forge slugs them.
+  const headings = new Set([...readFileSync(join(REPO, 'spec/index.md'), 'utf8').matchAll(/^## (.+)$/gm)]
+    .map(([, title]) => title.toLowerCase().replace(/[^a-z0-9 -]/g, '').trim().replace(/ +/g, '-')))
+  for (const [, n, url] of chapters) {
+    const anchor = url.split('#')[1]
+    assert.ok(anchor, `chapter ${n} carries an anchor`)
+    assert.ok(headings.has(anchor), `chapter ${n}'s anchor #${anchor} is a heading spec/index.md has`)
+  }
+  assert.ok(page.includes('cairn.lock.json') && page.includes('tools/cairn-check.mjs'),
+    'the files the kit owns, from the manifest')
+  assert.ok(page.includes('cairn/README.md'), 'including itself — it is a kit file like any other')
+  assert.match(page, /still holds exactly what the kit wrote/i,
+    'the sentence ADR-013 asks for, in words a reader does not need the glossary for')
+  assert.match(page, /never rewrites one you have edited/i)
+  assert.match(page, /status/, 'and says which command tells them apart')
+  assert.deepEqual(outwardLinks(plan.files), [], 'its links resolve inside the kit or are pinned')
+
+  // The bootloader's start-here list points at it (ADR-013).
+  assert.ok(plan.files.get('AGENTS.md').toString('utf8').includes('cairn/README.md'))
+
+  // ADR-015 d2: the section is empty until an update cannot rewrite something.
+  const reconcile = pointerPage('abc123', { paths: ['tools/cairn-check.mjs'], edited: ['skills/cairn-code/SKILL.md'] })
+  assert.ok(reconcile.includes('skills/cairn-code/SKILL.md'), 'an edited file the last update could not rewrite is named on the page')
+})
+
+test('cairn update: a pristine file is rewritten whoever owns it, and an edited one is explained', () => {
+  const dir = target()
+  try {
+    applyPlan(planInstall(), dir)
+    const lock = readLock(dir)
+    // A HOST file, untouched since the kit wrote it. ADR-015 d1: pristine
+    // means nothing of the adopter's is in it, so the review protects nothing.
+    const host = 'project/coding-paths/binding.md'
+    assert.ok(lock.host.includes(host))
+    assert.equal(fileState(dir, host, lock.manifest[host]), 'pristine')
+    // An edited file, kit-owned, whose template the "release" changed.
+    writeFileSync(join(dir, 'skills/cairn-code/SKILL.md'), 'my own stance\n')
+
+    const plan = planInstall()
+    plan.files.set(host, Buffer.from(`${plan.files.get(host).toString('utf8')}\nA line the release added.\n`, 'utf8'))
+    plan.files.set('skills/cairn-code/SKILL.md', Buffer.from('the release\'s stance\n', 'utf8'))
+    const status = installationStatus(lock, plan, (path, recorded) => fileState(dir, path, recorded))
+    const action = (path) => status.files.find((f) => f.path === path).action
+    assert.equal(action(host), 'write', 'a pristine host file whose template changed is rewritten (ADR-015 d1)')
+    assert.equal(action('skills/cairn-code/SKILL.md'), 'keep', 'an edited file is never rewritten (ADR-015 d2)')
+
+    const result = applyUpdate(dir, plan, lock)
+    assert.ok(result.written.includes(host))
+    assert.match(readFileSync(join(dir, host), 'utf8'), /A line the release added\./)
+    assert.equal(readFileSync(join(dir, 'skills/cairn-code/SKILL.md'), 'utf8'), 'my own stance\n', 'the edit survives')
+    assert.ok(result.reconcile.includes('skills/cairn-code/SKILL.md'),
+      'and the report ends with the files the owner must reconcile by hand')
+    assert.ok(result.diffs['skills/cairn-code/SKILL.md']?.includes('the release\'s stance'),
+      'the difference between the release\'s template and the file is printed')
+    // ADR-015 d2: the pointer page carries the same list, on disk.
+    assert.ok(readFileSync(join(dir, 'cairn/README.md'), 'utf8').includes('skills/cairn-code/SKILL.md'))
+    // And it stands until the file is settled. The lock records what the kit
+    // WOULD have written, so a second update at the same release used to find
+    // template and lock equal and drop the file — the page then said
+    // "Nothing" over a file still carrying the adopter's edit.
+    const again = applyUpdate(dir, (() => {
+      const p2 = planInstall()
+      p2.files.set('skills/cairn-code/SKILL.md', Buffer.from('the release\'s stance\n', 'utf8'))
+      return p2
+    })(), readLock(dir))
+    assert.deepEqual(again.reconcile, ['skills/cairn-code/SKILL.md'],
+      'still unreconciled on the second update, because the file still differs from the template')
+    assert.ok(readFileSync(join(dir, 'cairn/README.md'), 'utf8').includes('skills/cairn-code/SKILL.md'))
+    // and the lock agrees with what was written, or the next status lies
+    assert.equal(fileState(dir, 'cairn/README.md', readLock(dir).manifest['cairn/README.md']), 'pristine')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('cairn update --take: the owner takes the release\'s version of one named file, and nothing else', () => {
+  const dir = target()
+  try {
+    applyPlan(planInstall(), dir)
+    writeFileSync(join(dir, 'skills/cairn-code/SKILL.md'), 'my own stance\n')
+    writeFileSync(join(dir, 'skills/cairn-open/SKILL.md'), 'mine too\n')
+    const output = cairn(dir, 'update', '--take', 'skills/cairn-code/SKILL.md')
+    assert.match(output, /discard/i, 'it says what it is about to discard')
+    assert.notEqual(readFileSync(join(dir, 'skills/cairn-code/SKILL.md'), 'utf8'), 'my own stance\n')
+    assert.equal(readFileSync(join(dir, 'skills/cairn-open/SKILL.md'), 'utf8'), 'mine too\n',
+      'the file that was not named is untouched')
+    assert.equal(fileState(dir, 'skills/cairn-code/SKILL.md', readLock(dir).manifest['skills/cairn-code/SKILL.md']), 'pristine')
+    assert.throws(() => cairn(dir, 'update', '--take', 'nothing/here.md'), /not a file this release carries|no such/i)
+
+    // A file the kit PLANNED but this installation never received. `init`
+    // drops package.json when the adopter already has one, so it is absent
+    // from the lock — and taking "the release's version" of a file the
+    // release never installed here overwrites the adopter's own product
+    // manifest, scripts and dependencies and all.
+    const theirs = target()
+    try {
+      write(theirs, 'package.json', '{"name":"theirs","scripts":{"build":"vite build"}}')
+      cairn(theirs, 'init')
+      assert.ok(!readLock(theirs).manifest['package.json'], 'init left it out of the lock')
+      assert.throws(() => cairn(theirs, 'update', '--take', 'package.json'), /this installation does not carry/i)
+      assert.match(readFileSync(join(theirs, 'package.json'), 'utf8'), /vite build/, 'and the adopter still has theirs')
+    } finally {
+      rmSync(theirs, { recursive: true, force: true })
+    }
+
+    // ADR-015 d3 says the file becomes pristine AT THE NEW RELEASE, so the
+    // lock has to learn the template it now holds. Without that the owner
+    // takes the release's version and `status` still calls the file edited.
+    writeFileSync(join(dir, 'skills/cairn-close/SKILL.md'), 'mine\n')
+    const moved = planInstall()
+    moved.files.set('skills/cairn-close/SKILL.md', Buffer.from('a newer close skill\n'))
+    takeRelease(dir, moved, readLock(dir), 'skills/cairn-close/SKILL.md')
+    assert.equal(readFileSync(join(dir, 'skills/cairn-close/SKILL.md'), 'utf8'), 'a newer close skill\n')
+    assert.equal(fileState(dir, 'skills/cairn-close/SKILL.md', readLock(dir).manifest['skills/cairn-close/SKILL.md']), 'pristine',
+      'pristine against the lock, not only against the file that was written')
+
+    // --dry-run must not write. It is the same command with the same flag.
+    writeFileSync(join(dir, 'skills/cairn-open/SKILL.md'), 'mine again\n')
+    cairn(dir, 'update', '--take', 'skills/cairn-open/SKILL.md', '--dry-run')
+    assert.equal(readFileSync(join(dir, 'skills/cairn-open/SKILL.md'), 'utf8'), 'mine again\n')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('cairn adopt: the lock records what adopt actually wrote, not what a fresh install would have', () => {
+  // Found by S01's review and verified at base_commit: `adopt` writes the
+  // MIGRATED configuration and locked the digest of the generated one, so the
+  // very next `status` called an untouched file edited.
+  const dir = target()
+  try {
+    applyPlan(planInstall(), dir)
+    const config = JSON.parse(readFileSync(join(dir, 'cairn.config.json'), 'utf8'))
+    config.areas.push({ name: 'extra', match: ['src/extra/**'], note: 'docs/modules/extra.md' })
+    writeFileSync(join(dir, 'cairn.config.json'), `${JSON.stringify(config, null, 2)}\n`)
+    rmSync(join(dir, 'cairn.lock.json'))
+    applyAdopt(dir)
+    assert.equal(fileState(dir, 'cairn.config.json', readLock(dir).manifest['cairn.config.json']), 'pristine',
+      'a file nobody touched after adopt is not edited')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
 
 test('cairn status: a pristine, an edited and a missing kit file are told apart by the lock', () => {
   const dir = target()
@@ -197,7 +563,7 @@ test('cairn status: a pristine, an edited and a missing kit file are told apart 
   }
 })
 
-test('cairn status: the decision is pure — portable files follow the kit, host files stay the adopter\'s', () => {
+test('cairn status: the decision is pure — a pristine file follows the kit, whoever owns it', () => {
   const plan = {
     files: new Map([['a.md', Buffer.from('new a')], ['b.md', Buffer.from('b')], ['c.md', Buffer.from('c')], ['AGENTS.md', Buffer.from('new bootloader')], ['binding.md', Buffer.from('b')]]),
     host: new Set(['AGENTS.md', 'binding.md'])
@@ -215,7 +581,9 @@ test('cairn status: the decision is pure — portable files follow the kit, host
     ['a.md', 'pristine', 'write'],       // portable, pristine, template changed: rewritten
     ['b.md', 'pristine', 'none'],
     ['c.md', 'missing', 'write'],
-    ['AGENTS.md', 'pristine', 'review'], // host, pristine, template changed: the adopter's to review
+    // Host, pristine, template changed: rewritten. Pristine means nothing of
+    // the adopter's is in it, so the review protected nothing (ADR-015 d1).
+    ['AGENTS.md', 'pristine', 'write'],
     ['binding.md', 'pristine', 'none']
   ])
   assert.deepEqual(status.left.map((f) => [f.path, f.action]), [
@@ -241,8 +609,8 @@ test('cairn update: rewrites pristine kit files, keeps edited ones, and writes t
     plan.files.set('AGENTS.md', Buffer.from('# a newer bootloader\n'))
     const result = applyUpdate(dir, plan, before)
     assert.ok(result.written.includes('skills/cairn-open/SKILL.md'), 'a pristine file the kit changed is rewritten')
-    assert.ok(!result.written.includes('AGENTS.md'), 'a host file is the adopter\'s even when pristine: reviewed, never rewritten')
-    assert.ok(result.status.files.some((f) => f.path === 'AGENTS.md' && f.action === 'review'))
+    assert.ok(result.written.includes('AGENTS.md'), 'a pristine host file follows the kit too (ADR-015 d1)')
+    assert.ok(result.status.files.some((f) => f.path === 'AGENTS.md' && f.action === 'write'))
     assert.deepEqual(before.host.filter((h) => h === 'AGENTS.md'), ['AGENTS.md'], 'the lock names the host files')
     assert.ok(result.written.includes('skills/cairn-unit/reference.md'), 'a missing kit file is restored')
     assert.equal(readFileSync(join(dir, 'skills/cairn-code/SKILL.md'), 'utf8'), 'my own stance\n', 'an edited file is kept')

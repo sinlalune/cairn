@@ -439,6 +439,13 @@ fixture('a concept nothing outside the wiki links', 'concept-orphan', (dir) => {
     '---\ntype: Cairn Concept\ntitle: Unused idea\ndescription: Nobody links this.\ntags: [cairn, concept]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Unused idea\n\nA concept no text needed.\n')
 })
 
+// The root is read through its folders since ADR-011 d2. Read flat, this note
+// is invisible: `readdirSync` returns the folder, not what is inside it.
+fixture('a concept inside a folder of the root that nothing outside links', 'concept-orphan', (dir) => {
+  write(dir, 'docs/concepts/learning/unused-idea.md',
+    '---\ntype: Cairn Concept\ntitle: Unused idea\ndescription: Nobody links this.\ntags: [cairn, concept]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Unused idea\n\nA concept no text needed, one folder down.\n')
+})
+
 fixture('a running path the generated view does not know about', 'derived-view', (dir) => {
   write(dir, RECORD, PATH_RECORD())
 })

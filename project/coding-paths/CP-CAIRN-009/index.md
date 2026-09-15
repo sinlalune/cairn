@@ -7,13 +7,13 @@ timestamp: 2026-09-15T00:00:00Z
 cairn:
   id: CP-CAIRN-009
   route: full
-  status: running
-  current_step: S01
+  status: ready
+  current_step: S09
   base_commit: 76512dc75b1940a54388ff4e7fdabb53a662179a
   branch: path/cp-cairn-009
   assigned_writer: cp-cairn-009-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 0e7c0b114a8083fb54cfc4a3ffb0a915af2d2a25
   resolution: null
   writes:
     - tools/cairn.mjs
@@ -21,6 +21,7 @@ cairn:
     - tools/cairn-check.mjs
     - tools/cairn-check.test.mjs
     - tools/cairn-fixture.test.mjs
+    - tools/cairn-rules.mjs
     - cairn.lock.json
     - spec/index.md
     - spec/reference/repository-layout.md
@@ -287,28 +288,53 @@ session. Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
-- **S01** — not started
+- **S01** — [what `init` writes, and the bootloader](./steps/S01.md) — complete. `cairn init` declares `transport.registration: manual-git` whatever `--transport` answers for the integration transport, from one constant the generated binding's new row prints too, and the run names both; the bootloader the kit writes names the sixth skill and gains the concept-note and explanation rules, and this repository's `AGENTS.md` carries the same two beside the `cairn-test` alias. Advances the first and second items of the definition of done.
+- **S02** — [the documentation plane the kit installs, and the concept rules' read](./steps/S02.md) — complete. The kit installs `docs/inputs/`, a concept root of three folders — `cairn`, `product`, `learning`, the owner naming the second in the chat — an architecture index carrying the dependency sentence and the diagram, a documentation index that maps the plane and states the worked example and the API link, and a module note template that describes only now; `concept-orphan` and `concept-growth` read that root recursively and name a note by its path under it, the conformance rows and their generator saying so. Advances the third and fourth items of the definition of done.
+- **S03** — [the pointer page, `update` and `status`](./steps/S03.md) — complete. `cairn/README.md` generated at `init` and every `update`, the bootloader pointing at it; a pristine file is rewritten whoever owns it, an edited one is kept and what the release changed in it printed from Git's own diff, the list to settle by hand carried to disk on the page; `update --take <path>` hands over one file and moves its lock entry with it; `adopt` locks the configuration it actually wrote. Advances the fifth and sixth items of the definition of done.
+- **S04** — [the manifest, the generated adapter and template](./steps/S04.md) — complete. `cairn-postmortem` in the manifest and the kit's scripts; Ponytail named at `v4.9.0` in the lock and on the pointer page, copied nowhere; the schema and the project index kept, each for its own worth; the generated workflow on the trunk alone with the red-run step, and the request template opening with the three plain lines and the definition of done before the ledger, both proved against this repository's own. Advances the seventh and eighth items of the definition of done.
+- **S05** — [chapters 3 and 6, the concepts, the layout](./steps/S05.md) — complete. Chapter 3 gains the flow kind, the surface page with its worked example and API link, and the promotion outputs; chapter 6's scopes table becomes the three folders with the owner's `product` among them, its learning-notes paragraph says a learning note is a concept note with an order, and the kit's weight-budget line loses its target; the architecture concept states what a page carries and what a flow page is; the template says a note that teaches a sequence orders its body; the layout's tree and table show what `init` now writes. Advances the ninth item of the definition of done.
+- **S06** — [this repository's own](./steps/S06.md) — complete. The architecture index says flow pages live here and what a page states in one sentence and one diagram; the `tools/` module note's kit section, appended to by four units, is re-read and reordered into what `init` writes, what it does not copy, what the installation knows about itself, `update`, `adopt` and the two generated host files; the register's row 4 records the widening this path made in flight. Advances the tenth item of the definition of done.
+- **S08** — [six chapters, six destinations](./steps/S08.md) — complete. The owner's try before the merge found the pointer page listing six chapters over one URL; each is now linked at its own anchor, slugged from its title, and the test checks every anchor against the headings `spec/index.md` carries. Advances the fifth item, which was not met.
+- **S09** — [three defects a reviewer found on the request](./steps/S09.md) — complete. `update --take` refuses a file the lock does not carry, after it was shown overwriting an adopter's real `package.json`; the to-reconcile list compares the file with the template instead of the lock, so it no longer evaporates on a second update; the scripts notice is read off the generated manifest so a script added there cannot go unmentioned. Advances the sixth and seventh items.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — the trunk commit that adds this record, whose parent is base
-unit   : 0
+commit : 0e7c0b114a8083fb54cfc4a3ffb0a915af2d2a25 — S09, the candidate C; the trunk tip is contained
+unit   : 8 — S09 was the last; closing adds no implementation commit
 base   : 76512dc75b1940a54388ff4e7fdabb53a662179a
-trunk  : 76512dc75b1940a54388ff4e7fdabb53a662179a — origin/main at registration
+trunk  : 3c42237147ed783e68f301626fd9637a58f3fad3 — origin/main, unmoved since registration
 ```
 
 ### Next action
 
-In a fresh session, from the worktree `../cairn-cp-cairn-009` on branch
-`path/cp-cairn-009`: run S01 of the plan with `cairn-unit` — what `init`
-writes and the bootloader, from ADR-024, ADR-021 decision 1, ADR-011
-decision 3, ADR-022 decision 2 and ADR-014 decision 2 at their tables;
-failing test first on an installation the test builds; this repository's
-`AGENTS.md` carrying the same lines. Run the review movement on the
-unit's diff as the unit skill says, and set `current_step` to S01.
+Run S07 with `cairn-close` — the candidate. Merge the trunk in (never
+rebase), run every gate bare, and open the pull request with the
+description `npm run cairn-audit` prints, in the order the template now
+gives: the three plain lines and the surface, the definition of done
+item by item, then the ledger. One advisory stands at the candidate and
+is dispositioned as accepted with its records named — `decision-drift`
+on S06's architecture index, for ADR-019 d2 and ADR-023 d2 and d3,
+accepted a week before this path opened. The administrative commit
+declaring `ready` and `subject_commit` goes on the branch and its check
+must be green **before** the owner is asked. Then the owner runs
+`cairn init` into an empty folder and reads what it wrote; the merge is
+the acceptance.
+
+**Two things to put to the owner at the same time**, neither of them
+this path's to fix:
+
+- Four of the register's five milestone rows read `running` for paths
+  that are done — rows 1, 2, 3 and 5, for CP-CAIRN-005 to CP-CAIRN-008.
+  The status is hand-kept in the register while each path's record
+  already carries `status:`, and nothing reconciles the two. Row 6 does
+  not own the register either, so today nothing does.
+- The review movement: fourteen of eighteen fresh contexts hung across
+  this path, and S03 to S06 were read by the writing context and each
+  says so in its step. The owner has already ruled that the missing
+  fallback gets a record in its own path.
 
 ### Blockers
 
@@ -316,6 +342,32 @@ None.
 
 ### Tried and rejected
 
+- Leaving `update --take` to write the file without touching the lock —
+  ADR-015 d3 makes the file pristine *at the new release*, and pristine
+  is a statement about the lock; without the entry the owner takes the
+  release's version and `status` still calls it edited. One entry moves,
+  not the whole lock: the installation is still at the release the rest
+  of it carries.
+- Naming the second concept folder from the repository's own directory,
+  or from a new configuration field — `update` and `adopt` re-plan from
+  `cairn.config.json`, which records no name, so a folder derived from
+  the directory is a folder `update` duplicates the moment it is renamed.
+  The owner chose the fixed `docs/concepts/product` in the chat of
+  2026-09-15; nothing was added to the configuration or the command line.
+- Deferring `spec/reference/conformance.md`'s installation row to S04 a
+  second time — S01 deferred it because the manifest was not final, and
+  that held until S02 changed the count and made the row contradict the
+  module note inside one diff. A unit that moves a measurement updates
+  its report; S04 will do the same when the manifest moves again.
+- Two literals for the registration transport, one in `buildConfig` and
+  one in the generated binding row — the defect the workflow test was
+  written about, where one of two occurrences is left behind; one
+  exported constant, printed by both (S01's self-review).
+- Adding `cairn-learn` to the manifest in S01, because the bootloader it
+  writes now names six skills — `planInstall` walks `skills/`, so the
+  sixth file has been copied since path 1 landed it; the manifest,
+  `REFERENCE_TOOLS` and the lock are S04's, and nothing was owed here but
+  the list item.
 - Two paths, the kit and the chapters — the chapters say what the kit
   installs, and a reader who finds them disagreeing for a week has two
   authorities; one path, the kit first and the chapters after it, in
@@ -337,6 +389,7 @@ None.
 3. `tools/cairn.mjs` — the generators, `planInstall`, the lock.
 4. `project/coding-paths/CP-CAIRN-009/plan.md`, then the records the unit implements, at their tables.
 5. This repository's `AGENTS.md`, workflow, request template and `docs/index.md` — what the generated files must match.
+6. `tools/cairn.mjs` — `planInstall`, the lock, `applyUpdate` and `applyAdopt`, before S03.
 
 ### Verify
 

@@ -11,6 +11,12 @@ timestamp: 2026-09-02T00:00:00Z
 State what the term MEANS in one paragraph, before any procedure. A reader
 arrives here because normative text used the word and they could not proceed.
 
+A note that teaches a **sequence** rather than a definition orders its body:
+the plain meaning first, as here, then the steps in the order a reader builds
+the thing, each step linking the concept it rests on instead of restating it.
+That is the only difference between a concept note and a learning note, and it
+is a difference in the body alone.
+
 ## Why it exists
 
 The failure this concept prevents. A concept with no failure behind it is

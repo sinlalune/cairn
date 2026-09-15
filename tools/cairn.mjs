@@ -11,12 +11,16 @@
  *   npx cairn-protocol update [--target <dir>] [--dry-run]
  *   npx cairn-protocol adopt  [--target <dir>] [--dry-run]
  *
+ * `--transport` names the INTEGRATION transport alone; `init` declares
+ * `transport.registration` from `REGISTRATION_TRANSPORT` (ADR-024).
+ *
  * The npm name `cairn` belongs to another package, so the package is
  * `cairn-protocol` and its binary is `cairn`.
  *
- * THE KIT IS THIN. It installs the reference tools, the five skills, the host
+ * THE KIT IS THIN. It installs the reference tools, the six skills, the host
  * files — bootloader, configuration, binding, workflow, request template — and
- * the folder indexes the roles need: under thirty files. It does not copy the
+ * the folder indexes the roles need, and nothing else. What that comes to is
+ * measured and reported, never a target (ADR-022 d2). It does not copy the
  * specification: an adopter reads it at the release the kit was cut from, by
  * link, and every link the kit writes is pinned to that release's commit, so a
  * repository installed today still resolves to the text it was installed from.
@@ -45,6 +49,7 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -70,11 +75,28 @@ export const REFERENCE_TOOLS = [
   'cairn-config.mjs',
   'cairn-config.schema.json',
   'cairn-active.mjs',
-  'cairn-audit.mjs'
+  'cairn-audit.mjs',
+  'cairn-postmortem.mjs'
 ]
+
+/** The coding stance is Ponytail's, named at the tag this release was checked
+ *  against and copied nowhere (ADR-016 d1). The adopter installs it in their
+ *  harness beside the skills; the tag moves only with a release of the kit, so
+ *  a repository's stance is the one its release was proved with. */
+export const DEPENDENCIES = { 'DietrichGebert/ponytail': 'v4.9.0' }
 
 /** The procedures, as Agent Skills: copied whole, one folder per skill. */
 export const SKILLS = 'skills'
+
+/** The one page an adopter finds by name at the root (ADR-013). A folder of
+ *  its own, so the pointer is found by looking rather than by knowing. */
+export const POINTER_PAGE = 'cairn/README.md'
+
+/** What `init` declares for `transport.registration`: the one registration
+ *  sequence `cairn-open` ships, the commit landing on the trunk directly, and
+ *  it is that whichever transport integrates the candidate (ADR-024). A
+ *  repository that declared the other value keeps it — see `optionsFromConfig`. */
+export const REGISTRATION_TRANSPORT = 'manual-git'
 
 /** Portable text the kit LINKS rather than copies. */
 export const PORTABLE_DOCS = 'spec'
@@ -144,10 +166,10 @@ export function defaultOptions() {
     projectRoot: 'project',
     docsRoot: 'docs',
     sourceRoots: ['src'],
-    // The pull request is the default transport: a review that is recorded, a
-    // required check on the exact commit that lands, and a merge that is the
-    // same object CI tested are native there. `manual-git` is the fallback for
-    // a repository with no forge.
+    // The INTEGRATION transport, and the pull request is its default: a review
+    // that is recorded, a required check on the exact commit that lands, and a
+    // merge that is the same object CI tested are native there. `manual-git` is
+    // the fallback for a repository with no forge.
     transport: 'pull-request'
   }
 }
@@ -164,6 +186,7 @@ export function optionsFromConfig(config) {
     docsRoot: config.roots.documentation,
     sourceRoots: [...config.roots.source],
     transport: config.transport?.integration ?? 'pull-request',
+    registrationTransport: config.transport?.registration ?? REGISTRATION_TRANSPORT,
     conceptsRoot: config.roots.concepts
   }
 }
@@ -184,7 +207,7 @@ export function buildConfig(options) {
       modules: `${options.docsRoot}/modules`,
       // The adopter's OWN wiki — the project scope of chapter 6. The
       // protocol's wiki is read at the release, never written into.
-      concepts: options.conceptsRoot ?? `${options.docsRoot}/concepts`,
+      concepts: conceptsRootOf(options),
       source: options.sourceRoots
     },
     areas: [
@@ -198,7 +221,9 @@ export function buildConfig(options) {
     checkpointRetentionRef: null,
     pathHistoryPolicy: 'forbidden',
     scopeDigestAlgorithm: 'sha256',
-    transport: { registration: options.transport, integration: options.transport },
+    // `pull-request` stays a value the field accepts, so a repository that
+    // declared it keeps it: `update` and `adopt` plan from its own answers.
+    transport: { registration: options.registrationTransport ?? REGISTRATION_TRANSPORT, integration: options.transport },
     migration: { unregisteredPaths: [], undeclaredOpenings: [], v02Records: [] }
   }
 }
@@ -227,6 +252,10 @@ export function migrateConfig(config) {
   }
 }
 
+/** The wiki's root: the adopter's own, and a host may bind it outside the
+ *  documentation plane — this repository binds `spec/concepts`. */
+const conceptsRootOf = (options) => options.conceptsRoot ?? `${options.docsRoot}/concepts`
+
 const front = (type, title, description, tags) =>
   `---\ntype: ${type}\ntitle: ${title}\ndescription: ${description}\ntags: [${tags.join(', ')}]\ntimestamp: ${new Date().toISOString().slice(0, 10)}T00:00:00Z\n---\n`
 
@@ -251,7 +280,10 @@ This file points; it does not carry project memory.
 4. \`${options.projectRoot}/coding-paths/ACTIVE.md\` — what is running now. It is
    generated; never hand-edit it.
 5. \`${SKILLS}/\` — the procedures as Agent Skills: \`cairn-brainstorm\`,
-   \`cairn-open\`, \`cairn-unit\`, \`cairn-close\`, and the \`cairn-code\` stance.
+   \`cairn-open\`, \`cairn-unit\`, \`cairn-close\`, \`cairn-learn\`, and the
+   \`cairn-code\` stance.
+6. \`${POINTER_PAGE}\` — which release is installed, the six chapters and the
+   six skills linked at its commit, and every file the kit owns. Generated.
 
 The [specification](${spec}/index.md) is read at the release this repository
 installed, release ${PROTOCOL_RELEASE}; \`npx cairn-protocol status\` says whether a
@@ -280,11 +312,16 @@ npm run cairn-audit     # the closing review: the request's description to paste
   \`${options.trunk}\` in. This repository declares
   \`pathHistoryPolicy: forbidden\`.
 - Progress persists in files, never in a conversation.
+- An abstraction explained persists as a concept note, in the folder its scope
+  names, linked from where the explanation was needed.
+- An explanation is written for the reader who is learning it — the plain
+  meaning first, the failure it prevents, the shortest example — and stops
+  there.
 `
 }
 
 export function hostBinding(options, commit) {
-  const concepts = options.conceptsRoot ?? `${options.docsRoot}/concepts`
+  const concepts = conceptsRootOf(options)
   return front('Cairn Binding', 'Host binding', 'How portable Cairn roles map onto this repository.', ['cairn', 'binding']) +
     `\n# Host binding
 
@@ -305,6 +342,7 @@ paths, command names and runtime details. Portable protocol text never does.
 | remote | \`${options.remote}\` |
 | metadata namespace | \`${options.namespace}\` |
 | enforcement profile | \`${options.profile}\` |
+| registration transport | \`${options.registrationTransport ?? REGISTRATION_TRANSPORT}\` |
 | integration transport | \`${options.transport}\` |
 | path-history policy | **forbidden** — a published branch is never rewritten |
 | path branch | \`path/<lowercase-path-id>\` |
@@ -339,6 +377,11 @@ The configuration binds ${options.sourceRoots.map((r) => `\`${r}/\``).join(', ')
 implementation unit that changes source there refreshes it in the same unit:
 what the area does, where its boundaries are, and which tests prove it.
 
+This note describes the area **as it is now**, and nothing else. A unit that
+changes the area rewrites the sentences that stopped being true and adds none
+about itself: no dated paragraphs, no record of what changed. What a path did
+belongs to the journal, one entry per integration.
+
 ## Flow
 
 State the main flow in a paragraph, once the first unit lands.
@@ -353,23 +396,194 @@ How the area is proved: the command, and what green means.
 `
 }
 
-export function conceptIndex(commit) {
-  return front('Cairn Folder Index', 'Concepts', "This repository's own vocabulary: one idea per page, borrowed terms kept apart from the ones this project defines.", ['index', 'cairn', 'concepts']) +
-    `\n# Concepts
+/** The concept root is three folders, one per scope, each with its own index
+ *  (ADR-011 decision 2). The scope decides which folder a note is written in;
+ *  the shape of a note is the same in all three. */
+const CONCEPT_SCOPES = [
+  ['cairn', 'Cairn terms, for this project\'s reader',
+    'What a word of the protocol means here: the plain meaning first, then what this repository actually does with it. Link the protocol\'s own article for the full definition rather than restating it. Written when someone asks what a Cairn term means.'],
+  ['product', 'This product\'s own words',
+    'The vocabulary this product\'s architecture uses — the domain ideas its own code and pages name. Written when a path or a session names a domain idea that carries complexity.'],
+  ['learning', 'Knowledge from outside',
+    'Anything that is nobody\'s domain — a language, a protocol, a piece of hardware, a model. Written when a session explains an abstraction the reader needed. A learning note lives here too: it is a concept note with an order, its body a sequence the reader follows, written by `cairn-learn` for what someone set out to learn.']
+]
+
+export function conceptIndex(commit, [name, title, purpose]) {
+  return front('Cairn Folder Index', title, purpose, ['index', 'cairn', 'concepts', name]) +
+    `\n# ${title}
+
+${purpose}
 
 One specialised idea per page, from
 [the one-concept template](${specUrl(commit)}/concepts/concept-template.md):
 the plain definition first, the failure the concept prevents, how it is checked
-or the honest sentence that nothing checks it. A concept no page outside this
-folder links is an orphan and blocks the gate.
+or the honest sentence that nothing checks it. A concept no page outside the
+concept root links is an orphan and blocks the gate — the root is read through
+all three of its folders.
+`
+}
 
-## Borrowed
+/** The map a reader meets first: where each kind of page lives, and what the
+ *  pages the kit does NOT install are for. */
+export function documentationIndex(options) {
+  const concepts = conceptsRootOf(options)
+  const to = (path) => {
+    const rel = relative(options.docsRoot, path).split(sep).join('/')
+    return rel.startsWith('.') ? rel : `./${rel}`
+  }
+  const scopeRows = CONCEPT_SCOPES
+    .map(([name, title]) => `| [\`${concepts}/${name}\`](${to(`${concepts}/${name}/index.md`)}) | ${title} |`)
+    .join('\n')
+  return front('Cairn Folder Index', 'Documentation plane', 'Durable knowledge: what the product is, how it is built, what was decided, and what its words mean.', ['index', 'cairn']) +
+    `\n# Documentation plane
 
-Terms this project uses as others define them.
+Durable knowledge. What is being done right now lives in \`${options.projectRoot}/\`,
+not here.
 
-## Own
+| Where | What |
+| :-- | :-- |
+| [\`${options.docsRoot}/inputs/\`](./inputs/index.md) | documents this project had before the protocol, any format, unedited |
+| \`${options.docsRoot}/<surface>.md\` | one page per product surface, at this root |
+| [\`${options.docsRoot}/architecture/\`](./architecture/index.md) | accepted architecture, one page per feature, interface, contract or flow |
+| \`${options.docsRoot}/adr/\` | one record per decision, numbered from ADR-001 with no gaps |
+| [\`${options.docsRoot}/modules/\`](./modules/index.md) | one note per implemented area, as the area is now |
+${scopeRows}
 
-Terms this project defines.
+## The page a newcomer reads first
+
+For every surface a user meets — a screen, a command, an API, a document set —
+there is one page at this root, \`${options.docsRoot}/<surface>.md\`, listed above.
+It **opens with one worked example**: a user doing the one thing the surface is
+for, start to finish, before any explanation. Then it says what the surface does
+and how to use it, in plain words.
+
+It links the concept notes as its glossary instead of redefining the words, and
+links the architecture page that governs the surface — nothing more technical
+than that. Where the surface is an API, it links that API's documentation,
+written and kept current where the language's ecosystem expects it; Cairn names
+no API page and installs none.
+
+A promotion unit that changes what a surface does writes that surface's page in
+the same unit, and adds its line to the README. One that changes no surface
+leaves the pages alone and says so.
+`
+}
+
+/** The six chapters, in the order the specification gives them. They are six
+ *  headings of ONE page, so each needs its own anchor: linking them all at
+ *  `spec/index.md` gives a reader six labels over one destination, which is
+ *  what the owner's try of 2026-09-15 found. The anchor is the heading
+ *  slugged as the forge slugs it — lowercased, punctuation dropped, spaces
+ *  hyphenated — and `anchorOf` derives it from the title rather than
+ *  repeating it, so a chapter renamed here cannot keep a stale anchor. */
+const SPEC_CHAPTERS = [
+  ['1. Idea and ideation', 'where an idea is captured and turned into something a session can read'],
+  ['2. Research', 'what is read before a decision, and where the notes land'],
+  ['3. Vision and specifications', 'what the product is, and the pages a promotion writes'],
+  ['4. Roadmap', 'the register of milestones, each with a coding path or none yet'],
+  ['5. Coding cycle', 'how a path opens, runs unit by unit, and closes'],
+  ['6. Learning loop', 'the concept wiki, learning notes, and what a cycle leaves behind']
+]
+
+const anchorOf = (title) => title.toLowerCase().replace(/[^a-z0-9 -]/g, '').trim().replace(/ +/g, '-')
+
+const SKILL_LINES = [
+  ['cairn-brainstorm', 'an idea arrives and is worked into a note'],
+  ['cairn-open', 'a path is scoped, accepted and registered'],
+  ['cairn-unit', 'one work unit: plan, change, self-review, review, verify, push'],
+  ['cairn-close', 'a candidate is proposed, reviewed and integrated'],
+  ['cairn-learn', 'a learning session, ending in a note with an order'],
+  ['cairn-code', 'the stance the change movement is written with']
+]
+
+/** The page an adopter finds by name at the root: which release this is, what
+ *  to read, and what the kit owns. Nothing on it is written by hand (ADR-013).
+ *  `edited` is the list the last `update` could not rewrite (ADR-015 d2); it
+ *  is empty at `init` and until an update finds one. */
+export function pointerPage(commit, { paths, edited = [] }) {
+  const spec = specUrl(commit)
+  const chapters = SPEC_CHAPTERS
+    .map(([title, purpose]) => `- [${title}](${spec}/index.md#${anchorOf(title)}) — ${purpose}`).join('\n')
+  const skills = SKILL_LINES
+    .map(([name, when]) => `- [\`${name}\`](../${SKILLS}/${name}/SKILL.md) — ${when}`).join('\n')
+  const owned = [...paths].sort().map((path) => `- \`${path}\``).join('\n')
+  const reconcile = edited.length === 0
+    ? 'Nothing. The last update rewrote every file it owns.'
+    : [...edited].sort().map((path) => `- \`${path}\``).join('\n')
+  return front('Cairn Pointer', 'Cairn here', `Release ${PROTOCOL_RELEASE} of the Cairn protocol, installed in this repository: what to read, and what the kit owns.`, ['cairn', 'pointer', 'generated']) +
+    `\n# Cairn here
+
+Cairn is the most lightweight and minimalistic harness-agnostic,
+document-driven coding protocol.
+
+This repository carries **release ${PROTOCOL_RELEASE}**, cut from commit
+\`${commit}\`. Every link below resolves to the specification at that commit,
+so what you read is what you installed.
+
+This page is GENERATED, at \`init\` and at every \`update\`. Nothing on it is
+written by hand.
+
+## The specification, in six chapters
+
+${chapters}
+
+## The skills
+
+${skills}
+
+## What this needs beside it
+
+${Object.entries(DEPENDENCIES).map(([name, tag]) => `- \`${name}\` at \`${tag}\` — the coding stance and its review tags, installed in your harness as that repository says. The kit names it and copies nothing of it, so the tag moves only when this release does.`).join('\n')}
+
+## What the kit owns
+
+\`update\` rewrites any of these that still holds exactly what the kit wrote,
+and never rewrites one you have edited. \`npx cairn-protocol status\` says
+which is which, and \`update --take <path>\` takes the release's version of one
+you name.
+
+${owned}
+
+## To reconcile by hand
+
+Files you edited whose template this release changed. \`update\` left them
+alone and printed the difference; this list stands until an update finds it
+empty.
+
+${reconcile}
+`
+}
+
+export function inputsIndex() {
+  return front('Cairn Folder Index', 'Inputs', 'Documents this project had before the protocol, any format, kept as they came.', ['index', 'cairn', 'inputs']) +
+    `\n# Inputs
+
+What existed before Cairn did: notes, sketches, exports, specifications
+written elsewhere, in any format. They are kept **as they came** and never
+edited into protocol shape — an input rewritten is an input you can no longer
+check the protocol's output against.
+
+The first ideation session of a project starts by reading this folder, and a
+brainstorm note that draws on an input names it.
+`
+}
+
+export function architectureIndex() {
+  return front('Cairn Folder Index', 'Architecture', 'Accepted architecture: one page per feature, interface, contract or flow, each with its dependency sentence and its diagram.', ['index', 'cairn', 'architecture']) +
+    `\n# Architecture
+
+One page per thing the architecture decides — a feature, an interface, a
+contract, or a **flow**: how one thing moves end to end through the components
+the other pages name, from what starts it to what it leaves behind. Flow pages
+live here with the rest and have no folder of their own; a flow inside a single
+folder is that folder's module note's business, not a page.
+
+A page that names components states **in one sentence** which way dependencies
+point between them — a sentence a reader can check against an import line — and
+carries **one Mermaid diagram** saying the same thing. The reader checks
+whichever of the two they can read, so the two must agree.
+
+Promotion units write these pages.
 `
 }
 
@@ -391,10 +605,28 @@ name: cairn
 on:
   pull_request:
   push:
-    branches: [${options.trunk}, "path/**"]
+    # The trunk alone. Two runs on one commit can disagree and only the
+    # request's is the merge gate, so a unit on a path branch is judged by the
+    # writer's bare gate and by the request's run once one is open — as a draft
+    # from the first unit, for a writer who wants the forge on every one
+    # (ADR-005).
+    branches: [${options.trunk}]
 jobs:
   protocol:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # The red-run reading asks the forge how many runs of this branch went
+      # red, which is \`actions: read\`. An explicit block sets every scope it
+      # does not name to \`none\`, so leaving this out would refuse exactly the
+      # reading the post-mortem step exists to write.
+      actions: read
+      # The request reading and the one comment. Nothing here writes to the
+      # REPOSITORY: a branch has one writer, and it is the writer of the path,
+      # never this job. On a request from a fork the token is read-only
+      # whatever this block says, so \`gh pr comment\` ends the step with a 403
+      # instead of posting — the reading is still printed into the log.
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -407,7 +639,11 @@ jobs:
           node-version: 22
       # Bare. A pipe would report the LAST command's exit code, which is how a
       # gate comes to pass over its own failure.
+      #
+      # No test step: the kit installs no suite and names none, and your own
+      # \`npm test\` is yours to add here if you keep one (ADR-014 decision 2).
       - name: cairn-check
+        id: cairn-check
         env:
           # The base must span what the run judges. On a request that is the
           # target branch. On a push to the TRUNK it is the commit the push
@@ -419,6 +655,26 @@ jobs:
           # instead of against what it will merge into.
           CAIRN_BASE_REF: \${{ github.base_ref && format('origin/{0}', github.base_ref) || (github.ref_name == '${options.trunk}' && github.event.before || 'origin/${options.trunk}') }}
         run: node tools/cairn-check.mjs --base "$CAIRN_BASE_REF"
+      # Only on the CHECKER's failure, so the incident is written while it
+      # happens (ADR-014 decision 1). It prints, and commits nothing: a branch
+      # has one writer, and the writer copies the reading into a learning note
+      # when the incident deserves one.
+      - name: cairn-postmortem
+        if: failure() && steps.cairn-check.conclusion == 'failure'
+        env:
+          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+          CAIRN_BRANCH: \${{ github.head_ref || github.ref_name }}
+          CAIRN_REQUEST: \${{ github.event.pull_request.number }}
+        run: |
+          # The shell is \`bash -e\`, so a non-zero exit would abort the step
+          # before the reading is printed or posted, losing it on the one run
+          # it was written for. stderr is captured with it: where the tool
+          # stops, the reason it gives is written there.
+          node tools/cairn-postmortem.mjs --branch "$CAIRN_BRANCH" > postmortem.txt 2>&1 || true
+          cat postmortem.txt
+          if [ -n "$CAIRN_REQUEST" ]; then
+            gh pr comment "$CAIRN_REQUEST" --body-file postmortem.txt
+          fi
 `
 }
 
@@ -427,17 +683,33 @@ jobs:
 export function requestTemplate() {
   return `<!-- Cairn closing review. On pull-request transport this description IS the
 coherence review of one exact candidate and the approval IS the closing
-acceptance. \`npm run cairn-audit\` prints this shape filled in for the current
-candidate. The checker proves the candidate, its closure surface, the opening
+acceptance. \`npm run cairn-audit\` prints this whole shape filled in for the
+current candidate, the items below read from the record; every \`<blank>\` is
+yours. The checker proves the candidate, its closure surface, the opening
 digest and the trunk drift from Git; it reads none of the text below, which is
-what the approver reads. -->
+what the approver reads.
+
+The blanks are backticked because a bare \`<unit>\` matches an HTML open tag and
+the forge strips it when it renders — leaving a blank that reads as answered. -->
+
+## What this path did
+
+- \`<what the path did>\`
+- \`<why it is the least>\`
+- \`<what it does not do>\`
+
+Surface: \`<the page a newcomer reads for the surface this path changed, or the README section>\`
+
+## Definition of done, item by item
+
+- item 1 — \`<the item, as cairn-audit leads it from the record>\` — advanced by \`<unit>\` — shown by \`<command or page>\`
 
 ## Candidate
 
-- path: CP-<ID>
-- candidate \`C\`: <full object id>
-- base \`T\`, the trunk tip merged into the candidate: <full object id>
-- scope digest at \`C\`: <output of node tools/cairn-check.mjs --scope-digest <record>#definition-of-done>; equals the opening acceptance: yes | no
+- path: \`<CP-ID>\`
+- candidate \`C\`: \`<full object id>\`
+- base \`T\`, the trunk tip merged into the candidate: \`<full object id>\`
+- scope digest at \`C\`: \`<the digest cairn-check --scope-digest printed for this record>\`; equals the opening acceptance: yes | no
 
 ## Coherence
 
@@ -516,7 +788,8 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
     scripts: {
       'cairn-check': 'node tools/cairn-check.mjs',
       'cairn-active': 'node tools/cairn-active.mjs',
-      'cairn-audit': 'node tools/cairn-audit.mjs'
+      'cairn-audit': 'node tools/cairn-audit.mjs',
+      'cairn-postmortem': 'node tools/cairn-postmortem.mjs'
     }
   }, null, 2)}\n`, 'host')
 
@@ -543,17 +816,23 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
     '\n# Running paths\n\nThis file is GENERATED by `npm run cairn-active`. Never hand-edit it.\n\n' +
     '<!-- cairn:paths:begin -->\n<!-- cairn:paths:end -->\n', 'generated')
 
-  put(`${options.docsRoot}/index.md`, folderIndex('Documentation plane',
-    'Durable knowledge: architecture, decisions, module notes, and this repository\'s own concepts.'), 'host')
-  put(`${options.docsRoot}/modules/index.md`, folderIndex('Module notes', 'One note per implemented area: flow, boundaries and tests.'), 'host')
+  put(`${options.docsRoot}/index.md`, documentationIndex(options), 'host')
+  put(`${options.docsRoot}/inputs/index.md`, inputsIndex(), 'host')
+  put(`${options.docsRoot}/architecture/index.md`, architectureIndex(), 'host')
+  put(`${options.docsRoot}/modules/index.md`, folderIndex('Module notes', 'One note per implemented area: flow, boundaries and tests, as the area is now.'), 'host')
   // The one area the generated configuration names must exist, or the first
   // implementation unit is asked for a note the initializer never wrote.
   put(`${options.docsRoot}/modules/application.md`, moduleNote(options), 'host')
-  const concepts = options.conceptsRoot ?? `${options.docsRoot}/concepts`
-  put(`${concepts}/index.md`, conceptIndex(commit), 'host')
+  const concepts = conceptsRootOf(options)
+  for (const scope of CONCEPT_SCOPES) put(`${concepts}/${scope[0]}/index.md`, conceptIndex(commit, scope), 'host')
 
   if (options.profile === 'ci') put('.github/workflows/cairn.yml', workflow(options), 'host')
   if (options.transport === 'pull-request') put('.github/pull_request_template.md', requestTemplate())
+
+  // Last, because it names every other file — itself and the lock included,
+  // since `status` reads both and an adopter looking for "what is Cairn's
+  // here" must find them on the list.
+  put(POINTER_PAGE, pointerPage(commit, { paths: [...files.keys(), POINTER_PAGE, 'cairn.lock.json'] }))
 
   const dangling = outwardLinks(files)
   if (dangling.length) {
@@ -593,6 +872,9 @@ export function lockFor(plan, target) {
     release: PROTOCOL_RELEASE,
     sourceCommit: plan.sourceCommit,
     installedAt: new Date().toISOString(),
+    // Named, never copied: what the adopter installs beside the kit, at the
+    // tag this release was checked against (ADR-016 d1).
+    dependencies: DEPENDENCIES,
     host: [...plan.host].sort(),
     manifest
   }
@@ -689,7 +971,6 @@ export function installationStatus(lock, plan, stateOf) {
   // carries: it is rewritten by its generator at every update, and reported
   // only when it is gone.
   const view = plan.config ? `${plan.config.roots.project}/coding-paths/ACTIVE.md` : null
-  const host = plan.host ?? new Set()
   for (const [path, content] of plan.files) {
     const recorded = lock.manifest[path]
     const state = recorded === undefined ? (stateOf(path, digest(content)) === 'missing' ? 'missing' : 'unmanaged') : stateOf(path, recorded)
@@ -697,7 +978,11 @@ export function installationStatus(lock, plan, stateOf) {
     let action = 'none'
     if (state === 'missing') action = 'write'
     else if (state === 'edited' || state === 'unmanaged') action = 'keep'
-    else if (!current) action = host.has(path) ? 'review' : 'write'
+    // ADR-015 d1: a PRISTINE file holds exactly what the kit wrote, whoever
+    // owns it, so there is nothing of the adopter's for a review to protect
+    // and the release's version simply lands. Ownership decides only what
+    // happens to a file that LEFT the kit, below.
+    else if (!current) action = 'write'
     files.push({ path, state, action })
   }
   const left = []
@@ -720,16 +1005,76 @@ function describeStatus(status) {
     `kit files: ${Object.entries(counts).map(([state, n]) => `${n} ${state}`).join(', ')}`
   ]
   for (const file of status.files.filter((f) => f.action === 'write')) lines.push(`  update would write   ${file.path} (${file.state})`)
-  for (const file of status.files.filter((f) => f.action === 'review')) lines.push(`  update would keep    ${file.path} — yours, and the kit's template changed; review it against the kit's`)
   for (const file of status.files.filter((f) => f.state === 'edited')) lines.push(`  update would keep    ${file.path} — edited here; review it against the kit's`)
   for (const file of status.left) lines.push(`  update would ${file.action === 'delete' ? 'delete ' : 'report '} ${file.path} — no longer part of the kit${file.action === 'report' ? (file.state === 'pristine' ? ', and yours to delete' : ', and edited here') : ''}`)
   return lines.join('\n')
 }
 
+/** What the release changed in a file it must not rewrite (ADR-015 d2).
+ *
+ *  Git's diff, not one written here: the kit already requires Git, and a diff
+ *  implemented in this file would be more code than the thing it compares.
+ *  `--no-index` needs two real paths, so the template goes to a temporary file
+ *  and is removed afterwards. A diff that cannot be produced is reported as
+ *  not produced — a missing diff must never read as "no difference". */
+export function templateDiff(target, path, template) {
+  const scratch = join(tmpdir(), `cairn-template-${digest(template).slice(0, 12)}`)
+  try {
+    writeFileSync(scratch, template)
+    execFileSync('git', ['diff', '--no-index', '--no-color', '--', scratch, join(target, path)],
+      { encoding: 'utf8', stdio: 'pipe' })
+    return ''
+  } catch (error) {
+    // `git diff --no-index` exits 1 when the files differ; that is the answer,
+    // not a failure. Anything with no stdout at all is a failure.
+    const out = error.stdout?.toString('utf8') ?? ''
+    if (!out) return `cairn: could not diff ${path} against the release's template — ${error.message}`
+    // The hunks only. The headers `--no-index` writes name a temporary file
+    // and an absolute target, which tell a reader nothing; the caller captions
+    // the two sides instead.
+    const hunks = out.split('\n').findIndex((line) => line.startsWith('@@'))
+    return hunks === -1 ? out : out.split('\n').slice(hunks).join('\n').trimEnd()
+  } finally {
+    rmSync(scratch, { force: true })
+  }
+}
+
 /** Rewrite what the kit owns and the tree has not edited; migrate the
- *  configuration field by field; report the rest; write the new lock. */
+ *  configuration field by field; report the rest; write the new lock.
+ *
+ *  `reconcile` is the files the owner must settle by hand — edited here, and
+ *  the release changed their template — with `diffs` saying what it changed
+ *  in each. The pointer page carries the same list to disk, so the work
+ *  outlives the terminal it was printed in (ADR-015 d2). */
 export function applyUpdate(target, plan, lock, { dryRun = false } = {}) {
-  const status = installationStatus(lock, plan, (path, recorded) => fileState(target, path, recorded))
+  const read = (path, recorded) => fileState(target, path, recorded)
+
+  // Read once to find what this release cannot rewrite, because the pointer
+  // page has to name it.
+  //
+  // Unreconciled means the file on disk DIFFERS FROM THE TEMPLATE — a fact
+  // about now, recomputed every run. The obvious test, that the template moved
+  // since the lock, evaporates: `writeLock` records what the kit WOULD have
+  // written, deliberately, so `status` can still see the edit — and a second
+  // update at the same release then finds template and lock equal and drops
+  // the file, leaving the page saying "Nothing" over an edit nobody settled.
+  const reconcile = []
+  const diffs = {}
+  for (const file of installationStatus(lock, plan, read).files) {
+    if (file.action !== 'keep' || file.state !== 'edited') continue
+    const template = plan.files.get(file.path)
+    if (digest(template) === digest(readFileSync(join(target, file.path)))) continue
+    reconcile.push(file.path)
+    diffs[file.path] = templateDiff(target, file.path, template)
+  }
+  // ...then put that page in the plan and read again, so the page the lock
+  // digests is the page that lands. A page written outside the plan is a page
+  // the next `status` calls edited.
+  plan.files.set(POINTER_PAGE, Buffer.from(
+    pointerPage(plan.sourceCommit,
+      { paths: [...plan.files.keys(), 'cairn.lock.json'], edited: reconcile }), 'utf8'))
+  const status = installationStatus(lock, plan, read)
+
   const written = []
   const deleted = []
   if (!dryRun) {
@@ -746,7 +1091,42 @@ export function applyUpdate(target, plan, lock, { dryRun = false } = {}) {
     generateView(target)
     writeLock(target, plan)
   }
-  return { status, written, deleted }
+  return { status, written, deleted, diffs, reconcile }
+}
+
+/** Take the release's version of ONE edited file (ADR-015 d3). It says what it
+ *  is about to discard and does nothing without a name: this is how an
+ *  adopter's edited checker becomes a version bump once its repairs are
+ *  upstream. */
+export function takeRelease(target, plan, lock, path, { dryRun = false } = {}) {
+  if (!plan.files.has(path)) {
+    throw new Error(`cairn: ${path} is not a file this release carries — \`status\` lists the ones it does`)
+  }
+  // The PLAN says what the release would install; the LOCK says what this
+  // repository actually received. `init` drops `package.json` when the adopter
+  // already has one, so the plan carries it and the lock does not — and taking
+  // "the release's version" of a file the release never installed here
+  // overwrites the adopter's own manifest, scripts and dependencies with a
+  // four-line template. Reproduced before this guard existed.
+  if (lock.manifest[path] === undefined) {
+    throw new Error(
+      `cairn: this installation does not carry ${path} — the kit never wrote it here, so there is no release version of it to take. ` +
+      'A file the kit skipped at `init`, like a package.json you already had, stays yours')
+  }
+  const template = plan.files.get(path)
+  const state = fileState(target, path, lock.manifest[path])
+  // What is discarded, shown rather than described: the reason to run this is
+  // that the repairs are upstream, and that is a claim about lines.
+  const discarded = state === 'edited' ? templateDiff(target, path, template) : ''
+  if (!dryRun) {
+    writeFileSync(join(target, path), template)
+    // ADR-015 d3 makes the file pristine AT THE NEW RELEASE, and pristine is
+    // a statement about the lock. Only this entry moves: the installation is
+    // still at the release the rest of it carries, until `update` runs.
+    writeFileSync(join(target, 'cairn.lock.json'),
+      `${JSON.stringify({ ...lock, manifest: { ...lock.manifest, [path]: digest(template) } }, null, 2)}\n`)
+  }
+  return { state, discarded }
 }
 
 /** Shapes a 0.2 installation leaves behind, which the kit no longer defines.
@@ -787,6 +1167,10 @@ export function applyAdopt(target, { dryRun = false } = {}) {
   const errors = configErrors(migrated)
   if (errors.length) throw new Error(`cairn: the migrated configuration is invalid — ${errors.join('; ')}`)
   const plan = planInstall(optionsFromConfig(migrated))
+  // The migrated configuration is what lands on disk, so it is what the lock
+  // must digest. Locking the generated one instead made the very next
+  // `status` call an untouched file edited (found by S01's review).
+  plan.files.set('cairn.config.json', Buffer.from(`${JSON.stringify(migrated, null, 2)}\n`, 'utf8'))
   const written = []
   const kept = []
   const decide = (path) => {
@@ -799,9 +1183,7 @@ export function applyAdopt(target, { dryRun = false } = {}) {
       if (decide(path) === 'keep') { kept.push(path); continue }
       const absolute = join(target, path)
       mkdirSync(dirname(absolute), { recursive: true })
-      // The migrated configuration keeps the host's answers; the plan's is
-      // only the shape a fresh install would have had.
-      writeFileSync(absolute, path === 'cairn.config.json' ? `${JSON.stringify(migrated, null, 2)}\n` : content)
+      writeFileSync(absolute, content)
       written.push(path)
     }
     generateView(target)
@@ -821,6 +1203,7 @@ function parseArgs(argv) {
   const options = { ...defaultOptions() }
   let target = null
   let dryRun = false
+  let take = null
   for (let i = 0; i < rest.length; i += 1) {
     const arg = rest[i]
     const next = () => {
@@ -838,14 +1221,15 @@ function parseArgs(argv) {
     else if (arg === '--docs-root') options.docsRoot = next()
     else if (arg === '--source') options.sourceRoots = next().split(',').map((s) => s.trim()).filter(Boolean)
     else if (arg === '--transport') options.transport = next()
+    else if (arg === '--take') take = next()
     else if (arg === '--dry-run') dryRun = true
     else throw new Error(`cairn: unknown argument ${arg}`)
   }
-  return { command, options, target: resolve(target ?? '.'), dryRun }
+  return { command, options, target: resolve(target ?? '.'), dryRun, take }
 }
 
 function main(argv) {
-  const { command, options, target, dryRun } = parseArgs(argv)
+  const { command, options, target, dryRun, take } = parseArgs(argv)
   if (command === 'init') {
     if (options.profile === 'protected') {
       throw new Error('cairn: --profile protected is not installable — it asserts host protection this command cannot configure. Install local or ci and declare protected once the host is actually configured')
@@ -854,13 +1238,16 @@ function main(argv) {
     mkdirSync(target, { recursive: true })
     let scriptsNotice = null
     if (existsSync(join(target, 'package.json'))) {
+      // Read off the manifest the kit would have written, so a script added
+      // there cannot go unmentioned to the adopters who never receive the file.
+      const scripts = JSON.parse(plan.files.get('package.json').toString('utf8')).scripts
       plan.files.delete('package.json')
       scriptsNotice = 'package.json already exists and was left alone — add: ' +
-        '"cairn-check": "node tools/cairn-check.mjs", "cairn-active": "node tools/cairn-active.mjs", "cairn-audit": "node tools/cairn-audit.mjs"'
+        Object.entries(scripts).map(([name, run]) => `"${name}": "${run}"`).join(', ')
     }
     applyPlan(plan, target, { dryRun })
     console.log(`cairn — ${dryRun ? 'would install' : 'installed'} ${plan.files.size} file(s) and the lock into ${target}`)
-    console.log(`release ${PROTOCOL_RELEASE} from ${plan.sourceCommit.slice(0, 7)}; trunk ${options.trunk} via ${options.remote}; profile ${options.profile}; transport ${options.transport}; path history forbidden`)
+    console.log(`release ${PROTOCOL_RELEASE} from ${plan.sourceCommit.slice(0, 7)}; trunk ${options.trunk} via ${options.remote}; profile ${options.profile}; registration ${plan.config.transport.registration}, integration ${plan.config.transport.integration}; path history forbidden`)
     if (scriptsNotice) console.log(scriptsNotice)
     if (!dryRun) console.log('next — commit this installation, then read AGENTS.md and open your first path')
     return
@@ -880,9 +1267,28 @@ function main(argv) {
     if (errors.length) throw new Error(`cairn: the migrated configuration is invalid — ${errors.join('; ')}`)
     const plan = planInstall(optionsFromConfig(migrated))
     plan.files.set('cairn.config.json', Buffer.from(`${JSON.stringify(migrated, null, 2)}\n`, 'utf8'))
+    if (take !== null) {
+      const { state, discarded } = takeRelease(target, plan, lock, take, { dryRun })
+      if (discarded) {
+        console.log(`--- ${take} — about to be discarded (the + lines below)`)
+        console.log(discarded)
+      }
+      console.log(`cairn — ${dryRun ? 'would take' : 'took'} the release's version of ${take}, discarding what was ${state} here; nothing else was touched`)
+      console.log('next — run `update` with no --take to bring the rest of the kit to this release')
+      return
+    }
     const result = applyUpdate(target, plan, lock, { dryRun })
     console.log(describeStatus(result.status))
+    for (const path of result.reconcile) {
+      console.log(`\n--- ${path} — you edited this, and the release changed its template`)
+      console.log('    (- the release\'s version, + yours)')
+      console.log(result.diffs[path])
+    }
     console.log(`cairn — ${dryRun ? 'would update' : 'updated'} to release ${PROTOCOL_RELEASE}: ${result.written.length} written, ${result.deleted.length} deleted`)
+    if (result.reconcile.length > 0) {
+      console.log(`to reconcile by hand (${result.reconcile.length}): ${result.reconcile.join(', ')}`)
+      console.log(`they are listed on ${POINTER_PAGE} too, so the work is on disk and not only here`)
+    }
     return
   }
   if (command === 'stamp') {
@@ -898,7 +1304,7 @@ function main(argv) {
     if (!dryRun) console.log('next — run npm run cairn-check, read its findings, and commit the adoption as one unit')
     return
   }
-  throw new Error('usage: cairn <init|status|update|adopt> [--target <dir>] [options]; `stamp` is the package\'s own, run by prepack')
+  throw new Error('usage: cairn <init|status|update|adopt> [--target <dir>] [options]; `update --take <path>` takes the release\'s version of one edited file; `stamp` is the package\'s own, run by prepack')
 }
 
 if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('/cairn')) {

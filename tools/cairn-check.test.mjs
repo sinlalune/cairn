@@ -54,6 +54,7 @@ import {
   registrationMatches,
   resolveBranch,
   resolveBase,
+  conceptLinkTargets,
   orphanConcepts,
   addedConcepts,
   namesForReading,
@@ -2561,11 +2562,51 @@ test('a concept reached only from inside the wiki is still an orphan', () => {
   assert.deepEqual(orphanConcepts(['a.md', 'b.md'], new Set()), ['a.md', 'b.md'])
 })
 
+test('a link is resolved to the note under the root, whatever it is written relative to', () => {
+  // `../concepts/x.md` carries `./` at offset one. Once the capture admits
+  // folders that earlier match wins and takes `concepts/` with it, and every
+  // concept in the corpus reads as linked to nothing — or, written the other
+  // way round, as linked by everything. The whole rule turns on this line.
+  assert.deepEqual([...conceptLinkTargets('see [a](../concepts/worktree.md)')], ['worktree.md'])
+  assert.deepEqual([...conceptLinkTargets('see [a](../../spec/concepts/git.md)')], ['git.md'])
+  assert.deepEqual([...conceptLinkTargets('see [a](./concepts/learning/cache.md)')], ['learning/cache.md'])
+  assert.deepEqual([...conceptLinkTargets('see [a](../concepts/product/fixture.md)')], ['product/fixture.md'])
+  assert.deepEqual([...conceptLinkTargets('see [a](./cache.md)')], ['cache.md'])
+  assert.deepEqual([...conceptLinkTargets('see [a](./modules/application.md)')], [],
+    'a relative link that never went through `concepts/` is some other document')
+  // A link written without a leading `./` reaches the note through the
+  // `concepts/` alternative, so its capture holds the folders with no
+  // `concepts/` left in it. Keying the guard off that absence drops it.
+  assert.deepEqual([...conceptLinkTargets('see [a](concepts/product/fixture.md)')], ['product/fixture.md'])
+  assert.deepEqual([...conceptLinkTargets('see [a](docs/concepts/learning/cache.md)')], ['learning/cache.md'])
+  assert.deepEqual([...conceptLinkTargets('nothing here')], [])
+})
+
+test('a concept in a folder of the root is judged by its path, and each folder keeps its own index', () => {
+  // ADR-011 d2 puts an adopter's wiki in three folders. Read flat, a note in
+  // one of them is invisible to both rules; identified by basename, two notes
+  // of the same name in different folders are one note and a link to either
+  // clears both.
+  assert.deepEqual(
+    orphanConcepts(['cairn/path.md', 'learning/cache.md', 'product/fixture.md'], new Set(['learning/cache.md'])),
+    ['cairn/path.md', 'product/fixture.md'])
+  assert.deepEqual(
+    orphanConcepts(['cairn/index.md', 'learning/index.md', 'product/index.md'], new Set()), [],
+    'every folder index is an index, not an orphan')
+  assert.deepEqual(
+    orphanConcepts(['learning/cache.md'], new Set(['cache.md'])), ['learning/cache.md'],
+    'a bare filename is not a link to the note inside a folder')
+})
+
 test('growth is measured, and an unreadable previous state is not "no growth"', () => {
   assert.deepEqual(addedConcepts(['a.md'], ['a.md', 'b.md']), ['b.md'])
   assert.deepEqual(addedConcepts(['a.md', 'b.md'], ['a.md', 'b.md']), [])
   assert.deepEqual(addedConcepts(['a.md'], ['a.md', 'index.md']), [])
   assert.equal(addedConcepts(null, ['a.md', 'b.md']), null)
+  assert.deepEqual(addedConcepts(['cairn/a.md'], ['cairn/a.md', 'learning/b.md']), ['learning/b.md'],
+    'a note added in any folder is reported (ADR-011 d2)')
+  assert.deepEqual(addedConcepts(['cairn/a.md'], ['cairn/a.md', 'learning/index.md']), [],
+    'a folder index is not growth')
 })
 
 test('a finding never prints an unreadable wall of names', () => {

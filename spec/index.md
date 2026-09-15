@@ -128,17 +128,36 @@ note becomes an accepted page.
 Cairn borrows the two shapes software teams already keep. An
 [architecture page](./concepts/architecture.md) states boundaries,
 responsibilities, constraints and major flows; a specification document of any
-kind — a feature, an interface, a contract — is an architecture page about that
-kind of thing. A [decision record](./concepts/decision-record.md) states one
-choice, its alternatives and its consequences.
+kind — a feature, an interface, a contract, or a **flow** that crosses
+components — is an architecture page about that kind of thing. A
+[decision record](./concepts/decision-record.md) states one choice, its
+alternatives and its consequences.
+
+Beside them is the page a newcomer reads first. For every **surface** of the
+product a user meets — a screen, a command, an API, a document set — there is
+one page at the documentation root, `docs/<surface>.md`. It opens with one
+worked example, a user doing the one thing the surface is for, start to finish;
+then it says what the surface does and how to use it, in plain words. It links
+the concept notes as its glossary instead of redefining them, and the
+architecture page that governs it, and nothing more technical than that. Where
+the surface is an API, it links that API's own documentation, written and kept
+current where the language's ecosystem expects it: Cairn names no API page and
+installs none. Above the surface pages is the repository's README — one
+paragraph on what the project is, then the surface pages, one line each, in the
+order a newcomer meets them.
 
 **Promotion** is the one ceremony of this stage. A brainstorm or research note
 becomes vision through one reviewed [work unit](./concepts/work-unit.md) that:
 
 - adds or amends the architecture page the note argued for;
 - adds the decision record for any choice the page now makes;
+- writes the page of every surface whose behaviour it changes, and adds that
+  surface's line to the README when the surface is new;
 - links the page back to the notes it came from, as *promoted from*;
 - leaves the notes exactly as they were.
+
+A promotion that changes no surface leaves the surface pages alone and says so
+in its step.
 
 A page is reviewed before it is accepted, and the review is the pull request
 that lands it (chapter 5 says why a pull request). Architecture that changes
@@ -681,32 +700,42 @@ elsewhere, and concepts the project itself defines — because a glossary that
 mixes them looks twice as large as it is and hides which half a criticism
 belongs to.
 
-There are three scopes, one shape:
+There are three scopes, one shape, and an adopter's concept root holds one
+folder per scope:
 
-| Scope | Whose vocabulary | Lives in |
-| :-- | :-- | :-- |
-| protocol | Cairn's own — this page's words | `spec/concepts/`, the wiki this page links |
-| project | the product's domain — the words its architecture uses | the adopter's concept root, bound in configuration |
-| coding | abstractions in the code that carry complexity | beside the module notes of the areas that use them |
+| Scope | Whose vocabulary | Lives in | Written when |
+| :-- | :-- | :-- | :-- |
+| protocol | Cairn's own terms, as this project's reader needs them | `cairn/` under the concept root | someone asks what a Cairn word means; the note links the protocol's own article and adds what this repository does with it |
+| project | the product's domain — the words its architecture uses | `product/` under the concept root | a path or a session names a domain idea that carries complexity |
+| learning | knowledge from outside — a language, a protocol, hardware, a model | `learning/` under the concept root | a session explains an abstraction that is nobody's domain, and a learning session |
 
-An adopter's repository starts from the protocol wiki as a worked example and
-writes its own concepts in its own root. It never writes into Cairn's. Two rules
+The protocol's own repository is the exception that proves the shape: its wiki
+at `spec/concepts/` **is** the protocol scope, so it keeps no folder of folders.
+An adopter reads that wiki as a worked example and never writes into it; the
+`cairn/` folder above is where an adopter's own reading of a Cairn term goes. Two rules
 keep a wiki honest, and the checker enforces both: a concept no page outside the
 wiki links to is an orphan and blocks (`concept-orphan`) — a word nobody needed
 is where vocabulary bloat begins — and a change that adds concepts is reported
-so growth is a visible decision (`concept-growth`). Link, do not redefine: a
+so growth is a visible decision (`concept-growth`). Both read the whole root,
+through every folder under it, and name a note by its path there, so a note in
+one folder is judged exactly as a note at the root is. Link, do not redefine: a
 page that needs a concept links it, and the concept is written once.
 
 ### Learning notes
 
-A **learning note** teaches a reader to build one thing, in order, by
-referencing the concepts and documents it rests on rather than restating them.
-It is the pedagogical layer over the module notes — the durable knowledge about
-each implemented area — and it is a Cairn artefact because the manifesto asks
-every written line to be effortlessly comprehensible, and comprehension is
-built in sequence. Learning notes are optional; when a project keeps them, they
-live in the documentation plane under a learning root and are refreshed by the
-units that change what they teach.
+A **learning note** is a concept note with an order. There is no learning
+root: it lives in the `learning/` folder beside the notes on knowledge from
+outside and is one of them, written from the same template, and the two shapes
+are told apart by their bodies — a definition and a sequence — and by nothing
+else. Its body teaches a reader to build one thing in order: the plain meaning
+of the thing being learned first, then the steps in the order a reader builds
+it, each step linking the concept it rests on instead of restating it. It is a
+Cairn artefact because the manifesto asks every written line to be effortlessly
+comprehensible, and comprehension is built in sequence.
+
+`cairn-learn` writes one for what a user set out to learn, and a learning note
+nothing outside the root links is an orphan like any other note: the two rules
+above read it as they read the rest.
 
 ### Research during the work
 
@@ -734,9 +763,11 @@ that enforces nothing stated, or a claim with no rule behind it, fails the build
 rather than drifting in silence.
 
 It also carries the **weight budget** Cairn 1.0 is measured against: this
-page under 8,000 words, the required entry chain under 3,000, the installed kit
-under 30 files, one lightweight unit under 6 protocol files. Those are targets
-measured at release; a cap that has never bound is a count, not a constraint.
+page under 8,000 words, the required entry chain under 3,000, one lightweight
+unit under 6 protocol files. Those are targets measured at release; a cap that
+has never bound is a count, not a constraint. What the kit installs is measured
+there too and has **no target**: a file that earns its place is added, and the
+number follows.
 
 ## Where to go next
 

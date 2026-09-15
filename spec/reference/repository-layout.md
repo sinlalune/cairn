@@ -41,7 +41,9 @@ repository/
 │                   └── g<NN>/
 │                       └── <ledger-unit-ordinal>
 ├── AGENTS.md
-├── README.md
+├── README.md                   what the project is, then one line per surface page
+├── cairn/
+│   └── README.md               GENERATED pointer: the installed release, the chapters, the skills, what the kit owns
 ├── manifesto.md
 ├── cairn.config.json
 ├── cairn.lock.json
@@ -57,11 +59,12 @@ repository/
 │   ├── cairn-config.schema.json
 │   ├── cairn-active.mjs
 │   ├── cairn-audit.mjs
+│   ├── cairn-postmortem.mjs
 │   ├── cairn-rules.mjs         the protocol repository's, not installed
 │   ├── soundness.md
 │   └── <tool>.test.mjs
 ├── skills/
-│   └── <cairn-skill>/
+│   └── <cairn-skill>/          brainstorm · open · unit · close · learn · the code stance
 │       ├── SKILL.md
 │       └── reference.md
 ├── site/
@@ -148,22 +151,27 @@ what Cairn defines, not what any one adoption happens to contain.
 | `cairn.lock.json` | the release installed here, the commit it was cut from, and one digest per kit file as the kit wrote it, so `status` can tell a pristine file from an edited one and `update` can rewrite the first | written by the `cairn` command; never hand-edited |
 | `tools/cairn.mjs` | the `cairn` command of the `cairn-protocol` package: `init` installs the kit transactionally, `status` reads the lock, `update` rewrites pristine kit files and migrates the configuration, `adopt` turns a repository carrying the protocol without a lock into an installation | independently reviewed control-plane change |
 | `package.json` | exposes the reference commands without making Node a protocol requirement | control-plane change |
-| `.github/workflows/cairn.yml` | current CI adapter; the one required check, on the exact commit that lands | independently reviewed control-plane change |
+| `.github/workflows/cairn.yml` | current CI adapter; the one required check, on the exact commit that lands. It runs **once per commit that can land** — on a request, and on a push to the trunk alone — and prints a post-mortem when the checker's own step fails | independently reviewed control-plane change |
 | `.github/pull_request_template.md` | the closing review's shape, filled into every request on `pull-request` transport | control-plane change |
 | `tools/cairn-check.mjs` | deterministic blocking and advisory predicates | independently reviewed control-plane change |
 | `tools/cairn-config.mjs` | dependency-free binding loader and schema-2 validator | independently reviewed control-plane change |
 | `tools/cairn-config.schema.json` | editor-readable schema for the installed binding | same work unit as the loader |
 | `tools/cairn-active.mjs` | rebuilds the live-path projection | independently reviewed control-plane change |
 | `tools/cairn-audit.mjs` | scaffolds and checks one exact-candidate audit | independently reviewed control-plane change |
+| `tools/cairn-postmortem.mjs` | the mechanical half of a post-mortem: one line per reading, facts only, no exit code | independently reviewed control-plane change |
 | `tools/cairn-rules.mjs` | projects checker metadata into the rule catalogue | independently reviewed control-plane change |
 | `tools/*.test.mjs` | executable contract for each reference tool | same work unit as the tool |
-| `docs/architecture/` | accepted architecture and constitutional doctrine | path plus decision record when meaning changes |
+| `docs/inputs/` | documents the project had before the protocol, any format, kept as they came | the owner; read by the first ideation session |
+| `docs/<surface>.md` | one page per product surface: a worked example first, then what it does; the concept notes as its glossary | promotion unit that changes that surface |
+| `docs/architecture/` | accepted architecture and constitutional doctrine, one page per feature, interface, contract or flow | path plus decision record when meaning changes |
+| `docs/concepts/{cairn,product,learning}/` | the adopter's own wiki, one folder per scope, each with an index and none at the root | any session that explains an abstraction; `cairn-learn` for a learning note |
+| `cairn/README.md` | GENERATED pointer: the installed release and its commit, the six chapters, the skills, every file the kit owns, and what an update could not rewrite | the `cairn` command, at `init` and every `update` |
 | `docs/adr/ADR-*.md` | one durable architecture or protocol decision | path making the decision |
 | `docs/modules/<area>.md` | implemented-area flow, boundaries, and tests | path changing that area |
 | `spec/index.md` | canonical normative protocol | accepted specification change |
 | `spec/concepts/*.md` | one explanatory article per specialised object | same specification work unit |
 | `spec/reference/*.md` | exact layouts, schemas, and conformance | same specification work unit |
-| `skills/<name>/SKILL.md` | one procedure as an Agent Skill — brainstorm, open, unit, close — or the coding stance; its `reference.md` carries the command sequences | same work unit as the procedure it teaches |
+| `skills/<name>/SKILL.md` | one procedure as an Agent Skill — brainstorm, open, unit, close, learn — or the coding stance; its `reference.md` carries the command sequences | same work unit as the procedure it teaches |
 | `README.md` | the beginner overview and the three quick starts | the protocol's own repository |
 | `manifesto.md` | the edited edition of the owner's statement; the verbatim original stays in the documentation plane | the protocol's own repository |
 | `site/` | the React Markdown renderer with Mermaid, built from the manifesto, the README, the specification and the skills, and published to GitHub Pages | the protocol's own repository, as a second implemented area |

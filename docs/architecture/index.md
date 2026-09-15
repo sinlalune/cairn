@@ -15,6 +15,20 @@ and links back to the notes it was promoted from. A page whose meaning
 changes is amended by a path that also adds or supersedes a decision record;
 the checker's `decision-drift` advisory reports a change here without one.
 
+A page that names components states **in one sentence** which way dependencies
+point between them — a sentence a reader can check against an import line —
+and carries **one Mermaid diagram** saying the same thing. The two must agree:
+a reader checks whichever of them they can read, so where they disagree the
+page is wrong, not the reader.
+
+**Flow pages live here too.** A flow is how one thing moves end to end through
+the components the other pages name — what starts it, the components it
+crosses in order, what it leaves behind — and is an architecture page of that
+kind, in this folder with the rest and in no folder of its own. A flow that
+stays inside a single folder is that folder's module note's business and gets
+no page. The [architecture concept](../../spec/concepts/architecture.md) states
+the shape.
+
 Architecture is a maintained claim, not proof that the implementation
 follows it. The module notes under [`docs/modules/`](../modules/index.md)
 say what is implemented today.

@@ -1216,9 +1216,33 @@ export function namesForReading(names, limit = 5) {
     : `${names.slice(0, limit).join(', ')}, and ${names.length - limit} more`
 }
 
+/** A concept is named by its path under the root, so every folder's index is
+ *  an index, not a note. */
+const isConceptIndex = (file) => file.split('/').at(-1) === 'index.md'
+
+/** Every concept note one document's text sends a reader to, each as a path
+ *  under the concept root. The capture admits folders, so `../concepts/x.md`
+ *  — which holds `./` at offset one — matches there first and takes
+ *  `concepts/` with it; the note is whatever follows the LAST `concepts/`.
+ *  Pure, because the whole of `concept-orphan` turns on this resolution. */
+export function conceptLinkTargets(text) {
+  const targets = new Set()
+  // Which alternative matched decides what the captured folders mean, so the
+  // prefix is captured too. Through `concepts/` — by either route — the
+  // folders are the note's own. Reached by a bare `./` they are some other
+  // document's: `./modules/application.md` is not a concept, and admitting it
+  // would clear an orphan of that name.
+  for (const [, prefix, path] of text.matchAll(/(concepts\/|\.\/)((?:[a-z0-9-]+\/)*[a-z0-9-]+\.md)/g)) {
+    const cut = path.lastIndexOf('concepts/')
+    if (cut !== -1) targets.add(path.slice(cut + 'concepts/'.length))
+    else if (prefix === 'concepts/' || !path.includes('/')) targets.add(path)
+  }
+  return targets
+}
+
 export function orphanConcepts(conceptFiles, linkedTargets) {
   const linked = linkedTargets instanceof Set ? linkedTargets : new Set(linkedTargets)
-  return conceptFiles.filter((file) => file !== 'index.md' && !linked.has(file))
+  return conceptFiles.filter((file) => !isConceptIndex(file) && !linked.has(file))
 }
 
 /** Concept notes present now and absent at the comparison ref. `null` previous
@@ -1227,7 +1251,7 @@ export function orphanConcepts(conceptFiles, linkedTargets) {
 export function addedConcepts(previous, current) {
   if (previous == null) return null
   const before = new Set(previous)
-  return current.filter((file) => file !== 'index.md' && !before.has(file))
+  return current.filter((file) => !isConceptIndex(file) && !before.has(file))
 }
 
 /** The trunk this repository integrates into, supplied by the host binding so
@@ -3689,7 +3713,12 @@ function corpusFindings(previousRef = null, changed = [], viewCurrent = null) {
   // Concept wiki: an orphan blocks, growth is only reported. See orphanConcepts.
   const conceptDir = join(REPO, CONCEPTS_DIR)
   if (existsSync(conceptDir)) {
-    const conceptFiles = readdirSync(conceptDir).filter((f) => f.endsWith('.md'))
+    // Read RECURSIVELY: an adopter's root is three folders (ADR-011 d2), and
+    // `readdirSync` returns the folder rather than the note inside it, so a
+    // flat read polices a wiki nobody keeps at the root any more.
+    const conceptFiles = walk(CONCEPTS_DIR)
+      .filter((f) => f.endsWith('.md'))
+      .map((f) => f.slice(CONCEPTS_DIR.length + 1))
     // A note counts as reached only from OUTSIDE the wiki. Two reasons, and the
     // second is why this is not merely strict:
     //   - the wiki index lists everything by construction, so counting it would
@@ -3704,9 +3733,7 @@ function corpusFindings(previousRef = null, changed = [], viewCurrent = null) {
     for (const doc of corpusDocs) {
       if (doc.startsWith(`${CONCEPTS_DIR}/`)) continue
       const text = stripCode(readFileSync(join(REPO, doc), 'utf8'))
-      for (const match of text.matchAll(/(?:concepts\/|\.\/)([a-z0-9-]+\.md)/g)) {
-        linked.add(match[1])
-      }
+      for (const target of conceptLinkTargets(text)) linked.add(target)
     }
     for (const orphan of orphanConcepts(conceptFiles, linked)) {
       findings.push({
@@ -3721,8 +3748,8 @@ function corpusFindings(previousRef = null, changed = [], viewCurrent = null) {
     // that cries wolf is one people switch off.
     if (changed.some((file) => file.startsWith(`${CONCEPTS_DIR}/`))) {
       const previous = previousRef
-        ? (gitOrNull(['ls-tree', '--name-only', previousRef, `${CONCEPTS_DIR}/`]) ?? '')
-            .split('\n').filter(Boolean).map((f) => f.split('/').at(-1))
+        ? (gitOrNull(['ls-tree', '-r', '--name-only', previousRef, `${CONCEPTS_DIR}/`]) ?? '')
+            .split('\n').filter(Boolean).map((f) => f.slice(CONCEPTS_DIR.length + 1))
         : null
       const added = addedConcepts(previous, conceptFiles)
       if (added && added.length > 0) {

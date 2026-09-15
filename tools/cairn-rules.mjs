@@ -176,12 +176,12 @@ export const RULE_METADATA = {
     enforcing: "journalRecords(loadJournal(), id) over the entries' own metadata block on the transition into done; inconclusive when the journal cannot be read"
   },
   'concept-orphan': {
-    condition: 'A concept note that no normative or learning text outside the wiki links to',
-    enforcing: 'orphanConcepts(conceptFiles, links from documents outside the concepts folder)'
+    condition: 'A concept note that no normative or learning text outside the wiki links to. The root is read RECURSIVELY, through every folder it holds (ADR-011 d2), and a note is named by its path under the root, so a link must reach the folder the note is in',
+    enforcing: 'orphanConcepts(walk(concepts root) relative to it, conceptLinkTargets(documents outside the concepts folder))'
   },
   'concept-growth': {
-    condition: 'A change adds concept articles; reported so vocabulary growth is a visible decision',
-    enforcing: 'addedConcepts(previousRef listing, current listing), diff-scoped to the concepts folder'
+    condition: 'A change adds concept articles anywhere under the root, its folders included; reported so vocabulary growth is a visible decision',
+    enforcing: 'addedConcepts(ls-tree -r listing at previousRef, current recursive listing), both relative to the concepts root, diff-scoped to it'
   },
   'branch-path': {
     condition: 'Path branch not declared by a running path record, missing base_commit, or a detached checkout whose branch cannot be identified while guarded source changed (inconclusive; advisory when nothing guarded changed)',

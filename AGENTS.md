@@ -26,7 +26,7 @@ after a failure.
 npm run cairn-check     # the blocking and advisory rules, in full
 npm run cairn-active    # regenerate the running-paths view
 npm run cairn-audit     # the closing review: the request's description to paste, or the closing record on manual-git
-npm test                # the tools' own fixture suite: one adversarial fixture per blocking rule
+npm test                # alias of cairn-test, the tools' own fixture suite: one adversarial fixture per blocking rule
 npm run cairn -- status # the installed release against this package, and what update would touch
 ```
 
@@ -41,3 +41,8 @@ npm run cairn -- status # the installed release against this package, and what u
   `main` in. This repository declares
   `pathHistoryPolicy: forbidden`.
 - Progress persists in files, never in a conversation.
+- An abstraction explained persists as a concept note, in the folder its scope
+  names, linked from where the explanation was needed.
+- An explanation is written for the reader who is learning it — the plain
+  meaning first, the failure it prevents, the shortest example — and stops
+  there.
