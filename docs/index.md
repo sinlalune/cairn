@@ -10,6 +10,7 @@ timestamp: 2026-09-02T00:00:00Z
 
 Durable knowledge: architecture, decisions, module notes, and this repository's own concepts.
 
+- [Inputs](./inputs/index.md) — documents a project had before the protocol, unedited; this repository had none, and the folder is the kit's, installed by its own `update` at 1.1.
 - [Architecture](./architecture/index.md) — accepted pages on what a system is as a whole; the first, on Cairn 1.1, is in progress.
 - [Decision records](./adr/index.md) — one file per durable decision, `ADR-<NNN>`, starting at ADR-001.
 - [Module notes](./modules/index.md) — one note per implemented area: the reference tools and the site, as they are today.

@@ -15,9 +15,10 @@ timestamp: 2026-09-15T00:00:00Z
 `313f8ea18fe77d0fb6f641ac969989dc4d35a17f`, through the fifteen
 [decision records](../adr/index.md) ADR-001 to ADR-015. The notes stay
 exactly as they were. This page states what the records decide as one
-shape; where a sentence relies on a record, the record is named. Nothing
-here is implemented yet: the [roadmap register](../../project/coding-paths/index.md)
-names the coding paths that build it.
+shape; where a sentence relies on a record, the record is named. *Since
+2026-09-15*: its records are implemented by paths 1 to 6 of the
+[roadmap register](../../project/coding-paths/index.md) and released as
+1.1.0 by the seventh.
 
 **Amended on 2026-09-07** by the promotion of the coding guidelines,
 through the five records ADR-016 to ADR-020, from the owner's
