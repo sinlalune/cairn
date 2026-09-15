@@ -31,7 +31,13 @@ concept wiki at `spec/concepts/`, which the configuration binds as
 `roots.concepts`. The checker's Markdown corpus — the files whose links are
 checked and whose links keep a concept from being an orphan — is the
 documentation plane, the project plane, and the parent of the concept root, so
-the specification is read wherever a host binds its wiki. The rule generator
+the specification is read wherever a host binds its wiki. `concept-orphan` and
+`concept-growth` read that root **recursively** and name a note by its path
+under it — `learning/cache.md`, not `cache.md` — because an adopter's root is
+three folders (ADR-011 d2) and two of them may hold the same word. A link
+counts as reaching the note only if it reaches the folder the note is in;
+`conceptLinkTargets` resolves a link to that path, and is pure because the
+whole of `concept-orphan` turns on it. The rule generator
 writes into the conformance page, not into the specification index, so the
 index stays under its word budget.
 
@@ -110,11 +116,19 @@ each step's current content.
 
 ## The kit
 
-`npx cairn-protocol init` installs 27 files and the lock on the `ci` profile,
-26 on `local`, which has no workflow: the five reference tools, the nine skill
-files of six skills, five folder indexes, and eight host files — the
-configuration, the bootloader, the binding, the package scripts, the live
-view, this note, the workflow and the request template.
+`npx cairn-protocol init` installs the five reference tools, the nine skill
+files of six skills, the folder indexes of the documentation and project
+planes, and the host files — the configuration, the bootloader, the binding,
+the package scripts, the live view, this note, the workflow and the request
+template. What that comes to is 31 files and the lock on the `ci` profile and
+30 on `local`, which has no workflow; the number is measured here and bounds
+nothing (ADR-022 d2). The documentation plane it writes is the one 1.1
+decided: `docs/inputs/` for what the project had before the protocol,
+`docs/architecture/` with its index, `docs/modules/`, and a concept root of
+three folders — `cairn`, `product`, `learning` — each with its own index and
+no index at the root. The documentation index is the map: it links them, says
+where a surface page goes and that such a page opens with one worked example
+and links its API's documentation.
 It copies no specification: every link it writes into the specification is
 pinned to the commit the kit was cut from. `cairn.lock.json` records the
 digest of every kit file as the kit wrote it, which is what lets `status`

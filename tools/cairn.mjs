@@ -19,7 +19,8 @@
  *
  * THE KIT IS THIN. It installs the reference tools, the six skills, the host
  * files — bootloader, configuration, binding, workflow, request template — and
- * the folder indexes the roles need: under thirty files. It does not copy the
+ * the folder indexes the roles need, and nothing else. What that comes to is
+ * measured and reported, never a target (ADR-022 d2). It does not copy the
  * specification: an adopter reads it at the release the kit was cut from, by
  * link, and every link the kit writes is pinned to that release's commit, so a
  * repository installed today still resolves to the text it was installed from.
@@ -194,7 +195,7 @@ export function buildConfig(options) {
       modules: `${options.docsRoot}/modules`,
       // The adopter's OWN wiki — the project scope of chapter 6. The
       // protocol's wiki is read at the release, never written into.
-      concepts: options.conceptsRoot ?? `${options.docsRoot}/concepts`,
+      concepts: conceptsRootOf(options),
       source: options.sourceRoots
     },
     areas: [
@@ -238,6 +239,10 @@ export function migrateConfig(config) {
     }
   }
 }
+
+/** The wiki's root: the adopter's own, and a host may bind it outside the
+ *  documentation plane — this repository binds `spec/concepts`. */
+const conceptsRootOf = (options) => options.conceptsRoot ?? `${options.docsRoot}/concepts`
 
 const front = (type, title, description, tags) =>
   `---\ntype: ${type}\ntitle: ${title}\ndescription: ${description}\ntags: [${tags.join(', ')}]\ntimestamp: ${new Date().toISOString().slice(0, 10)}T00:00:00Z\n---\n`
@@ -302,7 +307,7 @@ npm run cairn-audit     # the closing review: the request's description to paste
 }
 
 export function hostBinding(options, commit) {
-  const concepts = options.conceptsRoot ?? `${options.docsRoot}/concepts`
+  const concepts = conceptsRootOf(options)
   return front('Cairn Binding', 'Host binding', 'How portable Cairn roles map onto this repository.', ['cairn', 'binding']) +
     `\n# Host binding
 
@@ -358,6 +363,11 @@ The configuration binds ${options.sourceRoots.map((r) => `\`${r}/\``).join(', ')
 implementation unit that changes source there refreshes it in the same unit:
 what the area does, where its boundaries are, and which tests prove it.
 
+This note describes the area **as it is now**, and nothing else. A unit that
+changes the area rewrites the sentences that stopped being true and adds none
+about itself: no dated paragraphs, no record of what changed. What a path did
+belongs to the journal, one entry per integration.
+
 ## Flow
 
 State the main flow in a paragraph, once the first unit lands.
@@ -372,23 +382,109 @@ How the area is proved: the command, and what green means.
 `
 }
 
-export function conceptIndex(commit) {
-  return front('Cairn Folder Index', 'Concepts', "This repository's own vocabulary: one idea per page, borrowed terms kept apart from the ones this project defines.", ['index', 'cairn', 'concepts']) +
-    `\n# Concepts
+/** The concept root is three folders, one per scope, each with its own index
+ *  (ADR-011 decision 2). The scope decides which folder a note is written in;
+ *  the shape of a note is the same in all three. */
+const CONCEPT_SCOPES = [
+  ['cairn', 'Cairn terms, for this project\'s reader',
+    'What a word of the protocol means here: the plain meaning first, then what this repository actually does with it. Link the protocol\'s own article for the full definition rather than restating it. Written when someone asks what a Cairn term means.'],
+  ['product', 'This product\'s own words',
+    'The vocabulary this product\'s architecture uses — the domain ideas its own code and pages name. Written when a path or a session names a domain idea that carries complexity.'],
+  ['learning', 'Knowledge from outside',
+    'Anything that is nobody\'s domain — a language, a protocol, a piece of hardware, a model. Written when a session explains an abstraction the reader needed. A learning note lives here too: it is a concept note with an order, its body a sequence the reader follows, written by `cairn-learn` for what someone set out to learn.']
+]
+
+export function conceptIndex(commit, [name, title, purpose]) {
+  return front('Cairn Folder Index', title, purpose, ['index', 'cairn', 'concepts', name]) +
+    `\n# ${title}
+
+${purpose}
 
 One specialised idea per page, from
 [the one-concept template](${specUrl(commit)}/concepts/concept-template.md):
 the plain definition first, the failure the concept prevents, how it is checked
-or the honest sentence that nothing checks it. A concept no page outside this
-folder links is an orphan and blocks the gate.
+or the honest sentence that nothing checks it. A concept no page outside the
+concept root links is an orphan and blocks the gate — the root is read through
+all three of its folders.
+`
+}
 
-## Borrowed
+/** The map a reader meets first: where each kind of page lives, and what the
+ *  pages the kit does NOT install are for. */
+export function documentationIndex(options) {
+  const concepts = conceptsRootOf(options)
+  const to = (path) => {
+    const rel = relative(options.docsRoot, path).split(sep).join('/')
+    return rel.startsWith('.') ? rel : `./${rel}`
+  }
+  const scopeRows = CONCEPT_SCOPES
+    .map(([name, title]) => `| [\`${concepts}/${name}\`](${to(`${concepts}/${name}/index.md`)}) | ${title} |`)
+    .join('\n')
+  return front('Cairn Folder Index', 'Documentation plane', 'Durable knowledge: what the product is, how it is built, what was decided, and what its words mean.', ['index', 'cairn']) +
+    `\n# Documentation plane
 
-Terms this project uses as others define them.
+Durable knowledge. What is being done right now lives in \`${options.projectRoot}/\`,
+not here.
 
-## Own
+| Where | What |
+| :-- | :-- |
+| [\`${options.docsRoot}/inputs/\`](./inputs/index.md) | documents this project had before the protocol, any format, unedited |
+| \`${options.docsRoot}/<surface>.md\` | one page per product surface, at this root |
+| [\`${options.docsRoot}/architecture/\`](./architecture/index.md) | accepted architecture, one page per feature, interface, contract or flow |
+| \`${options.docsRoot}/adr/\` | one record per decision, numbered from ADR-001 with no gaps |
+| [\`${options.docsRoot}/modules/\`](./modules/index.md) | one note per implemented area, as the area is now |
+${scopeRows}
 
-Terms this project defines.
+## The page a newcomer reads first
+
+For every surface a user meets — a screen, a command, an API, a document set —
+there is one page at this root, \`${options.docsRoot}/<surface>.md\`, listed above.
+It **opens with one worked example**: a user doing the one thing the surface is
+for, start to finish, before any explanation. Then it says what the surface does
+and how to use it, in plain words.
+
+It links the concept notes as its glossary instead of redefining the words, and
+links the architecture page that governs the surface — nothing more technical
+than that. Where the surface is an API, it links that API's documentation,
+written and kept current where the language's ecosystem expects it; Cairn names
+no API page and installs none.
+
+A promotion unit that changes what a surface does writes that surface's page in
+the same unit, and adds its line to the README. One that changes no surface
+leaves the pages alone and says so.
+`
+}
+
+export function inputsIndex() {
+  return front('Cairn Folder Index', 'Inputs', 'Documents this project had before the protocol, any format, kept as they came.', ['index', 'cairn', 'inputs']) +
+    `\n# Inputs
+
+What existed before Cairn did: notes, sketches, exports, specifications
+written elsewhere, in any format. They are kept **as they came** and never
+edited into protocol shape — an input rewritten is an input you can no longer
+check the protocol's output against.
+
+The first ideation session of a project starts by reading this folder, and a
+brainstorm note that draws on an input names it.
+`
+}
+
+export function architectureIndex() {
+  return front('Cairn Folder Index', 'Architecture', 'Accepted architecture: one page per feature, interface, contract or flow, each with its dependency sentence and its diagram.', ['index', 'cairn', 'architecture']) +
+    `\n# Architecture
+
+One page per thing the architecture decides — a feature, an interface, a
+contract, or a **flow**: how one thing moves end to end through the components
+the other pages name, from what starts it to what it leaves behind. Flow pages
+live here with the rest and have no folder of their own; a flow inside a single
+folder is that folder's module note's business, not a page.
+
+A page that names components states **in one sentence** which way dependencies
+point between them — a sentence a reader can check against an import line — and
+carries **one Mermaid diagram** saying the same thing. The reader checks
+whichever of the two they can read, so the two must agree.
+
+Promotion units write these pages.
 `
 }
 
@@ -562,14 +658,15 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
     '\n# Running paths\n\nThis file is GENERATED by `npm run cairn-active`. Never hand-edit it.\n\n' +
     '<!-- cairn:paths:begin -->\n<!-- cairn:paths:end -->\n', 'generated')
 
-  put(`${options.docsRoot}/index.md`, folderIndex('Documentation plane',
-    'Durable knowledge: architecture, decisions, module notes, and this repository\'s own concepts.'), 'host')
-  put(`${options.docsRoot}/modules/index.md`, folderIndex('Module notes', 'One note per implemented area: flow, boundaries and tests.'), 'host')
+  put(`${options.docsRoot}/index.md`, documentationIndex(options), 'host')
+  put(`${options.docsRoot}/inputs/index.md`, inputsIndex(), 'host')
+  put(`${options.docsRoot}/architecture/index.md`, architectureIndex(), 'host')
+  put(`${options.docsRoot}/modules/index.md`, folderIndex('Module notes', 'One note per implemented area: flow, boundaries and tests, as the area is now.'), 'host')
   // The one area the generated configuration names must exist, or the first
   // implementation unit is asked for a note the initializer never wrote.
   put(`${options.docsRoot}/modules/application.md`, moduleNote(options), 'host')
-  const concepts = options.conceptsRoot ?? `${options.docsRoot}/concepts`
-  put(`${concepts}/index.md`, conceptIndex(commit), 'host')
+  const concepts = conceptsRootOf(options)
+  for (const scope of CONCEPT_SCOPES) put(`${concepts}/${scope[0]}/index.md`, conceptIndex(commit, scope), 'host')
 
   if (options.profile === 'ci') put('.github/workflows/cairn.yml', workflow(options), 'host')
   if (options.transport === 'pull-request') put('.github/pull_request_template.md', requestTemplate())

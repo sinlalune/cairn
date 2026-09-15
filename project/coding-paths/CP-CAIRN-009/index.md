@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-009
   route: full
   status: running
-  current_step: S01
+  current_step: S02
   base_commit: 76512dc75b1940a54388ff4e7fdabb53a662179a
   branch: path/cp-cairn-009
   assigned_writer: cp-cairn-009-writer
@@ -21,6 +21,7 @@ cairn:
     - tools/cairn-check.mjs
     - tools/cairn-check.test.mjs
     - tools/cairn-fixture.test.mjs
+    - tools/cairn-rules.mjs
     - cairn.lock.json
     - spec/index.md
     - spec/reference/repository-layout.md
@@ -288,35 +289,43 @@ session. Amendments: none.
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
 - **S01** — [what `init` writes, and the bootloader](./steps/S01.md) — complete. `cairn init` declares `transport.registration: manual-git` whatever `--transport` answers for the integration transport, from one constant the generated binding's new row prints too, and the run names both; the bootloader the kit writes names the sixth skill and gains the concept-note and explanation rules, and this repository's `AGENTS.md` carries the same two beside the `cairn-test` alias. Advances the first and second items of the definition of done.
+- **S02** — [the documentation plane the kit installs, and the concept rules' read](./steps/S02.md) — complete. The kit installs `docs/inputs/`, a concept root of three folders — `cairn`, `product`, `learning`, the owner naming the second in the chat — an architecture index carrying the dependency sentence and the diagram, a documentation index that maps the plane and states the worked example and the API link, and a module note template that describes only now; `concept-orphan` and `concept-growth` read that root recursively and name a note by its path under it, the conformance rows and their generator saying so. Advances the third and fourth items of the definition of done.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 3c42237147ed783e68f301626fd9637a58f3fad3 — the registration commit, on origin/main and on this branch
-unit   : 1 — S01 complete on push; S02 names its commit here
+commit : 51cea4090b9cda86c14bbf219f1b89c971fb9a95 — S01, on origin/path/cp-cairn-009
+unit   : 2 — S02 complete on push; S03 names its commit here
 base   : 76512dc75b1940a54388ff4e7fdabb53a662179a
-trunk  : 3c42237147ed783e68f301626fd9637a58f3fad3 — origin/main at S01
+trunk  : 3c42237147ed783e68f301626fd9637a58f3fad3 — origin/main, unmoved since registration
 ```
 
 ### Next action
 
-Run S02 of the plan with `cairn-unit` — the documentation plane the kit
-installs, and the concept rules' read. `docs/inputs/` and its index
-(ADR-011 d1); the concept root in three folders — `cairn`, the project's,
-`learning` — with their indexes and `roots.concepts` as their parent
-(ADR-011 d2, ADR-022 d1); the documentation index naming the inputs
-folder, the three folders, the surface pages' place with the worked
-example and the API link, and the architecture folder as the flow pages'
-home (ADR-012, ADR-023 d2–d4); the architecture index the kit writes with
-the one sentence and the one diagram (ADR-019 d2, ADR-023 d3); the module
-note template describing now (ADR-010 d1). Then `concept-orphan` and
-`concept-growth` read the concept root recursively — one function of
-`tools/cairn-check.mjs`, its fixture with an orphan inside a folder
-written first and failing — and the conformance page's two rows say so.
-Type `implementation`. Run the review movement on the unit's diff, and
-set `current_step` to S02.
+**First, the read S02 owes.** S02's review fixes were never given to a
+fresh context: four of seven review agents hung after one line and were
+stopped. Hand the bounded diff of those fixes — the corrections between
+S02's two saved diffs, recoverable as the second half of S02's commit —
+to a fresh context with the two criteria, and write what it returns into
+S02's `#### Review` as a second-read paragraph, or a new step naming S02
+if the section is already published. Then run S03.
+
+Run S03 of the plan with `cairn-unit` — the pointer page, `update` and
+`status`. `cairn/README.md` generated at `init` and `update` with the six
+items ADR-013 lists, six skills linked, and the edited files the last
+update could not rewrite; the bootloader's *start here* list points at it
+(ADR-013, ADR-015 d2). `update` rewrites a pristine file whoever owns it,
+prints what the release changes in an edited one, and takes the release's
+version of a named file on request; `status` says which files are
+pristine, edited and missing (ADR-015 d1–d3). Tests on an installation
+that edited one file. The defect S01's review left here: `applyAdopt`
+writes the migrated configuration but `writeLock` digests the generated
+one, so `status` calls an untouched `cairn.config.json` edited right
+after `adopt` — `update` carries the guard `adopt` lacks. Type
+`implementation`. Run the review movement on the unit's diff, and set
+`current_step` to S03.
 
 ### Blockers
 
@@ -324,6 +333,17 @@ None.
 
 ### Tried and rejected
 
+- Naming the second concept folder from the repository's own directory,
+  or from a new configuration field — `update` and `adopt` re-plan from
+  `cairn.config.json`, which records no name, so a folder derived from
+  the directory is a folder `update` duplicates the moment it is renamed.
+  The owner chose the fixed `docs/concepts/product` in the chat of
+  2026-09-15; nothing was added to the configuration or the command line.
+- Deferring `spec/reference/conformance.md`'s installation row to S04 a
+  second time — S01 deferred it because the manifest was not final, and
+  that held until S02 changed the count and made the row contradict the
+  module note inside one diff. A unit that moves a measurement updates
+  its report; S04 will do the same when the manifest moves again.
 - Two literals for the registration transport, one in `buildConfig` and
   one in the generated binding row — the defect the workflow test was
   written about, where one of two occurrences is left behind; one
@@ -354,7 +374,7 @@ None.
 3. `tools/cairn.mjs` — the generators, `planInstall`, the lock.
 4. `project/coding-paths/CP-CAIRN-009/plan.md`, then the records the unit implements, at their tables.
 5. This repository's `AGENTS.md`, workflow, request template and `docs/index.md` — what the generated files must match.
-6. `tools/cairn-check.mjs` — the corpus the two concept rules read, before S02.
+6. `tools/cairn.mjs` — `planInstall`, the lock, `applyUpdate` and `applyAdopt`, before S03.
 
 ### Verify
 

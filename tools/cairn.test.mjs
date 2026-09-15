@@ -58,9 +58,11 @@ test('cairn init: a new repository is created in the shapes the protocol states 
   assert.throws(() => planInstall({ ...defaultOptions(), transport: 'carrier-pigeon' }), /generated configuration is invalid/)
 })
 
-test('cairn init: the kit is thin — under thirty files with the lock, and it copies no specification', () => {
+test('cairn init: the kit is thin — it carries the roles, and copies no specification', () => {
+  // No count is asserted. ADR-022 d2 superseded ADR-013's cap on the kit's
+  // files: what the kit installs is measured and reported, never a target, so
+  // a file that earns its place is added and the number follows.
   const plan = planInstall({ ...defaultOptions(), profile: 'ci' })
-  assert.ok(plan.files.size + 1 < 30, `${plan.files.size} files and the lock is not under thirty`)
   const paths = [...plan.files.keys()]
   assert.ok(!paths.some((p) => p.startsWith('spec/')), 'the specification is linked at the release, not copied')
   assert.ok(!paths.some((p) => p.endsWith('.test.mjs') || p.endsWith('cairn.mjs') || p.endsWith('cairn-rules.mjs') || p.endsWith('soundness.md')))
@@ -69,7 +71,7 @@ test('cairn init: the kit is thin — under thirty files with the lock, and it c
     assert.ok(plan.files.has(`skills/${skill}/SKILL.md`), skill)
   }
   assert.ok(plan.files.has('.github/workflows/cairn.yml') && plan.files.has('.github/pull_request_template.md'))
-  assert.ok(plan.files.has('docs/concepts/index.md') && plan.files.has('docs/modules/application.md') && plan.files.has('project/coding-paths/index.md'))
+  assert.ok(plan.files.has('docs/modules/application.md') && plan.files.has('project/coding-paths/index.md'))
   for (const folder of ['project/briefs/', 'project/sessions/', 'project/audits/', 'project/log/']) {
     assert.ok(!paths.some((p) => p.startsWith(folder)), folder)
   }
@@ -117,6 +119,62 @@ test('the bootloader carries the two lines of 1.1 that reach every session, in t
   // keeps `npm test` as an alias of `cairn-test` and says so here.
   assert.doesNotMatch(kit, /npm test/, 'the kit names no suite of the adopter\'s')
   assert.match(here, /npm test +# alias of cairn-test/)
+})
+
+test('cairn init: the documentation plane of 1.1 is installed, not left for the adopter to guess', () => {
+  const plan = planInstall()
+  const files = plan.files
+  const text = (path) => files.get(path).toString('utf8')
+
+  // ADR-011 d1: the folder the first session reads before it plans anything.
+  assert.ok(files.has('docs/inputs/index.md'), 'docs/inputs/ and its index')
+  assert.match(text('docs/inputs/index.md'), /any format/i)
+  assert.match(text('docs/inputs/index.md'), /never edited|as they came|unedited/i,
+    'the index says the inputs are kept as they came')
+
+  // ADR-011 d2: three folders, each with an index; no index at the root.
+  for (const folder of ['cairn', 'product', 'learning']) {
+    assert.ok(files.has(`docs/concepts/${folder}/index.md`), `docs/concepts/${folder}/index.md`)
+  }
+  assert.ok(!files.has('docs/concepts/index.md'),
+    'the root index is replaced by the three folder indexes, not kept beside them')
+  assert.match(text('docs/concepts/cairn/index.md'), /what this repository actually does with it/i,
+    'the cairn scope, not one of its neighbours')
+  assert.match(text('docs/concepts/product/index.md'), /this product's architecture uses/i)
+  // ADR-022 d1: a learning note is a concept note with an order.
+  assert.match(text('docs/concepts/learning/index.md'), /learning note/i)
+  assert.match(text('docs/concepts/learning/index.md'), /order/i)
+
+  // ADR-019 d2 + ADR-023 d2, d3: the index the kit writes for an adopter.
+  assert.ok(files.has('docs/architecture/index.md'), 'the architecture folder gets its index')
+  assert.match(text('docs/architecture/index.md'), /one sentence/i, 'which way dependencies point')
+  assert.match(text('docs/architecture/index.md'), /mermaid/i, 'one diagram')
+  assert.match(text('docs/architecture/index.md'), /flow/i, 'flow pages live here')
+
+  // ADR-012 + ADR-023 d3, d4: the documentation index is the map.
+  const docs = text('docs/index.md')
+  for (const target of ['./inputs/index.md', './concepts/cairn/index.md', './concepts/product/index.md',
+    './concepts/learning/index.md', './architecture/index.md', './modules/index.md']) {
+    assert.ok(docs.includes(target), `the documentation index links ${target}`)
+  }
+  assert.match(docs, /opens with one worked example/i, 'before any explanation (ADR-023 d3)')
+  assert.match(docs, /links that API's documentation/i,
+    'the surface page links it; Cairn installs no API page of its own (ADR-023 d4)')
+
+  // ADR-010 d1: the template describes now.
+  const note = text('docs/modules/application.md')
+  assert.match(note, /as it is now/i)
+  assert.match(note, /no dated paragraphs/i)
+  assert.match(note, /belongs to the journal/i, 'history is the journal\'s, not the note\'s')
+
+  assert.deepEqual(outwardLinks(files), [], 'every link the new indexes carry resolves inside the kit')
+
+  // A host may bind its wiki outside the documentation plane — this repository
+  // does — and a hard-coded `./concepts/` in the index would point at nothing.
+  const bound = planInstall({ ...defaultOptions(), conceptsRoot: 'spec/concepts' })
+  assert.ok(bound.files.has('spec/concepts/learning/index.md'))
+  assert.ok(bound.files.get('docs/index.md').toString('utf8').includes('../spec/concepts/learning/index.md'))
+  assert.deepEqual(outwardLinks(bound.files), [], 'and the link still resolves inside the kit')
 })
 
 test('cairn init: an existing file is refused rather than overwritten, and a lock refuses a second init', () => {
