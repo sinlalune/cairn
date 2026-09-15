@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-009
   route: full
   status: running
-  current_step: S02
+  current_step: S03
   base_commit: 76512dc75b1940a54388ff4e7fdabb53a662179a
   branch: path/cp-cairn-009
   assigned_writer: cp-cairn-009-writer
@@ -290,42 +290,44 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
 - **S01** — [what `init` writes, and the bootloader](./steps/S01.md) — complete. `cairn init` declares `transport.registration: manual-git` whatever `--transport` answers for the integration transport, from one constant the generated binding's new row prints too, and the run names both; the bootloader the kit writes names the sixth skill and gains the concept-note and explanation rules, and this repository's `AGENTS.md` carries the same two beside the `cairn-test` alias. Advances the first and second items of the definition of done.
 - **S02** — [the documentation plane the kit installs, and the concept rules' read](./steps/S02.md) — complete. The kit installs `docs/inputs/`, a concept root of three folders — `cairn`, `product`, `learning`, the owner naming the second in the chat — an architecture index carrying the dependency sentence and the diagram, a documentation index that maps the plane and states the worked example and the API link, and a module note template that describes only now; `concept-orphan` and `concept-growth` read that root recursively and name a note by its path under it, the conformance rows and their generator saying so. Advances the third and fourth items of the definition of done.
+- **S03** — [the pointer page, `update` and `status`](./steps/S03.md) — complete. `cairn/README.md` generated at `init` and every `update`, the bootloader pointing at it; a pristine file is rewritten whoever owns it, an edited one is kept and what the release changed in it printed from Git's own diff, the list to settle by hand carried to disk on the page; `update --take <path>` hands over one file and moves its lock entry with it; `adopt` locks the configuration it actually wrote. Advances the fifth and sixth items of the definition of done.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 51cea4090b9cda86c14bbf219f1b89c971fb9a95 — S01, on origin/path/cp-cairn-009
-unit   : 2 — S02 complete on push; S03 names its commit here
+commit : d9d62dbeec5053fc604d68336c2216ac40a66b9c — S02, on origin/path/cp-cairn-009
+unit   : 3 — S03 complete on push; S04 names its commit here
 base   : 76512dc75b1940a54388ff4e7fdabb53a662179a
 trunk  : 3c42237147ed783e68f301626fd9637a58f3fad3 — origin/main, unmoved since registration
 ```
 
 ### Next action
 
-**First, the read S02 owes.** S02's review fixes were never given to a
-fresh context: four of seven review agents hung after one line and were
-stopped. Hand the bounded diff of those fixes — the corrections between
-S02's two saved diffs, recoverable as the second half of S02's commit —
-to a fresh context with the two criteria, and write what it returns into
-S02's `#### Review` as a second-read paragraph, or a new step naming S02
-if the section is already published. Then run S03.
+Run S04 of the plan with `cairn-unit` — the manifest, the generated
+adapter and template. `cairn-postmortem.mjs` in `REFERENCE_TOOLS` and in
+the scripts the kit writes, `skills/cairn-learn` already copied by the
+walk; Ponytail named at the tag ADR-016 d1 states, in the lock and on the
+pointer page; the configuration schema and the project index kept or
+removed each for its own worth and never for a number (ADR-022 d2); the
+generated workflow's push trigger on the trunk alone with the base per
+event as path 5 left it and the red-run post-mortem step (ADR-005,
+ADR-014 d1); the generated request template opening with the three plain
+lines and the surface link before `## Candidate` (ADR-021 d2, ADR-018
+d2); tests proving byte equality with this repository's own files where
+the two are meant to be the same, and saying where they differ and why.
+The kit's count is re-measured wherever it is reported — the module note
+and the conformance row — because this unit moves it again. Type
+`implementation`. Set `current_step` to S04.
 
-Run S03 of the plan with `cairn-unit` — the pointer page, `update` and
-`status`. `cairn/README.md` generated at `init` and `update` with the six
-items ADR-013 lists, six skills linked, and the edited files the last
-update could not rewrite; the bootloader's *start here* list points at it
-(ADR-013, ADR-015 d2). `update` rewrites a pristine file whoever owns it,
-prints what the release changes in an edited one, and takes the release's
-version of a named file on request; `status` says which files are
-pristine, edited and missing (ADR-015 d1–d3). Tests on an installation
-that edited one file. The defect S01's review left here: `applyAdopt`
-writes the migrated configuration but `writeLock` digests the generated
-one, so `status` calls an untouched `cairn.config.json` edited right
-after `adopt` — `update` carries the guard `adopt` lacks. Type
-`implementation`. Run the review movement on the unit's diff, and set
-`current_step` to S03.
+**On the review movement, before S04 starts.** Seven of eleven fresh
+contexts hung across S01 to S03, and S03's read was made by the writing
+context and says so. Launch the reader first, do the unit's work while it
+runs, and stop it at about six minutes of silence — the ones that return
+take between 140 and 495 seconds. If it hangs again, record how the read
+was made rather than implying a verdict nobody gave. The owner has raised
+the movement's own design; a record may supersede it.
 
 ### Blockers
 
@@ -333,6 +335,12 @@ None.
 
 ### Tried and rejected
 
+- Leaving `update --take` to write the file without touching the lock —
+  ADR-015 d3 makes the file pristine *at the new release*, and pristine
+  is a statement about the lock; without the entry the owner takes the
+  release's version and `status` still calls it edited. One entry moves,
+  not the whole lock: the installation is still at the release the rest
+  of it carries.
 - Naming the second concept folder from the repository's own directory,
   or from a new configuration field — `update` and `adopt` re-plan from
   `cairn.config.json`, which records no name, so a folder derived from

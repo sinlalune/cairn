@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path'
 import { tmpdir } from 'node:os'
 
 import {
-  bootloader, hostBinding, workflow,
+  bootloader, hostBinding, pointerPage, takeRelease, workflow,
   applyAdopt, applyPlan, applyUpdate, buildConfig, defaultOptions, digest, fileState, installationStatus,
   migrateConfig, optionsFromConfig, outwardLinks, pinSpecLinks, planInstall, readLock, sourceCommit, specUrl, staleShapes,
   PROTOCOL_RELEASE, REFERENCE_TOOLS
@@ -266,6 +266,125 @@ test('cairn init: the command refuses a protected profile and leaves an existing
  * status and update — against the lock
  * ------------------------------------------------------------------ */
 
+test('cairn init: the pointer page says which release this is and what the kit owns', () => {
+  // ADR-013: one page, found by name at the root, nothing on it written by
+  // hand. It is what an adopter reads before they read anything of Cairn's.
+  const plan = planInstall()
+  assert.ok(plan.files.has('cairn/README.md'))
+  const page = plan.files.get('cairn/README.md').toString('utf8')
+  assert.match(page, new RegExp(`release ${PROTOCOL_RELEASE.replace(/\./g, '\\.')}`), 'the installed release')
+  assert.ok(page.includes(plan.sourceCommit), 'and the commit it was cut from, in full')
+  for (const skill of ['cairn-brainstorm', 'cairn-open', 'cairn-unit', 'cairn-close', 'cairn-learn', 'cairn-code']) {
+    assert.ok(page.includes(`${skill}/SKILL.md`), `${skill} is linked`)
+  }
+  assert.ok(page.includes('cairn.lock.json') && page.includes('tools/cairn-check.mjs'),
+    'the files the kit owns, from the manifest')
+  assert.ok(page.includes('cairn/README.md'), 'including itself — it is a kit file like any other')
+  assert.match(page, /still holds exactly what the kit wrote/i,
+    'the sentence ADR-013 asks for, in words a reader does not need the glossary for')
+  assert.match(page, /never rewrites one you have edited/i)
+  assert.match(page, /status/, 'and says which command tells them apart')
+  assert.deepEqual(outwardLinks(plan.files), [], 'its links resolve inside the kit or are pinned')
+
+  // The bootloader's start-here list points at it (ADR-013).
+  assert.ok(plan.files.get('AGENTS.md').toString('utf8').includes('cairn/README.md'))
+
+  // ADR-015 d2: the section is empty until an update cannot rewrite something.
+  const reconcile = pointerPage('abc123', { paths: ['tools/cairn-check.mjs'], edited: ['skills/cairn-code/SKILL.md'] })
+  assert.ok(reconcile.includes('skills/cairn-code/SKILL.md'), 'an edited file the last update could not rewrite is named on the page')
+})
+
+test('cairn update: a pristine file is rewritten whoever owns it, and an edited one is explained', () => {
+  const dir = target()
+  try {
+    applyPlan(planInstall(), dir)
+    const lock = readLock(dir)
+    // A HOST file, untouched since the kit wrote it. ADR-015 d1: pristine
+    // means nothing of the adopter's is in it, so the review protects nothing.
+    const host = 'project/coding-paths/binding.md'
+    assert.ok(lock.host.includes(host))
+    assert.equal(fileState(dir, host, lock.manifest[host]), 'pristine')
+    // An edited file, kit-owned, whose template the "release" changed.
+    writeFileSync(join(dir, 'skills/cairn-code/SKILL.md'), 'my own stance\n')
+
+    const plan = planInstall()
+    plan.files.set(host, Buffer.from(`${plan.files.get(host).toString('utf8')}\nA line the release added.\n`, 'utf8'))
+    plan.files.set('skills/cairn-code/SKILL.md', Buffer.from('the release\'s stance\n', 'utf8'))
+    const status = installationStatus(lock, plan, (path, recorded) => fileState(dir, path, recorded))
+    const action = (path) => status.files.find((f) => f.path === path).action
+    assert.equal(action(host), 'write', 'a pristine host file whose template changed is rewritten (ADR-015 d1)')
+    assert.equal(action('skills/cairn-code/SKILL.md'), 'keep', 'an edited file is never rewritten (ADR-015 d2)')
+
+    const result = applyUpdate(dir, plan, lock)
+    assert.ok(result.written.includes(host))
+    assert.match(readFileSync(join(dir, host), 'utf8'), /A line the release added\./)
+    assert.equal(readFileSync(join(dir, 'skills/cairn-code/SKILL.md'), 'utf8'), 'my own stance\n', 'the edit survives')
+    assert.ok(result.reconcile.includes('skills/cairn-code/SKILL.md'),
+      'and the report ends with the files the owner must reconcile by hand')
+    assert.ok(result.diffs['skills/cairn-code/SKILL.md']?.includes('the release\'s stance'),
+      'the difference between the release\'s template and the file is printed')
+    // ADR-015 d2: the pointer page carries the same list, on disk.
+    assert.ok(readFileSync(join(dir, 'cairn/README.md'), 'utf8').includes('skills/cairn-code/SKILL.md'))
+    // and the lock agrees with what was written, or the next status lies
+    assert.equal(fileState(dir, 'cairn/README.md', readLock(dir).manifest['cairn/README.md']), 'pristine')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('cairn update --take: the owner takes the release\'s version of one named file, and nothing else', () => {
+  const dir = target()
+  try {
+    applyPlan(planInstall(), dir)
+    writeFileSync(join(dir, 'skills/cairn-code/SKILL.md'), 'my own stance\n')
+    writeFileSync(join(dir, 'skills/cairn-open/SKILL.md'), 'mine too\n')
+    const output = cairn(dir, 'update', '--take', 'skills/cairn-code/SKILL.md')
+    assert.match(output, /discard/i, 'it says what it is about to discard')
+    assert.notEqual(readFileSync(join(dir, 'skills/cairn-code/SKILL.md'), 'utf8'), 'my own stance\n')
+    assert.equal(readFileSync(join(dir, 'skills/cairn-open/SKILL.md'), 'utf8'), 'mine too\n',
+      'the file that was not named is untouched')
+    assert.equal(fileState(dir, 'skills/cairn-code/SKILL.md', readLock(dir).manifest['skills/cairn-code/SKILL.md']), 'pristine')
+    assert.throws(() => cairn(dir, 'update', '--take', 'nothing/here.md'), /not a file this release carries|no such/i)
+
+    // ADR-015 d3 says the file becomes pristine AT THE NEW RELEASE, so the
+    // lock has to learn the template it now holds. Without that the owner
+    // takes the release's version and `status` still calls the file edited.
+    writeFileSync(join(dir, 'skills/cairn-close/SKILL.md'), 'mine\n')
+    const moved = planInstall()
+    moved.files.set('skills/cairn-close/SKILL.md', Buffer.from('a newer close skill\n'))
+    takeRelease(dir, moved, readLock(dir), 'skills/cairn-close/SKILL.md')
+    assert.equal(readFileSync(join(dir, 'skills/cairn-close/SKILL.md'), 'utf8'), 'a newer close skill\n')
+    assert.equal(fileState(dir, 'skills/cairn-close/SKILL.md', readLock(dir).manifest['skills/cairn-close/SKILL.md']), 'pristine',
+      'pristine against the lock, not only against the file that was written')
+
+    // --dry-run must not write. It is the same command with the same flag.
+    writeFileSync(join(dir, 'skills/cairn-open/SKILL.md'), 'mine again\n')
+    cairn(dir, 'update', '--take', 'skills/cairn-open/SKILL.md', '--dry-run')
+    assert.equal(readFileSync(join(dir, 'skills/cairn-open/SKILL.md'), 'utf8'), 'mine again\n')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('cairn adopt: the lock records what adopt actually wrote, not what a fresh install would have', () => {
+  // Found by S01's review and verified at base_commit: `adopt` writes the
+  // MIGRATED configuration and locked the digest of the generated one, so the
+  // very next `status` called an untouched file edited.
+  const dir = target()
+  try {
+    applyPlan(planInstall(), dir)
+    const config = JSON.parse(readFileSync(join(dir, 'cairn.config.json'), 'utf8'))
+    config.areas.push({ name: 'extra', match: ['src/extra/**'], note: 'docs/modules/extra.md' })
+    writeFileSync(join(dir, 'cairn.config.json'), `${JSON.stringify(config, null, 2)}\n`)
+    rmSync(join(dir, 'cairn.lock.json'))
+    applyAdopt(dir)
+    assert.equal(fileState(dir, 'cairn.config.json', readLock(dir).manifest['cairn.config.json']), 'pristine',
+      'a file nobody touched after adopt is not edited')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
 test('cairn status: a pristine, an edited and a missing kit file are told apart by the lock', () => {
   const dir = target()
   try {
@@ -287,7 +406,7 @@ test('cairn status: a pristine, an edited and a missing kit file are told apart 
   }
 })
 
-test('cairn status: the decision is pure — portable files follow the kit, host files stay the adopter\'s', () => {
+test('cairn status: the decision is pure — a pristine file follows the kit, whoever owns it', () => {
   const plan = {
     files: new Map([['a.md', Buffer.from('new a')], ['b.md', Buffer.from('b')], ['c.md', Buffer.from('c')], ['AGENTS.md', Buffer.from('new bootloader')], ['binding.md', Buffer.from('b')]]),
     host: new Set(['AGENTS.md', 'binding.md'])
@@ -305,7 +424,9 @@ test('cairn status: the decision is pure — portable files follow the kit, host
     ['a.md', 'pristine', 'write'],       // portable, pristine, template changed: rewritten
     ['b.md', 'pristine', 'none'],
     ['c.md', 'missing', 'write'],
-    ['AGENTS.md', 'pristine', 'review'], // host, pristine, template changed: the adopter's to review
+    // Host, pristine, template changed: rewritten. Pristine means nothing of
+    // the adopter's is in it, so the review protected nothing (ADR-015 d1).
+    ['AGENTS.md', 'pristine', 'write'],
     ['binding.md', 'pristine', 'none']
   ])
   assert.deepEqual(status.left.map((f) => [f.path, f.action]), [
@@ -331,8 +452,8 @@ test('cairn update: rewrites pristine kit files, keeps edited ones, and writes t
     plan.files.set('AGENTS.md', Buffer.from('# a newer bootloader\n'))
     const result = applyUpdate(dir, plan, before)
     assert.ok(result.written.includes('skills/cairn-open/SKILL.md'), 'a pristine file the kit changed is rewritten')
-    assert.ok(!result.written.includes('AGENTS.md'), 'a host file is the adopter\'s even when pristine: reviewed, never rewritten')
-    assert.ok(result.status.files.some((f) => f.path === 'AGENTS.md' && f.action === 'review'))
+    assert.ok(result.written.includes('AGENTS.md'), 'a pristine host file follows the kit too (ADR-015 d1)')
+    assert.ok(result.status.files.some((f) => f.path === 'AGENTS.md' && f.action === 'write'))
     assert.deepEqual(before.host.filter((h) => h === 'AGENTS.md'), ['AGENTS.md'], 'the lock names the host files')
     assert.ok(result.written.includes('skills/cairn-unit/reference.md'), 'a missing kit file is restored')
     assert.equal(readFileSync(join(dir, 'skills/cairn-code/SKILL.md'), 'utf8'), 'my own stance\n', 'an edited file is kept')

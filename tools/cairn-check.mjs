@@ -1227,13 +1227,15 @@ const isConceptIndex = (file) => file.split('/').at(-1) === 'index.md'
  *  Pure, because the whole of `concept-orphan` turns on this resolution. */
 export function conceptLinkTargets(text) {
   const targets = new Set()
-  for (const match of text.matchAll(/(?:concepts\/|\.\/)((?:[a-z0-9-]+\/)*[a-z0-9-]+\.md)/g)) {
-    const cut = match[1].lastIndexOf('concepts/')
-    // Through `concepts/` the folders are the note's own. Reached only by a
-    // bare `./`, they are some other document's — `./modules/application.md`
-    // is not a concept, and admitting it would clear an orphan of that name.
-    if (cut === -1 && match[1].includes('/')) continue
-    targets.add(cut === -1 ? match[1] : match[1].slice(cut + 'concepts/'.length))
+  // Which alternative matched decides what the captured folders mean, so the
+  // prefix is captured too. Through `concepts/` — by either route — the
+  // folders are the note's own. Reached by a bare `./` they are some other
+  // document's: `./modules/application.md` is not a concept, and admitting it
+  // would clear an orphan of that name.
+  for (const [, prefix, path] of text.matchAll(/(concepts\/|\.\/)((?:[a-z0-9-]+\/)*[a-z0-9-]+\.md)/g)) {
+    const cut = path.lastIndexOf('concepts/')
+    if (cut !== -1) targets.add(path.slice(cut + 'concepts/'.length))
+    else if (prefix === 'concepts/' || !path.includes('/')) targets.add(path)
   }
   return targets
 }

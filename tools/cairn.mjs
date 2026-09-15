@@ -49,6 +49,7 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -79,6 +80,10 @@ export const REFERENCE_TOOLS = [
 
 /** The procedures, as Agent Skills: copied whole, one folder per skill. */
 export const SKILLS = 'skills'
+
+/** The one page an adopter finds by name at the root (ADR-013). A folder of
+ *  its own, so the pointer is found by looking rather than by knowing. */
+export const POINTER_PAGE = 'cairn/README.md'
 
 /** What `init` declares for `transport.registration`: the one registration
  *  sequence `cairn-open` ships, the commit landing on the trunk directly, and
@@ -270,6 +275,8 @@ This file points; it does not carry project memory.
 5. \`${SKILLS}/\` — the procedures as Agent Skills: \`cairn-brainstorm\`,
    \`cairn-open\`, \`cairn-unit\`, \`cairn-close\`, \`cairn-learn\`, and the
    \`cairn-code\` stance.
+6. \`${POINTER_PAGE}\` — which release is installed, the six chapters and the
+   six skills linked at its commit, and every file the kit owns. Generated.
 
 The [specification](${spec}/index.md) is read at the release this repository
 installed, release ${PROTOCOL_RELEASE}; \`npx cairn-protocol status\` says whether a
@@ -452,6 +459,81 @@ no API page and installs none.
 A promotion unit that changes what a surface does writes that surface's page in
 the same unit, and adds its line to the README. One that changes no surface
 leaves the pages alone and says so.
+`
+}
+
+/** The six chapters, in the order the specification gives them. Linked at the
+ *  release's own commit, so a repository installed today resolves to the text
+ *  it was installed from. */
+const SPEC_CHAPTERS = [
+  ['1. Idea and ideation', 'where an idea is captured and turned into something a session can read'],
+  ['2. Research', 'what is read before a decision, and where the notes land'],
+  ['3. Vision and specifications', 'what the product is, and the pages a promotion writes'],
+  ['4. Roadmap', 'the register of milestones, each with a coding path or none yet'],
+  ['5. Coding cycle', 'how a path opens, runs unit by unit, and closes'],
+  ['6. Learning loop', 'the concept wiki, learning notes, and what a cycle leaves behind']
+]
+
+const SKILL_LINES = [
+  ['cairn-brainstorm', 'an idea arrives and is worked into a note'],
+  ['cairn-open', 'a path is scoped, accepted and registered'],
+  ['cairn-unit', 'one work unit: plan, change, self-review, review, verify, push'],
+  ['cairn-close', 'a candidate is proposed, reviewed and integrated'],
+  ['cairn-learn', 'a learning session, ending in a note with an order'],
+  ['cairn-code', 'the stance the change movement is written with']
+]
+
+/** The page an adopter finds by name at the root: which release this is, what
+ *  to read, and what the kit owns. Nothing on it is written by hand (ADR-013).
+ *  `edited` is the list the last `update` could not rewrite (ADR-015 d2); it
+ *  is empty at `init` and until an update finds one. */
+export function pointerPage(commit, { paths, edited = [] }) {
+  const spec = specUrl(commit)
+  const chapters = SPEC_CHAPTERS
+    .map(([title, purpose]) => `- [${title}](${spec}/index.md) — ${purpose}`).join('\n')
+  const skills = SKILL_LINES
+    .map(([name, when]) => `- [\`${name}\`](../${SKILLS}/${name}/SKILL.md) — ${when}`).join('\n')
+  const owned = [...paths].sort().map((path) => `- \`${path}\``).join('\n')
+  const reconcile = edited.length === 0
+    ? 'Nothing. The last update rewrote every file it owns.'
+    : [...edited].sort().map((path) => `- \`${path}\``).join('\n')
+  return front('Cairn Pointer', 'Cairn here', `Release ${PROTOCOL_RELEASE} of the Cairn protocol, installed in this repository: what to read, and what the kit owns.`, ['cairn', 'pointer', 'generated']) +
+    `\n# Cairn here
+
+Cairn is the most lightweight and minimalistic harness-agnostic,
+document-driven coding protocol.
+
+This repository carries **release ${PROTOCOL_RELEASE}**, cut from commit
+\`${commit}\`. Every link below resolves to the specification at that commit,
+so what you read is what you installed.
+
+This page is GENERATED, at \`init\` and at every \`update\`. Nothing on it is
+written by hand.
+
+## The specification, in six chapters
+
+${chapters}
+
+## The skills
+
+${skills}
+
+## What the kit owns
+
+\`update\` rewrites any of these that still holds exactly what the kit wrote,
+and never rewrites one you have edited. \`npx cairn-protocol status\` says
+which is which, and \`update --take <path>\` takes the release's version of one
+you name.
+
+${owned}
+
+## To reconcile by hand
+
+Files you edited whose template this release changed. \`update\` left them
+alone and printed the difference; this list stands until an update finds it
+empty.
+
+${reconcile}
 `
 }
 
@@ -671,6 +753,11 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
   if (options.profile === 'ci') put('.github/workflows/cairn.yml', workflow(options), 'host')
   if (options.transport === 'pull-request') put('.github/pull_request_template.md', requestTemplate())
 
+  // Last, because it names every other file — itself and the lock included,
+  // since `status` reads both and an adopter looking for "what is Cairn's
+  // here" must find them on the list.
+  put(POINTER_PAGE, pointerPage(commit, { paths: [...files.keys(), POINTER_PAGE, 'cairn.lock.json'] }))
+
   const dangling = outwardLinks(files)
   if (dangling.length) {
     throw new Error(
@@ -805,7 +892,6 @@ export function installationStatus(lock, plan, stateOf) {
   // carries: it is rewritten by its generator at every update, and reported
   // only when it is gone.
   const view = plan.config ? `${plan.config.roots.project}/coding-paths/ACTIVE.md` : null
-  const host = plan.host ?? new Set()
   for (const [path, content] of plan.files) {
     const recorded = lock.manifest[path]
     const state = recorded === undefined ? (stateOf(path, digest(content)) === 'missing' ? 'missing' : 'unmanaged') : stateOf(path, recorded)
@@ -813,7 +899,11 @@ export function installationStatus(lock, plan, stateOf) {
     let action = 'none'
     if (state === 'missing') action = 'write'
     else if (state === 'edited' || state === 'unmanaged') action = 'keep'
-    else if (!current) action = host.has(path) ? 'review' : 'write'
+    // ADR-015 d1: a PRISTINE file holds exactly what the kit wrote, whoever
+    // owns it, so there is nothing of the adopter's for a review to protect
+    // and the release's version simply lands. Ownership decides only what
+    // happens to a file that LEFT the kit, below.
+    else if (!current) action = 'write'
     files.push({ path, state, action })
   }
   const left = []
@@ -836,16 +926,69 @@ function describeStatus(status) {
     `kit files: ${Object.entries(counts).map(([state, n]) => `${n} ${state}`).join(', ')}`
   ]
   for (const file of status.files.filter((f) => f.action === 'write')) lines.push(`  update would write   ${file.path} (${file.state})`)
-  for (const file of status.files.filter((f) => f.action === 'review')) lines.push(`  update would keep    ${file.path} — yours, and the kit's template changed; review it against the kit's`)
   for (const file of status.files.filter((f) => f.state === 'edited')) lines.push(`  update would keep    ${file.path} — edited here; review it against the kit's`)
   for (const file of status.left) lines.push(`  update would ${file.action === 'delete' ? 'delete ' : 'report '} ${file.path} — no longer part of the kit${file.action === 'report' ? (file.state === 'pristine' ? ', and yours to delete' : ', and edited here') : ''}`)
   return lines.join('\n')
 }
 
+/** What the release changed in a file it must not rewrite (ADR-015 d2).
+ *
+ *  Git's diff, not one written here: the kit already requires Git, and a diff
+ *  implemented in this file would be more code than the thing it compares.
+ *  `--no-index` needs two real paths, so the template goes to a temporary file
+ *  and is removed afterwards. A diff that cannot be produced is reported as
+ *  not produced — a missing diff must never read as "no difference". */
+export function templateDiff(target, path, template) {
+  const scratch = join(tmpdir(), `cairn-template-${digest(template).slice(0, 12)}`)
+  try {
+    writeFileSync(scratch, template)
+    execFileSync('git', ['diff', '--no-index', '--no-color', '--', scratch, join(target, path)],
+      { encoding: 'utf8', stdio: 'pipe' })
+    return ''
+  } catch (error) {
+    // `git diff --no-index` exits 1 when the files differ; that is the answer,
+    // not a failure. Anything with no stdout at all is a failure.
+    const out = error.stdout?.toString('utf8') ?? ''
+    if (!out) return `cairn: could not diff ${path} against the release's template — ${error.message}`
+    // The hunks only. The headers `--no-index` writes name a temporary file
+    // and an absolute target, which tell a reader nothing; the caller captions
+    // the two sides instead.
+    const hunks = out.split('\n').findIndex((line) => line.startsWith('@@'))
+    return hunks === -1 ? out : out.split('\n').slice(hunks).join('\n').trimEnd()
+  } finally {
+    rmSync(scratch, { force: true })
+  }
+}
+
 /** Rewrite what the kit owns and the tree has not edited; migrate the
- *  configuration field by field; report the rest; write the new lock. */
+ *  configuration field by field; report the rest; write the new lock.
+ *
+ *  `reconcile` is the files the owner must settle by hand — edited here, and
+ *  the release changed their template — with `diffs` saying what it changed
+ *  in each. The pointer page carries the same list to disk, so the work
+ *  outlives the terminal it was printed in (ADR-015 d2). */
 export function applyUpdate(target, plan, lock, { dryRun = false } = {}) {
-  const status = installationStatus(lock, plan, (path, recorded) => fileState(target, path, recorded))
+  const read = (path, recorded) => fileState(target, path, recorded)
+
+  // Read once to find what this release cannot rewrite, because the pointer
+  // page has to name it...
+  const reconcile = []
+  const diffs = {}
+  for (const file of installationStatus(lock, plan, read).files) {
+    if (file.action !== 'keep' || file.state !== 'edited') continue
+    const template = plan.files.get(file.path)
+    if (digest(template) === lock.manifest[file.path]) continue
+    reconcile.push(file.path)
+    diffs[file.path] = templateDiff(target, file.path, template)
+  }
+  // ...then put that page in the plan and read again, so the page the lock
+  // digests is the page that lands. A page written outside the plan is a page
+  // the next `status` calls edited.
+  plan.files.set(POINTER_PAGE, Buffer.from(
+    pointerPage(plan.sourceCommit,
+      { paths: [...plan.files.keys(), 'cairn.lock.json'], edited: reconcile }), 'utf8'))
+  const status = installationStatus(lock, plan, read)
+
   const written = []
   const deleted = []
   if (!dryRun) {
@@ -862,7 +1005,31 @@ export function applyUpdate(target, plan, lock, { dryRun = false } = {}) {
     generateView(target)
     writeLock(target, plan)
   }
-  return { status, written, deleted }
+  return { status, written, deleted, diffs, reconcile }
+}
+
+/** Take the release's version of ONE edited file (ADR-015 d3). It says what it
+ *  is about to discard and does nothing without a name: this is how an
+ *  adopter's edited checker becomes a version bump once its repairs are
+ *  upstream. */
+export function takeRelease(target, plan, lock, path, { dryRun = false } = {}) {
+  if (!plan.files.has(path)) {
+    throw new Error(`cairn: ${path} is not a file this release carries — \`status\` lists the ones it does`)
+  }
+  const template = plan.files.get(path)
+  const state = fileState(target, path, lock.manifest[path])
+  // What is discarded, shown rather than described: the reason to run this is
+  // that the repairs are upstream, and that is a claim about lines.
+  const discarded = state === 'edited' ? templateDiff(target, path, template) : ''
+  if (!dryRun) {
+    writeFileSync(join(target, path), template)
+    // ADR-015 d3 makes the file pristine AT THE NEW RELEASE, and pristine is
+    // a statement about the lock. Only this entry moves: the installation is
+    // still at the release the rest of it carries, until `update` runs.
+    writeFileSync(join(target, 'cairn.lock.json'),
+      `${JSON.stringify({ ...lock, manifest: { ...lock.manifest, [path]: digest(template) } }, null, 2)}\n`)
+  }
+  return { state, discarded }
 }
 
 /** Shapes a 0.2 installation leaves behind, which the kit no longer defines.
@@ -903,6 +1070,10 @@ export function applyAdopt(target, { dryRun = false } = {}) {
   const errors = configErrors(migrated)
   if (errors.length) throw new Error(`cairn: the migrated configuration is invalid — ${errors.join('; ')}`)
   const plan = planInstall(optionsFromConfig(migrated))
+  // The migrated configuration is what lands on disk, so it is what the lock
+  // must digest. Locking the generated one instead made the very next
+  // `status` call an untouched file edited (found by S01's review).
+  plan.files.set('cairn.config.json', Buffer.from(`${JSON.stringify(migrated, null, 2)}\n`, 'utf8'))
   const written = []
   const kept = []
   const decide = (path) => {
@@ -915,9 +1086,7 @@ export function applyAdopt(target, { dryRun = false } = {}) {
       if (decide(path) === 'keep') { kept.push(path); continue }
       const absolute = join(target, path)
       mkdirSync(dirname(absolute), { recursive: true })
-      // The migrated configuration keeps the host's answers; the plan's is
-      // only the shape a fresh install would have had.
-      writeFileSync(absolute, path === 'cairn.config.json' ? `${JSON.stringify(migrated, null, 2)}\n` : content)
+      writeFileSync(absolute, content)
       written.push(path)
     }
     generateView(target)
@@ -937,6 +1106,7 @@ function parseArgs(argv) {
   const options = { ...defaultOptions() }
   let target = null
   let dryRun = false
+  let take = null
   for (let i = 0; i < rest.length; i += 1) {
     const arg = rest[i]
     const next = () => {
@@ -954,14 +1124,15 @@ function parseArgs(argv) {
     else if (arg === '--docs-root') options.docsRoot = next()
     else if (arg === '--source') options.sourceRoots = next().split(',').map((s) => s.trim()).filter(Boolean)
     else if (arg === '--transport') options.transport = next()
+    else if (arg === '--take') take = next()
     else if (arg === '--dry-run') dryRun = true
     else throw new Error(`cairn: unknown argument ${arg}`)
   }
-  return { command, options, target: resolve(target ?? '.'), dryRun }
+  return { command, options, target: resolve(target ?? '.'), dryRun, take }
 }
 
 function main(argv) {
-  const { command, options, target, dryRun } = parseArgs(argv)
+  const { command, options, target, dryRun, take } = parseArgs(argv)
   if (command === 'init') {
     if (options.profile === 'protected') {
       throw new Error('cairn: --profile protected is not installable — it asserts host protection this command cannot configure. Install local or ci and declare protected once the host is actually configured')
@@ -996,9 +1167,28 @@ function main(argv) {
     if (errors.length) throw new Error(`cairn: the migrated configuration is invalid — ${errors.join('; ')}`)
     const plan = planInstall(optionsFromConfig(migrated))
     plan.files.set('cairn.config.json', Buffer.from(`${JSON.stringify(migrated, null, 2)}\n`, 'utf8'))
+    if (take !== null) {
+      const { state, discarded } = takeRelease(target, plan, lock, take, { dryRun })
+      if (discarded) {
+        console.log(`--- ${take} — about to be discarded (the + lines below)`)
+        console.log(discarded)
+      }
+      console.log(`cairn — ${dryRun ? 'would take' : 'took'} the release's version of ${take}, discarding what was ${state} here; nothing else was touched`)
+      console.log('next — run `update` with no --take to bring the rest of the kit to this release')
+      return
+    }
     const result = applyUpdate(target, plan, lock, { dryRun })
     console.log(describeStatus(result.status))
+    for (const path of result.reconcile) {
+      console.log(`\n--- ${path} — you edited this, and the release changed its template`)
+      console.log('    (- the release\'s version, + yours)')
+      console.log(result.diffs[path])
+    }
     console.log(`cairn — ${dryRun ? 'would update' : 'updated'} to release ${PROTOCOL_RELEASE}: ${result.written.length} written, ${result.deleted.length} deleted`)
+    if (result.reconcile.length > 0) {
+      console.log(`to reconcile by hand (${result.reconcile.length}): ${result.reconcile.join(', ')}`)
+      console.log(`they are listed on ${POINTER_PAGE} too, so the work is on disk and not only here`)
+    }
     return
   }
   if (command === 'stamp') {
@@ -1014,7 +1204,7 @@ function main(argv) {
     if (!dryRun) console.log('next — run npm run cairn-check, read its findings, and commit the adoption as one unit')
     return
   }
-  throw new Error('usage: cairn <init|status|update|adopt> [--target <dir>] [options]; `stamp` is the package\'s own, run by prepack')
+  throw new Error('usage: cairn <init|status|update|adopt> [--target <dir>] [options]; `update --take <path>` takes the release\'s version of one edited file; `stamp` is the package\'s own, run by prepack')
 }
 
 if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('/cairn')) {

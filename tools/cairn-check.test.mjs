@@ -2574,6 +2574,11 @@ test('a link is resolved to the note under the root, whatever it is written rela
   assert.deepEqual([...conceptLinkTargets('see [a](./cache.md)')], ['cache.md'])
   assert.deepEqual([...conceptLinkTargets('see [a](./modules/application.md)')], [],
     'a relative link that never went through `concepts/` is some other document')
+  // A link written without a leading `./` reaches the note through the
+  // `concepts/` alternative, so its capture holds the folders with no
+  // `concepts/` left in it. Keying the guard off that absence drops it.
+  assert.deepEqual([...conceptLinkTargets('see [a](concepts/product/fixture.md)')], ['product/fixture.md'])
+  assert.deepEqual([...conceptLinkTargets('see [a](docs/concepts/learning/cache.md)')], ['learning/cache.md'])
   assert.deepEqual([...conceptLinkTargets('nothing here')], [])
 })
 

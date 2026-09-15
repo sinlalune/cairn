@@ -20,7 +20,7 @@ covers: dependency-free Node scripts that evaluate the protocol the
 | `cairn-audit.mjs` | scaffolds the closing review of one exact candidate: on `pull-request` the request's description, in the order the template gives, with the definition of done read item by item from the record; on `manual-git` the closing record in the path folder |
 | `cairn-postmortem.mjs` | the mechanical half of a post-mortem; facts only, and no reading of it reaches an exit code |
 | `cairn-rules.mjs` | regenerates the rule catalogue and the rule-to-requirement linkage on the [conformance page](../../spec/reference/conformance.md); this repository's, not installed |
-| `cairn.mjs` | the `cairn` command: `init` installs the thin kit, `status` reads the lock, `update` rewrites pristine kit files and migrates the configuration, `adopt` turns a lock-less installation into one; the package's, not installed |
+| `cairn.mjs` | the `cairn` command: `init` installs the thin kit, `status` reads the lock, `update` rewrites every pristine file and prints what the release changes in an edited one (`--take <path>` hands over the release's version of one), `adopt` turns a lock-less installation into one; the package's, not installed |
 | `cairn-pilot.mjs` | the greenfield pilot as a command: drives a throwaway repository from `init` to `done` on one transport, green at every gate, and counts the protocol files each stage writes; this repository's, not installed |
 | `*.test.mjs` | the tools' own suite, run by `npm run cairn-test`: the pure half of every rule against `evaluate()`, and one adversarial fixture per blocking rule against a real installed repository |
 
@@ -120,8 +120,8 @@ each step's current content.
 files of six skills, the folder indexes of the documentation and project
 planes, and the host files — the configuration, the bootloader, the binding,
 the package scripts, the live view, this note, the workflow and the request
-template. What that comes to is 31 files and the lock on the `ci` profile and
-30 on `local`, which has no workflow; the number is measured here and bounds
+template. What that comes to is 32 files and the lock on the `ci` profile and
+31 on `local`, which has no workflow; the number is measured here and bounds
 nothing (ADR-022 d2). The documentation plane it writes is the one 1.1
 decided: `docs/inputs/` for what the project had before the protocol,
 `docs/architecture/` with its index, `docs/modules/`, and a concept root of
@@ -133,9 +133,29 @@ It copies no specification: every link it writes into the specification is
 pinned to the commit the kit was cut from. `cairn.lock.json` records the
 digest of every kit file as the kit wrote it, which is what lets `status`
 tell an edit from an installation and `update` rewrite the first and keep the
-second. `adopt` is the migration from a 0.2 installation: it keeps the host's
+second. `cairn/README.md` is generated at `init` and at every `update`, and nothing on
+it is written by hand: the installed release and the commit it was cut from,
+the six chapters and the six skills linked at that commit, every file the kit
+owns, and the files an update could not rewrite. The bootloader's *start here*
+list ends on it.
+
+**What `update` does, and what it refuses.** A file that still holds exactly
+what the kit wrote is rewritten when its template changed — whoever owns it,
+because pristine means nothing of the adopter's is in it and a review would
+protect nothing. An edited file is never rewritten: `update` prints what the
+release changed in it, using Git's own `diff --no-index` against the template
+in a temporary file rather than a diff written here, and ends its report with
+the files to settle by hand. The pointer page carries that same list to disk,
+so the work outlives the terminal. `update --take <path>` replaces one named
+edited file with the release's version, says what it discards, and touches
+nothing else.
+
+`adopt` is the migration from a 0.2 installation: it keeps the host's
 answers, replaces the tools, adds the skills, and reports the shapes the kit
-no longer defines rather than deleting anything of the adopter's.
+no longer defines rather than deleting anything of the adopter's. The lock it
+writes digests the migrated configuration it actually wrote, not the one a
+fresh install would have generated, so the next `status` does not call an
+untouched file edited.
 
 At `init` the configuration it writes declares
 `transport.registration: manual-git`, the one registration sequence
