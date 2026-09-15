@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-009
   route: full
   status: running
-  current_step: S06
+  current_step: S08
   base_commit: 76512dc75b1940a54388ff4e7fdabb53a662179a
   branch: path/cp-cairn-009
   assigned_writer: cp-cairn-009-writer
@@ -294,6 +294,7 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 - **S04** — [the manifest, the generated adapter and template](./steps/S04.md) — complete. `cairn-postmortem` in the manifest and the kit's scripts; Ponytail named at `v4.9.0` in the lock and on the pointer page, copied nowhere; the schema and the project index kept, each for its own worth; the generated workflow on the trunk alone with the red-run step, and the request template opening with the three plain lines and the definition of done before the ledger, both proved against this repository's own. Advances the seventh and eighth items of the definition of done.
 - **S05** — [chapters 3 and 6, the concepts, the layout](./steps/S05.md) — complete. Chapter 3 gains the flow kind, the surface page with its worked example and API link, and the promotion outputs; chapter 6's scopes table becomes the three folders with the owner's `product` among them, its learning-notes paragraph says a learning note is a concept note with an order, and the kit's weight-budget line loses its target; the architecture concept states what a page carries and what a flow page is; the template says a note that teaches a sequence orders its body; the layout's tree and table show what `init` now writes. Advances the ninth item of the definition of done.
 - **S06** — [this repository's own](./steps/S06.md) — complete. The architecture index says flow pages live here and what a page states in one sentence and one diagram; the `tools/` module note's kit section, appended to by four units, is re-read and reordered into what `init` writes, what it does not copy, what the installation knows about itself, `update`, `adopt` and the two generated host files; the register's row 4 records the widening this path made in flight. Advances the tenth item of the definition of done.
+- **S08** — [six chapters, six destinations](./steps/S08.md) — complete. The owner's try before the merge found the pointer page listing six chapters over one URL; each is now linked at its own anchor, slugged from its title, and the test checks every anchor against the headings `spec/index.md` carries. Advances the fifth item, which was not met.
 
 ## Resume
 

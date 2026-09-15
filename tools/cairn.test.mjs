@@ -389,6 +389,23 @@ test('cairn init: the pointer page says which release this is and what the kit o
   for (const skill of ['cairn-brainstorm', 'cairn-open', 'cairn-unit', 'cairn-close', 'cairn-learn', 'cairn-code']) {
     assert.ok(page.includes(`${skill}/SKILL.md`), `${skill} is linked`)
   }
+  // ADR-013 d1 asks for the six chapters, EACH one link. The owner's try of
+  // 2026-09-15 found six labels over one URL: every chapter went to the top of
+  // the specification, so the page listed six destinations and had one.
+  const chapters = [...page.matchAll(/^- \[(\d)\. [^\]]+\]\(([^)]+)\)/gm)]
+  assert.equal(chapters.length, 6, 'six chapter lines')
+  const targets = chapters.map(([, , url]) => url)
+  assert.equal(new Set(targets).size, 6, `six chapters, six destinations — got ${new Set(targets).size}`)
+  // Distinct is not enough: six distinct anchors that land nowhere are still
+  // six broken links. Each is checked against the headings the specification
+  // actually carries, slugged as the forge slugs them.
+  const headings = new Set([...readFileSync(join(REPO, 'spec/index.md'), 'utf8').matchAll(/^## (.+)$/gm)]
+    .map(([, title]) => title.toLowerCase().replace(/[^a-z0-9 -]/g, '').trim().replace(/ +/g, '-')))
+  for (const [, n, url] of chapters) {
+    const anchor = url.split('#')[1]
+    assert.ok(anchor, `chapter ${n} carries an anchor`)
+    assert.ok(headings.has(anchor), `chapter ${n}'s anchor #${anchor} is a heading spec/index.md has`)
+  }
   assert.ok(page.includes('cairn.lock.json') && page.includes('tools/cairn-check.mjs'),
     'the files the kit owns, from the manifest')
   assert.ok(page.includes('cairn/README.md'), 'including itself — it is a kit file like any other')

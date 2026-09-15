@@ -153,7 +153,9 @@ an edit from an installation and `update` rewrite the first and keep the
 second. `cairn/README.md` is generated at `init` and at every `update` and
 nothing on it is written by hand: the installed release and the commit it was
 cut from, the six chapters and the six skills linked at that commit, every
-file the kit owns, and the files an update could not rewrite. The bootloader's
+file the kit owns, and the files an update could not rewrite. The chapters
+are six headings of one page, so each is linked at its own anchor, slugged
+from its title rather than written out beside it. The bootloader's
 *start here* list ends on it.
 
 **What `update` does, and what it refuses.** A file that still holds exactly

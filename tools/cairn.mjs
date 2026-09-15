@@ -469,9 +469,13 @@ leaves the pages alone and says so.
 `
 }
 
-/** The six chapters, in the order the specification gives them. Linked at the
- *  release's own commit, so a repository installed today resolves to the text
- *  it was installed from. */
+/** The six chapters, in the order the specification gives them. They are six
+ *  headings of ONE page, so each needs its own anchor: linking them all at
+ *  `spec/index.md` gives a reader six labels over one destination, which is
+ *  what the owner's try of 2026-09-15 found. The anchor is the heading
+ *  slugged as the forge slugs it — lowercased, punctuation dropped, spaces
+ *  hyphenated — and `anchorOf` derives it from the title rather than
+ *  repeating it, so a chapter renamed here cannot keep a stale anchor. */
 const SPEC_CHAPTERS = [
   ['1. Idea and ideation', 'where an idea is captured and turned into something a session can read'],
   ['2. Research', 'what is read before a decision, and where the notes land'],
@@ -480,6 +484,8 @@ const SPEC_CHAPTERS = [
   ['5. Coding cycle', 'how a path opens, runs unit by unit, and closes'],
   ['6. Learning loop', 'the concept wiki, learning notes, and what a cycle leaves behind']
 ]
+
+const anchorOf = (title) => title.toLowerCase().replace(/[^a-z0-9 -]/g, '').trim().replace(/ +/g, '-')
 
 const SKILL_LINES = [
   ['cairn-brainstorm', 'an idea arrives and is worked into a note'],
@@ -497,7 +503,7 @@ const SKILL_LINES = [
 export function pointerPage(commit, { paths, edited = [] }) {
   const spec = specUrl(commit)
   const chapters = SPEC_CHAPTERS
-    .map(([title, purpose]) => `- [${title}](${spec}/index.md) — ${purpose}`).join('\n')
+    .map(([title, purpose]) => `- [${title}](${spec}/index.md#${anchorOf(title)}) — ${purpose}`).join('\n')
   const skills = SKILL_LINES
     .map(([name, when]) => `- [\`${name}\`](../${SKILLS}/${name}/SKILL.md) — ${when}`).join('\n')
   const owned = [...paths].sort().map((path) => `- \`${path}\``).join('\n')
