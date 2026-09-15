@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-011
   route: full
   status: running
-  current_step: S03
+  current_step: S04
   base_commit: 471fa71b27a2334f40f6fb4fa01c682ac923e323
   branch: path/cp-cairn-011
   assigned_writer: cp-cairn-011-writer
@@ -242,36 +242,52 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
   target, 33 files and the lock on `ci` and 32 on `local` with no target,
   2 protocol files per unit and 4 or 5 per lifecycle; every target bound;
   the counting method named. Advances the third item.
+- **S04** — [this repository updated with its own kit](./steps/S04.md) —
+  complete. `status` then `update` run here from the tree, both reports
+  quoted; thirteen kit files pristine and rewritten identically, seventeen
+  edited and left, each listed with what the release changes in it;
+  `cairn/README.md` installed naming the release and commit the tree
+  carries, `docs/inputs/` installed and indexed, the lock's manifest at
+  thirty-three; the three concept folders the kit plans under
+  `spec/concepts/` declined, with the reason. The release and commit on
+  the page are `package.json`'s and HEAD's, so S05 re-runs `update` after
+  the version. Advances the fourth item, but for the release's name.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 689647baa3434842c3ac0821601e6f8d1f4e1b6f — S02, on origin/path/cp-cairn-011; S03's own commit is named here by S04
-unit   : 02 — S03 is the commit after this checkpoint
+commit : 0b40d5ef95b72690581b67e5816c56ab703c3d49 — S03, on origin/path/cp-cairn-011; S04's own commit is named here by S05
+unit   : 03 — S04 is the commit after this checkpoint
 base   : 471fa71b27a2334f40f6fb4fa01c682ac923e323
-trunk  : 471fa71b27a2334f40f6fb4fa01c682ac923e323 — origin/main at S03
+trunk  : 471fa71b27a2334f40f6fb4fa01c682ac923e323 — origin/main at S04
 ```
 
 ### Next action
 
 In a fresh session, from the worktree `../cairn-cp-cairn-011` on branch
-`path/cp-cairn-011`: run S04 of the plan with `cairn-unit` — this
-repository updated with its own kit. Run `node tools/cairn.mjs status`
-then `node tools/cairn.mjs update` here, quote both reports in the step;
-pristine kit files are rewritten, edited ones left and listed with what
-the release changes in them; `cairn/README.md` exists naming the release
-and the commit; `cairn.lock.json` records what the kit installs at 1.1;
-any file `update` would add that this repository's binding does not want
-— the concept folders under `docs/concepts/`, since this repository's
-wiki is `spec/concepts/`; `docs/inputs/`; anything else the report names
-— is named with the reason it is or is not taken (ADR-013, ADR-015). The
-report will say *this package is 1.0.0* until S05. Type `implementation`
-if a tool file is rewritten, else `documentation`; `writes:` already
-holds `cairn/**`, `docs/inputs/**`, `docs/index.md` and the lock, and
-widens for anything else `update` rewrites, with the reason. The review
-section's first line names the reader, as ADR-017 decision 4 says.
+`path/cp-cairn-011`: run S05 of the plan with `cairn-unit` — the page's
+opening and the register. Set `package.json` to `1.1.0`; then run
+`node tools/cairn.mjs update` again here, so the pointer page and the
+lock name release 1.1.0 (the commit they name is HEAD at that moment, and
+S06's candidate is what the tag will name — say so in the step); delete
+the three `spec/concepts/` folders it writes again, as S04 did, and quote
+the report. Replace the 1.1 page's opening sentence — *Nothing here is
+implemented yet: the roadmap register names the coding paths that build
+it* — with one saying its records are implemented by paths 1 to 6 and
+released as 1.1.0, marked *since 2026-09-15*, and change nothing else on
+the page. In the register: the 1.1 milestone row *done* with the date and
+the tag to come; a new row *Cairn 1.2 — what 1.1 taught*, *no path yet*,
+with the five things of the goal, the first adopter's update, and the two
+S04 found — the kit plans an adopter's three concept folders under the
+protocol repository's own wiki root and `update` has no way to decline a
+host file, so every `status` here reports three missing; this
+repository's bootloader does not point at the pointer page the release's
+template points at — plus S01's once-red fixture and S03's chapter-6
+sentence, the feedback file linked as the source. Type `documentation`.
+The review section's first line names the reader, as ADR-017 decision 4
+says.
 
 ### Blockers
 
@@ -310,13 +326,26 @@ None.
   excluded from this path's writes; the chapter names no figure but the
   targets, and the sentence is one of the restated facts the 1.2 row
   carries (S03).
+- Taking the release's version of `docs/index.md` with `--take` — the
+  release's template lists surface pages and concept folders this
+  repository does not have; the one line the kit's install owes it, the
+  inputs folder, is added by hand (S04).
+- Keeping the three concept folders `update` writes under `spec/concepts/`
+  — an adopter's folders, planned under this repository's own wiki root
+  because the binding names it as the concepts root; the definition of
+  done excludes `spec/concepts/` from change, and the protocol's wiki has
+  its own index; declined and named for the 1.2 row (S04).
+- Adding the pointer page's line to this repository's `AGENTS.md`, as the
+  release's template has it — the bootloader is outside this path's
+  writes and an edited host file `update` leaves; it stands on the
+  pointer page's reconcile list, which is where ADR-015 puts it (S04).
 
 ### Reading order
 
 1. `AGENTS.md`, then `skills/cairn-unit/SKILL.md`.
-2. `docs/adr/ADR-013-a-local-pointer-to-the-protocol.md` and `docs/adr/ADR-015-a-release-reaches-an-edited-file.md` — what `update` owes this repository.
-3. `tools/cairn.mjs`, `applyUpdate` and the pointer page it writes — read for what they print and write, never written; `cairn.lock.json` as it is, the 1.0.0 manifest of 26.
-4. `project/coding-paths/CP-CAIRN-011/plan.md`, then `project/coding-paths/CP-CAIRN-011/steps/S01.md` for the `update` report a 1.0.0 installation gave.
+2. `docs/architecture/01-cairn-1-1.md`, its opening paragraph — the one sentence to replace; `project/coding-paths/index.md`, the milestone table and row 7.
+3. `feedbacks/2026-09-15-cp-cairn-009-writer-feedback.md` and `project/log/2026-09-15-cp-cairn-010.md` — the five things, for the 1.2 row; this record's S04 for the two it found.
+4. `project/coding-paths/CP-CAIRN-011/plan.md`, then `project/coding-paths/CP-CAIRN-001/steps/S08.md` for how 1.0.0 named its version and tag.
 
 ### Verify
 
