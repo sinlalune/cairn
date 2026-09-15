@@ -219,27 +219,40 @@ The owner said the units run in a fresh session. Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
-- **S01** — not started
+- **S01** — [the README](./steps/S01.md) — complete. What Cairn is in one
+  paragraph, then its four surfaces one line each — adopting, opening and
+  running, closing, learning — with the skill behind each; every count 1.1's
+  as a tool counts it: six skills, twenty-seven rules of which twenty-one
+  block, five movements, thirty-three files and the lock on the `ci`
+  profile; registration on the trunk directly; quick start 3 split into the
+  two commands the tool actually has, `update` for a lock and `adopt` for
+  none; the three quick starts run against the kit packed at the
+  registration commit, and the pilot from `init` to `done`; the *Weight*
+  section pointing at the conformance page with no number. Advances the
+  first item.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — the trunk commit that adds this record, whose parent is base
-unit   : 0
+commit : 891b07de4afb4239a26ecccfa1f250a046701c34 — the registration commit, on origin/main; S01's own commit is named here by S02
+unit   : 0 — S01 is the commit after this checkpoint
 base   : 471fa71b27a2334f40f6fb4fa01c682ac923e323
-trunk  : 471fa71b27a2334f40f6fb4fa01c682ac923e323 — origin/main at registration
+trunk  : 471fa71b27a2334f40f6fb4fa01c682ac923e323 — origin/main at S01
 ```
 
 ### Next action
 
 In a fresh session, from the worktree `../cairn-cp-cairn-011` on branch
-`path/cp-cairn-011`: run S01 of the plan with `cairn-unit` — the README:
-what Cairn is in one paragraph, the surfaces one line each, every count
-and sequence 1.1's, the three quick starts run against the kit at this
-commit with their output kept in the step. The review section's first
-line names the reader, as ADR-017 decision 4 says.
+`path/cp-cairn-011`: run S02 of the plan with `cairn-unit` — the site.
+Build it from the candidate with the site's own build, read that it
+projects the README, the manifesto, the specification and the six skills,
+make its *Start* section and any list `site/src/App.jsx` hard-codes say
+what the README now says, and keep the build's output in the step. Type
+`implementation` if `site/` changes, `documentation` if only the proof is
+written. The review section's first line names the reader, as ADR-017
+decision 4 says.
 
 ### Blockers
 
@@ -260,13 +273,21 @@ None.
   carry.
 - Pinning the register in `governs:` — a write surface, as in every
   path before.
+- Running the quick starts with `npx cairn-protocol` as written, against
+  the registry — that installs 1.0.0, the release the README no longer
+  describes; the package was packed from the worktree and `npx` given the
+  tarball, so the commands ran as written against the kit at this commit
+  (S01).
+- Keeping a word count in the README beside the pointer at the conformance
+  page — a number restated in two places is the second of the five things
+  1.1 leaves; the page counts, the README points (S01).
 
 ### Reading order
 
 1. `AGENTS.md`, then `skills/cairn-unit/SKILL.md`.
-2. `docs/architecture/01-cairn-1-1.md` at its pinned blob — the two tables.
-3. `README.md` and `site/src/App.jsx` as they are — what must become true.
-4. `project/coding-paths/CP-CAIRN-011/plan.md`, then `project/log/2026-09-03-cp-cairn-001.md` for the cut.
+2. `README.md` as S01 left it — what the site must project and agree with.
+3. `site/build-content.mjs` and `site/src/App.jsx` — what the build reads and what the *Start* section hard-codes.
+4. `project/coding-paths/CP-CAIRN-011/plan.md`, then `project/coding-paths/CP-CAIRN-001/steps/S07.md` for how the site was first built and proved.
 
 ### Verify
 
