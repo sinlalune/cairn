@@ -7,14 +7,14 @@ timestamp: 2026-09-15T00:00:00Z
 cairn:
   id: CP-CAIRN-009
   route: full
-  status: ready
+  status: done
   current_step: S09
   base_commit: 76512dc75b1940a54388ff4e7fdabb53a662179a
   branch: path/cp-cairn-009
   assigned_writer: cp-cairn-009-writer
   depends_on: []
   subject_commit: 0e7c0b114a8083fb54cfc4a3ffb0a915af2d2a25
-  resolution: null
+  resolution: completed
   writes:
     - tools/cairn.mjs
     - tools/cairn.test.mjs
