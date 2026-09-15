@@ -1,9 +1,9 @@
 ---
 type: Cairn Decision Record
 title: ADR-017 — the review movement
-description: A unit has five movements — plan, change, self-review, review, verify. The review is the writer's own agent in a fresh context that sees only the diff and the two criteria of ADR-016, and its findings with their dispositions are written into a section of the step record that the checker requires; a fix is read once more, on its own lines, and not a third time. Promotes Q6 and Q7 of the coding-guidelines decisions page, the one answer of the page that adds a rule; decision 3 was raised by the request's reviewer and decided on 2026-09-08.
+description: A unit has five movements — plan, change, self-review, review, verify. The review is the writer's own agent in a fresh context that sees only the diff and the two criteria of ADR-016, and its findings with their dispositions are written into a section of the step record that the checker requires; a fix is read once more, on its own lines, and not a third time; when no fresh context can be obtained the writer reads and says so. Promotes Q6 and Q7 of the coding-guidelines decisions page, the one answer of the page that adds a rule; decision 3 was raised by the request's reviewer and decided on 2026-09-08; decision 4 was ruled by the owner on 2026-09-15.
 tags: [cairn, adr, 1.1, work-unit, review, fresh-context, checker, skills]
-timestamp: 2026-09-08T00:00:00Z
+timestamp: 2026-09-15T00:00:00Z
 adr:
   id: ADR-017
   status: accepted
@@ -12,7 +12,7 @@ adr:
 
 # ADR-017 — the review movement
 
-Status: accepted · 2026-09-07 · written by CP-CAIRN-003, S02; decision 3 added by S07 on 2026-09-08
+Status: accepted · 2026-09-07 · written by CP-CAIRN-003, S02; decision 3 added by S07 on 2026-09-08; decision 4 added by CP-CAIRN-010 S01 on 2026-09-15
 
 **Promoted from** the owner's
 [decisions page](../../project/brainstorm/2026-09-07-coding-guidelines-decisions.md)
@@ -134,6 +134,54 @@ What this changes: the `cairn-unit` skill, one sentence in the movement;
 `spec/reference/path-template.md`, whose review section shows the second
 read's lines under the first's. The rule `review` reads nothing more.
 
+### Decision 4 — when no reader can be obtained, the writer reads and the section says who read
+
+Ruled by the owner on 2026-09-15, after coding path 4 counted; added in
+place as decision 3 was, by the path the owner opened for it. Promoted
+from the owner's words as
+[CP-CAIRN-010's record](../../project/coding-paths/CP-CAIRN-010/index.md)
+carries them at its registration blob
+`fc0550f16c9b6a73d9c31890a38a6d723494eaa3`, and from the count in
+[coding path 4's journal entry](../../project/log/2026-09-15-cp-cairn-009.md)
+at blob `9dfaed79f33afa00411bd47d5c3ccda8e6f3787e`. Both stay exactly as
+they were.
+
+Decision 1 names three readers and assumes one can be had. On coding
+path 5, seven of eleven fresh contexts hung; on coding path 4, sixteen of
+twenty, each emitting one line or none, while the four that returned took
+between 140 and 495 seconds and one of them found a defect that would have
+reached an adopter's repository on code the writer had read twice. The
+writers improvised three answers to one question — defer the read to the
+next unit, obtain it late, read the diff themselves and say so — and the
+rule `review`, which reads presence, cannot tell any of them from a fresh
+context's verdict.
+
+A fresh context is asked for first, every unit. When none can be obtained
+— a subagent that hangs, a harness without one, a command that returns
+nothing — the writer reads the diff against the same two criteria, the
+ladder and correctness, and the movement is complete with that read: it
+is not a debt owed to the next unit, whose reader would judge a diff
+already on the branch, and it is not a reason to stop the path, because
+the failure is the harness's and not the unit's. The `#### Review`
+section opens with one line naming the reader: a fresh context, and which
+kind — a subagent, a new session, the harness's review command — or the
+writer, with the reason no reader was obtainable and how long was waited
+before saying so. The second read's line, under decision 3, says the same
+for the fix. The two reads are not substitutes, and the line is what lets
+the owner tell them apart: a unit the writer read is not less complete,
+it is less read, and it says so.
+
+The rule `review` reads presence and nothing more. Whether the reader was
+fresh is the owner's to read at the candidate, from the first line of
+each section, as decision 2 already left the dispositions' honesty to the
+owner.
+
+What this changes: the `cairn-unit` skill, one sentence in the movement
+naming the fallback and the line; `spec/reference/path-template.md`,
+whose review section shows the line under `#### Review`, once for the
+first read and once for the second. Chapter 5 and the concept do not
+change: the movement, its count and its order are what they were.
+
 ## Alternatives rejected
 
 - **Q6, the forge's reviewer on every request** (native): Copilot code
@@ -159,6 +207,23 @@ read's lines under the first's. The rule `review` reads nothing more.
   unchanged — the request's reviewer's proposal. Refused as unbounded, and
   as the vendor's own warning: a reviewer told to find gaps will find
   some.
+- **Decision 4, a rule that detects a real second read** (adds a rule):
+  the section is prose and the reader is outside the repository; the
+  predicate would be on a sentence, which is the manifesto's first
+  threat, and the note that raised the question rejected it first.
+- **Decision 4, the movement dropped when it is expensive** (removes a
+  movement): the fresh context found, on coding path 4, the one defect
+  that would have reached an adopter; the cost was the harness's.
+- **Decision 4, the writer's read as the movement, always** (simplest):
+  then the movement is a self-review with a second heading, and the five
+  tags already exist for that.
+- **Decision 4, the read owed to the next unit** (as coding path 4's S02
+  did): the unit is pushed with a movement missing, and the next unit's
+  reader judges a diff already on the branch; decision 3 bounds a unit's
+  reads to the unit.
+- **Decision 4, a fixed wait before a context is called unobtainable**
+  (adds a number): the owner has ruled that no count is a rule; the line
+  says how long was waited, and the owner reads it.
 
 ## Consequences
 
@@ -177,6 +242,8 @@ read's lines under the first's. The rule `review` reads nothing more.
   what the writer was told, the findings and their dispositions.
 - The 1.1 architecture page's sentence *a unit is plan, change,
   self-review, verify* is amended by this path, naming this record.
+- Coding path 4's step records, which said how each read was made in
+  their own words, stand as they are.
 
 ## What the manifesto's test weighed
 
@@ -204,7 +271,8 @@ sentence over the loop.
 | 2 | the unit skill, chapter 5, the concept, the step template | `cairn-unit`, the movement and the type table; `spec/index.md` §5; `spec/concepts/work-unit.md`; `spec/reference/path-template.md` |
 | 2 | the checker, its catalogue, its fixture | rule `review` in `tools/cairn-check.mjs`; `tools/cairn-rules.mjs` and `spec/reference/conformance.md`; `tools/cairn-fixture.test.mjs`; `tools/soundness.md` |
 | 3 | the unit skill, the step template | `cairn-unit`, the movement's sentence; `spec/reference/path-template.md` |
+| 4 | the unit skill, the step template | `cairn-unit`, the movement's sentence on the fallback and the line; `spec/reference/path-template.md`, the first line of each read |
 
 The roadmap register names the coding paths of 1.1 that carry these: the
 skill, the chapter and the template in path 1, the rule and its fixture in
-path 2.
+path 2, decision 4's sentence and line in row 6, CP-CAIRN-010 S02.
