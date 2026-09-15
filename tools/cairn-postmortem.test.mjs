@@ -17,6 +17,8 @@ import { REPO } from './cairn-config.mjs'
 import {
   NO_JUDGEMENT,
   duration,
+  githubRequest,
+  githubSlug,
   readRedRuns,
   readRequests,
   registrationReading,
@@ -132,6 +134,43 @@ test('a duration is read in the units the incident is argued in', () => {
   assert.equal(duration('2026-09-13T08:00:00Z', '2026-09-13T12:30:00Z'), '4h 30m')
   assert.equal(duration('2026-09-11T08:00:00Z', '2026-09-13T11:00:00Z'), '2d 3h')
   assert.equal(duration('nonsense', '2026-09-13T08:00:00Z'), null)
+})
+
+test('the GitHub slug is read from every remote form, and from nothing else', () => {
+  assert.deepEqual(githubSlug('git@github.com:sinlalune/cairn.git'), { owner: 'sinlalune', repo: 'cairn' })
+  assert.deepEqual(githubSlug('https://github.com/sinlalune/cairn.git'), { owner: 'sinlalune', repo: 'cairn' })
+  assert.deepEqual(githubSlug('https://github.com/sinlalune/cairn'), { owner: 'sinlalune', repo: 'cairn' })
+  assert.deepEqual(githubSlug('ssh://git@github.com/sinlalune/cairn.git'), { owner: 'sinlalune', repo: 'cairn' })
+  assert.deepEqual(githubSlug('git@GitHub.com:sinlalune/cairn.git'), { owner: 'sinlalune', repo: 'cairn' })
+  // A fixture's remote is a local bare repository, and a self-hosted forge is
+  // not GitHub: both are "not read", never a guess.
+  assert.equal(githubSlug('/tmp/cairn-fixture-abc.git'), null)
+  assert.equal(githubSlug('git@gitlab.com:sinlalune/cairn.git'), null)
+  assert.equal(githubSlug(null), null)
+  // A host that merely CONTAINS github.com is not GitHub. The anchored pattern
+  // refuses a path segment, a subdomain suffix and a look-alike domain, each
+  // of which a substring match would have read as this repository's host.
+  assert.equal(githubSlug('https://evil.example/github.com/sinlalune/cairn.git'), null)
+  assert.equal(githubSlug('git@github.com.evil.example:sinlalune/cairn.git'), null)
+  assert.equal(githubSlug('https://github.com.evil.example/sinlalune/cairn'), null)
+})
+
+test('a GitHub read never throws: a refusal, a timeout and a broken fetch are all answers', async () => {
+  assert.deepEqual(
+    await githubRequest('https://api.github.com/repos/o/r', { token: 't', doFetch: async () => ({ ok: false, status: 404 }) }),
+    { error: 'HTTP 404' })
+  assert.deepEqual(
+    await githubRequest('https://api.github.com/repos/o/r', { token: 't', doFetch: async () => { throw new Error('getaddrinfo ENOTFOUND') } }),
+    { error: 'getaddrinfo ENOTFOUND' })
+  assert.deepEqual(
+    await githubRequest('https://api.github.com/repos/o/r', {
+      token: 't',
+      timeoutMs: 5,
+      doFetch: (url, { signal }) => new Promise((_, reject) => { signal.addEventListener('abort', () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' }))) })
+    }),
+    { error: 'no answer in 5ms' })
+  const ok = await githubRequest('https://api.github.com/repos/o/r', { token: 't', doFetch: async () => ({ ok: true, json: async () => ({ private: false }) }) })
+  assert.deepEqual(ok, { value: { private: false } })
 })
 
 test('red runs and requests are read from the forge, and an error is an answer', async () => {

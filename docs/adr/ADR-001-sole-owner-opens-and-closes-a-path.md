@@ -12,7 +12,7 @@ adr:
 
 # ADR-001 — a sole owner opens and closes a path
 
-Status: accepted · 2026-09-06 · written by CP-CAIRN-002, S01
+Status: accepted · 2026-09-06 · written by CP-CAIRN-002, S01 · decision 6 superseded by ADR-029 on 2026-09-14
 
 **Promoted from** the owner's
 [decisions page](../../feedbacks/2026-09-06-cairn-1-1-decisions.md) at blob
@@ -157,6 +157,10 @@ costs nothing; where it does not, decision 6 says so and the owner waits.
 What this changes: the `cairn-close` skill, step 5, gains the sentence.
 
 ### Decision 6 — the `ci` profile says what it cannot see
+
+**Superseded** on 2026-09-14 by
+[ADR-029](./ADR-029-the-checker-asks-the-host-nothing.md): the checker
+asks the host nothing, and the reading below is deleted.
 
 Promotes **R06**, from Q5.
 

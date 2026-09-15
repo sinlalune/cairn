@@ -1,9 +1,9 @@
 ---
 type: Cairn Architecture
 title: Cairn 1.1 — a repository run by a sole owner with agents
-description: What a Cairn 1.1 repository is as a whole — how a path opens, runs and closes when one owner works with agents, what the checker reads at each transition, what the documentation plane holds and where, which tools exist, and what 1.1 removes from 1.0 — naming the decision record behind every statement; amended on 2026-09-07 with the coding guidelines, ADR-016 to ADR-020, on 2026-09-09 with the pedagogy, ADR-021 to ADR-023, on 2026-09-11 with the two records coding path 1 owed, ADR-024 and ADR-025, and on 2026-09-14 with the readings that must not lie, ADR-026, and the `ready` behind an integrating commit, ADR-027.
+description: What a Cairn 1.1 repository is as a whole — how a path opens, runs and closes when one owner works with agents, what the checker reads at each transition, what the documentation plane holds and where, which tools exist, and what 1.1 removes from 1.0 — naming the decision record behind every statement; amended on 2026-09-07 with the coding guidelines, ADR-016 to ADR-020, on 2026-09-09 with the pedagogy, ADR-021 to ADR-023, on 2026-09-11 with the two records coding path 1 owed, ADR-024 and ADR-025, on 2026-09-14 with the readings that must not lie, ADR-026, and the `ready` behind an integrating commit, ADR-027, and on 2026-09-15 with the three rulings of September — the review movement's fallback, ADR-017's fourth decision; the feedback file, ADR-028; the checker asking the host nothing, ADR-029.
 tags: [cairn, architecture, 1.1, sole-owner, coding-guidelines, pedagogy]
-timestamp: 2026-09-14T00:00:00Z
+timestamp: 2026-09-15T00:00:00Z
 ---
 
 # Cairn 1.1 — a repository run by a sole owner with agents
@@ -91,6 +91,27 @@ refusal is given up with it, named in that record's consequences. This
 amendment's sentences are the ones marked *since 2026-09-14* that name ADR-027;
 the amendment above marks its own with ADR-026.
 
+**Amended on 2026-09-15** by the three rulings of September, from the
+owner's rulings of 2026-09-14 and 2026-09-15 as
+[coding path 4's journal entry](../../project/log/2026-09-15-cp-cairn-009.md)
+at blob `9dfaed79f33afa00411bd47d5c3ccda8e6f3787e`, [its
+S04](../../project/coding-paths/CP-CAIRN-009/steps/S04.md) at blob
+`94d7d260b7cc4df3cd335174092e9c74d5f3d349` and
+[CP-CAIRN-010's record](../../project/coding-paths/CP-CAIRN-010/index.md)
+at blob `fc0550f16c9b6a73d9c31890a38a6d723494eaa3` carry them. All three
+stay exactly as they were. ADR-017 gains a fourth decision in place — the
+writer reads the diff when no fresh context can be obtained, and the
+review section's first line names the reader; ADR-028 makes a file under
+`feedbacks/` the channel an agent writes when the gate stayed green and
+the protocol still cost more than it should; ADR-029 deletes the GitHub
+reading from the checker, superseding ADR-001 decision 6 and ADR-026
+decision 1, so the checker asks the host nothing. With that reading gone
+the word *the forge* names nothing on this page that *GitHub* does not
+name better, and it is replaced where GitHub is meant; the replacements
+change no meaning and carry no mark. A sentence this amendment adds is
+marked *since 2026-09-15* where it changes what an earlier sentence of
+this page said.
+
 ## What 1.1 is for
 
 Cairn 1.0 was cut from the [specification](../../spec/index.md) and
@@ -120,8 +141,8 @@ flowchart LR
   Agent --> Branch["path/&lt;id&gt;, one worktree, one writer"]
   Record --> Checker["cairn-check, bare, by exit code"]
   Branch --> Checker
-  Checker --> Forge["the forge: one run per commit that can land"]
-  Forge --> Trunk["main: registration, candidate, integration"]
+  Checker --> Host["GitHub: one run per commit that can land"]
+  Host --> Trunk["main: registration, candidate, integration"]
   Trunk --> Docs["the documentation plane and the journal"]
 ```
 
@@ -151,9 +172,10 @@ Since 2026-09-11 the kit installs that declaration, so the sequence the
 open skill ships is the one the configuration written beside it names,
 and `--transport` chooses the integration transport alone; a repository
 that installed 1.0 keeps the declaration it made (ADR-024).
-On a forge whose trunk ruleset requires a request, the owner's role
-bypasses it, and the checker prints that bypass on every run (ADR-001,
-decision 6).
+On GitHub, whose trunk ruleset requires a request, the owner's role
+bypasses it; since 2026-09-15 the checker asks GitHub nothing, and the
+bypass is read on the ruleset's own settings page (ADR-001, decision 6,
+superseded by ADR-029).
 
 Nothing is coded before the registration commit is on the remote trunk.
 Then the branch `path/<id>` and its worktree are created from that
@@ -176,7 +198,11 @@ section of the step record, which the checker requires (ADR-017,
 decisions 1 and 2) — since 2026-09-14 in the ledger's newest completed
 unit, the unit under review, `current_step` selecting nothing (ADR-026,
 decision 2); a fix is read once more, on its own lines, and not a third
-time (ADR-017, decision 3). The
+time (ADR-017, decision 3). Since 2026-09-15 the section's first line
+names the reader — a fresh context and which kind, or the writer with the
+reason no reader was obtainable — and a writer who can obtain no fresh
+context reads the diff against the same two criteria and says so; the
+movement is complete with that read (ADR-017, decision 4). The
 two criteria of whoever reads a diff — that fresh context, a bot, the
 owner — are the decision ladder and correctness, nothing else (ADR-016,
 decision 4). The self-review before it is the writer's own, one line per
@@ -194,14 +220,19 @@ gate is read by its exit code (ADR-008, decision 7). A block a framework
 writes into the bootloader is moved to a file the kit does not own, never
 committed in place (ADR-007).
 
-The writer's own bare gate before each push is the unit's check. The
-forge no longer runs on pushes to path branches: one run per commit that
-can land (ADR-005). A writer who wants the forge on every unit opens the
+The writer's own bare gate before each push is the unit's check. GitHub
+no longer runs on pushes to path branches: one run per commit that
+can land (ADR-005). A writer who wants GitHub on every unit opens the
 request as a draft at the first unit. Since 2026-09-11, when a run does go
 red, the post-mortem it produced — in its log, and on the request where
 the workflow posts it — is read by the writer before the next unit
 starts; reading is the whole of it, and nothing enters the checker
-(ADR-025).
+(ADR-025). Since 2026-09-15, when the gate stayed green and the protocol
+still cost more than it should, the writer writes a file under
+`feedbacks/` naming the movement, the cost and the change to Cairn that
+would remove it — when there is something to say, never as a ritual, and
+never for a defect of the harness, which goes to the harness's vendor
+(ADR-028).
 
 The coding stance the writer takes during *change* comes, since
 2026-09-07, from Ponytail at a pinned tag: the decision ladder,
@@ -301,8 +332,8 @@ The checker is the same tool, reading more.
 | registration on the trunk | the record's schema and route; the registration commit is the trunk commit in which `status` became `running`, and `base_commit` its parent, a draft landed earlier notwithstanding; the trunk's own run judges the commit after it lands | ADR-004 d1; ADR-001 d1 |
 | registration and every unit | two live paths whose `writes:` intersect, as the advisory `writes-overlap`, silent under `depends_on` | ADR-003 |
 | every unit on the branch | the `cairn-unit` block; a running path's checkpoint names a remote commit once it has a unit; the scope digest of the definition of done, whatever the status | ADR-004 d2; ADR-002 d1 |
-| every unit on the branch, since 2026-09-07 | the current unit's step record carries a `#### Review` section that is not empty, as the blocking rule `review`; the section's content is the owner's to read; since 2026-09-14 the current unit is the ledger's newest completed one | ADR-017 d2; ADR-026 d2 |
-| every run, any ref | the branch resolved as the local ref, else `HEAD` on the request head, else the remote-tracking ref; range rules reading only this path's records; the profile line naming what the forge does not enforce and, since 2026-09-14, what it could not read | ADR-004 d5, d3; ADR-001 d6; ADR-026 d1 |
+| every unit on the branch, since 2026-09-07 | the current unit's step record carries a `#### Review` section that is not empty, as the blocking rule `review`; the section's content is the owner's to read; since 2026-09-14 the current unit is the ledger's newest completed one; since 2026-09-15 the section's first line names the reader, and the rule does not read it | ADR-017 d2; ADR-026 d2; ADR-017 d4 |
+| every run, any ref | the branch resolved as the local ref, else `HEAD` on the request head, else the remote-tracking ref; range rules reading only this path's records; the profile line naming the enforcement profile and the declared transports — until 2026-09-15 also what GitHub did not enforce and could not read, and since then nothing about the host: the checker makes no network call | ADR-004 d5, d3; ADR-029, superseding ADR-001 d6 and ADR-026 d1 |
 | the request's run at `C` and at `ready` | trunk containment, no provisional commit, the closure surface, the digest, drift since the base; the one administrative commit after `C` | 1.0, kept; ADR-008 d3 |
 | the integrating unit on the trunk | the digest again; one commit for one path, and not a merge where the declared integration transport is `pull-request`; a `ready` commit behind the `done`, read since 2026-09-14 from any parent of the arrival; the journal entry under `cairn.path` | ADR-002 d1; ADR-008 d2; ADR-026 d3, d4; ADR-001 d7; ADR-027; ADR-008 d4 |
 | any refusal | the message names the remedy; a pushed record is corrected by a superseding step | ADR-008 d6 |
@@ -330,6 +361,7 @@ An adopter's `docs/` is installed with its shape and grows by promotion:
 | `cairn/README.md` | the installed release, the six chapters and the skills at that release — five, six since 2026-09-09 — the files the kit owns, and the edited files the last update could not rewrite | the kit, at `init` and `update` | ADR-013; ADR-015 d2; ADR-022 d2 |
 | `project/coding-paths/index.md` | the roadmap register, every milestone with a path or *no path yet*; reported while it still carries the installer's row | the owner and the promotion paths | ADR-008 d5 |
 | `project/log/` | one journal entry per integration, the only history of what a path did | the integrating unit | 1.0, kept; ADR-010 d1 |
+| `feedbacks/`, in the protocol's own repository | the owner's pages to the protocol and, since 2026-09-15, the agents' files — what a writer met when the gate stayed green and the protocol still cost more than it should, with the cost and the change to Cairn that would remove it; evidence for a change, never authority for one | the owner; a writer, when there is something to say | ADR-028 |
 
 The protocol's own repository keeps its concept wiki under `spec/concepts/`,
 which is the `cairn` scope itself, and its surfaces' pages are the README
@@ -339,10 +371,11 @@ and the site that projects it (ADR-012).
 
 | Command | Does | Record |
 | :-- | :-- | :-- |
-| `cairn-check` | the blocking and advisory rules on the exact commit, with a profile line that says what the forge does not enforce and, since 2026-09-14, what it could not read | 1.0; ADR-001 d6; ADR-026 d1 |
+| `cairn-check` | the blocking and advisory rules on the exact commit, with a profile line that, since 2026-09-15, names the enforcement profile and the declared transports and nothing about the host — no network call, the same run on any host; until then it read GitHub's trunk rules for what they did not enforce and could not see | 1.0; ADR-029, superseding ADR-001 d6 and ADR-026 d1 |
 | `cairn-active` | the live view of running paths; reports a roadmap register still carrying the installer's row | 1.0; ADR-008 d5 |
 | `cairn-audit` | the request's description for one candidate, since 2026-09-07 with the definition of done item by item, since 2026-09-09 opening with three plain lines and the surface link | 1.0; ADR-018 d2; ADR-021 d2 |
 | `cairn-postmortem` | for one path or the repository, the mechanical reading the adopter notes did by hand; run by the workflow when the gate goes red, into the run's log and onto the request, and on demand; since 2026-09-09 it prints the facts a question to the owner is built from | ADR-014 d1; ADR-021 d3 |
+| a feedback file | not a tool: since 2026-09-15, a file under `feedbacks/` a writer writes when the gate stayed green and the protocol still cost more than it should — the movement, the cost, the change to Cairn — beside the post-mortem, which reads facts after a red run; no tool, no skill, no rule, and never for a defect of the harness | ADR-028 |
 | `cairn-test` | this repository's fixture suite for the tools, run by this repository's workflow before the checker and proven at each release; the kit installs no suite and names no test script, so `npm test` stays the adopter's | ADR-014 d2 |
 | `cairn` | `init`, `status`, `update`, `adopt`, as in 1.0; installs the pointer page and the three concept folders; `update` rewrites every pristine file, prints what the release changes in an edited one and lists it on the pointer page, and takes the release's version of a named file on request; since 2026-09-07 the kit names Ponytail at a pinned tag as a dependency it does not copy; since 2026-09-09 it installs six skills, the sixth `cairn-learn`; since 2026-09-11 `init` writes `transport.registration: manual-git`, the `--transport` option naming the integration transport alone | 1.0; ADR-011, ADR-013, ADR-015; ADR-016 d1; ADR-022 d2; ADR-024 |
 | the workflow | one job, one run per commit that can land: the request's run for a candidate, the trunk's run for a registration and an integration | ADR-005 |

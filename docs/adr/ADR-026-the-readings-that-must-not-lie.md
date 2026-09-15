@@ -12,7 +12,7 @@ adr:
 
 # ADR-026 — the readings that must not lie
 
-Status: accepted · 2026-09-14 · written by CP-CAIRN-008, S01
+Status: accepted · 2026-09-14 · written by CP-CAIRN-008, S01 · decision 1 superseded by ADR-029 on 2026-09-14
 
 **Promoted from**
 [CP-CAIRN-007 S03](../../project/coding-paths/CP-CAIRN-007/steps/S03.md)
@@ -98,6 +98,10 @@ integration cannot close a path past this checker today.
 ## Decision
 
 ### Decision 1 — a reading the forge withheld is reported as unread, never as an answer
+
+**Superseded** on 2026-09-14 by
+[ADR-029](./ADR-029-the-checker-asks-the-host-nothing.md), with the
+decision it extends: the reading is deleted rather than made honest.
 
 Extends ADR-001 decision 6.
 
