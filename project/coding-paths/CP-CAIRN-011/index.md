@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-011
   route: full
   status: running
-  current_step: S01
+  current_step: S02
   base_commit: 471fa71b27a2334f40f6fb4fa01c682ac923e323
   branch: path/cp-cairn-011
   assigned_writer: cp-cairn-011-writer
@@ -25,6 +25,7 @@ cairn:
     - docs/inputs/**
     - docs/index.md
     - docs/architecture/01-cairn-1-1.md
+    - docs/modules/site.md
     - project/coding-paths/index.md
     - project/coding-paths/CP-CAIRN-011/**
   governs:
@@ -230,29 +231,35 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
   registration commit, and the pilot from `init` to `done`; the *Weight*
   section pointing at the conformance page with no number. Advances the
   first item.
+- **S02** — [the site](./steps/S02.md) — complete. Built from the candidate:
+  seventy-five documents bundled, the six skills among them, Vite green; the
+  one count the site hard-codes, *five skills* in the shell's meta
+  description, made the README's; the module note refreshed, `writes:`
+  widened by it. Advances the second item.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 891b07de4afb4239a26ecccfa1f250a046701c34 — the registration commit, on origin/main; S01's own commit is named here by S02
-unit   : 0 — S01 is the commit after this checkpoint
+commit : 00c0e7894c09691d8c4f4b511f134f73966421e4 — S01, on origin/path/cp-cairn-011; S02's own commit is named here by S03
+unit   : 01 — S02 is the commit after this checkpoint
 base   : 471fa71b27a2334f40f6fb4fa01c682ac923e323
-trunk  : 471fa71b27a2334f40f6fb4fa01c682ac923e323 — origin/main at S01
+trunk  : 471fa71b27a2334f40f6fb4fa01c682ac923e323 — origin/main at S02
 ```
 
 ### Next action
 
 In a fresh session, from the worktree `../cairn-cp-cairn-011` on branch
-`path/cp-cairn-011`: run S02 of the plan with `cairn-unit` — the site.
-Build it from the candidate with the site's own build, read that it
-projects the README, the manifesto, the specification and the six skills,
-make its *Start* section and any list `site/src/App.jsx` hard-codes say
-what the README now says, and keep the build's output in the step. Type
-`implementation` if `site/` changes, `documentation` if only the proof is
-written. The review section's first line names the reader, as ADR-017
-decision 4 says.
+`path/cp-cairn-011`: run S03 of the plan with `cairn-unit` — the weight
+measured at 1.1.0. The conformance page's budget table gains the 1.1.0
+column beside the 1.0.0 one, which stays: the specification's words, the
+required entry chain's words, the files the kit installs on each profile
+with no target, the protocol files one lightweight unit writes by
+`tools/cairn-pilot.mjs`; each target that has one reported bound or not
+(ADR-022 d2); every number read off a tool and its command kept in the
+step. Type `documentation`. The review section's first line names the
+reader, as ADR-017 decision 4 says.
 
 ### Blockers
 
@@ -281,13 +288,18 @@ None.
 - Keeping a word count in the README beside the pointer at the conformance
   page — a number restated in two places is the second of the five things
   1.1 leaves; the page counts, the README points (S01).
+- Bundling the 1.1 page and the decision records into the site so the
+  README's new links resolve inside it — the site projects the four layers
+  the owner asked for, and a link it does not bundle opens the file on
+  GitHub at the bundled commit, which is what it does for every reference
+  link already (S02).
 
 ### Reading order
 
 1. `AGENTS.md`, then `skills/cairn-unit/SKILL.md`.
-2. `README.md` as S01 left it — what the site must project and agree with.
-3. `site/build-content.mjs` and `site/src/App.jsx` — what the build reads and what the *Start* section hard-codes.
-4. `project/coding-paths/CP-CAIRN-011/plan.md`, then `project/coding-paths/CP-CAIRN-001/steps/S07.md` for how the site was first built and proved.
+2. `spec/reference/conformance.md`, *The weight budget* — the table the 1.1.0 column joins, and the row already saying 33.
+3. `tools/cairn-pilot.mjs` — the measurement of protocol files a unit writes; `docs/adr/ADR-022-the-learning-note-and-the-learning-session.md` decision 2 — the count with no target.
+4. `project/coding-paths/CP-CAIRN-011/plan.md`, then `project/coding-paths/CP-CAIRN-011/steps/S01.md` for the counts S01 already read off the tools.
 
 ### Verify
 
