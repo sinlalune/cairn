@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-011
   route: full
   status: running
-  current_step: S04
+  current_step: S05
   base_commit: 471fa71b27a2334f40f6fb4fa01c682ac923e323
   branch: path/cp-cairn-011
   assigned_writer: cp-cairn-011-writer
@@ -252,42 +252,46 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
   `spec/concepts/` declined, with the reason. The release and commit on
   the page are `package.json`'s and HEAD's, so S05 re-runs `update` after
   the version. Advances the fourth item, but for the release's name.
+- **S05** — [the version, the page's opening and the register](./steps/S05.md)
+  — complete. `package.json` at `1.1.0`, `update` run again so the pointer
+  page and the lock name release 1.1.0, `prepack`'s stamp proven; the 1.1
+  page's opening sentence replaced and marked *since 2026-09-15*; the 1.1
+  milestone row *done* with the date and the tag to come, the *Cairn 1.2 —
+  what 1.1 taught* row under it with *no path yet* and its agenda, the
+  feedback file, the journal and this record as its sources. Advances the
+  fourth item's release name, the fifth and the sixth.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 0b40d5ef95b72690581b67e5816c56ab703c3d49 — S03, on origin/path/cp-cairn-011; S04's own commit is named here by S05
-unit   : 03 — S04 is the commit after this checkpoint
+commit : 0e9c22f734cd5f9778ca0c6784663796a60e57cc — S04, on origin/path/cp-cairn-011; S05's own commit is named here by S06
+unit   : 04 — S05 is the commit after this checkpoint
 base   : 471fa71b27a2334f40f6fb4fa01c682ac923e323
-trunk  : 471fa71b27a2334f40f6fb4fa01c682ac923e323 — origin/main at S04
+trunk  : 471fa71b27a2334f40f6fb4fa01c682ac923e323 — origin/main at S05
 ```
 
 ### Next action
 
 In a fresh session, from the worktree `../cairn-cp-cairn-011` on branch
-`path/cp-cairn-011`: run S05 of the plan with `cairn-unit` — the page's
-opening and the register. Set `package.json` to `1.1.0`; then run
-`node tools/cairn.mjs update` again here, so the pointer page and the
-lock name release 1.1.0 (the commit they name is HEAD at that moment, and
-S06's candidate is what the tag will name — say so in the step); delete
-the three `spec/concepts/` folders it writes again, as S04 did, and quote
-the report. Replace the 1.1 page's opening sentence — *Nothing here is
-implemented yet: the roadmap register names the coding paths that build
-it* — with one saying its records are implemented by paths 1 to 6 and
-released as 1.1.0, marked *since 2026-09-15*, and change nothing else on
-the page. In the register: the 1.1 milestone row *done* with the date and
-the tag to come; a new row *Cairn 1.2 — what 1.1 taught*, *no path yet*,
-with the five things of the goal, the first adopter's update, and the two
-S04 found — the kit plans an adopter's three concept folders under the
-protocol repository's own wiki root and `update` has no way to decline a
-host file, so every `status` here reports three missing; this
-repository's bootloader does not point at the pointer page the release's
-template points at — plus S01's once-red fixture and S03's chapter-6
-sentence, the feedback file linked as the source. Type `documentation`.
-The review section's first line names the reader, as ADR-017 decision 4
-says.
+`path/cp-cairn-011`: run S06 of the plan with `cairn-close` — the
+candidate. Merge `origin/main` in (it has not moved since the base; say
+so if it still has not), produce candidate `C`, run `cairn-check` and
+`cairn-test` on it bare, rebuild the site from it, open the pull request
+from the branch with the description `npm run cairn-audit` prints, make
+the one administrative commit — `ready`, `subject_commit: C`, the live
+view, the checkpoint — and read its check green; then ask the owner, in
+the chat and signalled as a decision, to open the site and the README and
+run one quick start before the merge. The seventh item is checked at `C`:
+`git diff base..C --stat` shows nothing under `skills/`, `tools/`,
+`.github/`, `spec/index.md`, `spec/concepts/`, `spec/reference/` but the
+conformance page, `docs/adr/` or `feedbacks/`, and the seven governing
+documents other than the page byte-identical. There is no step file for
+the close. After the merge: the integrating unit from a clean trunk
+checkout, the tag `1.1.0` on the integrating commit, `npm publish` by the
+owner, the journal entry naming both and Crumbz's update as the next
+path, on their register.
 
 ### Blockers
 
@@ -339,13 +343,19 @@ None.
   release's template has it — the bootloader is outside this path's
   writes and an edited host file `update` leaves; it stands on the
   pointer page's reconcile list, which is where ADR-015 puts it (S04).
+- Writing the tag's commit id into the register's 1.1 row now — the
+  integrating commit does not exist until the merge; the row names the
+  tag and the path whose integration carries it (S05).
+- Fixing any of the 1.2 row's items in this path — each is a change to a
+  record, a rule, a skill or the installer, and a release ships what was
+  decided; the row is where the next path finds them (S05).
 
 ### Reading order
 
 1. `AGENTS.md`, then `skills/cairn-unit/SKILL.md`.
-2. `docs/architecture/01-cairn-1-1.md`, its opening paragraph — the one sentence to replace; `project/coding-paths/index.md`, the milestone table and row 7.
-3. `feedbacks/2026-09-15-cp-cairn-009-writer-feedback.md` and `project/log/2026-09-15-cp-cairn-010.md` — the five things, for the 1.2 row; this record's S04 for the two it found.
-4. `project/coding-paths/CP-CAIRN-011/plan.md`, then `project/coding-paths/CP-CAIRN-001/steps/S08.md` for how 1.0.0 named its version and tag.
+2. `skills/cairn-close/SKILL.md` and its reference — the sequence, the administrative commit, the owner's try.
+3. This record's definition of done — the seventh and ninth items are what the candidate is checked against; `project/log/2026-09-15-cp-cairn-010.md` for the shape of an integrating unit's entry.
+4. `project/coding-paths/CP-CAIRN-011/plan.md`, then `project/coding-paths/CP-CAIRN-001/steps/S08.md` and the 1.0.0 journal for how the tag and the package followed the merge.
 
 ### Verify
 
