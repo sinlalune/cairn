@@ -3,7 +3,7 @@ type: Cairn Module Note
 title: The reference tools
 description: What lives under tools/ — the checker, the live-view generator, the audit scaffold, the post-mortem reader, the rule-catalogue generator, the greenfield pilot, the initializer and the configuration loader — how they find the specification, and how they are tested.
 tags: [module, cairn, tools]
-timestamp: 2026-09-14T00:00:00Z
+timestamp: 2026-09-15T00:00:00Z
 ---
 
 # The reference tools
@@ -116,35 +116,45 @@ each step's current content.
 
 ## The kit
 
-`npx cairn-protocol init` installs the six reference tools, the nine skill
-files of six skills, the folder indexes of the documentation and project
-planes, and the host files — the configuration, the bootloader, the binding,
-the package scripts, the live view, this note, the workflow and the request
-template. What that comes to is 33 files and the lock on the `ci` profile and
-32 on `local`, which has no workflow; the number is measured here and bounds
-nothing (ADR-022 d2). The documentation plane it writes is the one 1.1
-decided: `docs/inputs/` for what the project had before the protocol,
-`docs/architecture/` with its index, `docs/modules/`, and a concept root of
-three folders — `cairn`, `product`, `learning` — each with its own index and
-no index at the root. The documentation index is the map: it links them, says
-where a surface page goes and that such a page opens with one worked example
-and links its API's documentation.
-It copies no specification: every link it writes into the specification is
-pinned to the commit the kit was cut from. It copies no Ponytail either: the
+**What `npx cairn-protocol init` writes.** The six reference tools, the nine
+skill files of six skills, the folder indexes of both planes, and the host files — the
+configuration, the bootloader, the binding, the package scripts, the live
+view, a module note, the workflow and the request template. That comes to 33
+files and the lock on the `ci` profile and 32 on `local`, which has no
+workflow; the number is measured here and bounds nothing (ADR-022 d2).
+
+The documentation plane it writes is the one 1.1 decided: `docs/inputs/` for
+what the project had before the protocol, `docs/architecture/` with its index,
+`docs/modules/`, and a concept root of three folders — `cairn`, `product`,
+`learning` — each with its own index and none at the root. The documentation
+index is the map: it links them and says where a surface page goes, and that
+such a page opens with one worked example and links its API's documentation.
+The configuration declares `transport.registration: manual-git`, the one
+registration sequence `cairn-open` ships, whatever `--transport` answers for
+`transport.integration`. The bootloader carries the five absolute rules of 1.0
+about paths and two that reach a session with no path open: an abstraction
+explained persists as a concept note, and an explanation is written for the
+reader who is learning it.
+
+**What it does not copy.** No specification: every link it writes into one is
+pinned to the commit the kit was cut from, so a repository installed today
+still resolves to the text it was installed from. No Ponytail either: the
 coding stance is named in the lock and on the pointer page at the tag this
 release was checked against, and installed in the adopter's harness beside the
 skills (ADR-016 d1). The two files ADR-013 offered for removal are kept, each
-for its own worth and neither for a number: the configuration schema, which no
-tool reads but every editor does, on the one file an adopter hand-edits; and
-the project plane's index, because the manifesto commits to a tree where every
-folder is navigable from its index. `cairn.lock.json` records the
-digest of every kit file as the kit wrote it, which is what lets `status`
-tell an edit from an installation and `update` rewrite the first and keep the
-second. `cairn/README.md` is generated at `init` and at every `update`, and nothing on
-it is written by hand: the installed release and the commit it was cut from,
-the six chapters and the six skills linked at that commit, every file the kit
-owns, and the files an update could not rewrite. The bootloader's *start here*
-list ends on it.
+for its own worth and neither for a number — the configuration schema, which
+no tool reads but every editor does, on the one file an adopter hand-edits;
+and the project plane's index, because the manifesto commits to a tree where
+every folder is navigable from its index.
+
+**What the installation knows about itself.** `cairn.lock.json` records the
+digest of every kit file as the kit wrote it, which is what lets `status` tell
+an edit from an installation and `update` rewrite the first and keep the
+second. `cairn/README.md` is generated at `init` and at every `update` and
+nothing on it is written by hand: the installed release and the commit it was
+cut from, the six chapters and the six skills linked at that commit, every
+file the kit owns, and the files an update could not rewrite. The bootloader's
+*start here* list ends on it.
 
 **What `update` does, and what it refuses.** A file that still holds exactly
 what the kit wrote is rewritten when its template changed — whoever owns it,
@@ -154,35 +164,27 @@ release changed in it, using Git's own `diff --no-index` against the template
 in a temporary file rather than a diff written here, and ends its report with
 the files to settle by hand. The pointer page carries that same list to disk,
 so the work outlives the terminal. `update --take <path>` replaces one named
-edited file with the release's version, says what it discards, and touches
-nothing else.
+edited file with the release's version, shows the lines it discards, moves
+that file's lock entry with it, and touches nothing else.
 
-The workflow it generates matches this repository's own where the two are
-meant to: the push trigger on the trunk alone, the base per event, and the
-post-mortem step that runs on the checker's failure and posts once on the
-request. It differs in one place, and the test says so — this repository runs
-its own suite before the gate, and the kit installs no suite and names none.
-The request template it generates opens with the three plain lines and the
-surface link, then the definition of done item by item, before the ledger.
+**What `adopt` does.** It is the migration from a 0.2 installation: it keeps
+the host's answers, replaces the tools, adds the skills, and reports the
+shapes the kit no longer defines rather than deleting anything of the
+adopter's. The lock it writes digests the migrated configuration it actually
+wrote, not the one a fresh install would have generated, so the next `status`
+does not call an untouched file edited. `update` and `adopt` both plan from
+the host's own declaration, so a repository that declared `pull-request`
+registration keeps it, and the binding generated beside it — which prints both
+transports — never contradicts the file it sits next to.
 
-`adopt` is the migration from a 0.2 installation: it keeps the host's
-answers, replaces the tools, adds the skills, and reports the shapes the kit
-no longer defines rather than deleting anything of the adopter's. The lock it
-writes digests the migrated configuration it actually wrote, not the one a
-fresh install would have generated, so the next `status` does not call an
-untouched file edited.
-
-At `init` the configuration it writes declares
-`transport.registration: manual-git`, the one registration sequence
-`cairn-open` ships, whatever `--transport` answers for
-`transport.integration`; `update` and `adopt` plan from the host's own
-declaration instead, so a repository that declared `pull-request`
-registration keeps it and the binding generated beside it — which prints
-both transports — never contradicts the file it sits next to. The
-bootloader carries the five absolute rules of 1.0 about paths and two that
-reach a session with no path open: an abstraction explained persists as a
-concept note, and an explanation is written for the reader who is learning
-it.
+**The two host files an adopter's forge reads.** The workflow matches this
+repository's own where the two are meant to: the push trigger on the trunk
+alone, the base per event, and the post-mortem step that runs on the checker's
+failure and posts once on the request. It differs in one place, and the test
+says so — this repository runs its own suite before the gate, and the kit
+installs no suite and names none. The request template opens with the three
+plain lines and the surface link, then the definition of done item by item,
+before the ledger.
 
 ## Testing
 

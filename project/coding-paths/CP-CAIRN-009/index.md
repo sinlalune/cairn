@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-009
   route: full
   status: running
-  current_step: S05
+  current_step: S06
   base_commit: 76512dc75b1940a54388ff4e7fdabb53a662179a
   branch: path/cp-cairn-009
   assigned_writer: cp-cairn-009-writer
@@ -293,47 +293,46 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 - **S03** — [the pointer page, `update` and `status`](./steps/S03.md) — complete. `cairn/README.md` generated at `init` and every `update`, the bootloader pointing at it; a pristine file is rewritten whoever owns it, an edited one is kept and what the release changed in it printed from Git's own diff, the list to settle by hand carried to disk on the page; `update --take <path>` hands over one file and moves its lock entry with it; `adopt` locks the configuration it actually wrote. Advances the fifth and sixth items of the definition of done.
 - **S04** — [the manifest, the generated adapter and template](./steps/S04.md) — complete. `cairn-postmortem` in the manifest and the kit's scripts; Ponytail named at `v4.9.0` in the lock and on the pointer page, copied nowhere; the schema and the project index kept, each for its own worth; the generated workflow on the trunk alone with the red-run step, and the request template opening with the three plain lines and the definition of done before the ledger, both proved against this repository's own. Advances the seventh and eighth items of the definition of done.
 - **S05** — [chapters 3 and 6, the concepts, the layout](./steps/S05.md) — complete. Chapter 3 gains the flow kind, the surface page with its worked example and API link, and the promotion outputs; chapter 6's scopes table becomes the three folders with the owner's `product` among them, its learning-notes paragraph says a learning note is a concept note with an order, and the kit's weight-budget line loses its target; the architecture concept states what a page carries and what a flow page is; the template says a note that teaches a sequence orders its body; the layout's tree and table show what `init` now writes. Advances the ninth item of the definition of done.
+- **S06** — [this repository's own](./steps/S06.md) — complete. The architecture index says flow pages live here and what a page states in one sentence and one diagram; the `tools/` module note's kit section, appended to by four units, is re-read and reordered into what `init` writes, what it does not copy, what the installation knows about itself, `update`, `adopt` and the two generated host files; the register's row 4 records the widening this path made in flight. Advances the tenth item of the definition of done.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : f831e3d9aa561345399382832363904ac776de20 — S04, on origin/path/cp-cairn-009
-unit   : 5 — S05 complete on push; S06 names its commit here
+commit : b651745d7ea7e46ebdddf890f64114961037a783 — S05, on origin/path/cp-cairn-009
+unit   : 6 — S06 complete on push; S07 names its commit here
 base   : 76512dc75b1940a54388ff4e7fdabb53a662179a
 trunk  : 3c42237147ed783e68f301626fd9637a58f3fad3 — origin/main, unmoved since registration
 ```
 
 ### Next action
 
-Run S06 of the plan with `cairn-unit` — this repository's own. Three
-surfaces, all of them this repository describing itself now that the kit
-and the specification have moved.
+Run S07 with `cairn-close` — the candidate. Merge the trunk in (never
+rebase), run every gate bare, and open the pull request with the
+description `npm run cairn-audit` prints, in the order the template now
+gives: the three plain lines and the surface, the definition of done
+item by item, then the ledger. One advisory stands at the candidate and
+is dispositioned as accepted with its records named — `decision-drift`
+on S06's architecture index, for ADR-019 d2 and ADR-023 d2 and d3,
+accepted a week before this path opened. The administrative commit
+declaring `ready` and `subject_commit` goes on the branch and its check
+must be green **before** the owner is asked. Then the owner runs
+`cairn init` into an empty folder and reads what it wrote; the merge is
+the acceptance.
 
-1. `docs/architecture/index.md`: flow pages live here, and what an
-   architecture page states — the direction of dependencies in one
-   sentence and one Mermaid diagram saying the same thing (ADR-019 d2,
-   ADR-023 d2, d3). S05 wrote that into `spec/concepts/architecture.md`;
-   this is the index of this repository's own folder saying it too.
-2. `docs/modules/application.md`: read the whole note against the
-   candidate and make it describe the installer and the checker **as they
-   are**, with no history (ADR-010 d1). S01 to S04 each refreshed the
-   paragraphs they touched; this is the read-through that catches what
-   four units left inconsistent.
-3. `project/coding-paths/index.md`, the roadmap register: row 4 carries
-   this path's id and the widened writes — `tools/cairn-rules.mjs`, added
-   in S02 because the conformance rows are generated from it.
+**Two things to put to the owner at the same time**, neither of them
+this path's to fix:
 
-Type `documentation`. Then S07 opens the candidate.
-
-**On the review movement.** Twelve of sixteen fresh contexts hung across
-S01 to S05; S03, S04 and S05 were read by the writing context and each
-says so. Launch the reader first, do the unit's work while it runs, stop
-it at about six minutes of silence. If it hangs, record how the read was
-made rather than implying a verdict nobody gave, and make the read earn
-its place some other way — S05's was a real `cairn init` proving every
-file the specification claims.
+- Four of the register's five milestone rows read `running` for paths
+  that are done — rows 1, 2, 3 and 5, for CP-CAIRN-005 to CP-CAIRN-008.
+  The status is hand-kept in the register while each path's record
+  already carries `status:`, and nothing reconciles the two. Row 6 does
+  not own the register either, so today nothing does.
+- The review movement: fourteen of eighteen fresh contexts hung across
+  this path, and S03 to S06 were read by the writing context and each
+  says so in its step. The owner has already ruled that the missing
+  fallback gets a record in its own path.
 
 ### Blockers
 
