@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-010
   route: full
   status: running
-  current_step: S01
+  current_step: S02
   base_commit: 8632ccc7014a5c573cf249eb04c824557533d760
   branch: path/cp-cairn-010
   assigned_writer: cp-cairn-010-writer
@@ -262,6 +262,7 @@ The owner said the units run in a fresh session. Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
+- **S02** — [the skill, the template, the first feedback file](./steps/S02.md) — complete. `cairn-unit` movement 4 says what the writer does when no fresh context can be obtained and that the section opens with the line naming the reader, its fix paragraph puts the second read under its own line, and the skill's *Report the boundary* section points at `feedbacks/`; the path template's review section shows the reader line for both reads; `feedbacks/index.md` says the folder holds the owner's pages and the agents' files and lists the first agent file, written from what path 4's writer observed: the placeholder nothing resolved, the count in five documents and the hand-kept register status, the item contradicting its record, the mechanism no release produces. Advances the second and fourth items of the definition of done and ADR-028's half of the third.
 - **S01** — [the records: ADR-017 decision 4, ADR-028, ADR-029](./steps/S01.md) — complete. ADR-017 gains its fourth decision in place — the writer reads the diff when no fresh context can be obtained, the review section's first line names the reader, the rule reads presence and nothing more; ADR-028 makes a file under `feedbacks/` the channel an agent writes when the gate stayed green and the protocol still cost more than it should, no tool, skill, rule or ritual; ADR-029 deletes the GitHub reading from the checker, superseding ADR-001 decision 6 and ADR-026 decision 1, with the reading's cost measured and the post-mortem's two functions moved rather than broken. The 1.1 page amended in place and marked *since 2026-09-15*, the two superseded decisions marked, the two indexes and the register's rows following. Advances the first, third and sixth items, the record half of the fifth and the register clause of the seventh.
 
 ## Resume
@@ -269,29 +270,38 @@ Forward steps live in [`plan.md`](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 120c98c0171a04104e7dbdc1a53c257f8728b011 — the registration commit, on origin/main; S01's own commit is named here by S02
-unit   : 0 — S01 is the commit after this checkpoint
+commit : 9c9ce3e68840bb29c0055816e8ed44667b403f19 — S01, on origin/path/cp-cairn-010; S02's own commit is named here by S03
+unit   : 1 — S02 is the commit after this checkpoint
 base   : 8632ccc7014a5c573cf249eb04c824557533d760
-trunk  : 120c98c0171a04104e7dbdc1a53c257f8728b011 — origin/main at S01, the registration commit
+trunk  : 120c98c0171a04104e7dbdc1a53c257f8728b011 — origin/main at S02, the registration commit
 ```
 
 ### Next action
 
 In a fresh session, from the worktree `../cairn-cp-cairn-010` on branch
-`path/cp-cairn-010`: run S02 of the plan with `cairn-unit` — the skill,
-the template and the first feedback file. `cairn-unit` movement 4 gains
-one sentence: when no fresh context can be obtained the writer reads the
-diff against the same two criteria and says so, and the section's first
-line names the reader; the skill's last section, *Report the boundary*,
-gains one sentence pointing at `feedbacks/` for what cost more than it should when nothing broke; the
-path template's review section shows the reader line under
-`#### Review`, once for each read; `feedbacks/index.md` says the folder
-holds the owner's pages and the agents' files and lists the first agent
-file, written from what path 4's writer observed and could not place —
-the four observations ADR-028's context names, each with its cost and
-the change to Cairn that would remove it, and none of them a harness
-defect. Type `documentation`. The review section's first line names the
-reader, as ADR-017 decision 4 now says.
+`path/cp-cairn-010`: run S03 of the plan with `cairn-unit` — the
+deletion, type `implementation`, every behaviour change with its failing
+test first. Widen `writes:` first, in the record and in the register's
+row 6, by `tools/cairn-postmortem.mjs`, `tools/cairn-postmortem.test.mjs`
+and `tools/cairn-workflow.test.mjs`, and say why in the step: ADR-029
+moves `githubSlug` and `githubRequest` to the post-mortem that calls them,
+and the workflow test asserts the token on the checker's step today. Then:
+`forgeGaps`, `readForge` and the host half of `profileLine` deleted from
+`tools/cairn-check.mjs` with the eight lines of `main` that read the token
+and call the read; the profile line printing
+`profile — ci; transports registration manual-git, integration pull-request`;
+eleven tests deleted from `tools/cairn-check.test.mjs`, the profile line's
+rewritten, the `githubSlug` and `githubRequest` tests moved with their
+functions; a test that runs the checker with the runtime's network entry
+points made to throw and reads a green verdict; `GITHUB_TOKEN` and its
+twelve-line comment removed from the checker's step of
+`.github/workflows/cairn.yml`, the post-mortem step's token kept, the
+workflow test inverted, and one assertion in `tools/cairn.test.mjs` that
+the generated checker step carries none; the profile row of
+`spec/reference/conformance.md`, the catalogue and the matrix,
+`tools/soundness.md` and `docs/modules/application.md`'s *The profile
+line* paragraph following. The review section's first line names the
+reader.
 
 ### Blockers
 
@@ -320,11 +330,11 @@ None.
 
 ### Reading order
 
-1. `AGENTS.md`, then `skills/cairn-unit/SKILL.md` as path 3 left it — movement 4 and the section *Report the boundary* are what S02 edits.
-2. `docs/adr/ADR-017` decision 4 and `docs/adr/ADR-028` — the text S02 implements; `docs/adr/ADR-029` before S03.
-3. `project/log/2026-09-15-cp-cairn-009.md` at its pinned blob and `project/brainstorm/2026-09-15-the-review-movement.md` — the four observations the first feedback file carries, and the count.
-4. `feedbacks/index.md` and one of the owner's pages there — the shape a file in that folder has.
-5. `project/coding-paths/CP-CAIRN-010/plan.md`; `tools/cairn-check.mjs` at `forgeGaps`, `readForge` and the profile line, and `tools/cairn-postmortem.mjs` at its import list, before S03.
+1. `AGENTS.md`, then `skills/cairn-unit/SKILL.md` as S02 left it — movement 4 now carries the fallback this unit's own review follows.
+2. `docs/adr/ADR-029` — the decision S03 implements, its measured table and its *What this changes* list.
+3. `tools/cairn-check.mjs` lines 64 to 196 and the `main` lines that call `readForge`; `tools/cairn-check.test.mjs` from the `githubSlug` test to the profile line's; `tools/cairn-postmortem.mjs` at its import list and its two `api.github.com` reads.
+4. `.github/workflows/cairn.yml` at the checker step's `env:` and `tools/cairn-workflow.test.mjs` at its token assertions; `tools/cairn.mjs` at the generated checker step.
+5. `spec/reference/conformance.md` at the profile row and the generated markers, `tools/cairn-rules.mjs`, `tools/soundness.md`, `docs/modules/application.md` at *The profile line*.
 
 ### Verify
 

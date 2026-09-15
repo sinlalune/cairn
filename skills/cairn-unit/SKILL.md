@@ -91,7 +91,12 @@ that apply to prose. Name any widening of `writes:` here.
 Hand the diff to a second context of your own agent — a fresh session, or a
 subagent, or your harness's own review command. Give it the diff and two
 criteria — the decision ladder `cairn-code` points at, and correctness — and
-nothing else: not the plan, not this conversation, not the step record.
+nothing else: not the plan, not this conversation, not the step record. When
+no fresh context can be obtained — a subagent that hangs, a harness without
+one, a command that returns nothing — read the diff yourself against the same
+two criteria, and open the section with one line naming the reader: a fresh
+context and which kind, or you, with the reason and how long you waited
+(ADR-017, decision 4).
 
 Write what it returns into a `#### Review` section of the step, between the
 self-review and the verification: one line per finding with its disposition —
@@ -101,7 +106,8 @@ not a completed unit.
 
 A finding you fix changes the diff the reader judged. Give the fix back to a
 fresh context — only the lines it changed, the same two criteria, nothing else
-— and disposition what that second read returns under the same section. It is
+— and disposition what that second read returns under the same section, under
+its own line naming the reader. It is
 not read a third time, and the self-review is not repeated: a fix that cuts
 more adds a line to it.
 
@@ -142,7 +148,11 @@ of a provisional commit for work that is not yet a unit, are in
 
 Every pushed unit is a safe session boundary. Report the outcome, the exact
 remote commit, the gate verdict with its advisories, the persisted next action
-and blockers, and whether the next unit should run here or fresh.
+and blockers, and whether the next unit should run here or fresh. When the
+gate stayed green and the protocol still cost more than it should, write a
+file under `feedbacks/` naming the movement, the cost and the change to Cairn
+that would remove it — when there is something to say, never as a ritual, and
+never for a defect of the harness, which goes to its vendor (ADR-028).
 
 ## What you must not do
 

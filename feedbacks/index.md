@@ -1,17 +1,20 @@
 ---
 type: Cairn Folder Index
 title: Feedbacks
-description: Post-mortems and field feedback from adopter repositories, one note per incident, kept provisional until the protocol answers them.
+description: The owner's pages to the protocol, the adopter audits and post-mortems, and the agents' feedback files.
 tags: [index, cairn, feedback]
-timestamp: 2026-09-04T00:00:00Z
+timestamp: 2026-09-15T00:00:00Z
 ---
 
 # Feedbacks
 
-What adopters hit in the field, read from their repositories, one note per
-incident. A note here is evidence for a protocol change, never authority for
-one: it stays provisional until a specification or tooling path promotes what
-it argues.
+Three kinds of note: what adopters hit in the field, read from their
+repositories; the owner's pages to the protocol; and, since ADR-028, the
+agents' files — what a writer met when the gate stayed green and the
+protocol still cost more than it should, each observation with its cost and
+the change to Cairn that would remove it. A note here is evidence for a
+protocol change, never authority for one: it stays provisional until a
+specification or tooling path promotes what it argues.
 
 - [Crumbz — CP-001 and CP-002 on Gemini](./crumbz-postmortem-2026-09-03.md) — the first adopter's two paths, run by Gemini 3.8 on the Antigravity harness: what held, what did not, and what it asks of 1.1.
 - [Crumbz — CP-003 to CP-005 on Codex](./crumbz-postmortem-codex-2026-09-03.md) — the value-board idea from research note through the promotion, the fourteen-unit implementation and the checker-repair path: what held, where closure broke, and what it asks of 1.1.
@@ -21,3 +24,4 @@ it argues.
 - [Cairn 1.1 — the rulings](./2026-09-06-cairn-1-1-rulings.md) — every ask of the five notes as one checkbox line, thirty-nine in six themes, derived from the owner's answers of 2026-09-06: thirty-seven taken, two refused; the promotion path is bound to it.
 - [Cairn 1.1 — the owner's decisions](./2026-09-06-cairn-1-1-decisions.md) — nineteen questions in plain language about how to work with the agents, each with what happened on Crumbz and the options to tick; the technical rulings are derived from the answers.
 - [Owner feedback — 08/09, the pedagogy](./2026-09-08-owner-feedback-pedagogy.md) — the owner's four notebook pages on pedagogy, written after reading the 1.1 workflow and the coding guidelines: a pedagogical tone in every chat, a concept page for every explanation, requests read in a minute, learning sessions as a procedure, two readers the manifesto does not name, the senior's three moments, and nine documentation items read against the 1.1 plane; what the manifesto's pedagogy section leaves unsaid, a draft, and twelve questions for the owner.
+- [CP-CAIRN-009's writer — four things the gate could not see](./2026-09-15-cp-cairn-009-writer-feedback.md) — the first agent file, under ADR-028: a record naming a surface by a placeholder nothing resolved; one measured count restated in five documents and a register status hand-kept beside the records that carry it; a definition of done contradicting the record it cites; a record specifying a mechanism no release produces, with no way to mark it pending.

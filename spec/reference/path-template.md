@@ -223,11 +223,11 @@ verified: cairn-check, test, build
 
 #### Review
 
-First read, a fresh context given this unit's diff and the two criteria:
+First read — reader: <a fresh context, and which kind | the writer, with the reason no reader was obtainable and how long was waited> — given this unit's diff and the two criteria:
 
 - <finding> — **fixed** | **refused**, <reason> | **deferred** to <unit or path>
 
-Second read, a fresh context given only the diff of those fixes:
+Second read — reader: <the same line, for the fix> — given only the diff of those fixes:
 
 - <finding> — <disposition>
 
