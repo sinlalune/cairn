@@ -15,6 +15,7 @@ its summary and its conclusion. Every note here is provisional. It becomes
 vision only through a promotion path, which links the page back to it and
 leaves it exactly as it was. Git keeps the folder's history.
 
+- [An update skill — what the first release after 1.0 showed](./2026-09-16-an-update-skill.md) — the session of 2026-09-16, verbatim: the first `status` reading of Crumbz against 1.1.0, the nine-step chronology of an adopter's update and its one decision, the owner's line that a `cairn-update` skill is missing, three ways to close the gap with the skill recommended, and what the idea waits for — Crumbz's update run by hand.
 - [The review movement — what six units of CP-CAIRN-009 showed](./2026-09-15-the-review-movement.md) — the session of 2026-09-15, verbatim: fourteen of eighteen fresh review contexts hung, what the writer's own reads caught and what only a fresh one did, the `review` rule that cannot tell them apart, and the two questions the idea waits on.
 - [Coding guidelines — the brief for the research session](./2026-09-07-coding-guidelines.md) — the owner's ask of 2026-09-07: where Cairn stands on the coding stance, the step cycle, component slicing and the graph flow, and what the research session must produce before the next promotion path.
 - [The coding stance — what the guides say and what Crumbz wrote](./2026-09-07-coding-stance-research.md) — research note 1 of 4: Ponytail v4.9.0 and the vendors' guides against `cairn-code`, ten Crumbz units read against the ladder, the tree counted at the tip, five questions for the owner.
