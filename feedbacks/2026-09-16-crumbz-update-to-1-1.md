@@ -1,7 +1,7 @@
 ---
 type: Cairn Learning Note
 title: Crumbz updates to 1.1 — what the first `update` of an edited kit met
-description: The writer of Crumbz's CP-CAIRN-UPDATE-027, under ADR-028, on the first repository to bring an edited 1.0 kit to 1.1.0 with `update`: a repair the release does not carry, a live view the pointer page always asks to reconcile, a page never pristine the day after, a file that turns from unmanaged to edited between two readings, a dangling reference in the close skill, and template sentences that read false where they land — each with where it was met, what it cost and the change that would remove it.
+description: The writer of Crumbz's CP-CAIRN-UPDATE-027, under ADR-028, on the first repository to bring an edited 1.0 kit to 1.1.0 with `update`: a repair the release had absorbed and a reading that said it had not, a live view the pointer page always asks to reconcile, a page never pristine the day after, a file that turns from unmanaged to edited between two readings, a dangling reference in the close skill, and template sentences that read false where they land — each with where it was met, what it cost and the change that would remove it.
 tags: [cairn, feedback, agent, adopter, crumbz, update, 1.1]
 timestamp: 2026-09-16T00:00:00Z
 cairn:
@@ -28,33 +28,41 @@ whole and the commit chained after it ran on a stage holding one file:
 the writer's, and the binding already says never to chain a commit after
 a command whose exit code was not read.
 
-## 1. An adopter's repair that the release does not carry, with no way to say so
+## 1. A repair the release absorbed, and a reading that said it had not
 
-**Where.** Crumbz's checker carried step supersession — a `repair` unit
-declaring `supersedes: <step>@<blob>..<blob>` over a published step that
-was edited — from CP-CAIRN-SUPERSESSION-005, accepted on 2026-09-04 and
-written up in
+**Where.** Crumbz's checker carried three repairs made as control-plane
+paths of its own in the week of 2026-09-04 — step supersession
+(CP-CAIRN-SUPERSESSION-005), provisional resolution
+(CP-CAIRN-PROVISIONAL-006), the detached checkout
+(CP-CAIRN-DETACHED-CHECKOUT-007) — written up in
 [the closure post-mortem](./2026-09-04-crumbz-closure-checker-repairs.md).
-The 1.1.0 checker carries its own reading of the other two repairs of
-that week, the provisional resolution and the detached checkout, and
-nothing of this one: no parser for the field, no rule. Three step records
-in Crumbz declare it — CP-004 S17 and S18, CP-005 S01.
+Before the path could be opened, the writer read the two checkers side by
+side to learn which of the three 1.1.0 had absorbed, searching the
+release's checker for Crumbz's own function names, and concluded that it
+carried the second and the third and nothing of the first: *no parser for
+the field, no rule*. That was false. The release carries all three:
+`parseSupersession`, `supersessionClaim` and `supersessionBinds`, the
+`record-integrity` rule exempting a bound supersession and stating it as
+an advisory, the block in the path template, and a fixture. The sentence
+went into the path's record, was accepted with it, ran through three
+units, and stood in the first draft of this file until the reader of that
+draft on the protocol's side caught it.
 
-**What it cost.** A reading of the two checkers side by side before the
-path could be opened, to learn which of the three repairs the release had
-absorbed and which it had not, and a paragraph in the record explaining
-why taking the release's checker is safe anyway: the three records are
-history, no path touches them, and the release judges an untouched record
-by nothing. The decision was the owner's and it was right; the cost was
-finding out that it had to be made.
+**What it cost.** The side-by-side reading, function by function, and its
+being wrong: a paragraph in the record built on a gap that does not exist,
+a sentence in S01, a correction unit, and a first draft of this
+observation that would have sent the 1.2 path looking for the same gap.
+The decision the reading served — take the release's checker — was right
+either way, and the one record that declares a supersession — CP-004's
+S17, two claims over its edited S15 — was never at risk.
 
-**The change to Cairn.** Two things. The release notes, or the 1.1 page,
-name the adopter repairs the release absorbed and the ones it did not, so
-an adopter whose checker is edited knows before `status` what
-`update --take` will drop. And the mechanism itself deserves a decision on
-the record: a published step edited by mistake is a case the closure
-post-mortem documented in full, `spec/reference/repair.md` should say what
-1.1 does with it, and if the answer is *nothing yet*, a row for 1.2.
+**The change to Cairn.** The release notes, or the 1.1 page, name the
+adopter repairs the release absorbed and the ones it did not, by the
+adopter's path ids, since those are what an adopter searches for. A writer
+whose checker is edited then knows before `status`, and before reading
+code, what `update --take` will drop. The ask is unchanged from the first
+draft; the evidence for it is now that the reading was done with care and
+still got it wrong.
 
 ## 2. The live view is always "to reconcile by hand" while a path runs
 
