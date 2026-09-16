@@ -1,7 +1,7 @@
 ---
 type: Cairn Reference
 title: Conformance
-description: Which requirements of the specification the reference tools check, which they only state, and what each check depends on — with the generated rule catalogue, the generated rule-to-requirement linkage, and the weight budget Cairn 1.0 is measured against.
+description: Which requirements of the specification the reference tools check, which they only state, and what each check depends on — with the generated rule catalogue, the generated rule-to-requirement linkage, and the weight budget each release is measured against, read at 1.0.0 and at 1.1.0.
 tags: [cairn, reference, conformance, enforcement, weight]
 timestamp: 2026-09-02T00:00:00Z
 ---
@@ -22,24 +22,32 @@ rather than drifting in silence.
 
 ## The weight budget
 
-Cairn 1.0 is cut to a stated budget, measured at release and recorded here.
+Cairn is cut to a stated budget, measured at each release and recorded here.
 The targets are the convergence record's, section 4; a cap that has never
 bound is a count, not a constraint.
 
-| Surface | Target | Measured at 1.0.0 |
-| :-- | --: | --: |
-| `spec/index.md` | under 8,000 words | **5,630 words** |
-| the required entry chain — bootloader, path convention, binding, execution protocol | under 3,000 words | **2,895 words** |
-| files the kit installs | *none since ADR-022 d2 — measured, never a target* | **26 and the lock** on the `ci` profile, 25 on `local` |
-| protocol files one lightweight unit writes | under 6 | **2** — the step record and the record's resume section; a whole lifecycle from registration to `done` touches 4 on `pull-request` transport and 5 on `manual-git`, measured by `tools/cairn-pilot.mjs` |
+| Surface | Target | Measured at 1.0.0 | Measured at 1.1.0 |
+| :-- | --: | --: | --: |
+| `spec/index.md` | under 8,000 words | 5,630 words | **6,112 words** — bound |
+| the required entry chain — bootloader, path convention, binding, execution protocol | under 3,000 words | 2,895 words | **2,964 words** — bound, 36 under |
+| files the kit installs | *none since ADR-022 d2 — measured, never a target* | 26 and the lock on the `ci` profile, 25 on `local` | **33 and the lock** on the `ci` profile, 32 on `local` — no target |
+| protocol files one lightweight unit writes | under 6 | 2 — the step record and the record's resume section; a whole lifecycle from registration to `done` touches 4 on `pull-request` transport and 5 on `manual-git` | **2** — the same two files; the lifecycle 4 on `pull-request` and 5 on `manual-git`, unchanged — bound |
 
-Every target that has one bound. The numbers are counted by the tools and the
-pilot, not estimated; a release that moves one past its target has to say so
-here. Every figure is the reading taken at 1.0.0, and each release takes them
-again. The kit's row lost its target at ADR-022 decision 2 — a file that earns
-its place is added and the number follows — so that row is a reading and
-nothing is asked of it; what the release installs today is on the
-*Installation, update and adoption* row above.
+Every target that has one bound at 1.0.0 and bound again at 1.1.0. The
+words are `wc -w` over each file as committed, frontmatter included — the
+reading that gave 5,630 and 2,895 at the 1.0.0 tag gives 6,112 and 2,964 at
+1.1.0; the kit's files are what `init` writes on each profile, as the lock's
+manifest counts them; the unit's files are what `tools/cairn-pilot.mjs`
+prints. Nothing is estimated; a release that moves one past its target has to
+say so here. The entry chain gained 69 words between the two releases, all in
+the bootloader and the binding — the sixth skill on the *start here* list, the
+two lines on explaining (ADR-011, ADR-021), `npm test` named as the alias of
+`cairn-test`, the registration transport's row — while the path convention
+and the execution protocol did not move; its row is the one reading a further
+release must watch. The kit's row lost its target at ADR-022
+decision 2 — a file that earns its place is added and the number follows — so
+that row is a reading and nothing is asked of it; the seven files 1.1 added
+are on the *Installation, update and adoption* row below.
 
 ## Where the matrix stands
 

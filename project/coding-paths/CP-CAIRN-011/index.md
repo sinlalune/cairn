@@ -7,13 +7,13 @@ timestamp: 2026-09-15T00:00:00Z
 cairn:
   id: CP-CAIRN-011
   route: full
-  status: running
-  current_step: S01
+  status: ready
+  current_step: S05
   base_commit: 471fa71b27a2334f40f6fb4fa01c682ac923e323
   branch: path/cp-cairn-011
   assigned_writer: cp-cairn-011-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 7f41d127a76b64bb916b26e48f58b8f48c32c3bd
   resolution: null
   writes:
     - README.md
@@ -25,6 +25,7 @@ cairn:
     - docs/inputs/**
     - docs/index.md
     - docs/architecture/01-cairn-1-1.md
+    - docs/modules/site.md
     - project/coding-paths/index.md
     - project/coding-paths/CP-CAIRN-011/**
   governs:
@@ -219,27 +220,72 @@ The owner said the units run in a fresh session. Amendments: none.
 
 Forward steps live in [`plan.md`](./plan.md) until they are executed.
 
-- **S01** — not started
+- **S01** — [the README](./steps/S01.md) — complete. What Cairn is in one
+  paragraph, then its four surfaces one line each — adopting, opening and
+  running, closing, learning — with the skill behind each; every count 1.1's
+  as a tool counts it: six skills, twenty-seven rules of which twenty-one
+  block, five movements, thirty-three files and the lock on the `ci`
+  profile; registration on the trunk directly; quick start 3 split into the
+  two commands the tool actually has, `update` for a lock and `adopt` for
+  none; the three quick starts run against the kit packed at the
+  registration commit, and the pilot from `init` to `done`; the *Weight*
+  section pointing at the conformance page with no number. Advances the
+  first item.
+- **S02** — [the site](./steps/S02.md) — complete. Built from the candidate:
+  seventy-five documents bundled, the six skills among them, Vite green; the
+  one count the site hard-codes, *five skills* in the shell's meta
+  description, made the README's; the module note refreshed, `writes:`
+  widened by it. Advances the second item.
+- **S03** — [the weight measured at 1.1.0](./steps/S03.md) — complete. The
+  conformance page's budget table gains the 1.1.0 column beside 1.0.0's:
+  6,112 words of specification, 2,964 in the entry chain and 36 under its
+  target, 33 files and the lock on `ci` and 32 on `local` with no target,
+  2 protocol files per unit and 4 or 5 per lifecycle; every target bound;
+  the counting method named. Advances the third item.
+- **S04** — [this repository updated with its own kit](./steps/S04.md) —
+  complete. `status` then `update` run here from the tree, both reports
+  quoted; thirteen kit files pristine and rewritten identically, seventeen
+  edited and left, each listed with what the release changes in it;
+  `cairn/README.md` installed naming the release and commit the tree
+  carries, `docs/inputs/` installed and indexed, the lock's manifest at
+  thirty-three; the three concept folders the kit plans under
+  `spec/concepts/` declined, with the reason. The release and commit on
+  the page are `package.json`'s and HEAD's, so S05 re-runs `update` after
+  the version. Advances the fourth item, but for the release's name.
+- **S05** — [the version, the page's opening and the register](./steps/S05.md)
+  — complete. `package.json` at `1.1.0`, `update` run again so the pointer
+  page and the lock name release 1.1.0, `prepack`'s stamp proven; the 1.1
+  page's opening sentence replaced and marked *since 2026-09-15*; the 1.1
+  milestone row *done* with the date and the tag to come, the *Cairn 1.2 —
+  what 1.1 taught* row under it with *no path yet* and its agenda, the
+  feedback file, the journal and this record as its sources. Advances the
+  fourth item's release name, the fifth and the sixth.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — the trunk commit that adds this record, whose parent is base
-unit   : 0
+commit : 7f41d127a76b64bb916b26e48f58b8f48c32c3bd — candidate C, S05's commit with the trunk contained; on origin/path/cp-cairn-011; this administrative commit follows it
+unit   : 05 — the last unit; the close adds no unit
 base   : 471fa71b27a2334f40f6fb4fa01c682ac923e323
-trunk  : 471fa71b27a2334f40f6fb4fa01c682ac923e323 — origin/main at registration
+trunk  : 891b07de4afb4239a26ecccfa1f250a046701c34 — origin/main, T, the registration commit; unmoved since the branch was cut
 ```
 
 ### Next action
 
-In a fresh session, from the worktree `../cairn-cp-cairn-011` on branch
-`path/cp-cairn-011`: run S01 of the plan with `cairn-unit` — the README:
-what Cairn is in one paragraph, the surfaces one line each, every count
-and sequence 1.1's, the three quick starts run against the kit at this
-commit with their output kept in the step. The review section's first
-line names the reader, as ADR-017 decision 4 says.
+The owner opens the site built from `C`, reads the README, runs one quick
+start, and merges pull request #20 as a merge commit once its check on
+the `ready` commit is read green; the merge click is the acceptance. Then,
+from a clean trunk checkout: the integrating unit — `status: done`,
+`resolution: completed`, `subject_commit` kept, the live view, one journal
+entry `project/log/2026-09-15-cp-cairn-011.md` — landed on the trunk
+directly; `C` proved reachable from `origin/main`; the tag `1.1.0` set on
+the integrating commit and pushed, as `1.0.0` was; `npm publish` by the
+owner from that commit; the journal entry naming the tag, the package and
+the first adopter's update as the next path, on Crumbz's register; the
+worktree `../cairn-cp-cairn-011` removed from another checkout, or the
+failure reported.
 
 ### Blockers
 
@@ -260,13 +306,50 @@ None.
   carry.
 - Pinning the register in `governs:` — a write surface, as in every
   path before.
+- Running the quick starts with `npx cairn-protocol` as written, against
+  the registry — that installs 1.0.0, the release the README no longer
+  describes; the package was packed from the worktree and `npx` given the
+  tarball, so the commands ran as written against the kit at this commit
+  (S01).
+- Keeping a word count in the README beside the pointer at the conformance
+  page — a number restated in two places is the second of the five things
+  1.1 leaves; the page counts, the README points (S01).
+- Bundling the 1.1 page and the decision records into the site so the
+  README's new links resolve inside it — the site projects the four layers
+  the owner asked for, and a link it does not bundle opens the file on
+  GitHub at the bundled commit, which is what it does for every reference
+  link already (S02).
+- Restating the 1.1.0 figures in chapter 6's *Conformance and weight*,
+  which still says *Cairn 1.0 is measured against* — `spec/index.md` is
+  excluded from this path's writes; the chapter names no figure but the
+  targets, and the sentence is one of the restated facts the 1.2 row
+  carries (S03).
+- Taking the release's version of `docs/index.md` with `--take` — the
+  release's template lists surface pages and concept folders this
+  repository does not have; the one line the kit's install owes it, the
+  inputs folder, is added by hand (S04).
+- Keeping the three concept folders `update` writes under `spec/concepts/`
+  — an adopter's folders, planned under this repository's own wiki root
+  because the binding names it as the concepts root; the definition of
+  done excludes `spec/concepts/` from change, and the protocol's wiki has
+  its own index; declined and named for the 1.2 row (S04).
+- Adding the pointer page's line to this repository's `AGENTS.md`, as the
+  release's template has it — the bootloader is outside this path's
+  writes and an edited host file `update` leaves; it stands on the
+  pointer page's reconcile list, which is where ADR-015 puts it (S04).
+- Writing the tag's commit id into the register's 1.1 row now — the
+  integrating commit does not exist until the merge; the row names the
+  tag and the path whose integration carries it (S05).
+- Fixing any of the 1.2 row's items in this path — each is a change to a
+  record, a rule, a skill or the installer, and a release ships what was
+  decided; the row is where the next path finds them (S05).
 
 ### Reading order
 
 1. `AGENTS.md`, then `skills/cairn-unit/SKILL.md`.
-2. `docs/architecture/01-cairn-1-1.md` at its pinned blob — the two tables.
-3. `README.md` and `site/src/App.jsx` as they are — what must become true.
-4. `project/coding-paths/CP-CAIRN-011/plan.md`, then `project/log/2026-09-03-cp-cairn-001.md` for the cut.
+2. `skills/cairn-close/SKILL.md` and its reference — the sequence, the administrative commit, the owner's try.
+3. This record's definition of done — the seventh and ninth items are what the candidate is checked against; `project/log/2026-09-15-cp-cairn-010.md` for the shape of an integrating unit's entry.
+4. `project/coding-paths/CP-CAIRN-011/plan.md`, then `project/coding-paths/CP-CAIRN-001/steps/S08.md` and the 1.0.0 journal for how the tag and the package followed the merge.
 
 ### Verify
 

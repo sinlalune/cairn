@@ -3,7 +3,7 @@ type: Cairn Module Note
 title: The site
 description: What lives under site/ — the React Markdown renderer with Mermaid that publishes the manifesto, the README, the specification and the skills to GitHub Pages — how it is built, and what it deliberately is not.
 tags: [module, cairn, site]
-timestamp: 2026-09-02T00:00:00Z
+timestamp: 2026-09-15T00:00:00Z
 ---
 
 # The site
@@ -12,7 +12,9 @@ timestamp: 2026-09-02T00:00:00Z
 renders the repository's own Markdown — `manifesto.md`, `README.md`, `spec/**`
 and `skills/**` — in a browser, with Mermaid diagrams rendered from
 ```` ```mermaid ```` fences. It is a projection: nothing is written for the
-site that is not already a document in the repository.
+site that is not already a document in the repository, except the meta
+description of `index.html` — one sentence from the README's opening, one
+naming the four layers below.
 
 ## Flow
 
@@ -23,7 +25,10 @@ links between bundled documents into routes and every other relative link
 into the repository on the forge at the bundled commit, strips frontmatter
 and reads its title for the navigation. The navigation follows the four
 layers the owner asked for: the manifesto, the overview and quick starts, the
-specification for those who dig, and the skills.
+specification for those who dig, and the skills. The *Skills* group is read
+off the bundle — every `SKILL.md` under `skills/` — so a skill the kit adds
+appears without a change here; the *Start* and *Specification* groups are the
+five entries the app names.
 
 ## Boundaries
 
