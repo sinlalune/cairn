@@ -1,7 +1,7 @@
 ---
 type: Cairn Learning Note
 title: Crumbz updates to 1.1 — what the first `update` of an edited kit met
-description: The writer of Crumbz's CP-CAIRN-UPDATE-027, under ADR-028, on the first repository to bring an edited 1.0 kit to 1.1.0 with `update`: a repair the release had absorbed and a reading that said it had not, a live view the pointer page always asks to reconcile, a page never pristine the day after, a file that turns from unmanaged to edited between two readings, a dangling reference in the close skill, and template sentences that read false where they land — each with where it was met, what it cost and the change that would remove it.
+description: The writer of Crumbz's CP-CAIRN-UPDATE-027, under ADR-028, on the first repository to bring an edited 1.0 kit to 1.1.0 with `update`: a repair the release had absorbed and a reading that said it had not, a live view the pointer page always asks to reconcile, a page never pristine the day after, a file that turns from unmanaged to edited between two readings, a dangling reference in the close skill, and template sentences that read false where they land, and two defects the request reviewer found in the post-mortem tool — each with where it was met, what it cost and the change that would remove it.
 tags: [cairn, feedback, agent, adopter, crumbz, update, 1.1]
 timestamp: 2026-09-16T00:00:00Z
 cairn:
@@ -158,6 +158,39 @@ prevent — and so two false sentences on a page the adopter now owns.
 rather than the state it asserts: *one page at this root per surface, as
 they are written* — and either install a README stub the line can be added
 to, or say *the repository's README, where it has one*.
+
+## 7. The post-mortem tool cannot count the run it is running in
+
+**Where.** `readRedRuns` in `tools/cairn-postmortem.mjs` asks the forge
+for the branch's runs with `status=failure` and reports `total_count`.
+The installed workflow runs the tool in the failure step of the run whose
+checker just failed — a run still `in_progress`, which that filter cannot
+return. Found by the request reviewer on Crumbz's closing request, read
+against the file and the workflow.
+
+**What it cost.** Nothing yet on Crumbz, whose gate has not gone red on
+1.1. On the first red run the report will say *no red run* on a branch
+that has one, and every later report undercounts by one.
+
+**The change to Cairn.** Count the current run as red when the tool runs
+from the failure step — the workflow knows it is, and can say so with one
+flag or one environment variable — or read the runs after the current
+one has reached its conclusion.
+
+## 8. A closed, unmerged request reads as open
+
+**Where.** The same tool asks for the branch's requests with `state=all`
+and keeps `number`, `created_at` and `merged_at`; `requestsReading` then
+prints every entry without `merged_at` as *open since*. A request closed
+without merging — voided, abandoned — is printed as open. Same reviewer,
+same read.
+
+**What it cost.** Nothing yet; Crumbz has voided candidates by opening a
+new request, not by closing one, so far.
+
+**The change to Cairn.** Keep `state` and `closed_at` in the projection
+and print *closed* for a request that is closed and not merged. Two
+fields and one branch of the reading.
 
 ## What the update got right
 
