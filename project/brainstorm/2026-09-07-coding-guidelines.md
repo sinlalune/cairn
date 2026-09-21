@@ -51,7 +51,7 @@ pinned, summary, conclusion. Each conclusion says what it changes about the
 vision and what it does not settle, and ends with the questions the owner
 must answer, in plain language, two or three options each, every option
 tagged *simplest*, *native* or *adds a rule* as the
-[1.1 decisions page](../../feedbacks/2026-09-06-cairn-1-1-decisions.md) did.
+[1.1 decisions page](../../feedbacks/1.1/2026-09-06-cairn-1-1-decisions.md) did.
 
 ### 1. The coding stance
 

@@ -11,7 +11,7 @@ cairn:
 
 > Written on 2026-09-09 from the owner's four notebook pages of 2026-09-08,
 > transcribed verbatim in
-> [the pedagogy feedback](../../feedbacks/2026-09-08-owner-feedback-pedagogy.md),
+> [the pedagogy feedback](../../feedbacks/1.1/2026-09-08-owner-feedback-pedagogy.md),
 > at the owner's request: *"write it yourself from my feedbacks notes"*.
 > The pages are the source; where this statement and the pages differ, the
 > pages win. The owner's acceptance is the merge that lands it. The original

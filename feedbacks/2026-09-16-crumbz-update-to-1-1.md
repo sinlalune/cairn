@@ -35,7 +35,7 @@ paths of its own in the week of 2026-09-04 — step supersession
 (CP-CAIRN-SUPERSESSION-005), provisional resolution
 (CP-CAIRN-PROVISIONAL-006), the detached checkout
 (CP-CAIRN-DETACHED-CHECKOUT-007) — written up in
-[the closure post-mortem](./2026-09-04-crumbz-closure-checker-repairs.md).
+[the closure post-mortem](./1.1/2026-09-04-crumbz-closure-checker-repairs.md).
 Before the path could be opened, the writer read the two checkers side by
 side to learn which of the three 1.1.0 had absorbed, searching the
 release's checker for Crumbz's own function names, and concluded that it

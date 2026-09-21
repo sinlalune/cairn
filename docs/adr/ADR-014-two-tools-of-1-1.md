@@ -15,8 +15,8 @@ adr:
 Status: accepted · 2026-09-06 · written by CP-CAIRN-002, S05
 
 **Promoted from** the owner's
-[decisions page](../../feedbacks/2026-09-06-cairn-1-1-decisions.md) at blob
-`110cde972d683680bdeb713264a26fd8f9f44acd` (Q18, and the self-test item of Q13) and the [rulings note](../../feedbacks/2026-09-06-cairn-1-1-rulings.md) at
+[decisions page](../../feedbacks/1.1/2026-09-06-cairn-1-1-decisions.md) at blob
+`110cde972d683680bdeb713264a26fd8f9f44acd` (Q18, and the self-test item of Q13) and the [rulings note](../../feedbacks/1.1/2026-09-06-cairn-1-1-rulings.md) at
 blob `313f8ea18fe77d0fb6f641ac969989dc4d35a17f` (R36 and R37). Both notes stay exactly as they were. ADR-008 covers the rest of Q13 and names this record for R37.
 
 ## Context

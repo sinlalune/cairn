@@ -31,8 +31,8 @@ cairn:
 ## Goal
 
 The owner answered the nineteen questions of the
-[decisions page](../../../feedbacks/2026-09-06-cairn-1-1-decisions.md) on
-2026-09-06 and the [rulings note](../../../feedbacks/2026-09-06-cairn-1-1-rulings.md)
+[decisions page](../../../feedbacks/1.1/2026-09-06-cairn-1-1-decisions.md) on
+2026-09-06 and the [rulings note](../../../feedbacks/1.1/2026-09-06-cairn-1-1-rulings.md)
 was ticked from those answers: thirty-seven asks taken, two refused, nothing
 undecided. Neither note designs anything. This path is the promotion unit of
 the specification's chapter 3: the rulings become accepted vision — decision

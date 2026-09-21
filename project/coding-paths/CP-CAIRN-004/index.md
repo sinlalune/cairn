@@ -32,7 +32,7 @@ cairn:
 ## Goal
 
 The owner answered the twelve questions of the
-[pedagogy feedback](../../../feedbacks/2026-09-08-owner-feedback-pedagogy.md)
+[pedagogy feedback](../../../feedbacks/1.1/2026-09-08-owner-feedback-pedagogy.md)
 on 2026-09-09, nine by a tick and two, P6 and P10, in their own words, and
 had the manifesto's pedagogy section written from the same pages as a
 [dated statement](../../../docs/cairn/manifesto-pedagogy-2026-09-09.md)

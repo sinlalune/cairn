@@ -15,9 +15,9 @@ adr:
 Status: accepted · 2026-09-06 · written by CP-CAIRN-002, S03
 
 **Promoted from** the owner's
-[decisions page](../../feedbacks/2026-09-06-cairn-1-1-decisions.md) at blob
+[decisions page](../../feedbacks/1.1/2026-09-06-cairn-1-1-decisions.md) at blob
 `110cde972d683680bdeb713264a26fd8f9f44acd` (Q8) and the
-[rulings note](../../feedbacks/2026-09-06-cairn-1-1-rulings.md) at blob
+[rulings note](../../feedbacks/1.1/2026-09-06-cairn-1-1-rulings.md) at blob
 `313f8ea18fe77d0fb6f641ac969989dc4d35a17f` (R12). Both notes stay exactly
 as they were.
 

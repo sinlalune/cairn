@@ -15,9 +15,9 @@ adr:
 Status: accepted · 2026-09-06 · written by CP-CAIRN-002, S03
 
 **Promoted from** the owner's
-[decisions page](../../feedbacks/2026-09-06-cairn-1-1-decisions.md) at blob
+[decisions page](../../feedbacks/1.1/2026-09-06-cairn-1-1-decisions.md) at blob
 `110cde972d683680bdeb713264a26fd8f9f44acd` (Q9) and the
-[rulings note](../../feedbacks/2026-09-06-cairn-1-1-rulings.md) at blob
+[rulings note](../../feedbacks/1.1/2026-09-06-cairn-1-1-rulings.md) at blob
 `313f8ea18fe77d0fb6f641ac969989dc4d35a17f` (R09, R13, R14, R15, R16, R17).
 Both notes stay exactly as they were.
 
@@ -148,7 +148,7 @@ Crumbz repaired its own copy of the checker three times in one day:
 The three come into the kit's checker with their tests, so the adopter's
 copy becomes a version bump through the `cairn` command's `update` rather
 than a fork. They are named here by their Crumbz path ids and by the
-[closure note](../../feedbacks/2026-09-04-crumbz-closure-checker-repairs.md)
+[closure note](../../feedbacks/1.1/2026-09-04-crumbz-closure-checker-repairs.md)
 that records them and their branches.
 
 What this changes: `tools/cairn-check.mjs` and `tools/cairn-fixture.test.mjs`,

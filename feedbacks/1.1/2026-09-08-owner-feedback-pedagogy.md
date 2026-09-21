@@ -11,8 +11,8 @@ cairn:
 # Owner feedback — 08/09, the pedagogy
 
 Four notebook pages written by the owner on 2026-09-08, after reading the
-[1.1 architecture page](../docs/architecture/01-cairn-1-1.md) and the
-[coding guidelines](../project/brainstorm/2026-09-07-coding-guidelines-decisions.md)
+[1.1 architecture page](../../docs/architecture/01-cairn-1-1.md) and the
+[coding guidelines](../../project/brainstorm/2026-09-07-coding-guidelines-decisions.md)
 promoted by CP-CAIRN-003. The owner's own framing: the pedagogy side is
 *maybe not enough developed in the manifesto*.
 
@@ -27,7 +27,7 @@ shape the [1.1 decisions page](./2026-09-06-cairn-1-1-decisions.md) used.
 The companion notes are the owner's
 [feedback of 06/09](./2026-09-06-owner-feedback.md), whose item 4 already
 carried the first sentence of this theme, and the
-[convergence audit](../docs/cairn/cairn-manifesto-convergence-2026-09-02.md),
+[convergence audit](../../docs/cairn/cairn-manifesto-convergence-2026-09-02.md),
 whose reading of the pedagogy section was *holds in part*.
 
 ## Page ①: "Cairn | Pedagogy | 08/09" — interactions
@@ -490,7 +490,7 @@ Every record stays; nothing says where to look.
   your statement; the four points above are what the draft covers.
   *Owner, 2026-09-09: "write it yourself from my feedbacks notes." The
   statement is
-  [`docs/cairn/manifesto-pedagogy-2026-09-09.md`](../docs/cairn/manifesto-pedagogy-2026-09-09.md),
+  [`docs/cairn/manifesto-pedagogy-2026-09-09.md`](../../docs/cairn/manifesto-pedagogy-2026-09-09.md),
   developed from the four pages; the pages win where they differ; the
   merge is the acceptance.*
 - [ ] **Yes, the draft as it stands.** The draft above becomes the edited

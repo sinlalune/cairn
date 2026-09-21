@@ -16,7 +16,7 @@ Four research notes read what the guides say and what Crumbz wrote:
 [the component slicing](./2026-09-07-component-slicing-research.md) and
 [the graph flow](./2026-09-07-graph-flow-research.md). Each ends with
 questions. This page gathers them, in the shape the
-[1.1 decisions page](../../feedbacks/2026-09-06-cairn-1-1-decisions.md)
+[1.1 decisions page](../../feedbacks/1.1/2026-09-06-cairn-1-1-decisions.md)
 used: what happened, then two or three ways to go on. Tick one per
 question. If none fits, write a line under the question in your own
 words; it wins.

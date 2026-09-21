@@ -28,7 +28,7 @@ Nothing here is a ruling.
 | GitHub, *Copilot code review* | <https://docs.github.com/en/copilot/concepts/code-review/code-review>, read 2026-09-07 (undated) | the forge's own second reader |
 | Kent Beck, *Augmented Coding: Beyond the Vibes* | <https://newsletter.kentbeck.com/p/augmented-coding-beyond-the-vibes>, 2025-06-25 | the test-first loop stated for an agent |
 | This repository | `b281786`: `spec/index.md` chapter 5, `spec/concepts/work-unit.md`, `skills/cairn-unit/SKILL.md`, ADR-001, ADR-008, ADR-009, ADR-014 | the unit and what 1.1 decided about it |
-| Crumbz, `sinlalune/crumbz` | trunk `358bb17`; the seventy-one step records; requests #21, #27, #30 and their review comments; the [audit of 2026-09-06](../../feedbacks/2026-09-06-crumbz-sixteen-paths-audit.md) | the only runs of the unit |
+| Crumbz, `sinlalune/crumbz` | trunk `358bb17`; the seventy-one step records; requests #21, #27, #30 and their review comments; the [audit of 2026-09-06](../../feedbacks/1.1/2026-09-06-crumbz-sixteen-paths-audit.md) | the only runs of the unit |
 
 ## Summary
 

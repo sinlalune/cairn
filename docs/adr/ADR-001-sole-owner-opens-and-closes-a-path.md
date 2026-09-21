@@ -15,9 +15,9 @@ adr:
 Status: accepted · 2026-09-06 · written by CP-CAIRN-002, S01 · decision 6 superseded by ADR-029 on 2026-09-14
 
 **Promoted from** the owner's
-[decisions page](../../feedbacks/2026-09-06-cairn-1-1-decisions.md) at blob
+[decisions page](../../feedbacks/1.1/2026-09-06-cairn-1-1-decisions.md) at blob
 `110cde972d683680bdeb713264a26fd8f9f44acd` (questions Q1 to Q6 and the first
-removal of Q19) and the [rulings note](../../feedbacks/2026-09-06-cairn-1-1-rulings.md)
+removal of Q19) and the [rulings note](../../feedbacks/1.1/2026-09-06-cairn-1-1-rulings.md)
 at blob `313f8ea18fe77d0fb6f641ac969989dc4d35a17f` (theme 1, R01 to R08
 except R07). Both notes stay exactly as they were. This record states what
 they decided, once, and names what implements it.

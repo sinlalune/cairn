@@ -27,7 +27,7 @@ suffices after CP-016. Nothing here is a ruling.
 | Anthropic, *Best practices for Claude Code* | <https://code.claude.com/docs/en/best-practices>, read 2026-09-07 | `/batch`, agent teams, the Writer/Reviewer pair |
 | OpenAI, *Follow a goal* | <https://learn.chatgpt.com/use-cases/follow-goals>, read 2026-09-07 | the one-session, one-goal shape |
 | This repository | `b281786`: `spec/index.md` chapter 4's `depends_on` paragraph and chapter 5's *work beside other paths*, `tools/cairn-active.mjs`, ADR-003, the [roadmap register](../../project/coding-paths/index.md), the [convergence audit](../../docs/cairn/cairn-manifesto-convergence-2026-09-02.md) §3 | the one edge as decided and as coded |
-| Crumbz, `sinlalune/crumbz` | trunk `358bb17`: the sixteen path records' `depends_on:` and `writes:`; the [audit of 2026-09-06](../../feedbacks/2026-09-06-crumbz-sixteen-paths-audit.md) for the registration and closing times | the only paths that ran beside each other |
+| Crumbz, `sinlalune/crumbz` | trunk `358bb17`: the sixteen path records' `depends_on:` and `writes:`; the [audit of 2026-09-06](../../feedbacks/1.1/2026-09-06-crumbz-sixteen-paths-audit.md) for the registration and closing times | the only paths that ran beside each other |
 
 ## Summary
 

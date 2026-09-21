@@ -15,8 +15,8 @@ adr:
 Status: accepted · 2026-09-06 · written by CP-CAIRN-002, S04
 
 **Promoted from** the owner's
-[decisions page](../../feedbacks/2026-09-06-cairn-1-1-decisions.md) at blob
-`110cde972d683680bdeb713264a26fd8f9f44acd` (Q13) and the [rulings note](../../feedbacks/2026-09-06-cairn-1-1-rulings.md) at
+[decisions page](../../feedbacks/1.1/2026-09-06-cairn-1-1-decisions.md) at blob
+`110cde972d683680bdeb713264a26fd8f9f44acd` (Q13) and the [rulings note](../../feedbacks/1.1/2026-09-06-cairn-1-1-rulings.md) at
 blob `313f8ea18fe77d0fb6f641ac969989dc4d35a17f` (R18, R19, R20, R22, R28, R29, R38). Both notes stay exactly as they were. Q13 also drives R37, the kit's self-test, which the tooling record of this path promotes.
 
 ## Context

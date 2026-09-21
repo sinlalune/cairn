@@ -9,9 +9,9 @@ timestamp: 2026-09-15T00:00:00Z
 # Cairn 1.1 — a repository run by a sole owner with agents
 
 **Promoted from** the owner's
-[decisions page](../../feedbacks/2026-09-06-cairn-1-1-decisions.md) at blob
+[decisions page](../../feedbacks/1.1/2026-09-06-cairn-1-1-decisions.md) at blob
 `110cde972d683680bdeb713264a26fd8f9f44acd` and the
-[rulings note](../../feedbacks/2026-09-06-cairn-1-1-rulings.md) at blob
+[rulings note](../../feedbacks/1.1/2026-09-06-cairn-1-1-rulings.md) at blob
 `313f8ea18fe77d0fb6f641ac969989dc4d35a17f`, through the fifteen
 [decision records](../adr/index.md) ADR-001 to ADR-015. The notes stay
 exactly as they were. This page states what the records decide as one
@@ -40,7 +40,7 @@ the page overturns one. A sentence the amendment adds is marked *since
 
 **Amended on 2026-09-09** by the promotion of the pedagogy, through the
 three records ADR-021 to ADR-023, from the owner's
-[pedagogy feedback](../../feedbacks/2026-09-08-owner-feedback-pedagogy.md)
+[pedagogy feedback](../../feedbacks/1.1/2026-09-08-owner-feedback-pedagogy.md)
 at blob `e9bd3e92aa7c6336f92e715140f744aeb8385d02` and
 the owner's [statement on the pedagogy](../cairn/manifesto-pedagogy-2026-09-09.md)
 at blob `57d2e87a3caafab19ba36fa794d7ab342e2a87e1`, which the

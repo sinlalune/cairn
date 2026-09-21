@@ -21,7 +21,7 @@ more than it should. Observation 1 is a red gate, which ADR-028 leaves to
 the post-mortem. It is here because the red was in an adopter's repository
 at `adopt`, where no path, no unit and no post-mortem of this protocol
 reaches — the channel the folder's first sense exists for, as
-[the closure note of 2026-09-04](./2026-09-04-crumbz-closure-checker-repairs.md)
+[the closure note of 2026-09-04](./1.1/2026-09-04-crumbz-closure-checker-repairs.md)
 already is — and because what it argues is a change to Cairn.
 
 Atomik is where the protocol was written: this repository's genesis commit

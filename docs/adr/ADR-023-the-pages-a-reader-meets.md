@@ -15,7 +15,7 @@ adr:
 Status: accepted · 2026-09-09 · written by CP-CAIRN-004, S03
 
 **Promoted from** the owner's
-[pedagogy feedback](../../feedbacks/2026-09-08-owner-feedback-pedagogy.md)
+[pedagogy feedback](../../feedbacks/1.1/2026-09-08-owner-feedback-pedagogy.md)
 at blob `e9bd3e92aa7c6336f92e715140f744aeb8385d02` (P7 to P11, and the
 readings *documentation* and *the senior developer*) and the owner's
 [statement on the pedagogy](../../docs/cairn/manifesto-pedagogy-2026-09-09.md)
