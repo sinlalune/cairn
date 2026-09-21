@@ -1,7 +1,7 @@
 ---
 type: Cairn Learning Note
 title: Cairn 1.2 — the asks
-description: Every ask the notes 1.1 did not answer make of 1.2, one checkbox line each, grouped by theme and de-duplicated — from the five agent feedback files of 2026-09-15 to 2026-09-21, the release path's own findings, path 6's journal entry and the two brainstorm notes of 2026-09-16; thirty-one in six themes, each verified against the tree on 2026-09-21; ticked, deferred or refused from the owner's answers to the decisions page, and the promotion path that follows is bound to both.
+description: Every ask the notes 1.1 did not answer make of 1.2, one checkbox line each, grouped by theme and de-duplicated — from the ten agent feedback files of 2026-09-15 to 2026-09-21, the release path's own findings, path 6's journal entry and the two brainstorm notes of 2026-09-16; thirty-six in seven themes, each verified against the tree on 2026-09-21; ticked, deferred or refused from the owner's answers to the decisions page, and the promotion path that follows is bound to both.
 tags: [cairn, asks, 1.2, adopter, crumbz, atomik, learning]
 timestamp: 2026-09-21T14:00:00Z
 cairn:
@@ -10,7 +10,7 @@ cairn:
 
 # Cairn 1.2 — the asks
 
-Five notes in this folder, the release path's own step records, the journal
+Ten notes in this folder, the release path's own step records, the journal
 entry of path 6 and two brainstorm notes end with a change to Cairn that
 nothing has made. This note lists every ask once, as
 [the 1.1 rulings note](./1.1/2026-09-06-cairn-1-1-rulings.md) did for the
@@ -35,6 +35,7 @@ Sources by letter: **W** [CP-CAIRN-009's writer](./2026-09-15-cp-cairn-009-write
 **A** [Atomik's adoption](./2026-09-21-atomik-adopts-1-1.md),
 **P** [the protected trunk](./2026-09-21-atomik-opens-a-path-on-a-protected-trunk.md),
 **C** [the channel](./2026-09-21-the-channel-an-adopter-cannot-reach.md),
+**E** the four ECOS notes of 2026-09-17 and 2026-09-18 — [the merge before the administrative commit](./2026-09-17-ecos-merge-before-administrative-commit.md), [a deferral has nowhere to land](./2026-09-18-ecos-a-deferral-has-nowhere-to-land.md), [checkboxes inside the scope digest](./2026-09-18-ecos-checkboxes-inside-the-scope-digest.md) and [the coherence questions](./2026-09-18-ecos-coherence-questions-need-a-fresh-reader.md), merged here on 2026-09-21 while this note was written,
 **J** [path 6's journal entry](../project/log/2026-09-15-cp-cairn-010.md),
 **R** [the release path](../project/coding-paths/CP-CAIRN-011/index.md), S01, S03 and S04,
 **B** the two brainstorm notes of 2026-09-16 — [an update skill](../project/brainstorm/2026-09-16-an-update-skill.md)
@@ -175,7 +176,8 @@ and [what the harness loads](../project/brainstorm/2026-09-16-what-the-harness-l
   roots are the documentation root, the project root, the wiki's parent and
   `skills/`. Note that a rule blocking on a link inside a frozen note is a
   rule that edits history; the move of 2026-09-21 rewrote nine such links by
-  hand, one level deeper.)*
+  hand, one level deeper; and the four ECOS notes carry a frontmatter `type`,
+  `Cairn Feedback`, that no other note uses and no rule read.)*
 - [ ] **K23 — The `comparison` rule's messages say GitHub.** Two printed
   messages still say *the forge* where GitHub's all-zeros sentinel is meant;
   ADR-029 decided the reading, not the wording. *(J; live —
@@ -230,10 +232,55 @@ and [what the harness loads](../project/brainstorm/2026-09-16-what-the-harness-l
   --take` will drop. *(U1; live — Crumbz's writer read two checkers
   function by function and got it wrong.)*
 
+- [ ] **K36 — On the trunk, the post-mortem reads the path that arrived.**
+  Given the trunk, the tool prints one section per path record in the
+  repository — twenty-seven on Crumbz — and nothing about the finding that
+  failed; read the path whose record changed in the compared range, or
+  print the checker's finding first and the corpus not at all. *(U9; live.)*
+
+## 7. Finishing a coding path — what a third adopter met
+
+- [ ] **K32 — On `pull-request` with one owner, the administrative commit
+  lands before the reading.** The close skill puts `A` after acceptance and
+  before the merge; an owner who reads the pages and clicks merge, as the
+  skill says, strands `A` on the branch, `transition` refuses running → done
+  and the writer repairs on the trunk. Land `A` before asking for the
+  reading — the candidate is fixed by then and `A` changes nothing the owner
+  reads — or let `transition` accept the arrival when the merge is the
+  owner's own approval and `subject_commit` is reachable from it. *(E1;
+  live — `skills/cairn-close/SKILL.md` steps 3 and 4.)*
+- [ ] **K33 — A deferral has a home: `project/backlog/`.** Both the close
+  skill and the unit skill require a deferral to name a follow-up, and the
+  protocol gives it no folder: `docs/` is durable knowledge, the log is what
+  happened, a path folder leaves attention at close. One file per deferred
+  item — what, which path deferred it, the owner, the shape of the work — a
+  `deferred` disposition names that file, `cairn-open` reads the folder when
+  a path is proposed, and an advisory that keeps firing has a destination.
+  Not an issue tracker. *(E2; live — ECOS built the folder for itself in its
+  CP-BACKLOG-001.)*
+- [ ] **K34 — The definition of done stops inviting the tick the digest
+  forbids.** The template writes it as `- [ ]` items inside the text
+  `scope-digest` pins; the one gesture the notation invites is the one the
+  rule forbids, and it cost ECOS a `repair` unit that moved nothing. Write
+  the list plain, or normalise `- [x]` to `- [ ]` before digesting, so the
+  digest covers the words and not the state of a control. Not a warning in
+  the skill. This reopens Q7 of the 1.1 decisions, where the owner kept the
+  boxes and R10 catches every tick. *(E3; live — and the third adopter to
+  tick them.)*
+- [ ] **K35 — The coherence questions are a fresh-context read.** The four
+  closing questions are all found by reading the diff against the
+  repository and need the owner only to arbitrate; the `full` route hands
+  them to the one person who did not read the diff. Make them a fresh
+  reader's, as the unit skill's movement 4 already is for every unit, with
+  `cairn-audit` scaffolding what it can see — the records the diff touches,
+  the siblings' `writes:`, the architecture pages changed with no record
+  beside them. Not a checker rule. *(E4; live — ECOS's writer answered the
+  four himself rather than merge four unanswered lines.)*
+
 ## What this note does not do
 
 It does not design anything: K20 does not say how the registration commit
-is recognised; K17 does not say what the skill's steps are. Those belong to
+is recognised; K33 does not say what a backlog file's fields are. Those belong to
 the promotion path's decision records, each bound to the lines it
 implements, and to the coding paths the roadmap register then names. It
 does not rank: the order above is by theme, and the owner may strike or
@@ -243,8 +290,8 @@ is written in no note, record or entry, and is not a line here until it is.
 
 ## Sources
 
-- The five notes at this level of the folder at their state on `main` at
-  `a5ac064`, and the two brainstorm notes of 2026-09-16.
+- The ten notes at this level of the folder at their state on `main` at
+  `aff989a`, and the two brainstorm notes of 2026-09-16.
 - `project/log/2026-09-15-cp-cairn-010.md`, *What it leaves*.
 - `project/coding-paths/CP-CAIRN-011/steps/S03.md` and `S04.md`, and the
   register's 1.2 row as CP-CAIRN-011 S05 opened it and the two brainstorm

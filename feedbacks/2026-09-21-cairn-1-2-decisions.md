@@ -1,7 +1,7 @@
 ---
 type: Cairn Learning Note
 title: Cairn 1.2 — the owner's decisions
-description: The functional questions Cairn 1.2 needs the owner to answer, in plain language, each with what happened on Crumbz, on Atomik or in the release and two or three ways to work from now on; the owner ticks one option per question, and the asks note is ticked, deferred or refused from the answers.
+description: The functional questions Cairn 1.2 needs the owner to answer, in plain language, each with what happened on Crumbz, on Atomik, on ECOS or in the release and two or three ways to work from now on; the owner ticks one option per question, and the asks note is ticked, deferred or refused from the answers.
 tags: [cairn, decisions, 1.2, owner, crumbz, atomik, learning]
 timestamp: 2026-09-21T15:00:00Z
 cairn:
@@ -10,8 +10,8 @@ cairn:
 
 # Cairn 1.2 — the owner's decisions
 
-The release, one adopter's update and a second adopter's adoption produced
-five notes and thirty-one technical asks. This page turns them into
+The release, one adopter's update, a second adopter's adoption and a third
+adopter's first three paths produced ten notes and thirty-six technical asks. This page turns them into
 questions about **how you want to work with the agents, and how a
 repository that is not this one should meet the protocol**. Each question
 says what happened, then offers two or three ways to go on. Tick one. If
@@ -296,7 +296,7 @@ absorbed. Nothing names them by the ids an adopter searches for.
 
 ### Q16. Housekeeping with no choice in it
 
-Ten asks are corrections a reviewer found and nobody disputes: the update
+Eleven asks are corrections a reviewer found and nobody disputes: the update
 puts the generated live view on the "reconcile by hand" list every time;
 a generated page is never pristine the day after, because its timestamp
 is the day of generation; the update does not name the files it starts
@@ -309,6 +309,76 @@ and prints a closed request as open.
 
 - [ ] **Do all of it in 1.2.**
 - [ ] **Later.**
+
+## G. Finishing a coding path, from a third adopter
+
+ECOS ran its first three paths on 1.1.0 between 17/09 and 18/09, one owner
+holding every role on `pull-request` transport, and wrote four notes that
+reached here on 21/09.
+
+### Q17. Who lands the bookkeeping commit, and when?
+
+The close skill says: you read the pages, then the agent lands the small
+commit that says "ready" and names the candidate, then you merge. An owner
+who reads and clicks merge has done what the skill says and the commit is
+stranded on the branch; the tool then refuses "done" and the agent repairs
+on the main line.
+
+- [ ] **The agent lands it before asking you to read.** *(one reorder in
+  the skill, no rule)* The candidate is fixed by then and the commit changes
+  nothing you read.
+- [ ] **The tool accepts the merge as the approval.** *(a change to a
+  rule)* When the merge is yours and the candidate is reachable from it,
+  "done" is accepted without the commit.
+- [ ] **As today.** The skill tells you to wait for the commit; you wait.
+
+### Q18. Where does deferred work go?
+
+When a review finds something real that belongs to no path yet, the skills
+ask the agent to defer it "to a named owner and follow-up", and there is no
+folder for that. ECOS's first path closed with three such items, each
+written three times — in a step, in the request, in a note — and none of
+them anywhere a writer would look tomorrow. ECOS built itself a
+`project/backlog/` folder for them.
+
+- [ ] **A backlog folder in the execution plane.** *(one folder, one file
+  per item, no rule)* A deferral names the file; the open skill reads the
+  folder when a path is proposed.
+- [ ] **The register.** *(native to the protocol)* A deferred item is a row
+  of the roadmap register, "no path yet", as milestones already are.
+- [ ] **Nothing.** *(simplest)* The request description is the record.
+
+### Q19. The checkboxes, a third time
+
+On 06/09 you kept the checkboxes in the definition of done and asked the
+tool to catch every tick (Q7 of 1.1). ECOS's agent ticked them anyway,
+because a box is an instruction to tick it, and the repair unit moved
+nothing in the product. That is the third adopter agent to do it.
+
+- [ ] **A plain list, no boxes.** *(simplest)* The definition of done is
+  `-` items; "done" is said by the closing review and the journal.
+- [ ] **Keep the boxes, ignore their state.** *(one substitution in the
+  digest)* A ticked box and an empty one digest the same, so the fingerprint
+  covers the words and not the control.
+- [ ] **Keep it as decided.** *(as today)* The rule catches the tick; the
+  writer restores the box.
+
+### Q20. Who answers the four closing questions?
+
+The closing review asks four questions — does the change contradict a
+decision, duplicate a running path, add architecture with no record, say
+something twice. All four are found by reading the change against the
+repository; you are needed only to arbitrate. Today the `full` route asks
+you, who did not read the change, and ECOS's agent answered them itself
+rather than merge four blank lines.
+
+- [ ] **A fresh reader answers, you arbitrate.** *(the same movement the
+  unit skill already uses)* A second context with no memory of the work
+  reads the change against the records and the live view and answers the
+  four; `cairn-audit` scaffolds what it can see.
+- [ ] **The writer answers, marked as the writer's.** *(simplest)* As ECOS
+  did.
+- [ ] **As today.** You answer them.
 
 ## Already decided on 21/09
 
@@ -334,9 +404,13 @@ and prints a closed request as open.
 | Q13 | K26 |
 | Q14 | K28 |
 | Q15 | K31 |
-| Q16 | K09, K10, K11, K15, K19, K23, K24, K25, K29, K30 |
+| Q16 | K09, K10, K11, K15, K19, K23, K24, K25, K29, K30, K36 |
+| Q17 | K32 |
+| Q18 | K33 |
+| Q19 | K34 |
+| Q20 | K35 |
 | already decided | K27 |
 
-Every one of the thirty-one asks is driven by exactly one question above.
+Every one of the thirty-six asks is driven by exactly one question above.
 After you answer, the asks note is ticked, deferred or refused to match,
 and the promotion path is bound to both.
