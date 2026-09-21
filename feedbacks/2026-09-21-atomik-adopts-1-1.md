@@ -1,0 +1,298 @@
+---
+type: Cairn Learning Note
+title: Atomik adopts 1.1 — what the first `adopt` of the protocol's birthplace met
+description: The agent that ran Atomik's adoption, under ADR-028, on the first repository to bring a hand-carried 0.2 installation to 1.1.0 with `adopt`: a `links` rule whose two 0.2 exemptions were deliberately left behind and ruled the adopter's own, which assigns that adopter work that cannot be done — the file is frozen by its own header, the fixtures must not resolve — and gives a repository no way to declare an exemption but to fork the checker; a `status` that names a rewrite `update` will not make; a folder of notes with no way to say which of them has been treated; an adoption that leaves the repository's own CI red and names the files without naming the consequence; and a kit that honours one declared root and derives three — each with where it was met, what it cost and the change that would remove it.
+tags: [cairn, feedback, agent, adopter, atomik, adopt, 1.1]
+timestamp: 2026-09-21T00:00:00Z
+cairn:
+  status: provisional
+---
+
+# Atomik adopts 1.1 — what the first `adopt` of the protocol's birthplace met
+
+Written by the agent that ran the adoption — Claude Code — on 2026-09-21.
+
+It is an adopter's field note in the first sense [the index](./index.md)
+gives this folder — what an adopter hit, read from their repository — and
+observations 2, 3 and 5 are also what
+[ADR-028](../docs/adr/ADR-028-a-feedback-file-when-nothing-broke.md)
+decision 1 names: a gate that stayed green and a protocol that still cost
+more than it should. Observation 1 is a red gate, which ADR-028 leaves to
+the post-mortem. It is here because the red was in an adopter's repository
+at `adopt`, where no path, no unit and no post-mortem of this protocol
+reaches — the channel the folder's first sense exists for, as
+[the closure note of 2026-09-04](./2026-09-04-crumbz-closure-checker-repairs.md)
+already is — and because what it argues is a change to Cairn.
+
+Atomik is where the protocol was written: this repository's genesis commit
+`43cfeb9` says *seeded from Atomik at 46bdd11 with cairn-init*. It has
+carried the tools by hand ever since, never installed a kit and never held
+a lock, so what it needed was `adopt` and not `update` — the first run of
+that command on a repository that is not a fixture.
+
+`npx cairn-protocol@1.1.0 adopt` wrote 24 files, kept 8 host files and
+reported 34 shapes 0.2 left behind, deleting none of them, in one command
+and without a surprise. The configuration migrated from schema 1 to
+schema 2 and kept its six areas. What follows is what cost more than it
+should.
+
+**What is deliberately not here.** That the owner had never run `npm` or
+`npx` in Atomik: `npx` installs nothing permanent, the repository already
+had Node, and the question was answered in a sentence.
+
+## 1. A rule that demands an edit to frozen history
+
+**Where.** `npm run cairn-check`, run as the adoption's own next line
+instructs, immediately after `adopt`. FAILED, five blocking `links`
+findings, none of them in a file the adoption had touched:
+
+```
+[links] docs/fixtures/capture_source_dossier.md: broken relative link → ./original.jpg
+[links] docs/fixtures/capture_source_dossier.md: broken relative link → ./transcript.md
+[links] docs/fixtures/capture_source_dossier.md: broken relative link → ../../../notes/query-key-value-vectors.md
+[links] docs/fixtures/truth_claim_fixture.md:     broken relative link → ../sources/web/wikipedia-about/source.md
+[links] atomik-project/log.md:                    broken relative link → ./original.pdf
+```
+
+Atomik's own 0.2 checker had exempted exactly these two classes, and said
+why:
+
+```js
+//   docs/fixtures/  — sample documents PORTRAYING another vault; their
+//                     links point into that imaginary vault by design
+//   log.md          — an append-only historical narrative; its links
+//                     describe past states and must never be rewritten
+const linkExempt = (file) =>
+  file.startsWith(`${DOCUMENTATION_DIR}/fixtures/`) || file === JOURNAL
+const docs = markdownCorpus().filter((file) => !linkExempt(file))
+```
+
+**This is not a regression, and a first draft of this file said it was.**
+The exemptions left in `e18bbe4`, CP-CAIRN-001 S02, and the consequence
+was seen and ruled on at once: `adopt` was run against Atomik at
+`46bdd11` in that same path's S06, and
+[its record](../project/coding-paths/CP-CAIRN-001/steps/S06.md) at blob
+`0184093c7ab056bc3a961014faa425bcf0872f41` says, of these same five links
+in these same two classes —
+
+> Those exemptions were Atomik's, and they left in S02; the links are
+> Atomik's adoption work, and `adopt` said so rather than passing over
+> them.
+
+That ruling is right about ownership. A protocol should not carry one
+repository's exemptions, and `Exemptions: none` on the conformance page
+is the honest statement of what the rule now is. What is worth reopening
+is the work it assigns.
+
+**Where it does not hold.** The five links cannot be repaired as adoption
+work, because repairing them is the thing each file exists to prevent.
+`atomik-project/log.md` says in its own first lines **FROZEN 2026-08-14 —
+archive only. Every entry below is history and stays exactly as written**,
+and this protocol forbids rewriting a history elsewhere in the same
+breath. A fixture whose links resolve has stopped portraying another
+vault and started describing this one. The work as stated is: edit a file
+the repository declares unrewritable, or delete the evidence.
+
+And the ruling's own premise — *those exemptions were Atomik's* — has
+nowhere to live. A host-specific fact was answered by deleting it from the
+protocol and leaving the host nothing to declare it with. No `roots`
+entry, no rule option and no configuration field lets a repository say
+*these paths are portrayals, and this file is frozen*; the only
+expression available is to edit the checker, which is what Atomik did on
+2026-09-21, and which `status` then reports as an edited kit file at every
+reading until the end of the installation.
+
+**What it cost.** The adoption could not be committed as one unit, which
+is what `adopt` prints as the next thing to do. Nineteen days earlier the
+same five findings had been met, understood and ruled on — and none of
+that reached the adopter, because the ruling lives in the step record of a
+closed path. The conformance page says `Exemptions: none` without saying
+it was decided; the rule's message names the link and not the class;
+`adopt` reports the fixtures folder and the flat journal among the 0.2
+shapes without connecting them to the five findings the next command will
+print. A writer who reads those three surfaces meets the failure as new,
+reaches for the deleted lines, and writes a feedback note calling it a
+regression. That is the measured cost: this observation, drafted wrong
+once and caught by the request's reviewer.
+
+**The change to Cairn.** Two, and the first is the one that matters.
+
+Give a repository a way to declare what the ruling already says is its
+own. A list in `cairn.config.json` — paths whose relative links the
+`links` rule does not resolve, each with its reason written beside it —
+keeps the protocol's checker free of one adopter's names, keeps the
+adopter off a forked engine, and puts the exemption where every other
+host-specific answer already is, reviewable in one file. If that is
+refused, the ruling should be superseded rather than left standing,
+because as it stands it assigns an adopter work that cannot be done.
+
+And carry the ruling to where the adopter reads: one line on the
+conformance page beside `Exemptions: none` — *the two 0.2 exemptions left
+in CP-CAIRN-001 S02; a portrayal or a frozen history is the adopter's to
+declare* — and, if the first change lands, `staleShapes` naming the
+fixtures folder and the flat journal as shapes that want a declaration
+rather than a repair.
+
+## 2. `status` names a rewrite `update` will not make
+
+**Where.** `npx cairn-protocol@1.1.0 status`, run on Atomik immediately
+after the adoption:
+
+```
+cairn — installed release 1.1.0, this package is 1.1.0 (current)
+kit files: 23 pristine, 9 edited
+  update would write   cairn.config.json (pristine)
+```
+
+It would not. `update` sets the migrated configuration into its plan
+before it compares (`tools/cairn.mjs:1268`); `status` does not
+(`tools/cairn.mjs:1257`), so it compares the repository's configuration
+against a freshly generated template and finds them different. On Atomik
+the difference is the whole of the repository's history with the
+protocol: six areas against the template's one, and a `migration` block
+naming five 0.2 paths against three empty lists. `update --dry-run`
+confirms the file is untouched — it does not appear in the list at all.
+
+`adopt` is what puts a repository in this state, and deliberately: it
+locks the MIGRATED configuration, because locking the generated one made
+the very next `status` call an untouched file *edited* — a defect its own
+S01 review caught, with the comment still in place. The repair moved the
+file from `edited` to `pristine`, and `status` reads a pristine file whose
+template differs as one to rewrite. Every adopted repository reads this
+line on its first `status`, and the denser its configuration, the more
+alarming it is.
+
+**What it cost.** The command's dispatch read end to end and an
+`update --dry-run` run against the repository, to establish that a line
+printed by the protocol's own status command was false — a reading that
+ended in nothing changing. The durable cost is the report not being
+believed afterwards: an adopter who has seen `status` name a rewrite that
+never comes cannot use `status` to decide anything.
+
+**The change to Cairn.** `status` builds its plan the way `update` does —
+one line, the same `plan.files.set('cairn.config.json', …)`. Better, both
+read it from one function, so the two commands cannot drift again: they
+are supposed to answer the same question, one of them out loud.
+
+## 3. A note under `feedbacks/` cannot say it has been treated
+
+**Where.** Writing this file. Before claiming that the exemption of
+observation 1 was unreported, the folder had to be read to see whether an
+adopter had already met it — ten notes, each holding several observations,
+promoted at different times by different paths, with nothing in any of
+them saying which. The index's prose hook is what each note *argues*,
+never what became of it. The frontmatter carries `cairn.status:
+provisional`, and no note has ever carried anything else: the 1.1 notes
+whose asks are all implemented and released still read `provisional`
+today.
+
+The forward trail exists and is exact — a promotion record says *promoted
+from <note> at blob <sha>*, and the register's row names its sources. It
+is the reverse that is missing. Standing on a note, there is no way to
+reach what answered it without reading every decision record.
+
+**What it cost.** Here, a folder read in full to write three paragraphs.
+The real cost is elsewhere: it falls on whoever opens the 1.2 path, who
+must establish what of ten notes is left before they can scope anything,
+and it grows with every release.
+
+**The change to Cairn.** This is the owner's to decide, and the options
+differ in what they cost later rather than now.
+
+The one the folder already affords: `cairn.status` stops being decoration.
+A note is `provisional` when written and `settled` when a record promotes
+what it argues, with the record named beside it, and the promotion unit
+sets it in the same change it writes the record — the record already names
+the note and its blob, so the two lines are written together or not at all.
+Nothing moves, every link holds, and the note stays exactly as it was
+below its frontmatter.
+
+The one that was asked about: a `feedbacks/archive/` folder that treated
+notes move into. It answers the question by looking at the folder, which
+is the cheapest possible reading. It also moves files that other notes
+link by relative path, and this repository forbids rewriting history and
+blocks on a broken relative link — observation 1 is what that costs. A
+move would have to rewrite the links inside frozen notes to keep the gate
+green.
+
+The one that never rots: a generated view, as `ACTIVE.md` is generated —
+the promotion records already carry *promoted from* with the blob, so a
+reader over `docs/adr/**` can print, per note, what cites it and what does
+not. It is a tool, and ADR-028 decision 2 says verbatim that **no tool
+reads or writes the folder** — reading is named, not only writing — so
+this option does not sit beside that record, it supersedes it. Choosing it
+means a decision record that says so.
+
+What the three have in common is worth stating: a status kept by hand
+beside the records that carry it is a cost this repository has already
+written down once, as the second observation of
+[coding path 4's writer](./2026-09-15-cp-cairn-009-writer-feedback.md).
+Whichever is chosen should not be the fourth place the same fact is
+restated.
+
+## 4. The adoption leaves the repository's own gate red, and says nothing
+
+**Where.** Atomik's CI workflow — a host file, so `adopt` kept it, correctly —
+runs `npm run cairn-check:test`, which is `node --test 'tools/**/*.test.mjs'`.
+The adoption replaced all five reference tools. The tests beside them are the
+0.2 suite, dated 2026-09-02, and the release installs none of its own
+(`REFERENCE_TOOLS`, `tools/cairn.mjs:75-82`, deliberately: shipping them would
+hand an adopter a failing suite on the first command).
+
+```
+ℹ tests 86
+ℹ pass 45
+ℹ fail 41      e.g. TypeError: live.map is not a function (cairn-active.test.mjs:39)
+```
+
+Red on the next push to `master` or any `path/**`, in a repository whose CI was
+green the minute before.
+
+The report is not silent about the files: it names each of the eight tests,
+one line each, *a 0.2 test of tools this repository no longer has — delete
+it*. What it never says is the consequence — that a kept script and a kept
+workflow step still call them, and that the gate this repository runs on every
+push will fail until they go. The kit knows both halves: it replaced the tools,
+and it read the workflow and the manifest to decide to keep them.
+
+**What it cost.** The adoption was committed on a green `cairn-check`, which is
+the gate `adopt` tells the adopter to run, and the red arrived on the next push
+— after the unit, where a red run costs a post-mortem and a repair unit rather
+than a minute before the commit.
+
+**The change to Cairn.** When `adopt` keeps a host file that calls something it
+just made stale, say so in the same report, under the stale line rather than
+beside it: *`package.json` and `.github/workflows/cairn.yml` call these; your
+gate is red until they go*. The three facts are already in hand at that point.
+It is one sentence, and it is the difference between a list and a warning.
+
+## 5. The kit honours one declared root and ignores three
+
+**Where.** Atomik declares `roots.architecture: docs/bedrock`, and has since
+0.2. The adoption wrote `docs/architecture/index.md`, a folder index declaring
+itself the architecture root. The repository now has two, and the checker
+watches the one the kit did not write.
+
+`optionsFromConfig` (`tools/cairn.mjs:179`) carries `projectRoot`, `docsRoot`,
+`sourceRoots` and `conceptsRoot` — and not `architecture`, `decisions` or
+`modules`. `buildConfig` then derives all three from `docsRoot`:
+`${docsRoot}/architecture`, `${docsRoot}/adr`, `${docsRoot}/modules`. A
+repository whose three roots happen to sit there notices nothing; one that
+moved any of them gets a second root written beside its real one.
+
+`conceptsRoot` is in that list because the concept root was found to have
+exactly this defect and repaired (ADR-011 d2). Its three siblings were not
+looked at.
+
+**What it cost.** Nothing yet, in the sense that nothing broke: the new index
+is unlinked, because the documentation index that would have linked it is a
+host file and was kept. That is what makes it worth writing down — a root that
+no rule watches and no page links, sitting in the plane the protocol says is
+one of its two. It is found by reading the configuration against the tree, and
+nobody does that twice.
+
+**The change to Cairn.** `optionsFromConfig` carries all four roots, and
+`buildConfig` derives a root only where the configuration declares none. The
+repair is the one ADR-011 d2 already made, applied to the three roots it did
+not reach; and the plan's own conformance would be worth asserting once —
+every path the plan writes falls under a root the configuration names.
