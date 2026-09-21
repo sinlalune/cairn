@@ -52,7 +52,7 @@ cited. Both times the unit stopped, the question came to you in the chat,
 and the path waited. Both holes were visible in the plan before you gave
 the go-ahead; nobody was told to look.
 
-- [ ] **The agent reads for them before asking your go-ahead.** *(two
+- [x] **The agent reads for them before asking your go-ahead.** *(two
   sentences in a skill, no rule)* When it writes the plan, the agent checks
   every surface name for a placeholder and every done-item against the
   record it cites, and puts what it finds in the plan's questions so you
@@ -81,7 +81,7 @@ because the plan is not on the main line yet.
   registration that is in the change under review rather than on the main
   line — a commit that touches only the plan and the live view, and sits on
   the declared base. The open skill gets a second sequence.
-- [ ] **Both, and the installer refuses the pairing that cannot work.**
+- [x] **Both, and the installer refuses the pairing that cannot work.**
   *(adds a host reading)* The second option, plus `init` and `adopt` asking
   GitHub whether the main line takes a direct push and refusing a
   configuration that says one thing when the host does another. Note that
@@ -97,7 +97,7 @@ conformance page, the installer's comment, a test and the README. Coding
 path 4 corrected them in four units and each review found one more copy;
 the count itself moved twice inside the path.
 
-- [ ] **Written once, linked from everywhere else.** *(one sentence in the
+- [x] **Written once, linked from everywhere else.** *(one sentence in the
   close skill)* The measurement lives on the conformance page; every other
   page links that row rather than restating it.
 - [ ] **As today.** *(simplest)* The agent corrects the copies it finds.
@@ -110,7 +110,7 @@ path. It was corrected by hand on 16/09. The live view is already
 generated from the records; the register's column is the same fact kept
 by hand.
 
-- [ ] **Generated, like the live view.** *(adds a generation)* The
+- [x] **Generated, like the live view.** *(adds a generation)* The
   `cairn-active` command fills the State column from each path's record,
   and a path's `status:` is the only place its state is written.
 - [ ] **Kept by hand.** *(simplest, as today)* The close skill reminds the
@@ -123,7 +123,7 @@ what the release changed in that template. No release writes such a note,
 and nothing on the record or the conformance page says so; the agent that
 implemented `update` wrote it in a plan nobody scoping a release reads.
 
-- [ ] **The record may say *pending*, naming the row that owes it.** *(one
+- [x] **The record may say *pending*, naming the row that owes it.** *(one
   word in a table, no rule)* The register row names the clause back; the
   path that lands the mechanism clears the word.
 - [ ] **No.** *(simplest)* The conformance page is where "not implemented"
@@ -141,7 +141,7 @@ them as *missing* at every run since. Atomik declares `docs/bedrock` as its
 architecture root and got a second, empty `docs/architecture` beside it,
 for the same reason.
 
-- [ ] **The kit reads every folder you declared, and you can decline a
+- [x] **The kit reads every folder you declared, and you can decline a
   file.** *(a field the lock remembers)* The installer writes only under
   roots the configuration names, derives one only where none is declared,
   and a declined file stays declined at the next `update` and reads as
@@ -159,7 +159,7 @@ do, decide on the edited kit files and the host files the repository does
 not want, run it, reconcile only what the report named. No skill carries
 that movement; the six skills the kit installs are for coding paths.
 
-- [ ] **Yes, a seventh skill, `cairn-update`.** *(one skill file)* The
+- [x] **Yes, a seventh skill, `cairn-update`.** *(one skill file)* The
   brainstorm note recommends it: the update is prose an agent needs at the
   moment it acts, and it is not a coding path.
 - [ ] **A section of the open skill.** *(no new file)* "Opening an update
@@ -179,7 +179,7 @@ skills at `init`.
 - [ ] **One printed line per gap.** *(native, keeps ADR-016)* At `init`
   and `update` the kit prints Ponytail's one-line install where it is
   missing, and the one line per harness that makes the six skills load.
-- [ ] **The kit ships Ponytail's skills.** *(reverses ADR-016 decision 1)*
+- [x] **The kit ships Ponytail's skills.** *(reverses ADR-016 decision 1)*
   Extracted from the plugin's latest version at `init` and `update`; a
   record supersedes the pin, and the kit then owns a copy of someone
   else's skills.
@@ -192,7 +192,7 @@ Atomik's CI runs the 0.2 test suite beside the tools `adopt` replaced.
 the workflow step that still runs them; the adoption was committed on a
 green `cairn-check` and CI went red on the next push.
 
-- [ ] **`adopt` says it.** *(one sentence from facts the kit holds)* Under
+- [x] **`adopt` says it.** *(one sentence from facts the kit holds)* Under
   the stale line: *your workflow and `package.json` call these; your gate
   is red until they go*.
 - [ ] **No.** *(simplest)* The stale list is enough; the adopter reads the
@@ -206,7 +206,7 @@ surface page yet and no README. The reviewer flagged both; the writer
 refused to rewrite the release's text, so two false sentences stand on a
 page the adopter now owns.
 
-- [ ] **Write the templates in the shape they describe.** *(a wording
+- [x] **Write the templates in the shape they describe.** *(a wording
   change, no rule)* *One page per surface, as they are written*; *the
   README, where the repository has one*.
 - [ ] **As today.**
@@ -222,7 +222,7 @@ CP-CAIRN-001. The rule now blocks on five links in files the repository
 declares unrewritable, and the only way Atomik could say so was to edit
 the checker, which `status` reports as an edited kit file for ever.
 
-- [ ] **A declared list, with a reason beside each path.** *(a
+- [x] **A declared list, with a reason beside each path.** *(a
   configuration field, no new rule)* `cairn.config.json` names the paths
   whose relative links the rule does not resolve and why; the conformance
   page says the two 0.2 exemptions left deliberately and a portrayal or a
@@ -243,7 +243,7 @@ that blocks on a link inside a frozen note is a rule that edits history.
 - [ ] **Say on the conformance page that it is deliberately unchecked.**
   *(simplest)* One line where the corpus is listed, so *checked by hand*
   and *unchecked* stop looking identical from a green run.
-- [ ] **Read it.** *(adds coverage)* One entry in the corpus list; `links`
+- [x] **Read it.** *(adds coverage)* One entry in the corpus list; `links`
   and `schema` cover the folder; a broken link in an old note blocks the
   gate until it is repaired.
 
@@ -260,7 +260,7 @@ to carry them by hand, twice.
 - [ ] **The skill says: tell the owner.** *(simplest)* In an adopter, the
   sentence becomes *say it to the owner, who decides whether it reaches
   Cairn*; the folder and the file are the protocol repository's own.
-- [ ] **The kit installs the folder and the skill names the route.**
+- [x] **The kit installs the folder and the skill names the route.**
   *(adds a folder)* `feedbacks/` in every adopter, and the sentence says how
   a note reaches this repository — a pull request against it, or the owner
   carrying it.
@@ -274,7 +274,7 @@ cleanup path had registered on the wrong claim, which is now a sealed line
 in that path's definition of done. Nothing on the note says a claim in it
 was withdrawn; Git holds the history, and nobody holding a copy reads Git.
 
-- [ ] **A line at the head of the note.** *(one sentence in ADR-028, no
+- [x] **A line at the head of the note.** *(one sentence in ADR-028, no
   rule)* *Corrected on <date>: <what was withdrawn>, <what replaced it>*,
   written by whoever corrects it.
 - [ ] **Nothing.** *(simplest, native)* The history is in Git; a reader who
@@ -289,7 +289,7 @@ Crumbz's three repairs 1.1.0 had absorbed, and concluded wrongly that one
 was missing; the wrong sentence ran through three units. All three were
 absorbed. Nothing names them by the ids an adopter searches for.
 
-- [ ] **Yes.** *(one paragraph per release)* The release notes name the
+- [x] **Yes.** *(one paragraph per release)* The release notes name the
   adopter repairs absorbed and the ones not, by the adopter's path ids.
 - [ ] **No.** *(simplest)* The adopter takes the release's checker and
   reads the diff.
@@ -307,7 +307,7 @@ fixture went red once on `record-integrity`; the close skill points at a
 file no release installs; the post-mortem cannot count the run it runs in
 and prints a closed request as open.
 
-- [ ] **Do all of it in 1.2.**
+- [x] **Do all of it in 1.2.**
 - [ ] **Later.**
 
 ## G. Finishing a coding path, from a third adopter
@@ -324,7 +324,7 @@ who reads and clicks merge has done what the skill says and the commit is
 stranded on the branch; the tool then refuses "done" and the agent repairs
 on the main line.
 
-- [ ] **The agent lands it before asking you to read.** *(one reorder in
+- [x] **The agent lands it before asking you to read.** *(one reorder in
   the skill, no rule)* The candidate is fixed by then and the commit changes
   nothing you read.
 - [ ] **The tool accepts the merge as the approval.** *(a change to a
@@ -341,7 +341,7 @@ written three times — in a step, in the request, in a note — and none of
 them anywhere a writer would look tomorrow. ECOS built itself a
 `project/backlog/` folder for them.
 
-- [ ] **A backlog folder in the execution plane.** *(one folder, one file
+- [x] **A backlog folder in the execution plane.** *(one folder, one file
   per item, no rule)* A deferral names the file; the open skill reads the
   folder when a path is proposed.
 - [ ] **The register.** *(native to the protocol)* A deferred item is a row
@@ -355,7 +355,7 @@ tool to catch every tick (Q7 of 1.1). ECOS's agent ticked them anyway,
 because a box is an instruction to tick it, and the repair unit moved
 nothing in the product. That is the third adopter agent to do it.
 
-- [ ] **A plain list, no boxes.** *(simplest)* The definition of done is
+- [x] **A plain list, no boxes.** *(simplest)* The definition of done is
   `-` items; "done" is said by the closing review and the journal.
 - [ ] **Keep the boxes, ignore their state.** *(one substitution in the
   digest)* A ticked box and an empty one digest the same, so the fingerprint
@@ -372,7 +372,7 @@ repository; you are needed only to arbitrate. Today the `full` route asks
 you, who did not read the change, and ECOS's agent answered them itself
 rather than merge four blank lines.
 
-- [ ] **A fresh reader answers, you arbitrate.** *(the same movement the
+- [x] **A fresh reader answers, you arbitrate.** *(the same movement the
   unit skill already uses)* A second context with no memory of the work
   reads the change against the records and the live view and answers the
   four; `cairn-audit` scaffolds what it can see.
