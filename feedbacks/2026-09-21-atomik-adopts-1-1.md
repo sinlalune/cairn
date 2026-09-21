@@ -1,7 +1,7 @@
 ---
 type: Cairn Learning Note
 title: Atomik adopts 1.1 — what the first `adopt` of the protocol's birthplace met
-description: The agent that ran Atomik's adoption, under ADR-028, on the first repository to bring a hand-carried 0.2 installation to 1.1.0 with `adopt`: a `links` rule that lost two documented exemptions to a rename and now demands an edit to a file its own header freezes, in a class of repository the protocol's own gate cannot reach; a `status` that names a rewrite `update` will not make; a folder of notes with no way to say which of them has been treated; an adoption that leaves the repository's own CI red and names the files without naming the consequence; and a kit that honours one declared root and derives three — each with where it was met, what it cost and the change that would remove it.
+description: The agent that ran Atomik's adoption, under ADR-028, on the first repository to bring a hand-carried 0.2 installation to 1.1.0 with `adopt`: a `links` rule whose two 0.2 exemptions were deliberately left behind and ruled the adopter's own, which assigns that adopter work that cannot be done — the file is frozen by its own header, the fixtures must not resolve — and gives a repository no way to declare an exemption but to fork the checker; a `status` that names a rewrite `update` will not make; a folder of notes with no way to say which of them has been treated; an adoption that leaves the repository's own CI red and names the files without naming the consequence; and a kit that honours one declared root and derives three — each with where it was met, what it cost and the change that would remove it.
 tags: [cairn, feedback, agent, adopter, atomik, adopt, 1.1]
 timestamp: 2026-09-21T00:00:00Z
 cairn:
@@ -10,8 +10,19 @@ cairn:
 
 # Atomik adopts 1.1 — what the first `adopt` of the protocol's birthplace met
 
-Written by the agent that ran the adoption — Claude Code — on 2026-09-21,
-under [ADR-028](../docs/adr/ADR-028-a-feedback-file-when-nothing-broke.md).
+Written by the agent that ran the adoption — Claude Code — on 2026-09-21.
+
+It is an adopter's field note in the first sense [the index](./index.md)
+gives this folder — what an adopter hit, read from their repository — and
+observations 2, 3 and 5 are also what
+[ADR-028](../docs/adr/ADR-028-a-feedback-file-when-nothing-broke.md)
+decision 1 names: a gate that stayed green and a protocol that still cost
+more than it should. Observation 1 is a red gate, which ADR-028 leaves to
+the post-mortem. It is here because the red was in an adopter's repository
+at `adopt`, where no path, no unit and no post-mortem of this protocol
+reaches — the channel the folder's first sense exists for, as
+[the closure note of 2026-09-04](./2026-09-04-crumbz-closure-checker-repairs.md)
+already is — and because what it argues is a change to Cairn.
 
 Atomik is where the protocol was written: this repository's genesis commit
 `43cfeb9` says *seeded from Atomik at 46bdd11 with cairn-init*. It has
@@ -56,44 +67,71 @@ const linkExempt = (file) =>
 const docs = markdownCorpus().filter((file) => !linkExempt(file))
 ```
 
-The exemption went in `e18bbe4`, CP-CAIRN-006 S02, *the rules cut to
-twenty-four names*. That unit replaced the single-file journal with the
-`project/log/` folder, which removed the `JOURNAL` constant the second
-half of the expression named; the first half, about the fixtures, went
-with it. Nothing in the unit's message reconsiders either.
+**This is not a regression, and a first draft of this file said it was.**
+The exemptions left in `e18bbe4`, CP-CAIRN-001 S02, and the consequence
+was seen and ruled on at once: `adopt` was run against Atomik at
+`46bdd11` in that same path's S06, and
+[its record](../project/coding-paths/CP-CAIRN-001/steps/S06.md) at blob
+`0184093c7ab056bc3a961014faa425bcf0872f41` says, of these same five links
+in these same two classes —
 
-Three things kept it invisible from 2026-09-02 to today. The rule's fixture proves
-only the positive case — *a link that resolves nowhere* — so the suite
-stayed green when the filter in front of it was deleted. This repository
-has no `docs/fixtures/` and no frozen file, so its own gate cannot reach
-the class: the protocol cannot fail this rule in the repository that
-defines it. And the conformance page now states the rule with
-*Exemptions: none*, which reads as a decision rather than as a loss.
+> Those exemptions were Atomik's, and they left in S02; the links are
+> Atomik's adoption work, and `adopt` said so rather than passing over
+> them.
+
+That ruling is right about ownership. A protocol should not carry one
+repository's exemptions, and `Exemptions: none` on the conformance page
+is the honest statement of what the rule now is. What is worth reopening
+is the work it assigns.
+
+**Where it does not hold.** The five links cannot be repaired as adoption
+work, because repairing them is the thing each file exists to prevent.
+`atomik-project/log.md` says in its own first lines **FROZEN 2026-08-14 —
+archive only. Every entry below is history and stays exactly as written**,
+and this protocol forbids rewriting a history elsewhere in the same
+breath. A fixture whose links resolve has stopped portraying another
+vault and started describing this one. The work as stated is: edit a file
+the repository declares unrewritable, or delete the evidence.
+
+And the ruling's own premise — *those exemptions were Atomik's* — has
+nowhere to live. A host-specific fact was answered by deleting it from the
+protocol and leaving the host nothing to declare it with. No `roots`
+entry, no rule option and no configuration field lets a repository say
+*these paths are portrayals, and this file is frozen*; the only
+expression available is to edit the checker, which is what Atomik did on
+2026-09-21, and which `status` then reports as an edited kit file at every
+reading until the end of the installation.
 
 **What it cost.** The adoption could not be committed as one unit, which
-is what `adopt` prints as the next thing to do. The only remedy the gate
-offered was to edit `atomik-project/log.md` — whose own first lines say
-**FROZEN 2026-08-14 — archive only. Every entry below is history and
-stays exactly as written** — and four sample documents that portray an
-imaginary vault, where a resolving link would mean the fixture had stopped
-being one. Restoring the two lines locally was a minute; what it leaves
-behind is not. Atomik now carries an edited kit file, reported at every
-`status` and held back at every `update` until the repair is upstream and
-it can run `update --take tools/cairn-check.mjs`. It is the same shape
-Crumbz carried for three repairs across twenty-six paths.
+is what `adopt` prints as the next thing to do. Nineteen days earlier the
+same five findings had been met, understood and ruled on — and none of
+that reached the adopter, because the ruling lives in the step record of a
+closed path. The conformance page says `Exemptions: none` without saying
+it was decided; the rule's message names the link and not the class;
+`adopt` reports the fixtures folder and the flat journal among the 0.2
+shapes without connecting them to the five findings the next command will
+print. A writer who reads those three surfaces meets the failure as new,
+reaches for the deleted lines, and writes a feedback note calling it a
+regression. That is the measured cost: this observation, drafted wrong
+once and caught by the request's reviewer.
 
-**The change to Cairn.** Restore both exemptions in the `links` rule. The
-journal half needs re-expressing, since a journal is a folder now and the
-frozen single file is a 0.2 shape: `staleShapes` already knows how to
-name what 0.2 left, and this is one more of them. Give the rule a fixture
-that proves the exemption and not only the finding, so the next rename
-cannot take it silently; and correct the conformance page's *none*.
+**The change to Cairn.** Two, and the first is the one that matters.
 
-Behind the three of them is one movement worth naming: this rule was lost
-as collateral of a rename, in a unit whose subject was something else,
-and no gate in this repository could notice. A rule that can only be
-proved wrong in an adopter's repository is a rule the protocol is not
-testing.
+Give a repository a way to declare what the ruling already says is its
+own. A list in `cairn.config.json` — paths whose relative links the
+`links` rule does not resolve, each with its reason written beside it —
+keeps the protocol's checker free of one adopter's names, keeps the
+adopter off a forked engine, and puts the exemption where every other
+host-specific answer already is, reviewable in one file. If that is
+refused, the ruling should be superseded rather than left standing,
+because as it stands it assigns an adopter work that cannot be done.
+
+And carry the ruling to where the adopter reads: one line on the
+conformance page beside `Exemptions: none` — *the two 0.2 exemptions left
+in CP-CAIRN-001 S02; a portrayal or a frozen history is the adopter's to
+declare* — and, if the first change lands, `staleShapes` naming the
+fixtures folder and the flat journal as shapes that want a declaration
+rather than a repair.
 
 ## 2. `status` names a rewrite `update` will not make
 
@@ -180,9 +218,10 @@ green.
 The one that never rots: a generated view, as `ACTIVE.md` is generated —
 the promotion records already carry *promoted from* with the blob, so a
 reader over `docs/adr/**` can print, per note, what cites it and what does
-not. It is a tool, and ADR-028 refused a tool for this channel once; that
-refusal was about writing feedback, not about reading the folder back, but
-it is the owner's to say whether it still applies.
+not. It is a tool, and ADR-028 decision 2 says verbatim that **no tool
+reads or writes the folder** — reading is named, not only writing — so
+this option does not sit beside that record, it supersedes it. Choosing it
+means a decision record that says so.
 
 What the three have in common is worth stating: a status kept by hand
 beside the records that carry it is a cost this repository has already
