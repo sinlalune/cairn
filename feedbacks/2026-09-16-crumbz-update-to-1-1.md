@@ -192,6 +192,27 @@ new request, not by closing one, so far.
 and print *closed* for a request that is closed and not merged. Two
 fields and one branch of the reading.
 
+## 9. On the trunk, the post-mortem reads every path there is
+
+**Where.** The installed workflow runs `cairn-postmortem --branch
+"$CAIRN_BRANCH"` in the failure step, and on a trunk push that branch is
+`main`. The tool, given the trunk, printed one section per path record in
+the repository — twenty-seven of them, each with its registration, its
+administrative commit, its digest, its red runs and its requests — and
+nothing about the finding that had just failed. Seen on Crumbz's first red
+trunk run, 2026-09-16 10:33Z, when `done` for CP-CAIRN-UPDATE-027 arrived
+in a merge object.
+
+**What it cost.** A reading nobody can use: the one path that mattered
+was the twenty-seventh section of a log, indistinguishable from the
+twenty-six that had nothing to do with the run.
+
+**The change to Cairn.** On the trunk, read the path whose record changed
+in the compared range — the arrival the checker just judged — and print
+that one; or print the checker's finding first and the corpus not at all.
+The tool has the range: the workflow passes the base to the checker one
+step earlier.
+
 ## What the update got right
 
 For the record, since a feedback file reads as a list of costs: `status`
