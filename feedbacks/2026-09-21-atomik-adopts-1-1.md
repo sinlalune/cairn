@@ -1,7 +1,7 @@
 ---
 type: Cairn Learning Note
 title: Atomik adopts 1.1 — what the first `adopt` of the protocol's birthplace met
-description: The agent that ran Atomik's adoption, under ADR-028, on the first repository to bring a hand-carried 0.2 installation to 1.1.0 with `adopt`: a `links` rule that lost two documented exemptions to a rename and now demands an edit to a file its own header freezes, in a class of repository the protocol's own gate cannot reach; a `status` that names a rewrite `update` will not make, on the one file an adopter's history is densest in; and a folder of notes with no way to say which of them has been treated — each with where it was met, what it cost and the change that would remove it.
+description: The agent that ran Atomik's adoption, under ADR-028, on the first repository to bring a hand-carried 0.2 installation to 1.1.0 with `adopt`: a `links` rule that lost two documented exemptions to a rename and now demands an edit to a file its own header freezes, in a class of repository the protocol's own gate cannot reach; a `status` that names a rewrite `update` will not make; a folder of notes with no way to say which of them has been treated; an adoption that leaves the repository's own CI red and names the files without naming the consequence; and a kit that honours one declared root and derives three — each with where it was met, what it cost and the change that would remove it.
 tags: [cairn, feedback, agent, adopter, atomik, adopt, 1.1]
 timestamp: 2026-09-21T00:00:00Z
 cairn:
@@ -20,7 +20,7 @@ a lock, so what it needed was `adopt` and not `update` — the first run of
 that command on a repository that is not a fixture.
 
 `npx cairn-protocol@1.1.0 adopt` wrote 24 files, kept 8 host files and
-reported 35 shapes 0.2 left behind, deleting none of them, in one command
+reported 34 shapes 0.2 left behind, deleting none of them, in one command
 and without a surprise. The configuration migrated from schema 1 to
 schema 2 and kept its six areas. What follows is what cost more than it
 should.
@@ -190,3 +190,70 @@ written down once, as the second observation of
 [coding path 4's writer](./2026-09-15-cp-cairn-009-writer-feedback.md).
 Whichever is chosen should not be the fourth place the same fact is
 restated.
+
+## 4. The adoption leaves the repository's own gate red, and says nothing
+
+**Where.** Atomik's CI workflow — a host file, so `adopt` kept it, correctly —
+runs `npm run cairn-check:test`, which is `node --test 'tools/**/*.test.mjs'`.
+The adoption replaced all five reference tools. The tests beside them are the
+0.2 suite, dated 2026-09-02, and the release installs none of its own
+(`REFERENCE_TOOLS`, `tools/cairn.mjs:75-82`, deliberately: shipping them would
+hand an adopter a failing suite on the first command).
+
+```
+ℹ tests 86
+ℹ pass 45
+ℹ fail 41      e.g. TypeError: live.map is not a function (cairn-active.test.mjs:39)
+```
+
+Red on the next push to `master` or any `path/**`, in a repository whose CI was
+green the minute before.
+
+The report is not silent about the files: it names each of the eight tests,
+one line each, *a 0.2 test of tools this repository no longer has — delete
+it*. What it never says is the consequence — that a kept script and a kept
+workflow step still call them, and that the gate this repository runs on every
+push will fail until they go. The kit knows both halves: it replaced the tools,
+and it read the workflow and the manifest to decide to keep them.
+
+**What it cost.** The adoption was committed on a green `cairn-check`, which is
+the gate `adopt` tells the adopter to run, and the red arrived on the next push
+— after the unit, where a red run costs a post-mortem and a repair unit rather
+than a minute before the commit.
+
+**The change to Cairn.** When `adopt` keeps a host file that calls something it
+just made stale, say so in the same report, under the stale line rather than
+beside it: *`package.json` and `.github/workflows/cairn.yml` call these; your
+gate is red until they go*. The three facts are already in hand at that point.
+It is one sentence, and it is the difference between a list and a warning.
+
+## 5. The kit honours one declared root and ignores three
+
+**Where.** Atomik declares `roots.architecture: docs/bedrock`, and has since
+0.2. The adoption wrote `docs/architecture/index.md`, a folder index declaring
+itself the architecture root. The repository now has two, and the checker
+watches the one the kit did not write.
+
+`optionsFromConfig` (`tools/cairn.mjs:179`) carries `projectRoot`, `docsRoot`,
+`sourceRoots` and `conceptsRoot` — and not `architecture`, `decisions` or
+`modules`. `buildConfig` then derives all three from `docsRoot`:
+`${docsRoot}/architecture`, `${docsRoot}/adr`, `${docsRoot}/modules`. A
+repository whose three roots happen to sit there notices nothing; one that
+moved any of them gets a second root written beside its real one.
+
+`conceptsRoot` is in that list because the concept root was found to have
+exactly this defect and repaired (ADR-011 d2). Its three siblings were not
+looked at.
+
+**What it cost.** Nothing yet, in the sense that nothing broke: the new index
+is unlinked, because the documentation index that would have linked it is a
+host file and was kept. That is what makes it worth writing down — a root that
+no rule watches and no page links, sitting in the plane the protocol says is
+one of its two. It is found by reading the configuration against the tree, and
+nobody does that twice.
+
+**The change to Cairn.** `optionsFromConfig` carries all four roots, and
+`buildConfig` derives a root only where the configuration declares none. The
+repair is the one ADR-011 d2 already made, applied to the three roots it did
+not reach; and the plan's own conformance would be worth asserting once —
+every path the plan writes falls under a root the configuration names.
