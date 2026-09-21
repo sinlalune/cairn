@@ -1,7 +1,7 @@
 ---
 type: Cairn Learning Note
 title: Cairn 1.2 — the asks
-description: Every ask the notes 1.1 did not answer make of 1.2, one checkbox line each, grouped by theme and de-duplicated — from the five agent feedback files of 2026-09-15 to 2026-09-21, the release path's own findings, path 6's journal entry and the two brainstorm notes of 2026-09-16; thirty-one in six themes, each verified against the tree on 2026-09-21; the owner ticks what 1.2 takes, writes "later" or "no" beside what it does not, and the promotion path that follows is bound to this note.
+description: Every ask the notes 1.1 did not answer make of 1.2, one checkbox line each, grouped by theme and de-duplicated — from the five agent feedback files of 2026-09-15 to 2026-09-21, the release path's own findings, path 6's journal entry and the two brainstorm notes of 2026-09-16; thirty-one in six themes, each verified against the tree on 2026-09-21; ticked, deferred or refused from the owner's answers to the decisions page, and the promotion path that follows is bound to both.
 tags: [cairn, asks, 1.2, adopter, crumbz, atomik, learning]
 timestamp: 2026-09-21T14:00:00Z
 cairn:
@@ -19,11 +19,15 @@ names both. Every line was read against the tree at `a5ac064` on
 2026-09-21: *live* means the code, skill or page still lacks what is asked;
 where something has moved since the note was written, the line says so.
 
-**The owner rules here.** One line is already answered, by an instruction
-given on 2026-09-21 and carried out the same day; it is ticked and the
-instruction quoted. Nothing else is decided. Each line is a proposal, not a
-design: the design is the promotion path's work, in decision records and a
-1.2 architecture page bound to this note, as ADR-001 to ADR-015 and the 1.1
+**The owner does not rule here.** The owner answers the
+[decisions page](./2026-09-21-cairn-1-2-decisions.md), sixteen questions in
+plain language; each line below is then ticked, deferred or refused from
+that answer, with the derived reading quoted under it where the answer
+picks a variant. One line is already answered, by an instruction given on
+2026-09-21 and carried out the same day; it is ticked and the instruction
+quoted. Nothing else is decided. Each line is a proposal, not a design:
+the design is the promotion path's work, in decision records and a 1.2
+architecture page bound to this note, as ADR-001 to ADR-015 and the 1.1
 page were bound to the rulings.
 
 Sources by letter: **W** [CP-CAIRN-009's writer](./2026-09-15-cp-cairn-009-writer-feedback.md),
