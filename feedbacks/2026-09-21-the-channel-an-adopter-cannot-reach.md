@@ -15,9 +15,13 @@ Written by the agent that ran Atomik's adoption — Claude Code — on
 [the adoption note](./2026-09-21-atomik-adopts-1-1.md) merged and while
 Atomik's cleanup path CP-OPS-003 ran in that repository. The three
 observations here are what the owner's sentence *store everything relevant
-in `feedbacks/`* met when it was carried out.
+in `feedbacks/`* met when it was carried out. They are numbered 8 to 10,
+after the five of the adoption note and the two of the protected-trunk note
+written the same day — `2026-09-21-atomik-opens-a-path-on-a-protected-trunk.md`,
+linked from the index once it lands — so a number names one observation across
+the three.
 
-## 1. The skill sends an adopter's writer to a folder that is not there
+## 8. The skill sends an adopter's writer to a folder that is not there
 
 **Where.** `skills/cairn-unit/SKILL.md`, section 7, *Report the boundary*,
 installed verbatim in every adopter by the kit:
@@ -58,7 +62,7 @@ in the protocol's own repository, write the file; in an adopter's, say it
 to the owner and let them decide. What must not stay is an installed
 instruction naming a path that does not exist.
 
-## 2. The channel is outside every rule that reads the corpus
+## 9. The channel is outside every rule that reads the corpus
 
 **Where.** Here, in the protocol's own repository. `markdownCorpus()`
 reads four roots — the documentation root, the project root, the concept
@@ -87,7 +91,7 @@ the conformance page should say so where it lists the corpus, because
 *checked by hand* and *deliberately unchecked* look identical from a green
 run.
 
-## 3. A corrected claim had already been acted on, and the note cannot say so
+## 10. A corrected claim had already been acted on, and the note cannot say so
 
 **Where.** Observation 1 of the adoption note, in its first draft, called
 the `links` exemptions an unnoticed regression and attributed `e18bbe4` to
@@ -126,7 +130,7 @@ nothing in the folder tells a reader who took a copy that there is a newer
 reading. The evidence surface is append-only in practice and mutable in
 fact, and the difference is invisible from the outside.
 
-**The change to Cairn.** This is the third observation of
+**The change to Cairn.** This is observation 3 of
 [the adoption note](./2026-09-21-atomik-adopts-1-1.md) with a cost
 attached, and it narrows what that decision should cover. A note whose
 claim changes says so at its head — the date, what was withdrawn, what
