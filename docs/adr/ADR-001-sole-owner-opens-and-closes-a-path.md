@@ -12,7 +12,7 @@ adr:
 
 # ADR-001 — a sole owner opens and closes a path
 
-Status: accepted · 2026-09-06 · written by CP-CAIRN-002, S01 · decision 6 superseded by ADR-029 on 2026-09-14
+Status: accepted · 2026-09-06 · written by CP-CAIRN-002, S01 · decision 1's kit's-default clause superseded by ADR-024 on 2026-09-11 · decision 6 superseded by ADR-029 on 2026-09-14 · two clauses of decision 1 superseded by ADR-032 on 2026-09-21
 
 **Promoted from** the owner's
 [decisions page](../../feedbacks/1.1/2026-09-06-cairn-1-1-decisions.md) at blob
@@ -61,6 +61,14 @@ page, the skills and the kit use today. How the change is coded is the work
 of the coding path the roadmap register names, not of this record.
 
 ### Decision 1 — the owner's go-ahead in the chat is the opening acceptance
+
+Two clauses **superseded** on 2026-09-21 by
+[ADR-032](./ADR-032-registering-on-a-trunk-that-takes-no-direct-push.md),
+for the `pull-request` registration transport only: *the request sequence
+goes* — it returns, for a trunk that takes no direct push — and *the
+rules `registration` and `registration-base` do not change* — the first
+reads a registration in the change under review. The kit's-default clause
+was superseded by ADR-024 on 2026-09-11. The rest of the decision stands.
 
 Promotes **R01**, from Q1 and the first removal of Q19.
 

@@ -113,6 +113,16 @@ change no meaning and carry no mark. A sentence this amendment adds is
 marked *since 2026-09-15* where it changes what an earlier sentence of
 this page said.
 
+**Marked from 2026-09-21** by the promotion of Cairn 1.2, CP-CAIRN-012,
+from the owner's [decisions page](../../feedbacks/2026-09-21-cairn-1-2-decisions.md)
+at blob `cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` and the
+[asks note](../../feedbacks/2026-09-21-cairn-1-2-the-asks.md) at blob
+`837262d5b3a761ef14d14bad0be8278133256e53`. This page is not amended:
+where a 1.2 record supersedes a decision a sentence here relies on, the
+sentence keeps its words and gains a *superseded by* mark naming the
+record, and what 1.2 changes is stated on the 1.2 page that path writes
+last.
+
 ## What 1.1 is for
 
 Cairn 1.0 was cut from the [specification](../../spec/index.md) and
@@ -168,7 +178,11 @@ acceptance: the agent writes it into the record with the owner as
 `accepted_by`, computes the digest with the checker, regenerates the live
 view, and lands the registration commit on the trunk directly. A sole
 owner's repository declares `transport.registration: manual-git`; there is
-no `register/` branch and no registration request (ADR-001, decision 1).
+no `register/` branch and no registration request (ADR-001, decision 1) —
+*superseded by [ADR-032](../adr/ADR-032-registering-on-a-trunk-that-takes-no-direct-push.md)
+on 2026-09-21 for a trunk that takes no direct push: `pull-request`
+registration lands the same commit through a request, and the
+`registration` rule reads it in the change under review*.
 Since 2026-09-11 the kit installs that declaration, so the sequence the
 open skill ships is the one the configuration written beside it names,
 and `--transport` chooses the integration transport alone; a repository

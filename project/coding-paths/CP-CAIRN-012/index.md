@@ -163,29 +163,43 @@ trunk directly. Amendments: none.
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
-- **S01** — not started.
+- **S01** — [the records: ADR-030, ADR-031, ADR-032](./steps/S01.md) —
+  complete. Themes 1 and 2 of the asks note, K01 to K08 and K20, named by
+  one record each; ADR-032 supersedes two clauses of ADR-001 decision 1,
+  marked in ADR-001, the records' index and the 1.1 page.
+- **S02** — not started.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — this record and the live view, nothing else, on origin/main; unit 0
-unit   : 0
+commit : 714a9d06157c1c3f2236c442904e64a06791e351 — the registration commit, on origin/main; S01's own commit is named here by S02
+unit   : 01 — S01 complete on push
 base   : 958880f040506961108f136c75e0c18921a9b460
 trunk  : 958880f040506961108f136c75e0c18921a9b460 — origin/main at registration
 ```
 
 ### Next action
 
-Start S01 with `cairn-unit` in the path's worktree: ADR-030, ADR-031 and
-ADR-032, themes 1 and 2 of the asks note, as the plan's first item says.
+Start S02 with `cairn-unit` in this worktree: theme 3 of the asks note —
+ADR-033 (K12, K13, K14, K16), ADR-034 (the eleven corrections of Q16),
+ADR-035 (K17), ADR-036 (K18, superseding ADR-016 decision 1) — with
+ADR-016 and the 1.1 page marked as S01 marked ADR-001, and the four
+records added to the records' index.
 
 ### Blockers
 
 None.
 
 ### Tried and rejected
+
+- Leaving the *superseded by* marks of ADR-001 and the 1.1 page to S05,
+  as the plan said — a superseded clause with no mark leaves the tree
+  saying two things between units; S01 marks what it supersedes, and each
+  later unit does the same.
+- Writing the word *pending* into ADR-015's table in S01 — its other
+  half, the register row's clause, is S05's, and one half alone dangles.
 
 - One decision record per ask, thirty-six files — a record states one
   choice, and the lines group into about a dozen choices; a file per line
@@ -207,7 +221,7 @@ None.
 1. `feedbacks/2026-09-21-cairn-1-2-decisions.md@cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` — why each ask was taken, in the owner's words.
 2. `feedbacks/2026-09-21-cairn-1-2-the-asks.md@837262d5b3a761ef14d14bad0be8278133256e53` — what each record must implement, line by line, with the derived readings.
 3. `docs/architecture/01-cairn-1-1.md` — the page 1.2 changes.
-4. `project/coding-paths/CP-CAIRN-002/index.md` and `docs/adr/ADR-001-sole-owner-opens-and-closes-a-path.md` — the shape a promotion path and its records follow.
+4. `docs/adr/ADR-032-registering-on-a-trunk-that-takes-no-direct-push.md` — the shape S01 gave a 1.2 record, and how a supersession is marked in the record, ADR-001, the index and the 1.1 page.
 5. `project/coding-paths/CP-CAIRN-012/plan.md` — the order the records are written in.
 
 ### Verify
