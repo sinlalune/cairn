@@ -253,27 +253,32 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   7's route for a note about Cairn and movement 4's `deferred` disposition;
   `skills/cairn-update/SKILL.md`, the seventh, an adopter's update as a path
   in seven movements; the bootloader's skills line. **COMPLETE**
-- **S05** — not started.
+- **S05** — [the chapters and the layout](./steps/S05.md): chapters 1 and 4
+  naming the plane's backlog space and defining what a file there holds and
+  who reads the folder; the layout reference's tree and rows for the backlog,
+  for `feedbacks/` with its release subfolders and its type, and for
+  `CHANGELOG.md`; the path template's deferral naming its backlog file.
+  **COMPLETE**
+- **S06** — not started.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 65507f5e3e58853f0615c99e480df99b9ec6e622 — S03, the coherence questions as a fresh-context read, on origin/path/cp-cairn-013
-unit   : 3
+commit : cff8ba45fe16dd73b95908dcc43990095d86729b — S04, the unit skill and the seventh skill, on origin/path/cp-cairn-013
+unit   : 4
 base   : dc241ff0209d995c057ae5de5b06640193980281
 trunk  : dc241ff0209d995c057ae5de5b06640193980281 — origin/main at registration
 ```
 
 ### Next action
 
-Start S05 with `cairn-unit` in the path's worktree: the template, the chapters
-and the layout, as the plan's fifth item says — the path template's plain list
-is already written by S01, so what remains is chapters 1 and 4 naming
-`project/backlog/` among the project plane's folders, and the layout
-reference's rows for the backlog folder, for `feedbacks/` with its `<release>/`
-subfolders and the type `Cairn Feedback`, and for `CHANGELOG.md`.
+Start S06 with `cairn-unit` in the path's worktree: the candidate, as the
+plan's sixth item says — the trunk merged in, the gates bare, the register's
+row 1 of 1.2 naming this path; then `cairn-close` as this path leaves it, the
+administrative commit landing before the reading and the coherence questions
+answered by a fresh context in the request's description.
 
 ### Blockers
 

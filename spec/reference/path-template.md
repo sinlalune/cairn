@@ -226,7 +226,7 @@ verified: cairn-check, test, build
 
 First read — reader: <a fresh context, and which kind | the writer, with the reason no reader was obtainable and how long was waited> — given this unit's diff and the two criteria:
 
-- <finding> — **fixed** | **refused**, <reason> | **deferred** to <unit or path>
+- <finding> — **fixed** | **refused**, <reason> | **deferred** to <its file under project/backlog/>
 
 Second read — reader: <the same line, for the fix> — given only the diff of those fixes:
 

@@ -95,6 +95,9 @@ The reference tools check nothing about a brainstorm note beyond its links and
 its [frontmatter](./concepts/frontmatter.md). That is deliberate: the stage
 where a rule would cost the most and catch the least is this one.
 
+Work a path decided not to do now is not a brainstorm note and does not go
+here: it goes to the plane's backlog space, which chapter 4 defines.
+
 ## 2. Research
 
 Through research you refine the vision. Research is reading, trying and asking,
@@ -187,6 +190,15 @@ index of the project plane:
 Every milestone is accounted for: it has a path, or it says it does not yet.
 That sentence is the whole rule, and it is what keeps a roadmap from being a
 list of wishes.
+
+A deferred item is not a milestone and is not a row here. It lives in the
+plane's backlog space — `project/backlog/`, one file per item, saying what the
+item is, which path deferred it and where, who owns it, and the shape of the
+work it wants: a decision, a promotion, a coding path. A path proposed from
+this register reads that folder first. A path that takes an item names it in
+the goal, declares its file in `writes:`, and deletes the file in its last
+unit. No rule reads the folder as a backlog; a file there is checked for its
+links, as every page of the plane is.
 
 Paths are born from the roadmap in the `draft` state of the
 [lifecycle](./concepts/lifecycle.md): a [path record](./concepts/path-record.md)
