@@ -12,7 +12,7 @@ adr:
 
 # ADR-002 — the checkboxes stay and the seal is checked at every transition
 
-Status: accepted · 2026-09-06 · written by CP-CAIRN-002, S03
+Status: accepted · 2026-09-06 · written by CP-CAIRN-002, S03 · decision 2 superseded by ADR-042 on 2026-09-21
 
 **Promoted from** the owner's
 [decisions page](../../feedbacks/1.1/2026-09-06-cairn-1-1-decisions.md) at blob
@@ -56,6 +56,11 @@ branch; one fixture, a trunk commit that records `done` and ticks a box in
 the same change, refused.
 
 ### Decision 2 — the checkboxes stay
+
+**Superseded** on 2026-09-21 by
+[ADR-042](./ADR-042-the-definition-of-done-is-a-plain-list.md): the
+definition of done is a plain list, and records already accepted keep
+their text.
 
 Refuses **R11**, from Q7 and Q19. The owner's words, Q7: *"Keep them, and
 catch every tick."* The third item of Q19, the outcome checkboxes, was left

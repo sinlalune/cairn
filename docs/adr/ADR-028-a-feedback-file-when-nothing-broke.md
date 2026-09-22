@@ -12,7 +12,7 @@ adr:
 
 # ADR-028 — a feedback file when nothing broke
 
-Status: accepted · 2026-09-15 · written by CP-CAIRN-010, S01
+Status: accepted · 2026-09-15 · written by CP-CAIRN-010, S01 · decision 2's clause *no tool reads or writes the folder* superseded by ADR-038 on 2026-09-21
 
 **Promoted from** the owner's words in the chat of 2026-09-15, said while
 coding path 4's request (#18) was open and written into
@@ -87,6 +87,11 @@ unit skill's last section, *Report the boundary*, one sentence pointing
 at the channel.
 
 ### Decision 2 — a defect of the harness earns no file, and no tool, skill or rule is added
+
+The clause *no tool reads or writes the folder* **superseded** on
+2026-09-21 by [ADR-038](./ADR-038-the-channel-second-edition.md): the
+`links` rule reads the folder, and the kit writes the folder and its
+index in every adopter; no tool writes a note, and the rest stands.
 
 The owner's refusals, as they were said.
 

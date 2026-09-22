@@ -113,6 +113,16 @@ change no meaning and carry no mark. A sentence this amendment adds is
 marked *since 2026-09-15* where it changes what an earlier sentence of
 this page said.
 
+**Marked from 2026-09-21** by the promotion of Cairn 1.2, CP-CAIRN-012,
+from the owner's [decisions page](../../feedbacks/2026-09-21-cairn-1-2-decisions.md)
+at blob `cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` and the
+[asks note](../../feedbacks/2026-09-21-cairn-1-2-the-asks.md) at blob
+`837262d5b3a761ef14d14bad0be8278133256e53`. This page is not amended:
+where a 1.2 record supersedes a decision a sentence here relies on, the
+sentence keeps its words and gains a *superseded by* mark naming the
+record, and what 1.2 changes is stated on
+[the 1.2 page](./02-cairn-1-2.md).
+
 ## What 1.1 is for
 
 Cairn 1.0 was cut from the [specification](../../spec/index.md) and
@@ -154,8 +164,10 @@ the nodes to its left, and the owner reads everything (ADR-019, decision
 ## How a path opens
 
 The agent writes the path record — one folder, the definition of done as a
-list of checkboxes, the write surface, the governing documents pinned by
-blob id — and puts it to the owner. *The owner reviews the plan* is a
+list of checkboxes (*superseded by
+[ADR-042](../adr/ADR-042-the-definition-of-done-is-a-plain-list.md) on
+2026-09-21: a plain list*), the write surface, the governing documents
+pinned by blob id — and puts it to the owner. *The owner reviews the plan* is a
 named step; a change asked before the go-ahead is written into the record
 (ADR-001, decision 2). Since 2026-09-09 the record's goal opens with three
 plain lines — what the path does, why it is the least, what it does not
@@ -168,7 +180,11 @@ acceptance: the agent writes it into the record with the owner as
 `accepted_by`, computes the digest with the checker, regenerates the live
 view, and lands the registration commit on the trunk directly. A sole
 owner's repository declares `transport.registration: manual-git`; there is
-no `register/` branch and no registration request (ADR-001, decision 1).
+no `register/` branch and no registration request (ADR-001, decision 1) —
+*superseded by [ADR-032](../adr/ADR-032-registering-on-a-trunk-that-takes-no-direct-push.md)
+on 2026-09-21 for a trunk that takes no direct push: `pull-request`
+registration lands the same commit through a request, and the
+`registration` rule reads it in the change under review*.
 Since 2026-09-11 the kit installs that declaration, so the sequence the
 open skill ships is the one the configuration written beside it names,
 and `--transport` chooses the integration transport alone; a repository
@@ -186,7 +202,10 @@ path's, the registration run says so, and the later path declares
 
 An amendment after acceptance is a second acceptance block naming the
 first; the definition of done is never edited in place, ticks included
-(ADR-002, decision 2).
+(ADR-002, decision 2) — *the ticks superseded by
+[ADR-042](../adr/ADR-042-the-definition-of-done-is-a-plain-list.md) on
+2026-09-21: a new record carries no box to tick; the sentence stands for
+the text*.
 
 ## How a path runs
 
@@ -236,7 +255,10 @@ never for a defect of the harness, which goes to the harness's vendor
 (ADR-028).
 
 The coding stance the writer takes during *change* comes, since
-2026-09-07, from Ponytail at a pinned tag: the decision ladder,
+2026-09-07, from Ponytail at a pinned tag — *the pinned tag superseded by
+[ADR-036](../adr/ADR-036-the-kit-ships-ponytails-skills-where-the-harness-loads-them.md)
+on 2026-09-21: the kit ships the two skills from the plugin's latest
+version, where the harness loads them* — the decision ladder,
 read-the-real-flow first, deletion over addition, the root-cause rule,
 the floor under laziness, the check per non-trivial change, and the five
 tags of its review skill, which the self-review above speaks in. The
@@ -376,9 +398,9 @@ and the site that projects it (ADR-012).
 | `cairn-active` | the live view of running paths; reports a roadmap register still carrying the installer's row | 1.0; ADR-008 d5 |
 | `cairn-audit` | the request's description for one candidate, since 2026-09-07 with the definition of done item by item, since 2026-09-09 opening with three plain lines and the surface link | 1.0; ADR-018 d2; ADR-021 d2 |
 | `cairn-postmortem` | for one path or the repository, the mechanical reading the adopter notes did by hand; run by the workflow when the gate goes red, into the run's log and onto the request, and on demand; since 2026-09-09 it prints the facts a question to the owner is built from | ADR-014 d1; ADR-021 d3 |
-| a feedback file | not a tool: since 2026-09-15, a file under `feedbacks/` a writer writes when the gate stayed green and the protocol still cost more than it should — the movement, the cost, the change to Cairn — beside the post-mortem, which reads facts after a red run; no tool, no skill, no rule, and never for a defect of the harness | ADR-028 |
+| a feedback file | not a tool: since 2026-09-15, a file under `feedbacks/` a writer writes when the gate stayed green and the protocol still cost more than it should — the movement, the cost, the change to Cairn — beside the post-mortem, which reads facts after a red run; no tool, no skill, no rule, and never for a defect of the harness — *no tool reads or writes the folder superseded by [ADR-038](../adr/ADR-038-the-channel-second-edition.md) on 2026-09-21* | ADR-028 |
 | `cairn-test` | this repository's fixture suite for the tools, run by this repository's workflow before the checker and proven at each release; the kit installs no suite and names no test script, so `npm test` stays the adopter's | ADR-014 d2 |
-| `cairn` | `init`, `status`, `update`, `adopt`, as in 1.0; installs the pointer page and the three concept folders; `update` rewrites every pristine file, prints what the release changes in an edited one and lists it on the pointer page, and takes the release's version of a named file on request; since 2026-09-07 the kit names Ponytail at a pinned tag as a dependency it does not copy; since 2026-09-09 it installs six skills, the sixth `cairn-learn`; since 2026-09-11 `init` writes `transport.registration: manual-git`, the `--transport` option naming the integration transport alone | 1.0; ADR-011, ADR-013, ADR-015; ADR-016 d1; ADR-022 d2; ADR-024 |
+| `cairn` | `init`, `status`, `update`, `adopt`, as in 1.0; installs the pointer page and the three concept folders; `update` rewrites every pristine file, prints what the release changes in an edited one and lists it on the pointer page, and takes the release's version of a named file on request; since 2026-09-07 the kit names Ponytail at a pinned tag as a dependency it does not copy — *superseded by [ADR-036](../adr/ADR-036-the-kit-ships-ponytails-skills-where-the-harness-loads-them.md) on 2026-09-21*; since 2026-09-09 it installs six skills, the sixth `cairn-learn`; since 2026-09-11 `init` writes `transport.registration: manual-git`, the `--transport` option naming the integration transport alone | 1.0; ADR-011, ADR-013, ADR-015; ADR-016 d1; ADR-022 d2; ADR-024 |
 | the workflow | one job, one run per commit that can land: the request's run for a candidate, the trunk's run for a registration and an integration | ADR-005 |
 
 The kit of 1.1 was to ship with at most twenty-nine files, the pointer
@@ -409,8 +431,10 @@ installed 1.0 receives all of this through `update` (ADR-015).
   (ADR-008, decision 4).
 
 And what 1.1 keeps that the notes asked to remove: the checkboxes of the
-definition of done (ADR-002, decision 2), and the merge click as the whole
-of a sole owner's closing acceptance (ADR-001, decision 4).
+definition of done (ADR-002, decision 2) — *superseded by
+[ADR-042](../adr/ADR-042-the-definition-of-done-is-a-plain-list.md) on
+2026-09-21* — and the merge click as the whole of a sole owner's closing
+acceptance (ADR-001, decision 4).
 
 ## Who the pedagogy writes for
 

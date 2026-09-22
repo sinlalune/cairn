@@ -118,5 +118,5 @@ recognise.
 | Decision | Surface it changes | Named today as |
 | :-- | :-- | :-- |
 | 1 | the installation status | `tools/cairn.mjs`, `installationStatus`; `tools/cairn.test.mjs` |
-| 2 | the update report, the pointer page, the release's package | `tools/cairn.mjs`, `update`; `cairn/README.md` as written; `package.json` of the release |
+| 2 | the update report, the pointer page, the release's package | `tools/cairn.mjs`, `update`; `cairn/README.md` as written; `package.json` of the release — the line per changed template is *pending*; row 5 of [the register's coding paths of 1.2](../../project/coding-paths/index.md) owes it (ADR-031 d3) |
 | 3 | the update command | `tools/cairn.mjs`, `update`; `tools/cairn.test.mjs` |

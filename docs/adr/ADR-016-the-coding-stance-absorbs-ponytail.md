@@ -12,7 +12,7 @@ adr:
 
 # ADR-016 — the coding stance absorbs Ponytail and keeps Cairn's own
 
-Status: accepted · 2026-09-07 · written by CP-CAIRN-003, S01
+Status: accepted · 2026-09-07 · written by CP-CAIRN-003, S01 · decision 1's first half superseded by ADR-036 on 2026-09-21
 
 **Promoted from** the owner's
 [decisions page](../../project/brainstorm/2026-09-07-coding-guidelines-decisions.md)
@@ -56,6 +56,12 @@ conformance page, the skills and the kit use today.
 ## Decisions
 
 ### Decision 1 — the kit points at Ponytail at a pinned tag, and `cairn-code` keeps only Cairn's own
+
+First half **superseded** on 2026-09-21 by
+[ADR-036](./ADR-036-the-kit-ships-ponytails-skills-where-the-harness-loads-them.md):
+the kit extracts the two skills from the plugin's latest version and
+installs them where the harness loads skills; the pin goes. The second
+half — `cairn-code` keeps only Cairn's own — stands.
 
 Promotes **Q2**, *Install Ponytail and keep only Cairn's own* — simplest,
 native: absorb the ecosystem.

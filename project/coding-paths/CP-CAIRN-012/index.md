@@ -7,13 +7,13 @@ timestamp: 2026-09-21T00:00:00Z
 cairn:
   id: CP-CAIRN-012
   route: full
-  status: running
+  status: ready
   current_step: S01
   base_commit: 958880f040506961108f136c75e0c18921a9b460
   branch: path/cp-cairn-012
   assigned_writer: cp-cairn-012-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 702cc14f1ab069d2694f9f6cb4e1a3f102cde304
   resolution: null
   writes:
     - docs/adr/**
@@ -163,29 +163,74 @@ trunk directly. Amendments: none.
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
-- **S01** — not started.
+- **S01** — [the records: ADR-030, ADR-031, ADR-032](./steps/S01.md) —
+  complete. Themes 1 and 2 of the asks note, K01 to K08 and K20, named by
+  one record each; ADR-032 supersedes two clauses of ADR-001 decision 1,
+  marked in ADR-001, the records' index and the 1.1 page.
+- **S02** — [the records: ADR-033, ADR-034, ADR-035, ADR-036](./steps/S02.md) —
+  complete. Theme 3 of the asks note, seventeen lines, named by one
+  record each; ADR-036 supersedes the first half of ADR-016 decision 1,
+  marked in ADR-016, the records' index and the 1.1 page.
+- **S03** — [the records: ADR-037, ADR-038, ADR-039](./steps/S03.md) —
+  complete. Themes 4, 5 and 6 of the asks note, six lines with K27,
+  named by one record each; ADR-038 supersedes the reading half of
+  ADR-028 decision 2, marked in ADR-028, the records' index and the 1.1
+  page.
+- **S04** — [the records: ADR-040, ADR-041, ADR-042, ADR-043](./steps/S04.md) —
+  complete. Theme 7 of the asks note, four lines, named by one record
+  each; every ticked line, K01 to K36, is now named by exactly one
+  record. ADR-042 supersedes ADR-002 decision 2, marked in ADR-002, the
+  records' index and the 1.1 page three times.
+- **S05** — [the 1.2 page, the indexes, the register and the first *pending*](./steps/S05.md) —
+  complete. The 1.2 architecture page naming ADR-030 to ADR-043; the 1.1
+  page linking it; the *pending* convention in the records' index and
+  its first use on ADR-015 decision 2, named back by the register's 1.2
+  row; the register's 1.2 row naming this path as the promotion and the
+  five coding paths of 1.2, each *no path yet*.
+- **S06** — [ADR-038 supersedes the whole no-tool clause of ADR-028](./steps/S06.md) —
+  complete. Found by the closing coherence read of the first candidate
+  `50f74b6` (ADR-043): ADR-038 kept *no tool writes the folder* while
+  having the kit install it; the clause is now superseded whole in the
+  record, ADR-028, the indexes and both pages. The first candidate is
+  void; S06's commit is the second.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — this record and the live view, nothing else, on origin/main; unit 0
-unit   : 0
+commit : 702cc14f1ab069d2694f9f6cb4e1a3f102cde304 — S06, the candidate C, on origin/path/cp-cairn-012; the trunk unmoved, so C is the last unit itself
+unit   : 06 — S06 complete on push; the path ready at C
 base   : 958880f040506961108f136c75e0c18921a9b460
-trunk  : 958880f040506961108f136c75e0c18921a9b460 — origin/main at registration
+trunk  : 958880f040506961108f136c75e0c18921a9b460 — origin/main at registration, unmoved; the branch contains the registration commit 714a9d0
 ```
 
 ### Next action
 
-Start S01 with `cairn-unit` in the path's worktree: ADR-030, ADR-031 and
-ADR-032, themes 1 and 2 of the asks note, as the plan's first item says.
+Close with `cairn-close`, under this path's own records: the candidate
+`C` = S06's commit, the trunk unmoved, the gate bare on it;
+`cairn-audit -- --subject <C>` for the description; the four coherence
+questions read fresh once more on the fix (ADR-043), the first read's
+answers kept for the rest; the administrative commit `A` landed on the
+branch before the owner is asked to read (ADR-040); the request opened
+from `path/cp-cairn-012` to `main`; then the owner reads the fourteen
+records and the 1.2 page, arbitrates the read's softer finding on
+ADR-043 against ADR-016 decision 4, and merges; then the integrating
+unit from a clean trunk checkout, `done`, the view, one journal entry
+under `cairn.path`; then this worktree removed from another checkout.
 
 ### Blockers
 
 None.
 
 ### Tried and rejected
+
+- Leaving the *superseded by* marks of ADR-001 and the 1.1 page to S05,
+  as the plan said — a superseded clause with no mark leaves the tree
+  saying two things between units; S01 marks what it supersedes, and each
+  later unit does the same.
+- Writing the word *pending* into ADR-015's table in S01 — its other
+  half, the register row's clause, is S05's, and one half alone dangles.
 
 - One decision record per ask, thirty-six files — a record states one
   choice, and the lines group into about a dozen choices; a file per line
@@ -207,7 +252,7 @@ None.
 1. `feedbacks/2026-09-21-cairn-1-2-decisions.md@cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` — why each ask was taken, in the owner's words.
 2. `feedbacks/2026-09-21-cairn-1-2-the-asks.md@837262d5b3a761ef14d14bad0be8278133256e53` — what each record must implement, line by line, with the derived readings.
 3. `docs/architecture/01-cairn-1-1.md` — the page 1.2 changes.
-4. `project/coding-paths/CP-CAIRN-002/index.md` and `docs/adr/ADR-001-sole-owner-opens-and-closes-a-path.md` — the shape a promotion path and its records follow.
+4. `docs/adr/ADR-032-registering-on-a-trunk-that-takes-no-direct-push.md` — the shape S01 gave a 1.2 record, and how a supersession is marked in the record, ADR-001, the index and the 1.1 page; `docs/adr/ADR-034-housekeeping-with-no-choice-in-it-second-edition.md` — the shape of a many-decision record.
 5. `project/coding-paths/CP-CAIRN-012/plan.md` — the order the records are written in.
 
 ### Verify
