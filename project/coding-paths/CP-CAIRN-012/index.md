@@ -187,31 +187,37 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   its first use on ADR-015 decision 2, named back by the register's 1.2
   row; the register's 1.2 row naming this path as the promotion and the
   five coding paths of 1.2, each *no path yet*.
+- **S06** — [ADR-038 supersedes the whole no-tool clause of ADR-028](./steps/S06.md) —
+  complete. Found by the closing coherence read of the first candidate
+  `50f74b6` (ADR-043): ADR-038 kept *no tool writes the folder* while
+  having the kit install it; the clause is now superseded whole in the
+  record, ADR-028, the indexes and both pages. The first candidate is
+  void; S06's commit is the second.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 8e5e860f2790f14da168c8f41bf9cfe46653290c — S04, on origin/path/cp-cairn-012; S05's own commit is the candidate's last unit
-unit   : 05 — S05 complete on push
+commit : 50f74b6d823044296e387b3be72c60510779dee3 — S05, on origin/path/cp-cairn-012, the first candidate, void; S06's own commit is the second candidate
+unit   : 06 — S06 complete on push
 base   : 958880f040506961108f136c75e0c18921a9b460
 trunk  : 958880f040506961108f136c75e0c18921a9b460 — origin/main at registration, unmoved; the branch contains the registration commit 714a9d0
 ```
 
 ### Next action
 
-Close with `cairn-close`, under this path's own records: the trunk
-merged in (unmoved since registration), the candidate `C` = S05's
-commit, the gate bare on it; `cairn-audit -- --subject <C>` for the
-description; the four coherence questions handed to a fresh context
-with the diff, the governing blobs and the live view (ADR-043); the
-administrative commit `A` landed on the branch before the owner is asked
-to read (ADR-040); the request opened from `path/cp-cairn-012` to
-`main`; then the owner reads the fourteen records and the 1.2 page and
-merges; then the integrating unit from a clean trunk checkout, `done`,
-the view, one journal entry under `cairn.path`; then this worktree
-removed from another checkout.
+Close with `cairn-close`, under this path's own records: the candidate
+`C` = S06's commit, the trunk unmoved, the gate bare on it;
+`cairn-audit -- --subject <C>` for the description; the four coherence
+questions read fresh once more on the fix (ADR-043), the first read's
+answers kept for the rest; the administrative commit `A` landed on the
+branch before the owner is asked to read (ADR-040); the request opened
+from `path/cp-cairn-012` to `main`; then the owner reads the fourteen
+records and the 1.2 page, arbitrates the read's softer finding on
+ADR-043 against ADR-016 decision 4, and merges; then the integrating
+unit from a clean trunk checkout, `done`, the view, one journal entry
+under `cairn.path`; then this worktree removed from another checkout.
 
 ### Blockers
 

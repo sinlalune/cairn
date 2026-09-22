@@ -1,7 +1,7 @@
 ---
 type: Cairn Decision Record
 title: ADR-038 — the channel, second edition
-description: `feedbacks/` joins the corpus the checker reads, so `links` covers the channel; the kit installs the folder in every adopter and the unit skill says how a note reaches this repository; a treated note moves into `feedbacks/<release>/`, whose index names what answered it; a note whose claim was withdrawn says so at its head; and a note's frontmatter type is `Cairn Feedback`, read by no rule. Supersedes the reading half of ADR-028 decision 2. Promotes K22, K26, K27 and K28 of Cairn 1.2, from Q12, Q13, Q14 and the owner's instruction of 2026-09-21.
+description: `feedbacks/` joins the corpus the checker reads, so `links` covers the channel; the kit installs the folder in every adopter and the unit skill says how a note reaches this repository; a treated note moves into `feedbacks/<release>/`, whose index names what answered it; a note whose claim was withdrawn says so at its head; and a note's frontmatter type is `Cairn Feedback`, read by no rule. Supersedes ADR-028 decision 2's clause that no tool reads or writes the folder. Promotes K22, K26, K27 and K28 of Cairn 1.2, from Q12, Q13, Q14 and the owner's instruction of 2026-09-21.
 tags: [cairn, adr, 1.2, feedback, channel, checker, kit, skills]
 timestamp: 2026-09-22T00:00:00Z
 adr:
@@ -14,12 +14,13 @@ adr:
 
 Status: accepted · 2026-09-21 · written by CP-CAIRN-012, S03
 
-This record **supersedes** the reading half of decision 2 of
+This record **supersedes** one clause of decision 2 of
 [ADR-028](./ADR-028-a-feedback-file-when-nothing-broke.md) — *no tool
-reads or writes the folder*: the `links` rule now reads it. The
-rest of that decision stands — no tool writes the folder, no skill
-produces the file, no rule requires it, a defect of the harness earns no
-file — and decision 1 stands whole. The decisions page placed one of the
+reads or writes the folder*: the `links` rule now reads it, and the kit
+writes the folder and its index in every adopter. The rest of that
+decision stands — no tool writes a note, no skill produces the file, no
+rule requires it, a defect of the harness earns no file — and decision 1
+stands whole. The decisions page placed one of the
 sentences below in ADR-028; a record is not rewritten in place, so this
 second edition carries it.
 
@@ -165,7 +166,7 @@ type.
 
 - The channel's links are read like everything else's; the first run after the coding path lands may block on an old note's
   link.
-- ADR-028 decision 2 carries a superseded-half mark, and the 1.1 page's
+- ADR-028 decision 2 carries a superseded-clause mark, and the 1.1 page's
   feedback-file row is marked *superseded by* this record where it says
   *no tool*.
 

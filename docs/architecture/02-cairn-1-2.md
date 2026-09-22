@@ -248,7 +248,7 @@ carries the shape.
 - **The pinned Ponytail tag the kit copied nothing of** (ADR-036).
 - **The checkboxes of the definition of done** (ADR-042).
 - **The direct push as the only registration** (ADR-032).
-- **The folder no tool reads** (ADR-038).
+- **The folder no tool reads or writes** (ADR-038).
 - **The owner answering the coherence questions** (ADR-043).
 - **The administrative commit after the owner's reading**, on
   `pull-request` with one owner (ADR-040).
