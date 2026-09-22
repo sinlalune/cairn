@@ -52,8 +52,17 @@ advisories raised at `C` with a disposition each — fixed, accepted, or
 deferred, with its owner and a follow-up file under `project/backlog/` — and
 the roles.
 
-Ask, with the coherence questions, whether the README lists a surface this
-path added. A measured figure of the kit belongs in the conformance page's
+The four coherence questions are a fresh context's read, not yours — the
+shape of `cairn-unit`'s fourth movement, made here at the candidate, with the
+inputs below. Hand that context the diff of `C` against its base, the
+documents pinned in `governs:` at those ids, the live view and the records of
+the paths running beside it, and the four questions — and nothing else. Its
+answers go under the review's coherence section — *Coherence* on the request,
+*Findings* in the closing record — opened by that movement's reader line, and
+the owner arbitrates what it found.
+
+Beside the four, check whether the README lists a surface this path added;
+that one is yours. A measured figure of the kit belongs in the conformance page's
 budget table, one row per figure; everywhere else links that row and restates
 nothing.
 
@@ -64,10 +73,8 @@ On `manual-git` the same command scaffolds `closing-<C>.md` in the path
 folder. Fill it: reviewer, roles, UTC time, the re-computed digest, one entry
 per advisory, the four answers, the verdict.
 
-Read the candidate against every document pinned in `governs:`, at its pinned
-id, and against every path running beside it. Compute the digest with the
-checker, never by hand; if it differs from the opening acceptance, stop — the
-definition of done moved.
+Compute the digest with the checker, never by hand; if it differs from the
+opening acceptance, stop — the definition of done moved.
 
 ## 3. The administrative commit
 
@@ -97,10 +104,11 @@ the request for it.
 
 An authorised reviewer's approval of the request — or the closing record's
 acceptance fields — binds three things: the result `C`, the scope digest, and
-the base `T`. On the `full` route the reviewer answers the coherence questions
-explicitly, and a control-plane change needs an approval that is not the
-writer's own. Where one owner holds every role, that approval is the merge
-click, and no other shape is added for it.
+the base `T`. On the `full` route the coherence answers are already in the
+description, and the owner arbitrates what the reader found; a control-plane
+change needs an approval that is not the writer's own. Where one owner holds
+every role, that approval is the merge click, and no other shape is added for
+it.
 
 ## 5. Drift, then integrate
 

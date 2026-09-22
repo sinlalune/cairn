@@ -28,6 +28,8 @@ cairn:
     - spec/concepts/coherence-audit.md
     - spec/concepts/lifecycle.md
     - spec/concepts/implementation-candidate.md
+    - spec/concepts/route.md
+    - spec/concepts/roles.md
     - .github/pull_request_template.md
     - project/coding-paths/index.md
     - project/coding-paths/CP-CAIRN-013/**
@@ -241,33 +243,44 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   link, the `deferred` disposition, the checkbox clause, the two release-path
   sentences; and, on the owner's ruling, what `ready` states in four pages.
   **COMPLETE**
-- **S03** — not started.
+- **S03** — [the coherence questions as a fresh-context read](./steps/S03.md):
+  the close skill's review step hands the candidate to a second context and
+  its acceptance step says the answers are there already; the reference's
+  commands, the human-records examples, chapter 5's `full` route, the audit
+  concept, the route and roles concepts, and this repository's request
+  template. **COMPLETE**
+- **S04** — not started.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 07e7741eb0a2dedcffe3012eb8b7a106e1a86ae6 — S01, the open skill and the configuration reference, on origin/path/cp-cairn-013
-unit   : 1
+commit : c3c6d9a90a964f6bcae2f10640ad1f7a8c4eb582 — S02, the close skill's order and its sentences, on origin/path/cp-cairn-013
+unit   : 2
 base   : dc241ff0209d995c057ae5de5b06640193980281
 trunk  : dc241ff0209d995c057ae5de5b06640193980281 — origin/main at registration
 ```
 
 ### Next action
 
-Start S03 with `cairn-unit` in the path's worktree: the coherence questions as
-a fresh-context read, as the plan's third item says — the close skill's steps
-2 and 3 and its reference, the human-records reference's *Coherence* section,
-chapter 5's `full` route sentence, the coherence-audit concept naming the
-reader, and this repository's request template's *Coherence* list with its
-first line.
+Start S04 with `cairn-unit` in the path's worktree: the unit skill and the
+seventh skill, as the plan's fourth item says — section 7's route for a note
+about Cairn and movement 4's `deferred` disposition;
+`skills/cairn-update/SKILL.md` in ADR-035's order; and the bootloader's skills
+line.
 
 ### Blockers
 
 None.
 
 ### Tried and rejected
+
+- Leaving `spec/concepts/route.md` and `spec/concepts/roles.md` to a path of
+  their own — both still made the four coherence questions the reviewer's
+  read, which is the reader ADR-043 replaces, and the owner had ruled on the
+  same shape in S02. `writes:` was widened for the two and the ruling named
+  in the report rather than asked a second time.
 
 - Leaving what `ready` states to a superseding record on a path of its own,
   as this path's coverage says to do with a record found wanting — the owner

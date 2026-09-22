@@ -30,6 +30,8 @@ Surface: `<the page a newcomer reads for the surface this path changed, or the R
 
 ## Coherence
 
+Read by `<a fresh context, and which kind | the writer, with the reason no reader was obtainable and how long was waited>`.
+
 - [ ] Does the diff contradict an accepted decision?
 - [ ] Does it duplicate something another running path is building?
 - [ ] Did it introduce architecture that belongs in a decision record and has none?

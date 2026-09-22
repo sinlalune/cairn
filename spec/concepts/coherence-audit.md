@@ -22,6 +22,12 @@ introduce architecture without a decision record, does anything now live in two
 places that will drift. If its findings change implementation, a new candidate
 is reviewed.
 
+The four are answered by a fresh context of the writer's agent, given the
+candidate's diff, the pinned documents below, the live view and the records of
+the paths running beside it, and nothing else; the answers open with a line
+naming that reader, and the owner arbitrates what it found. The writer answers
+only where no fresh context can be obtained, and the line says so.
+
 It reads the candidate against the documents the path declared in `governs:`,
 each pinned at an exact object id. That pin is what makes the review's
 reference frame checkable later: if the trunk changes one of those documents

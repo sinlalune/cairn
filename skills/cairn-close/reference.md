@@ -41,6 +41,15 @@ fill it.
 `project/coding-paths/CP-EXAMPLE-001/closing-<C>.md`. Fill every field, the
 four answers and the verdict.
 
+Give the fresh context these, before either shape is filled:
+
+```bash
+git diff <T>..<C>                        # the candidate against its base
+git show <blob>                          # once per document pinned in governs:
+cat project/coding-paths/ACTIVE.md       # the live view
+cat project/coding-paths/CP-*/index.md   # the paths running beside it
+```
+
 If the digest differs from the opening acceptance, stop: restore the text or
 record a scope amendment. If implementation changes, stop: a new `C`.
 

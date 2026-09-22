@@ -97,6 +97,8 @@ description and the acceptance as its approval. The kit installs
 
 ## Coherence
 
+Read by a fresh context of the writer's agent, a subagent of this harness.
+
 - [x] Does the diff contradict an accepted decision? No — …
 - [x] Does it duplicate something another running path is building? No — …
 - [x] Did it introduce architecture that belongs in a decision record and has none? No — …
@@ -160,6 +162,8 @@ cairn:
 # CP-EXAMPLE-001 — closing of fedcba9
 
 ## Findings
+
+Read by a fresh context of the writer's agent, a subagent of this harness.
 
 ### Does the diff contradict an accepted decision?
 

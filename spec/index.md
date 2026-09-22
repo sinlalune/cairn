@@ -322,8 +322,10 @@ Every path declares a [route](./concepts/route.md): the ceremony it runs at.
   acceptance inline, steps, a pull request at the end. A protocol that demands
   nine artefacts for a one-line fix teaches people to route around it.
 - **`full`**: the same shape with two additions — the pull request's review
-  answers the coherence questions explicitly, and a control-plane change needs
-  an approval that is not the writer's own. It is required when the path changes
+  writes the coherence answers out explicitly, and a control-plane change needs
+  an approval that is not the writer's own. Who answers them does not change
+  with the route: a fresh context reads, and the owner arbitrates.
+  It is required when the path changes
   the [control plane](./concepts/control-plane.md), changes architecture or a
   decision record, writes across more than one implemented area, spans more
   than one work unit, or is designated high-risk by repository policy. A path

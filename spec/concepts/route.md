@@ -39,7 +39,7 @@ specified, was dropped rather than carried.
 | `route:` | What it is | Status |
 | :-- | :-- | :-- |
 | [`lightweight`](./lightweight-path.md) | the default: every record that carries durable meaning, and none that only ceremony separates | specified |
-| `full` | the same shape, with the review's [coherence questions](./coherence-audit.md) answered explicitly and, for control-plane work, an approval that is not the writer's own; also the route of a documents-only path | specified |
+| `full` | the same shape, with the review's [coherence questions](./coherence-audit.md) written out explicitly and, for control-plane work, an approval that is not the writer's own; also the route of a documents-only path | specified |
 
 ### Five triggers force `full`
 
