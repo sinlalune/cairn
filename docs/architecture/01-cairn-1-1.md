@@ -120,8 +120,8 @@ at blob `cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` and the
 `837262d5b3a761ef14d14bad0be8278133256e53`. This page is not amended:
 where a 1.2 record supersedes a decision a sentence here relies on, the
 sentence keeps its words and gains a *superseded by* mark naming the
-record, and what 1.2 changes is stated on the 1.2 page that path writes
-last.
+record, and what 1.2 changes is stated on
+[the 1.2 page](./02-cairn-1-2.md).
 
 ## What 1.1 is for
 

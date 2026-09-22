@@ -181,33 +181,37 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   each; every ticked line, K01 to K36, is now named by exactly one
   record. ADR-042 supersedes ADR-002 decision 2, marked in ADR-002, the
   records' index and the 1.1 page three times.
-- **S05** — not started.
+- **S05** — [the 1.2 page, the indexes, the register and the first *pending*](./steps/S05.md) —
+  complete. The 1.2 architecture page naming ADR-030 to ADR-043; the 1.1
+  page linking it; the *pending* convention in the records' index and
+  its first use on ADR-015 decision 2, named back by the register's 1.2
+  row; the register's 1.2 row naming this path as the promotion and the
+  five coding paths of 1.2, each *no path yet*.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 1e7945b6b552cab48818a3c4384c05d99d8e9385 — S03, on origin/path/cp-cairn-012; S04's own commit is named here by S05
-unit   : 04 — S04 complete on push
+commit : 8e5e860f2790f14da168c8f41bf9cfe46653290c — S04, on origin/path/cp-cairn-012; S05's own commit is the candidate's last unit
+unit   : 05 — S05 complete on push
 base   : 958880f040506961108f136c75e0c18921a9b460
-trunk  : 958880f040506961108f136c75e0c18921a9b460 — origin/main at registration, unmoved
+trunk  : 958880f040506961108f136c75e0c18921a9b460 — origin/main at registration, unmoved; the branch contains the registration commit 714a9d0
 ```
 
 ### Next action
 
-Start S05 with `cairn-unit` in this worktree: the 1.2 architecture page
-`docs/architecture/02-cairn-1-2.md` in the 1.1 page's sections, naming
-every record ADR-030 to ADR-043 and stating what 1.2 removes from 1.1;
-the 1.1 page's head paragraph linking it; the architecture index's line;
-the records' index shape sentence for *pending* (ADR-031 decision 3),
-the word in ADR-015's table and the clause in the register's 1.2 row;
-the register's 1.2 row naming this path as its promotion and the coding
-paths that build 1.2, each *no path yet*, scoped from the records'
-implementation tables. Then merge the trunk in, produce the candidate,
-open the request with the coherence questions read fresh (ADR-043), and
-close with `cairn-close`, landing `A` before the owner's reading
-(ADR-040).
+Close with `cairn-close`, under this path's own records: the trunk
+merged in (unmoved since registration), the candidate `C` = S05's
+commit, the gate bare on it; `cairn-audit -- --subject <C>` for the
+description; the four coherence questions handed to a fresh context
+with the diff, the governing blobs and the live view (ADR-043); the
+administrative commit `A` landed on the branch before the owner is asked
+to read (ADR-040); the request opened from `path/cp-cairn-012` to
+`main`; then the owner reads the fourteen records and the 1.2 page and
+merges; then the integrating unit from a clean trunk checkout, `done`,
+the view, one journal entry under `cairn.path`; then this worktree
+removed from another checkout.
 
 ### Blockers
 

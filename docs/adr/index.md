@@ -27,6 +27,10 @@ the body carries a matching `Status:` line under its heading; the checker's
 Status is one of `proposed`, `accepted`, `superseded`, `rejected`. A record
 written from a decision the owner has already taken lands `accepted`, dated
 the day of the decision; the pull request that lands it is its review.
+A row of a record's implementation table may say *pending* against a
+decision no path has landed, naming the register row that owes the
+mechanism; the row names the clause back, and the path that lands it
+clears the word (ADR-031, decision 3).
 
 ## Numbering
 
