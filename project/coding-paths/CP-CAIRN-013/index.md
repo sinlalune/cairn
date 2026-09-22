@@ -20,6 +20,7 @@ cairn:
     - AGENTS.md
     - spec/index.md
     - spec/reference/execution-protocol.md
+    - spec/reference/paths.md
     - spec/reference/path-template.md
     - spec/reference/human-records.md
     - spec/reference/configuration.md
@@ -262,32 +263,46 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - **S06** — [the candidate](./steps/S06.md): the trunk merged in, the
   register's row 1 of 1.2 naming this path, the gates bare, and the
   definition of done's exclusions measured by command. **COMPLETE**
+- **S07** — [what the closing read found](./steps/S07.md): the coherence read
+  of `1b24173` answered two of its four questions *Yes*; the backlog's
+  absence corrected against ADR-041, the portable convention's closure order
+  brought to the one this path writes on the owner's ruling, and what `A`
+  does not change said truly in three places. **COMPLETE**
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : ea16f982f45ccb5776de5c77c5ea6ed496b9a790 — S05, the chapters and the layout, on origin/path/cp-cairn-013
-unit   : 5
+commit : 1b24173eaadd5a60174d6d58760b5d426f37b6cc — S06, the first candidate, voided by the coherence read, on origin/path/cp-cairn-013
+unit   : 6
 base   : dc241ff0209d995c057ae5de5b06640193980281
 trunk  : dc241ff0209d995c057ae5de5b06640193980281 — origin/main at registration
 ```
 
 ### Next action
 
-Close the path with `cairn-close`, as this path leaves it: the gate bare on
-the candidate, the review as the request's description with the four coherence
-questions answered by a fresh context, the administrative commit landed on the
-branch before the owner is asked to read and try, then the owner's reading and
-the merge that is the acceptance. The six units are complete; no
-implementation remains.
+Close the path with `cairn-close`, as this path leaves it, on the candidate
+S07 produces: the gate bare on it, the review as the request's description
+with the four coherence questions answered by a fresh context reading THIS
+candidate — the first read voided `1b24173`, so its answers do not carry — the
+administrative commit landed on the branch before the owner is asked to read
+and try, then the owner's reading and the merge that is the acceptance. The
+seven units are complete; no implementation remains.
 
 ### Blockers
 
 None.
 
 ### Tried and rejected
+
+- Merging the first candidate with what the coherence read found. Two of its
+  four answers were *Yes*: the layout page contradicted ADR-041 about the
+  backlog, and `spec/reference/paths.md` — the portable convention the
+  bootloader names as its first read — still printed the closure order this
+  path supersedes. The owner ruled on 2026-09-22 that the second is fixed in
+  the candidate rather than left live or given a path of its own, so
+  `writes:` is widened by that page and `1b24173` is void.
 
 - Leaving `spec/concepts/route.md` and `spec/concepts/roles.md` to a path of
   their own — both still made the four coherence questions the reviewer's

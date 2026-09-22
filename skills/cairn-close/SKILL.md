@@ -86,9 +86,9 @@ committing: an uncommitted closure counts as the pending administrative commit
 and its files are judged. Push.
 
 On `pull-request` `A` lands here, once the gate is green on `C` and before
-the owner is asked to read and try: it changes nothing they read, and an
-owner who reads and then clicks merge integrates a branch whose `ready` is
-already on it. On `manual-git` `A` carries the closing record
+the owner is asked to read and try: it moves no field the acceptance is
+measured against, and an owner who reads and then clicks merge integrates a
+branch whose `ready` is already on it. On `manual-git` `A` carries the closing record
 with its acceptance fields, so it is made after step 4 instead.
 
 ## 4. Obtain acceptance

@@ -165,11 +165,16 @@ Closing follows one identity all the way through:
 implementation candidate C
   -> gates on C
   -> coherence audit bound to C
-  -> closing acceptance bound to C
   -> administrative closure only
+  -> closing acceptance bound to C
   -> acceptance-drift check
   -> integration of the accepted tree
 ```
+
+Where the [closing acceptance](../concepts/closing-acceptance.md) is written
+into the record that
+[administrative closure](../concepts/administrative-closure.md) carries, the
+two are in the other order: the reading first, the closure after it.
 
 Before producing `C`, make the branch contain the current trunk tip and rerun
 all gates. On a `forbidden` host that means fetching the trunk and **merging it

@@ -145,9 +145,8 @@ working tree for them finds nothing and reasonably concludes they do not exist.
 `shared/` is a guarded source root supported by the example binding even when a
 repository does not currently contain it. Repeatable records may be absent when
 no event of that kind exists; their directory, index, and folder log still name
-the role. Two are made by their first event instead, index and all, and are
-absent until it happens: `project/backlog/` until something is deferred, and
-`CHANGELOG.md` until the first release that writes one.
+the role. `CHANGELOG.md` has no such placeholder: it is absent until the
+first release writes it.
 `cairn.config.json`, its schema, and its loader are shown because the
 reference tools now consume that binding before evaluating repository rules.
 

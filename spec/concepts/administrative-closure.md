@@ -26,8 +26,9 @@ has to be field-level or it is not a restriction.
 ## In Cairn
 
 `A` is made once the gate is green on `C`: on `pull-request` before the reader
-is asked, since it changes nothing they read and a reader whose approval is
-the merge click would otherwise integrate a branch whose closure is not on it;
+is asked, since it adds no implementation and moves no field the acceptance
+was measured against, and a reader whose approval is the merge click would
+otherwise integrate a branch whose closure is not on it;
 on `manual-git` after, since the closing record it carries holds the
 acceptance.
 
