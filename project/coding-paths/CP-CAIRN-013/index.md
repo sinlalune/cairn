@@ -7,13 +7,13 @@ timestamp: 2026-09-22T00:00:00Z
 cairn:
   id: CP-CAIRN-013
   route: full
-  status: running
+  status: ready
   current_step: S01
   base_commit: dc241ff0209d995c057ae5de5b06640193980281
   branch: path/cp-cairn-013
   assigned_writer: cp-cairn-013-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 62e1542e866f85d990573b7557e8724b09293537
   resolution: null
   writes:
     - skills/**
@@ -274,21 +274,23 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 1b24173eaadd5a60174d6d58760b5d426f37b6cc — S06, the first candidate, voided by the coherence read, on origin/path/cp-cairn-013
-unit   : 6
+commit : 62e1542e866f85d990573b7557e8724b09293537 — S07, the candidate C, on origin/path/cp-cairn-013
+unit   : 7
 base   : dc241ff0209d995c057ae5de5b06640193980281
 trunk  : dc241ff0209d995c057ae5de5b06640193980281 — origin/main at registration
 ```
 
 ### Next action
 
-Close the path with `cairn-close`, as this path leaves it, on the candidate
-S07 produces: the gate bare on it, the review as the request's description
-with the four coherence questions answered by a fresh context reading THIS
-candidate — the first read voided `1b24173`, so its answers do not carry — the
-administrative commit landed on the branch before the owner is asked to read
-and try, then the owner's reading and the merge that is the acceptance. The
-seven units are complete; no implementation remains.
+The owner reads the pages and tries the skills, then merges request 30, which
+is the acceptance. Everything before it is done: the candidate `62e1542` is
+checked and pushed, its review is the request's description with the four
+coherence questions answered by a fresh context reading this candidate, and
+this administrative commit is on the branch ahead of the reading, as ADR-040
+and this path's own close skill now order it. After the merge: the integrating
+unit on a clean trunk checkout — `status: done`, `resolution: completed`, the
+live view, one journal entry — then the remote result proved and this worktree
+removed.
 
 ### Blockers
 
