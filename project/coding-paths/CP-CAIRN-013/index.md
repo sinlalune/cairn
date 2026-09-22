@@ -249,26 +249,31 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   commands, the human-records examples, chapter 5's `full` route, the audit
   concept, the route and roles concepts, and this repository's request
   template. **COMPLETE**
-- **S04** — not started.
+- **S04** — [the unit skill and the seventh skill](./steps/S04.md): section
+  7's route for a note about Cairn and movement 4's `deferred` disposition;
+  `skills/cairn-update/SKILL.md`, the seventh, an adopter's update as a path
+  in seven movements; the bootloader's skills line. **COMPLETE**
+- **S05** — not started.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : c3c6d9a90a964f6bcae2f10640ad1f7a8c4eb582 — S02, the close skill's order and its sentences, on origin/path/cp-cairn-013
-unit   : 2
+commit : 65507f5e3e58853f0615c99e480df99b9ec6e622 — S03, the coherence questions as a fresh-context read, on origin/path/cp-cairn-013
+unit   : 3
 base   : dc241ff0209d995c057ae5de5b06640193980281
 trunk  : dc241ff0209d995c057ae5de5b06640193980281 — origin/main at registration
 ```
 
 ### Next action
 
-Start S04 with `cairn-unit` in the path's worktree: the unit skill and the
-seventh skill, as the plan's fourth item says — section 7's route for a note
-about Cairn and movement 4's `deferred` disposition;
-`skills/cairn-update/SKILL.md` in ADR-035's order; and the bootloader's skills
-line.
+Start S05 with `cairn-unit` in the path's worktree: the template, the chapters
+and the layout, as the plan's fifth item says — the path template's plain list
+is already written by S01, so what remains is chapters 1 and 4 naming
+`project/backlog/` among the project plane's folders, and the layout
+reference's rows for the backlog folder, for `feedbacks/` with its `<release>/`
+subfolders and the type `Cairn Feedback`, and for `CHANGELOG.md`.
 
 ### Blockers
 
