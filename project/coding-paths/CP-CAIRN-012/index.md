@@ -176,29 +176,38 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   named by one record each; ADR-038 supersedes the reading half of
   ADR-028 decision 2, marked in ADR-028, the records' index and the 1.1
   page.
-- **S04** — not started.
+- **S04** — [the records: ADR-040, ADR-041, ADR-042, ADR-043](./steps/S04.md) —
+  complete. Theme 7 of the asks note, four lines, named by one record
+  each; every ticked line, K01 to K36, is now named by exactly one
+  record. ADR-042 supersedes ADR-002 decision 2, marked in ADR-002, the
+  records' index and the 1.1 page three times.
+- **S05** — not started.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 3b723dd7adf8903718470da03a0bf9d6f9f3c835 — S02, on origin/path/cp-cairn-012; S03's own commit is named here by S04
-unit   : 03 — S03 complete on push
+commit : 1e7945b6b552cab48818a3c4384c05d99d8e9385 — S03, on origin/path/cp-cairn-012; S04's own commit is named here by S05
+unit   : 04 — S04 complete on push
 base   : 958880f040506961108f136c75e0c18921a9b460
 trunk  : 958880f040506961108f136c75e0c18921a9b460 — origin/main at registration, unmoved
 ```
 
 ### Next action
 
-Start S04 with `cairn-unit` in this worktree: theme 7 of the asks note —
-ADR-040 (K32, the administrative commit before the reading), ADR-041
-(K33, `project/backlog/`), ADR-042 (K34, the plain-list definition of
-done, superseding ADR-002 decision 2), ADR-043 (K35, the coherence
-questions as a fresh-context read, amending ADR-017) — with ADR-002,
-ADR-017 and the 1.1 page marked as the earlier units marked theirs, and
-the four records added to the records' index. Every ticked line is then
-named by one record.
+Start S05 with `cairn-unit` in this worktree: the 1.2 architecture page
+`docs/architecture/02-cairn-1-2.md` in the 1.1 page's sections, naming
+every record ADR-030 to ADR-043 and stating what 1.2 removes from 1.1;
+the 1.1 page's head paragraph linking it; the architecture index's line;
+the records' index shape sentence for *pending* (ADR-031 decision 3),
+the word in ADR-015's table and the clause in the register's 1.2 row;
+the register's 1.2 row naming this path as its promotion and the coding
+paths that build 1.2, each *no path yet*, scoped from the records'
+implementation tables. Then merge the trunk in, produce the candidate,
+open the request with the coherence questions read fresh (ADR-043), and
+close with `cairn-close`, landing `A` before the owner's reading
+(ADR-040).
 
 ### Blockers
 

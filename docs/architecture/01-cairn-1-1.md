@@ -164,8 +164,10 @@ the nodes to its left, and the owner reads everything (ADR-019, decision
 ## How a path opens
 
 The agent writes the path record — one folder, the definition of done as a
-list of checkboxes, the write surface, the governing documents pinned by
-blob id — and puts it to the owner. *The owner reviews the plan* is a
+list of checkboxes (*superseded by
+[ADR-042](../adr/ADR-042-the-definition-of-done-is-a-plain-list.md) on
+2026-09-21: a plain list*), the write surface, the governing documents
+pinned by blob id — and puts it to the owner. *The owner reviews the plan* is a
 named step; a change asked before the go-ahead is written into the record
 (ADR-001, decision 2). Since 2026-09-09 the record's goal opens with three
 plain lines — what the path does, why it is the least, what it does not
@@ -200,7 +202,10 @@ path's, the registration run says so, and the later path declares
 
 An amendment after acceptance is a second acceptance block naming the
 first; the definition of done is never edited in place, ticks included
-(ADR-002, decision 2).
+(ADR-002, decision 2) — *the ticks superseded by
+[ADR-042](../adr/ADR-042-the-definition-of-done-is-a-plain-list.md) on
+2026-09-21: a new record carries no box to tick; the sentence stands for
+the text*.
 
 ## How a path runs
 
@@ -426,8 +431,10 @@ installed 1.0 receives all of this through `update` (ADR-015).
   (ADR-008, decision 4).
 
 And what 1.1 keeps that the notes asked to remove: the checkboxes of the
-definition of done (ADR-002, decision 2), and the merge click as the whole
-of a sole owner's closing acceptance (ADR-001, decision 4).
+definition of done (ADR-002, decision 2) — *superseded by
+[ADR-042](../adr/ADR-042-the-definition-of-done-is-a-plain-list.md) on
+2026-09-21* — and the merge click as the whole of a sole owner's closing
+acceptance (ADR-001, decision 4).
 
 ## Who the pedagogy writes for
 
