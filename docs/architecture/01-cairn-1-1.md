@@ -250,7 +250,10 @@ never for a defect of the harness, which goes to the harness's vendor
 (ADR-028).
 
 The coding stance the writer takes during *change* comes, since
-2026-09-07, from Ponytail at a pinned tag: the decision ladder,
+2026-09-07, from Ponytail at a pinned tag — *the pinned tag superseded by
+[ADR-036](../adr/ADR-036-the-kit-ships-ponytails-skills-where-the-harness-loads-them.md)
+on 2026-09-21: the kit ships the two skills from the plugin's latest
+version, where the harness loads them* — the decision ladder,
 read-the-real-flow first, deletion over addition, the root-cause rule,
 the floor under laziness, the check per non-trivial change, and the five
 tags of its review skill, which the self-review above speaks in. The
@@ -392,7 +395,7 @@ and the site that projects it (ADR-012).
 | `cairn-postmortem` | for one path or the repository, the mechanical reading the adopter notes did by hand; run by the workflow when the gate goes red, into the run's log and onto the request, and on demand; since 2026-09-09 it prints the facts a question to the owner is built from | ADR-014 d1; ADR-021 d3 |
 | a feedback file | not a tool: since 2026-09-15, a file under `feedbacks/` a writer writes when the gate stayed green and the protocol still cost more than it should — the movement, the cost, the change to Cairn — beside the post-mortem, which reads facts after a red run; no tool, no skill, no rule, and never for a defect of the harness | ADR-028 |
 | `cairn-test` | this repository's fixture suite for the tools, run by this repository's workflow before the checker and proven at each release; the kit installs no suite and names no test script, so `npm test` stays the adopter's | ADR-014 d2 |
-| `cairn` | `init`, `status`, `update`, `adopt`, as in 1.0; installs the pointer page and the three concept folders; `update` rewrites every pristine file, prints what the release changes in an edited one and lists it on the pointer page, and takes the release's version of a named file on request; since 2026-09-07 the kit names Ponytail at a pinned tag as a dependency it does not copy; since 2026-09-09 it installs six skills, the sixth `cairn-learn`; since 2026-09-11 `init` writes `transport.registration: manual-git`, the `--transport` option naming the integration transport alone | 1.0; ADR-011, ADR-013, ADR-015; ADR-016 d1; ADR-022 d2; ADR-024 |
+| `cairn` | `init`, `status`, `update`, `adopt`, as in 1.0; installs the pointer page and the three concept folders; `update` rewrites every pristine file, prints what the release changes in an edited one and lists it on the pointer page, and takes the release's version of a named file on request; since 2026-09-07 the kit names Ponytail at a pinned tag as a dependency it does not copy — *superseded by [ADR-036](../adr/ADR-036-the-kit-ships-ponytails-skills-where-the-harness-loads-them.md) on 2026-09-21*; since 2026-09-09 it installs six skills, the sixth `cairn-learn`; since 2026-09-11 `init` writes `transport.registration: manual-git`, the `--transport` option naming the integration transport alone | 1.0; ADR-011, ADR-013, ADR-015; ADR-016 d1; ADR-022 d2; ADR-024 |
 | the workflow | one job, one run per commit that can land: the request's run for a candidate, the trunk's run for a registration and an integration | ADR-005 |
 
 The kit of 1.1 was to ship with at most twenty-nine files, the pointer

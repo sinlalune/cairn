@@ -167,26 +167,32 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   complete. Themes 1 and 2 of the asks note, K01 to K08 and K20, named by
   one record each; ADR-032 supersedes two clauses of ADR-001 decision 1,
   marked in ADR-001, the records' index and the 1.1 page.
-- **S02** — not started.
+- **S02** — [the records: ADR-033, ADR-034, ADR-035, ADR-036](./steps/S02.md) —
+  complete. Theme 3 of the asks note, seventeen lines, named by one
+  record each; ADR-036 supersedes the first half of ADR-016 decision 1,
+  marked in ADR-016, the records' index and the 1.1 page.
+- **S03** — not started.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 714a9d06157c1c3f2236c442904e64a06791e351 — the registration commit, on origin/main; S01's own commit is named here by S02
-unit   : 01 — S01 complete on push
+commit : e5c5d6702a26e88de33557005eb2c8f87ecbf8d5 — S01, on origin/path/cp-cairn-012; S02's own commit is named here by S03
+unit   : 02 — S02 complete on push
 base   : 958880f040506961108f136c75e0c18921a9b460
-trunk  : 958880f040506961108f136c75e0c18921a9b460 — origin/main at registration
+trunk  : 958880f040506961108f136c75e0c18921a9b460 — origin/main at registration, unmoved
 ```
 
 ### Next action
 
-Start S02 with `cairn-unit` in this worktree: theme 3 of the asks note —
-ADR-033 (K12, K13, K14, K16), ADR-034 (the eleven corrections of Q16),
-ADR-035 (K17), ADR-036 (K18, superseding ADR-016 decision 1) — with
-ADR-016 and the 1.1 page marked as S01 marked ADR-001, and the four
-records added to the records' index.
+Start S03 with `cairn-unit` in this worktree: themes 4, 5 and 6 of the
+asks note — ADR-037 (K21, link exemptions), ADR-038 (K22, K26, K27, K28,
+the channel's second edition, superseding the reading half of ADR-028
+decision 2), ADR-039 (K31, the release notes) — with ADR-028 and the 1.1
+page marked as S01 and S02 marked theirs, and the three records added to
+the records' index. K23, K24, K25, K29, K30 and K36 of those themes are
+already ADR-034's.
 
 ### Blockers
 
@@ -221,7 +227,7 @@ None.
 1. `feedbacks/2026-09-21-cairn-1-2-decisions.md@cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` — why each ask was taken, in the owner's words.
 2. `feedbacks/2026-09-21-cairn-1-2-the-asks.md@837262d5b3a761ef14d14bad0be8278133256e53` — what each record must implement, line by line, with the derived readings.
 3. `docs/architecture/01-cairn-1-1.md` — the page 1.2 changes.
-4. `docs/adr/ADR-032-registering-on-a-trunk-that-takes-no-direct-push.md` — the shape S01 gave a 1.2 record, and how a supersession is marked in the record, ADR-001, the index and the 1.1 page.
+4. `docs/adr/ADR-032-registering-on-a-trunk-that-takes-no-direct-push.md` — the shape S01 gave a 1.2 record, and how a supersession is marked in the record, ADR-001, the index and the 1.1 page; `docs/adr/ADR-034-housekeeping-with-no-choice-in-it-second-edition.md` — the shape of a many-decision record.
 5. `project/coding-paths/CP-CAIRN-012/plan.md` — the order the records are written in.
 
 ### Verify
