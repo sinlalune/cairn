@@ -530,17 +530,17 @@ full, unabbreviated object id.
    is the [coherence audit](./concepts/coherence-audit.md): the candidate read
    against the documents pinned in `governs:` and against the paths running
    beside it, answered as a checklist. Every advisory raised at `C` is listed
-   with a disposition — fixed, accepted, or deferred to a named owner and
-   follow-up.
-4. An authorised reviewer's approval is the
+   with a disposition — fixed, accepted, or deferred, with its owner and a
+   follow-up file under `project/backlog/`.
+4. One [administrative closure](./concepts/administrative-closure.md) commit
+   sets `status: ready` and `subject_commit: C`, and changes nothing else: not
+   the definition of done, not the surfaces, not the plan, not the product. The
+   final protocol check runs on it. It lands before the reader is asked.
+5. An authorised reviewer's approval is the
    [closing acceptance](./concepts/closing-acceptance.md). It binds three
    things: the result, `C`; the scope, whose digest MUST equal the opening
    digest; and the base, `T` — the merge-base of the branch and the trunk,
    which is where step 1 left it.
-5. One [administrative closure](./concepts/administrative-closure.md) commit
-   sets `status: ready` and `subject_commit: C`, and changes nothing else: not
-   the definition of done, not the surfaces, not the plan, not the product. The
-   final protocol check runs on it.
 
 If implementation changes after `C` — even to resolve a conflict — `C` is no
 longer the candidate. The path returns to `running`, produces a new one, and
@@ -549,7 +549,9 @@ the review is repeated on it.
 A repository without a forge declares `manual-git` as its
 [integration transport](./concepts/integration-transport.md) and writes the
 same checklist and acceptance as a closing record in the path folder. The
-questions do not change; only where the answers are written does.
+questions do not change; only where the answers are written does — and because
+the closure commit carries that record, steps 4 and 5 there keep the other
+order: the reading first, the commit after it.
 
 #### Decide drift by predicate, not equality
 
@@ -571,8 +573,8 @@ article gives the predicate in full.
 #### Integrate without claiming the future
 
 `ready` and `done` name different facts: `ready`, the exact candidate is
-checked and accepted; `done`, it is reachable from the remote trunk. A path
-branch MUST NOT set itself to `done`.
+checked, administratively closed and proposed; `done`, it is reachable from
+the remote trunk. A path branch MUST NOT set itself to `done`.
 
 The pull request merges with `cairn-check` as its one required status check on
 the exact commit that lands. The integrating unit — the trunk commit that
@@ -598,7 +600,7 @@ draft ──► running ──► ready ──► done ──► archived
 | `draft` | proposed, not registered | id |
 | `running` | accepted, registered, executable | id, branch, base, writer |
 | `blocked` | paused on a named condition | running identity, blocker, unblock condition |
-| `ready` | exact `C` accepted, not integrated | running identity, `subject_commit` |
+| `ready` | exact `C` checked and proposed, not integrated | running identity, `subject_commit` |
 | `done` | `C` reachable from the remote trunk | subject and `resolution: completed` |
 | `archived` | terminal, retained | `resolution: completed \| abandoned \| superseded` |
 

@@ -303,8 +303,8 @@ commits stay in the history as what they were. A host that declares
 
 ### Becoming ready
 
-After exact candidate `C` has passed its checks, its review and its
-acceptance, create one administrative commit that:
+After exact candidate `C` has passed its checks and its review — and, on
+`manual-git`, its acceptance — create one administrative commit that:
 
 - sets `status: ready`;
 - sets `subject_commit` to the full object id of `C`;

@@ -124,13 +124,16 @@ Closure binds one exact [implementation candidate](../concepts/implementation-ca
 2. run the complete gates on candidate `C`;
 3. write the [review](../concepts/coherence-audit.md) of `C` — the request's
    description, or the closing record on `manual-git`;
-4. obtain [closing acceptance](../concepts/closing-acceptance.md) for `C` —
+4. add only [administrative closure](../concepts/administrative-closure.md);
+5. obtain [closing acceptance](../concepts/closing-acceptance.md) for `C` —
    the approval, or the record's acceptance fields;
-5. add only [administrative closure](../concepts/administrative-closure.md);
 6. check [acceptance drift](../concepts/acceptance-drift.md);
 7. integrate the accepted tree and verify the exact remote trunk commit;
 8. from another checkout, remove only the exact clean secondary worktree,
    without force, while retaining the path branch.
+
+Where the acceptance is written into the closing record the closure commit
+carries, step 5 comes first and step 4 follows it.
 
 If implementation changes after acceptance, stop and produce a new candidate.
 If integration succeeds but local cleanup does not, report those outcomes

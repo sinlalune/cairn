@@ -38,7 +38,8 @@ Surface: `<the page a newcomer reads for the surface this path changed, or the R
 ## Advisories at `C`
 
 Every advisory `cairn-check` raised at the candidate, each fixed, accepted, or
-deferred to a named owner and follow-up; or *none*.
+deferred with its owner and a follow-up file under `project/backlog/`; or
+*none*.
 
 ## Roles
 

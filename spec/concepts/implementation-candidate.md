@@ -27,9 +27,9 @@ exists, so no marked-incomplete commit is ever part of what was accepted.
 The candidate is also bound to the state it was read against: the base `T`,
 the trunk tip merged into it, which Git holds as the merge-base of the branch
 and the trunk. [Acceptance drift](./acceptance-drift.md) decides whether that
-acceptance still holds when the trunk has moved on. One later field-restricted
-[administrative commit](./administrative-closure.md) may record acceptance
-without changing `C`.
+acceptance still holds when the trunk has moved on. One field-restricted
+[administrative commit](./administrative-closure.md) follows `C` without
+changing it, and on `manual-git` carries the record that holds the acceptance.
 
 ## It does not prove
 

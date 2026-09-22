@@ -34,11 +34,13 @@ condition, and stays in the [live view](./live-view.md) because it is still
 resumable work. Dormant work needs more traceability, not less.
 
 **`ready`** — the final state a branch may declare. It requires the running
-identity, the full `subject_commit` [object id](./commit-hash.md) of the
-accepted candidate `C`, completed checks, the review of `C`,
-[closing acceptance](./closing-acceptance.md) of `C`, and one field-restricted
-[administrative closure](./administrative-closure.md) commit after it. Ready
-does not mean integrated.
+identity, the full `subject_commit` [object id](./commit-hash.md) of candidate
+`C`, completed checks, the review of `C`, and one field-restricted
+[administrative closure](./administrative-closure.md) commit after `C`. On
+`manual-git` that commit carries the closing record holding
+[closing acceptance](./closing-acceptance.md), which `ready` therefore
+requires; on `pull-request` the approval follows the closure. Ready does not
+mean integrated.
 
 **`done`** — the exact accepted candidate is reachable from the
 [remote](./remote.md) trunk and the integrating trunk unit records

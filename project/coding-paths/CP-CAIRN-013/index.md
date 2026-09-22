@@ -26,6 +26,8 @@ cairn:
     - spec/reference/repository-layout.md
     - spec/concepts/administrative-closure.md
     - spec/concepts/coherence-audit.md
+    - spec/concepts/lifecycle.md
+    - spec/concepts/implementation-candidate.md
     - .github/pull_request_template.md
     - project/coding-paths/index.md
     - project/coding-paths/CP-CAIRN-013/**
@@ -233,33 +235,46 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   `project/backlog/`, the definition of done as a plain list — the skill, its
   command reference, `spec/reference/configuration.md` and the path template's
   own list. **COMPLETE**
-- **S02** — not started.
+- **S02** — [the close skill's order and its sentences](./steps/S02.md): the
+  administrative commit before the reading with the protocol, chapter 5 and
+  the concept following; the measured figure, the dangling `soundness.md`
+  link, the `deferred` disposition, the checkbox clause, the two release-path
+  sentences; and, on the owner's ruling, what `ready` states in four pages.
+  **COMPLETE**
+- **S03** — not started.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 86f02d4f1dc7cb5e6de82ddc6cb1ff0fe01b5d6d — the registration commit, this record and the live view, on origin/main; unit 0
-unit   : 0
+commit : 07e7741eb0a2dedcffe3012eb8b7a106e1a86ae6 — S01, the open skill and the configuration reference, on origin/path/cp-cairn-013
+unit   : 1
 base   : dc241ff0209d995c057ae5de5b06640193980281
 trunk  : dc241ff0209d995c057ae5de5b06640193980281 — origin/main at registration
 ```
 
 ### Next action
 
-Start S02 with `cairn-unit` in the path's worktree: the close skill's order
-and its sentences, as the plan's second item says — steps 3 and 4 swapped with
-the execution protocol's closure list, chapter 5 and the
-administrative-closure concept following; the measured-figure sentence; the
-`tools/soundness.md` sentence gone; the `deferred` disposition naming a
-backlog file; the checkbox clause gone; the two release-path sentences.
+Start S03 with `cairn-unit` in the path's worktree: the coherence questions as
+a fresh-context read, as the plan's third item says — the close skill's steps
+2 and 3 and its reference, the human-records reference's *Coherence* section,
+chapter 5's `full` route sentence, the coherence-audit concept naming the
+reader, and this repository's request template's *Coherence* list with its
+first line.
 
 ### Blockers
 
 None.
 
 ### Tried and rejected
+
+- Leaving what `ready` states to a superseding record on a path of its own,
+  as this path's coverage says to do with a record found wanting — the owner
+  ruled in the chat of 2026-09-22 that the wording follows the order ADR-040
+  already accepted, here, and `writes:` was widened by
+  `spec/concepts/lifecycle.md` and `spec/concepts/implementation-candidate.md`
+  for it. The two records this touches are read, never written.
 
 - Leaving the path template's definition of done to S05, as the plan says —
   step 1 of the open skill links the template three lines from the sentence

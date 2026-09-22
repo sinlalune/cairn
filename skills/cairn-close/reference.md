@@ -25,7 +25,7 @@ npm run cairn-check -- --base origin/main
 npm test
 ```
 
-## Review and accept exactly C
+## Review exactly C
 
 ```bash
 npm run cairn-audit -- --subject <C> --branch path/cp-example-001
@@ -35,7 +35,7 @@ npm run cairn-check -- --base origin/main   # the advisories to disposition
 
 **`pull-request`**: the first command prints the ledger half of the
 description. Open the request from `path/cp-example-001` to `main`, paste and
-fill it. The approval is the acceptance.
+fill it.
 
 **`manual-git`**: the first command scaffolds
 `project/coding-paths/CP-EXAMPLE-001/closing-<C>.md`. Fill every field, the
@@ -45,6 +45,10 @@ If the digest differs from the opening acceptance, stop: restore the text or
 record a scope amendment. If implementation changes, stop: a new `C`.
 
 ## Create administrative commit A
+
+On `pull-request` this is made here, before the owner is asked to read and
+try. On `manual-git` it is made after the acceptance below, because it carries
+the closing record that holds the acceptance fields.
 
 Set `status: ready` and `subject_commit: <C>`, point the resume section's
 checkpoint at `C`, regenerate the live view. Run the gate before committing,
@@ -61,6 +65,12 @@ git rev-list --count <C>..HEAD                                # must print 1
 npm run cairn-check -- --base origin/main
 git push origin path/cp-example-001
 ```
+
+## Obtain acceptance for C
+
+No command: the approval on the request, or the closing record's acceptance
+fields, is the acceptance. It stands here in the sequence because `A` is
+already pushed on `pull-request` and is not yet made on `manual-git`.
 
 ## Check acceptance drift
 
@@ -136,7 +146,7 @@ which after that push already names the pushed commit. Trunk runs printed
 it replaced, so the forge's run reaches these rules; and the `comparison` rule
 refuses to report OK over a base that already contains what it judges. A LOCAL
 run reaches them only if you give it the base — which is why the sequence above
-passes one. `tools/soundness.md` carries the finding.
+passes one.
 
 ```bash
 git push origin HEAD:main

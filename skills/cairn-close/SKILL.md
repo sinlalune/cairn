@@ -1,13 +1,13 @@
 ---
 name: cairn-close
-description: Close one Cairn coding path on one exact candidate — merge the trunk in, produce and check candidate C, write the review as the pull request's description (or the closing record on manual-git), obtain acceptance, make the one administrative commit, check acceptance drift, integrate, record done with the journal entry, and remove the clean worktree. Use when a path's definition of done is met.
+description: Close one Cairn coding path on one exact candidate — merge the trunk in, produce and check candidate C, write the review as the pull request's description (or the closing record on manual-git), make the one administrative commit, obtain acceptance, check acceptance drift, integrate, record done with the journal entry, and remove the clean worktree. Use when a path's definition of done is met.
 ---
 
 # cairn-close
 
 Closure is about an immutable identity, not whatever is at `HEAD` later. One
 candidate `C` goes all the way through: the checks, the review, the
-acceptance, the administrative commit, the integration. If implementation
+administrative commit, the acceptance, the integration. If implementation
 changes after `C` — even to resolve a conflict — `C` is void, the path returns
 to `running`, and the sequence repeats on a new candidate.
 
@@ -16,6 +16,13 @@ binding: `pull-request` (the default) or `manual-git`. The exact commands for
 both are in [reference.md](./reference.md).
 
 ## 1. Produce the candidate
+
+A release path writes two things in a work unit before `C` is produced: the
+changelog's section for this release, which names first, by their path ids,
+the adopter repairs the release absorbed and the ones it did not, then what
+the release changes for an adopter; and every note the release has answered —
+implemented and released, or refused in writing — moved into
+`feedbacks/<release>/`, whose index names what answered each line.
 
 Fetch the trunk and **merge it in** — never rebase a published branch. The
 branch now contains the trunk tip, which is what serializes the merge without
@@ -38,15 +45,20 @@ The description is read in one order. Three plain lines first — what the path
 did, why it is the least, what it does not do — and a link to the page a
 newcomer reads for the surface it changed. Then one line per item of the
 definition of done, in the record's order, each naming the unit that advanced
-it and the command or page that shows it done; nothing is ticked, and the record's own checkboxes
-stay as they are. Then the ledger the command prints: the candidate, its base
-`T` (the trunk tip you merged in), the scope digest line, the four coherence
-questions, the advisories raised at `C` with a disposition each — fixed,
-accepted, or deferred to a named owner and follow-up — and the roles.
+it and the command or page that shows it done; nothing is ticked. Then the
+ledger the command prints: the candidate, its base `T` (the trunk tip you
+merged in), the scope digest line, the four coherence questions, the
+advisories raised at `C` with a disposition each — fixed, accepted, or
+deferred, with its owner and a follow-up file under `project/backlog/` — and
+the roles.
 
 Ask, with the coherence questions, whether the README lists a surface this
-path added. On `pull-request` open the request from the path branch to the
-trunk and fill it in.
+path added. A measured figure of the kit belongs in the conformance page's
+budget table, one row per figure; everywhere else links that row and restates
+nothing.
+
+On `pull-request` open the request from the path branch to the trunk and fill
+it in.
 
 On `manual-git` the same command scaffolds `closing-<C>.md` in the path
 folder. Fill it: reviewer, roles, UTC time, the re-computed digest, one entry
@@ -57,7 +69,22 @@ id, and against every path running beside it. Compute the digest with the
 checker, never by hand; if it differs from the opening acceptance, stop — the
 definition of done moved.
 
-## 3. Obtain acceptance
+## 3. The administrative commit
+
+One commit `A` after `C`: `status: ready`, `subject_commit: C`, the live view
+regenerated, the resume section's checkpoint pointed at `C`, and on
+`manual-git` the closing record. Nothing else — not the definition of done,
+not the surfaces, not the plan, not the product. Run the gate **before**
+committing: an uncommitted closure counts as the pending administrative commit
+and its files are judged. Push.
+
+On `pull-request` `A` lands here, once the gate is green on `C` and before
+the owner is asked to read and try: it changes nothing they read, and an
+owner who reads and then clicks merge integrates a branch whose `ready` is
+already on it. On `manual-git` `A` carries the closing record
+with its acceptance fields, so it is made after step 4 instead.
+
+## 4. Obtain acceptance
 
 Whoever reads the diff — the owner, a bot on the request, a fresh context —
 reads it against the decision ladder `cairn-code` points at and for
@@ -74,15 +101,6 @@ the base `T`. On the `full` route the reviewer answers the coherence questions
 explicitly, and a control-plane change needs an approval that is not the
 writer's own. Where one owner holds every role, that approval is the merge
 click, and no other shape is added for it.
-
-## 4. The administrative commit
-
-One commit `A` after `C`: `status: ready`, `subject_commit: C`, the live view
-regenerated, the resume section's checkpoint pointed at `C`, and on
-`manual-git` the closing record. Nothing else — not the definition of done,
-not the surfaces, not the plan, not the product. Run the gate **before**
-committing: an uncommitted closure counts as the pending administrative commit
-and its files are judged. Push.
 
 ## 5. Drift, then integrate
 
@@ -108,8 +126,7 @@ honest integrations in one request are not. The merge-object refusal is
 the arrival from any parent of it, so the merge that carries the closing is
 judged where the branch declared it (ADR-027). Both halves of that transport
 are decided. Until 2026-09-14 neither rule fired at all, because no run compared
-the trunk across an integrating commit; the reference says how that is fixed and
-`tools/soundness.md` carries the finding.
+the trunk across an integrating commit; the reference says how that is fixed.
 
 ## 6. Prove it, then clean up
 
