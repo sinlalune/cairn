@@ -259,26 +259,29 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   for `feedbacks/` with its release subfolders and its type, and for
   `CHANGELOG.md`; the path template's deferral naming its backlog file.
   **COMPLETE**
-- **S06** — not started.
+- **S06** — [the candidate](./steps/S06.md): the trunk merged in, the
+  register's row 1 of 1.2 naming this path, the gates bare, and the
+  definition of done's exclusions measured by command. **COMPLETE**
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : cff8ba45fe16dd73b95908dcc43990095d86729b — S04, the unit skill and the seventh skill, on origin/path/cp-cairn-013
-unit   : 4
+commit : ea16f982f45ccb5776de5c77c5ea6ed496b9a790 — S05, the chapters and the layout, on origin/path/cp-cairn-013
+unit   : 5
 base   : dc241ff0209d995c057ae5de5b06640193980281
 trunk  : dc241ff0209d995c057ae5de5b06640193980281 — origin/main at registration
 ```
 
 ### Next action
 
-Start S06 with `cairn-unit` in the path's worktree: the candidate, as the
-plan's sixth item says — the trunk merged in, the gates bare, the register's
-row 1 of 1.2 naming this path; then `cairn-close` as this path leaves it, the
-administrative commit landing before the reading and the coherence questions
-answered by a fresh context in the request's description.
+Close the path with `cairn-close`, as this path leaves it: the gate bare on
+the candidate, the review as the request's description with the four coherence
+questions answered by a fresh context, the administrative commit landed on the
+branch before the owner is asked to read and try, then the owner's reading and
+the merge that is the acceptance. The six units are complete; no
+implementation remains.
 
 ### Blockers
 
