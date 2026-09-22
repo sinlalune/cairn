@@ -171,28 +171,34 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   complete. Theme 3 of the asks note, seventeen lines, named by one
   record each; ADR-036 supersedes the first half of ADR-016 decision 1,
   marked in ADR-016, the records' index and the 1.1 page.
-- **S03** — not started.
+- **S03** — [the records: ADR-037, ADR-038, ADR-039](./steps/S03.md) —
+  complete. Themes 4, 5 and 6 of the asks note, six lines with K27,
+  named by one record each; ADR-038 supersedes the reading half of
+  ADR-028 decision 2, marked in ADR-028, the records' index and the 1.1
+  page.
+- **S04** — not started.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : e5c5d6702a26e88de33557005eb2c8f87ecbf8d5 — S01, on origin/path/cp-cairn-012; S02's own commit is named here by S03
-unit   : 02 — S02 complete on push
+commit : 3b723dd7adf8903718470da03a0bf9d6f9f3c835 — S02, on origin/path/cp-cairn-012; S03's own commit is named here by S04
+unit   : 03 — S03 complete on push
 base   : 958880f040506961108f136c75e0c18921a9b460
 trunk  : 958880f040506961108f136c75e0c18921a9b460 — origin/main at registration, unmoved
 ```
 
 ### Next action
 
-Start S03 with `cairn-unit` in this worktree: themes 4, 5 and 6 of the
-asks note — ADR-037 (K21, link exemptions), ADR-038 (K22, K26, K27, K28,
-the channel's second edition, superseding the reading half of ADR-028
-decision 2), ADR-039 (K31, the release notes) — with ADR-028 and the 1.1
-page marked as S01 and S02 marked theirs, and the three records added to
-the records' index. K23, K24, K25, K29, K30 and K36 of those themes are
-already ADR-034's.
+Start S04 with `cairn-unit` in this worktree: theme 7 of the asks note —
+ADR-040 (K32, the administrative commit before the reading), ADR-041
+(K33, `project/backlog/`), ADR-042 (K34, the plain-list definition of
+done, superseding ADR-002 decision 2), ADR-043 (K35, the coherence
+questions as a fresh-context read, amending ADR-017) — with ADR-002,
+ADR-017 and the 1.1 page marked as the earlier units marked theirs, and
+the four records added to the records' index. Every ticked line is then
+named by one record.
 
 ### Blockers
 

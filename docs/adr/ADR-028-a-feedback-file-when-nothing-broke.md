@@ -12,7 +12,7 @@ adr:
 
 # ADR-028 — a feedback file when nothing broke
 
-Status: accepted · 2026-09-15 · written by CP-CAIRN-010, S01
+Status: accepted · 2026-09-15 · written by CP-CAIRN-010, S01 · decision 2's reading half superseded by ADR-038 on 2026-09-21
 
 **Promoted from** the owner's words in the chat of 2026-09-15, said while
 coding path 4's request (#18) was open and written into
@@ -87,6 +87,10 @@ unit skill's last section, *Report the boundary*, one sentence pointing
 at the channel.
 
 ### Decision 2 — a defect of the harness earns no file, and no tool, skill or rule is added
+
+Reading half **superseded** on 2026-09-21 by
+[ADR-038](./ADR-038-the-channel-second-edition.md): `feedbacks/` joins
+the corpus, so the `links` rule reads it; the rest stands.
 
 The owner's refusals, as they were said.
 
