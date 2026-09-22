@@ -227,14 +227,20 @@ fresh session. Amendments: none.
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
-- **S01** — not started.
+- **S01** — [the open skill and the configuration reference](./steps/S01.md):
+  the two reads before the go-ahead, the direct push's precondition and the
+  `pull-request` registration sequence beside it, step 1 reading
+  `project/backlog/`, the definition of done as a plain list — the skill, its
+  command reference, `spec/reference/configuration.md` and the path template's
+  own list. **COMPLETE**
+- **S02** — not started.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — this record and the live view, nothing else, on origin/main; unit 0
+commit : 86f02d4f1dc7cb5e6de82ddc6cb1ff0fe01b5d6d — the registration commit, this record and the live view, on origin/main; unit 0
 unit   : 0
 base   : dc241ff0209d995c057ae5de5b06640193980281
 trunk  : dc241ff0209d995c057ae5de5b06640193980281 — origin/main at registration
@@ -242,14 +248,24 @@ trunk  : dc241ff0209d995c057ae5de5b06640193980281 — origin/main at registratio
 
 ### Next action
 
-Start S01 with `cairn-unit` in the path's worktree: the open skill and the
-configuration reference, as the plan's first item says.
+Start S02 with `cairn-unit` in the path's worktree: the close skill's order
+and its sentences, as the plan's second item says — steps 3 and 4 swapped with
+the execution protocol's closure list, chapter 5 and the
+administrative-closure concept following; the measured-figure sentence; the
+`tools/soundness.md` sentence gone; the `deferred` disposition naming a
+backlog file; the checkbox clause gone; the two release-path sentences.
 
 ### Blockers
 
 None.
 
 ### Tried and rejected
+
+- Leaving the path template's definition of done to S05, as the plan says —
+  step 1 of the open skill links the template three lines from the sentence
+  that now refuses a box, and a template shipping five boxes would have made
+  the two pages disagree between units, which the plan's own preamble
+  forbids. The template's list moved in S01; S05 keeps the rest of its item.
 
 - Writing this record's own definition of done as a plain list, as
   ADR-042 decides — the template this record is born from still carries
