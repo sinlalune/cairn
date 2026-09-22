@@ -1,7 +1,7 @@
 ---
 type: Cairn Learning Note
-title: What the first `update` of an adopted repository met — a lock that churns on the clock
-description: The agent that ran `npx cairn-protocol@1.1.0 update` on Atomik the day after its adoption, under ADR-028: fifteen manifest digests changed at the same release, same source commit and same configuration, because every templated file is rendered with today's date; two of them silently re-baselined to the host's own bytes; a generated page and the lock written by one command disagreeing about the same file; and the one unbackticked blank in the request template, in the file whose header warns about exactly that.
+title: What the first `update` of an adopted repository met — eleven of fifteen digests moved by the clock
+description: The agent that ran `npx cairn-protocol@1.1.0 update` on Atomik the day after its adoption, under ADR-028: fifteen manifest digests changed at the same release, same source commit and same configuration, and eleven of them moved only because every templated file is rendered with today's date — six whose files were never touched, five rewritten for nothing but their own date line; two more re-baselined to the host's own bytes, which is a different cause; a generated page and the lock written by one command disagreeing about the same file; and the one unbackticked blank in the request template, in the file whose header warns about exactly that.
 tags: [cairn, feedback, agent, adopter, atomik, update, lock, 1.2]
 timestamp: 2026-09-22T00:00:00Z
 cairn:
@@ -29,16 +29,17 @@ same release, the same `sourceCommit` and an unchanged configuration:
 
 ```text
 manifest digests changed: 15
-  7  the files update rewrote                      expected
-  2  ACTIVE.md, cairn.config.json                  re-baselined to HOST bytes
-  6  binding.md, coding-paths/index.md,            digest moved,
-     atomik-project/index.md, docs/index.md,       FILE UNTOUCHED,
-     docs/modules/index.md, application.md         and not host bytes either
+  11  the date stamp                     6 untouched, their expected digest re-rendered
+                                         5 rewritten for nothing but their own date line
+   2  ACTIVE.md, cairn.config.json       re-baselined to HOST bytes — a different cause
+   2  pull_request_template, README      real content
 ```
 
-The last six are the tell. Nothing about them changed — not the file, not the
-release, not the configuration — yet the digest the lock records for them
-moved. The reason is in the plan:
+The six untouched ones are the tell. Nothing about them changed — not the
+file, not the release, not the configuration — yet the digest the lock records
+for them moved. The five rewrites are the same cause seen from the other side:
+the kit wrote them out again because their digest differed, and the only thing
+that differed was the date. The reason is in the plan:
 
 ```text
 atomik-project/coding-paths/binding.md     timestamp: 2026-09-22T00:00:00Z
@@ -53,7 +54,10 @@ days produce two different locks from one repository in one state.
 **What it cost.** The adopter's path declared an outcome — *every digest the
 run changed is accounted for* — and accounted for nine of fifteen, because the
 six that moved without their files moving are invisible unless you hash the
-manifest against the tree yourself. It took a reviewer to find them, and then
+manifest against the tree yourself. A first draft of this note then swung the
+other way and put all fifteen on the clock, which the request's reviewer
+caught; the two host-byte re-baselines below are a separate mechanism, and
+`cairn.config.json` has no timestamp to render at all. It took a reviewer to find them, and then
 a second measurement to learn they are not two different bugs but one
 mechanism.
 
