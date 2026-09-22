@@ -47,7 +47,9 @@ Give the fresh context these, before either shape is filled:
 git diff <T>..<C>                        # the candidate against its base
 git show <blob>                          # once per document pinned in governs:
 cat project/coding-paths/ACTIVE.md       # the live view
-cat project/coding-paths/CP-*/index.md   # the paths running beside it
+cat project/coding-paths/<sibling-record>
+                                         # one per running sibling,
+                                         # never this path's own
 ```
 
 If the digest differs from the opening acceptance, stop: restore the text or

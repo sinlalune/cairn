@@ -7,13 +7,13 @@ timestamp: 2026-09-22T00:00:00Z
 cairn:
   id: CP-CAIRN-013
   route: full
-  status: ready
-  current_step: S01
+  status: running
+  current_step: S08
   base_commit: dc241ff0209d995c057ae5de5b06640193980281
   branch: path/cp-cairn-013
   assigned_writer: cp-cairn-013-writer
   depends_on: []
-  subject_commit: 62e1542e866f85d990573b7557e8724b09293537
+  subject_commit: null
   resolution: null
   writes:
     - skills/**
@@ -268,13 +268,17 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   absence corrected against ADR-041, the portable convention's closure order
   brought to the one this path writes on the owner's ruling, and what `A`
   does not change said truly in three places. **COMPLETE**
+- **S08** — [the audit glob, and the candidate it voided](./steps/S08.md):
+  the command block that hands the coherence reader its inputs matched every
+  path folder's record, this path's own among them; a reviewer on request 30
+  found it, and `62e1542` is void. **COMPLETE**
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 62e1542e866f85d990573b7557e8724b09293537 — S07, the candidate C, on origin/path/cp-cairn-013
+commit : f7070437dbc13b186e43748f5979398ba8fbad76 — the closure of the voided candidate 62e1542, kept in the branch as what it was; unit 7 is S07 at 62e1542
 unit   : 7
 base   : dc241ff0209d995c057ae5de5b06640193980281
 trunk  : dc241ff0209d995c057ae5de5b06640193980281 — origin/main at registration
@@ -282,14 +286,12 @@ trunk  : dc241ff0209d995c057ae5de5b06640193980281 — origin/main at registratio
 
 ### Next action
 
-The owner reads the pages and tries the skills, then merges request 30, which
-is the acceptance. Everything before it is done: the candidate `62e1542` is
-checked and pushed, its review is the request's description with the four
-coherence questions answered by a fresh context reading this candidate, and
-this administrative commit is on the branch ahead of the reading, as ADR-040
-and this path's own close skill now order it. After the merge: the integrating
-unit on a clean trunk checkout — `status: done`, `resolution: completed`, the
-live view, one journal entry — then the remote result proved and this worktree
+Produce the candidate from S08's commit and close on it: the gate bare, a
+fresh context reading THIS candidate for the four questions, request 30's
+description rewritten for it — the answers in it were given about `62e1542`,
+which S08 voided — then the administrative commit ahead of the reading, the
+owner's try, and the merge that is the acceptance. After it: the integrating
+unit on a clean trunk checkout, the remote result proved, this worktree
 removed.
 
 ### Blockers
