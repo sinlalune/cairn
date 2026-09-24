@@ -13,24 +13,24 @@ candidate `C` that records facts about `C` without changing its implementation.
 
 ## Build the idea
 
-`A` exists to solve a self-reference: a record that audits a commit cannot be
-inside the commit it audits, so acceptance necessarily creates a commit after
-the thing accepted.
+`A` exists to solve a self-reference: a record about a commit cannot be inside
+the commit it is about, so declaring `C` ready necessarily creates a commit
+after `C`.
 
 Permitting `A` to touch whole files is too coarse. The definition of done lives
 inside the [path record](./path-record.md), and so does `writes:` — so a closure
 commit allowed to "change the path record" is allowed to rewrite the standard
-its own acceptance was measured against, after the acceptance. The restriction
-has to be field-level or it is not a restriction.
+its own acceptance is measured against. The restriction has to be field-level
+or it is not a restriction.
 
 ## In Cairn
 
-`A` is made once the gate is green on `C`: on `pull-request` before the reader
-is asked, since it adds no implementation and moves no field the acceptance
-was measured against, and a reader whose approval is the merge click would
-otherwise integrate a branch whose closure is not on it;
-on `manual-git` after, since the closing record it carries holds the
-acceptance.
+`A` is made once the gate is green on `C`: on `pull-request` before the
+reviewer is asked to read, since it adds no implementation and moves no field
+the acceptance is measured against — and where one participant holds every
+role, the approval is the merge click, which would otherwise integrate a branch
+whose closure is not on it; on `manual-git` after, since the closing record it
+carries holds the acceptance.
 
 On `manual-git`, `A` MAY add the exact closing record naming `C` — the
 [review](./coherence-audit.md) and the [acceptance](./closing-acceptance.md)

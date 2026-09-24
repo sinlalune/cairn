@@ -107,7 +107,7 @@ Read by a fresh context of the writer's agent, a subagent of this harness.
 ## Advisories at `C`
 
 - `scope-drift` — accepted: the wider root cause is declared in `writes:` at this commit.
-- `record-date` — deferred to participant-id, CP-EXAMPLE-002.
+- `record-date` — deferred to participant-id, `project/backlog/2026-01-15-record-date.md`.
 
 ## Roles
 
@@ -155,7 +155,7 @@ cairn:
       disposition: deferred
       reason: the step carries the date its work started, and says why
       owner: participant-id
-      follow_up: CP-EXAMPLE-002
+      follow_up: project/backlog/2026-01-15-record-date.md
   verdict: clean
 ---
 

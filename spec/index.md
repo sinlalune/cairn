@@ -549,7 +549,8 @@ full, unabbreviated object id.
 4. One [administrative closure](./concepts/administrative-closure.md) commit
    sets `status: ready` and `subject_commit: C`, and changes nothing else: not
    the definition of done, not the surfaces, not the plan, not the product. The
-   final protocol check runs on it. It lands before the reader is asked.
+   final protocol check runs on it. On `pull-request` it lands before the
+   reviewer is asked to read.
 5. An authorised reviewer's approval is the
    [closing acceptance](./concepts/closing-acceptance.md). It binds three
    things: the result, `C`; the scope, whose digest MUST equal the opening

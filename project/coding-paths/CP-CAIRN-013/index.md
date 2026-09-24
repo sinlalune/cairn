@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-013
   route: full
   status: running
-  current_step: S09
+  current_step: S10
   base_commit: dc241ff0209d995c057ae5de5b06640193980281
   branch: path/cp-cairn-013
   assigned_writer: cp-cairn-013-writer
@@ -32,6 +32,8 @@ cairn:
     - spec/concepts/route.md
     - spec/concepts/roles.md
     - spec/concepts/index.md
+    - spec/concepts/finding.md
+    - spec/concepts/path-record.md
     - .github/pull_request_template.md
     - project/coding-paths/index.md
     - project/coding-paths/CP-CAIRN-013/**
@@ -277,21 +279,25 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   feedbacks row corrected against ADR-038 and the concept index's closing
   chain put in the new order; the owner's rulings on the squash ban and the
   reader's fifth input recorded; `aa0e38a` is void. **COMPLETE**
+- **S10** — [what the fourth closing read found](./steps/S10.md): the
+  administrative-closure concept true on both transports, *the reader* that
+  meant the owner named as the owner, and the deferral examples following up
+  on a backlog file; `8d55673` is void. **COMPLETE**
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : aa0e38a491b269fe02ee3ae6cd66e1038ee7c7a8 — S08, the audit glob, on origin/path/cp-cairn-013
-unit   : 8
+commit : 8d556733023c3f689887f452780cc533aa1f0a16 — S09, on origin/path/cp-cairn-013
+unit   : 9
 base   : dc241ff0209d995c057ae5de5b06640193980281
 trunk  : dc241ff0209d995c057ae5de5b06640193980281 — origin/main at registration
 ```
 
 ### Next action
 
-Produce the candidate from S09's commit and close on it: the gate bare, a
+Produce the candidate from S10's commit and close on it: the gate bare, a
 fresh context reading THIS candidate for the four questions, request 30's
 description rewritten for it, then the administrative commit ahead of the
 reading, the owner's try, and the merge that is the acceptance. After it: the
