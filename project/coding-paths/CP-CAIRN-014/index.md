@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-014
   route: full
   status: running
-  current_step: S04
+  current_step: S05
   base_commit: 886c398f6f8955e2ea5b623cf26b3352db6d5452
   branch: path/cp-cairn-014
   assigned_writer: cp-cairn-014-writer
@@ -256,26 +256,30 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   `current-step`; one fixture each for the corpus and the advisory; the
   backlog item S03 found. Widened `writes:` by `project/backlog/**`.
   **COMPLETE**
+- **S05** — [the register names this path](./steps/S05.md): row 2 of the
+  coding paths of 1.2 links this record, *running*; the seventh item's
+  surfaces read by command before the candidate. **COMPLETE**
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : a2c8f8093444c272fecd22cfcfc47761aa3b4346 — S03, on origin/path/cp-cairn-014
-unit   : 03 — the last completed on the remote; S04 is the commit that carries this section
+commit : 5857779f88d3f6d1e311fcf01d9041a1789b6e3d — S04, on origin/path/cp-cairn-014
+unit   : 04 — the last completed on the remote; S05 is the commit that carries this section
 base   : 886c398f6f8955e2ea5b623cf26b3352db6d5452
 trunk  : 886c398f6f8955e2ea5b623cf26b3352db6d5452 — origin/main at registration
 ```
 
 ### Next action
 
-Start S05, the candidate, with `cairn-close` in the path's worktree:
-merge the trunk in, run the gates bare, name this path in the register's
-row 2 of 1.2, land the administrative commit, hand the candidate to a
-fresh context with its five inputs — telling it that the definition of
-done's second item is met on `register/<id>` and not on a path branch
-(S02) — then the owner's try and the merge.
+Close with `cairn-close` in the path's worktree: the candidate is S05's
+commit with the trunk merged in; confirm no provisional commit, push, run
+the gates bare; hand the candidate to a fresh context with its five
+inputs and nothing else, and write the request's description — its line
+for the second item saying it is met on `register/<id>` and not on a path
+branch (S02); land the administrative commit; then the owner's try and
+the merge.
 
 ### Blockers
 
