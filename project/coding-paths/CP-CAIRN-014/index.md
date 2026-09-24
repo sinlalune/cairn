@@ -7,13 +7,13 @@ timestamp: 2026-09-24T00:00:00Z
 cairn:
   id: CP-CAIRN-014
   route: full
-  status: running
+  status: ready
   current_step: S06
   base_commit: 886c398f6f8955e2ea5b623cf26b3352db6d5452
   branch: path/cp-cairn-014
   assigned_writer: cp-cairn-014-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 095ff6edf0c32ce8bf7767f54695ad208e1445c7
   resolution: null
   writes:
     - tools/cairn-check.mjs
@@ -269,21 +269,20 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : c06dc3922295740f39a7e71a0a6fdd03cdaa039b — S05, on origin/path/cp-cairn-014, the first candidate, voided by S06
-unit   : 05 — the last completed on the remote; S06 is the commit that carries this section
+commit : 095ff6edf0c32ce8bf7767f54695ad208e1445c7 — S06, on origin/path/cp-cairn-014, the candidate C
+unit   : 06 — the last completed unit; this section is the administrative commit's
 base   : 886c398f6f8955e2ea5b623cf26b3352db6d5452
 trunk  : 886c398f6f8955e2ea5b623cf26b3352db6d5452 — origin/main at registration
 ```
 
 ### Next action
 
-Close with `cairn-close` in the path's worktree: the candidate is S06's
-commit with the trunk merged in; confirm no provisional commit, push, run
-the gates bare; hand the candidate to a fresh context with its five
-inputs and nothing else, and write the request's description — its line
-for the second item saying it is met on `register/<id>` and not on a path
-branch (S02); land the administrative commit; then the owner's try and
-the merge.
+The owner tries the checker at `C` and merges the request, as a merge
+commit — the click is the acceptance. Then, from a clean trunk checkout,
+the integrating unit: `status: done`, `resolution: completed`, the live
+view, one journal entry — noting that `project/backlog/` has no index
+until row 3's kit installs it; then register row 2 flipped to *done* in
+a commit of its own, as row 1 was; then the worktree removed.
 
 ### Blockers
 
