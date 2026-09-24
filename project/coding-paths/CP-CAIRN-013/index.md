@@ -7,14 +7,14 @@ timestamp: 2026-09-22T00:00:00Z
 cairn:
   id: CP-CAIRN-013
   route: full
-  status: ready
+  status: done
   current_step: S10
   base_commit: dc241ff0209d995c057ae5de5b06640193980281
   branch: path/cp-cairn-013
   assigned_writer: cp-cairn-013-writer
   depends_on: []
   subject_commit: 7f74c2cf0eae03578776e56da51c231452567ca4
-  resolution: null
+  resolution: completed
   writes:
     - skills/**
     - AGENTS.md
