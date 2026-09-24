@@ -7,13 +7,13 @@ timestamp: 2026-09-24T00:00:00Z
 cairn:
   id: CP-CAIRN-014
   route: full
-  status: running
+  status: ready
   current_step: S08
   base_commit: 886c398f6f8955e2ea5b623cf26b3352db6d5452
   branch: path/cp-cairn-014
   assigned_writer: cp-cairn-014-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: e65880ae77b916f524391d29a128567a5da612ea
   resolution: null
   writes:
     - tools/cairn-check.mjs
@@ -278,18 +278,22 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 32a8fdd6f89262208a7b6344e9f16c1847922951 — S07, the third candidate, voided by S08, on origin/path/cp-cairn-014
-unit   : 07 — the last completed on the remote; S08 is the commit that carries this section
+commit : e65880ae77b916f524391d29a128567a5da612ea — S08, on origin/path/cp-cairn-014, the candidate C
+unit   : 08 — the last completed unit; this section is the administrative commit's
 base   : 886c398f6f8955e2ea5b623cf26b3352db6d5452
 trunk  : 886c398f6f8955e2ea5b623cf26b3352db6d5452 — origin/main at registration
 ```
 
 ### Next action
 
-Close again with `cairn-close`: the candidate is S08's commit with the
-trunk merged in; the gates bare; a fresh coherence read of it with its
-five inputs; the request's description pointed at it; the administrative
-commit; then the owner's try and the merge of request 31.
+The owner tries the checker at `C` and merges request 31, as a merge
+commit — the click is the acceptance — or amends the scope for the
+README's rule count, which returns the path to `running`. After the
+merge, from a clean trunk checkout, the integrating unit: `status: done`,
+`resolution: completed`, the live view, one journal entry — naming the
+README's count and `project/backlog/`'s missing index as owed to rows 5
+and 3; then register row 2 flipped to *done* in a commit of its own, as
+row 1 was; then the worktree removed.
 
 ### Blockers
 
