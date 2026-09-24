@@ -1,7 +1,7 @@
 ---
 type: Cairn Concept
 title: Administrative closure
-description: The metadata-only commit that records audit and acceptance after the accepted candidate, restricted field by field.
+description: The metadata-only commit after candidate C that records it ready, restricted field by field.
 tags: [cairn, concept, closure, commit]
 timestamp: 2026-08-26T00:00:00Z
 ---

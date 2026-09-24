@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-013
   route: full
   status: running
-  current_step: S08
+  current_step: S09
   base_commit: dc241ff0209d995c057ae5de5b06640193980281
   branch: path/cp-cairn-013
   assigned_writer: cp-cairn-013-writer
@@ -31,6 +31,7 @@ cairn:
     - spec/concepts/implementation-candidate.md
     - spec/concepts/route.md
     - spec/concepts/roles.md
+    - spec/concepts/index.md
     - .github/pull_request_template.md
     - project/coding-paths/index.md
     - project/coding-paths/CP-CAIRN-013/**
@@ -272,27 +273,36 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   the command block that hands the coherence reader its inputs matched every
   path folder's record, this path's own among them; a reviewer on request 30
   found it, and `62e1542` is void. **COMPLETE**
+- **S09** — [what the third closing read found](./steps/S09.md): the
+  feedbacks row corrected against ADR-038 and the concept index's closing
+  chain put in the new order; the owner's rulings on the squash ban and the
+  reader's fifth input recorded; `aa0e38a` is void. **COMPLETE**
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : f7070437dbc13b186e43748f5979398ba8fbad76 — the closure of the voided candidate 62e1542, kept in the branch as what it was; unit 7 is S07 at 62e1542
-unit   : 7
+commit : aa0e38a491b269fe02ee3ae6cd66e1038ee7c7a8 — S08, the audit glob, on origin/path/cp-cairn-013
+unit   : 8
 base   : dc241ff0209d995c057ae5de5b06640193980281
 trunk  : dc241ff0209d995c057ae5de5b06640193980281 — origin/main at registration
 ```
 
 ### Next action
 
-Produce the candidate from S08's commit and close on it: the gate bare, a
+Produce the candidate from S09's commit and close on it: the gate bare, a
 fresh context reading THIS candidate for the four questions, request 30's
-description rewritten for it — the answers in it were given about `62e1542`,
-which S08 voided — then the administrative commit ahead of the reading, the
-owner's try, and the merge that is the acceptance. After it: the integrating
-unit on a clean trunk checkout, the remote result proved, this worktree
-removed.
+description rewritten for it, then the administrative commit ahead of the
+reading, the owner's try, and the merge that is the acceptance. After it: the
+integrating unit on a clean trunk checkout, the remote result proved, this
+worktree removed.
+
+Owed by the next path, a superseding record ruled on 2026-09-22 and
+2026-09-24: what `ready` states (amends ADR-040), the fresh reader's fifth
+input, the records of the running siblings (amends ADR-043), and the limit
+the squash ban names — a trunk that allows only squash merges cannot register
+by request (amends ADR-032 decision 2).
 
 ### Blockers
 

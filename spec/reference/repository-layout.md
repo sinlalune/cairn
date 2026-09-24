@@ -199,7 +199,7 @@ what Cairn defines, not what any one adoption happens to contain.
 | `project/log/*.md` | one integrated outcome per file | integration unit; immutable thereafter |
 | `project/brainstorm/` | explicitly provisional thinking | normal path work; never treated as accepted doctrine |
 | `project/backlog/` | one file per deferred item, as [chapter 4](../index.md#4-roadmap) defines it | the path that defers it; deleted by the path that takes it |
-| `feedbacks/*.md` | one note per observation about the protocol itself; a note written from 1.2 on carries the type `Cairn Feedback` | whoever writes it; never edited after a release answers it |
+| `feedbacks/*.md` | one note per observation about the protocol itself; a note written from 1.2 on carries the type `Cairn Feedback` | whoever writes it |
 | `feedbacks/<release>/` | the notes that release answered, with an index naming what answered each line | the release path that moves them |
 | `CHANGELOG.md` | one section per release: the adopter repairs it absorbed and the ones it did not, by their path ids, then what it changes for an adopter | the release path, before the tag |
 | `refs/heads/path/<id>` | one path's branch, carrying every checkpoint it has pushed | current assigned writer |
