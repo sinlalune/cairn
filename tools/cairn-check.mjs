@@ -3180,6 +3180,9 @@ function requestRegistrations(merge, base, branch, paths, changed) {
       files.some((file) => !own(file)) ? `the commit that declares it running also changes ${files.filter((file) => !own(file)).join(', ')}` :
       parents[0] !== gitOrNull(['rev-parse', '--verify', '--quiet', `${baseCommit}^{commit}`]) ? `the parent of the commit that declares it running is ${parents[0]}, not the declared base_commit ${baseCommit}` :
       changed.some((file) => !own(file)) ? `this change also carries ${changed.filter((file) => !own(file)).join(', ')}` :
+      // One commit, not one set of names: a later commit inside the record's
+      // folder names no file the registration did not.
+      registration !== gitOrNull(['rev-parse', 'HEAD']) ? `this change carries commits after the one that declares it running, ${registration}, and a merge of the trunk into the request counts as one` :
       null
     found.set(id, reason)
   }

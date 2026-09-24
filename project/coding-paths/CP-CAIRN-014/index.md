@@ -7,13 +7,13 @@ timestamp: 2026-09-24T00:00:00Z
 cairn:
   id: CP-CAIRN-014
   route: full
-  status: ready
-  current_step: S06
+  status: running
+  current_step: S07
   base_commit: 886c398f6f8955e2ea5b623cf26b3352db6d5452
   branch: path/cp-cairn-014
   assigned_writer: cp-cairn-014-writer
   depends_on: []
-  subject_commit: 095ff6edf0c32ce8bf7767f54695ad208e1445c7
+  subject_commit: null
   resolution: null
   writes:
     - tools/cairn-check.mjs
@@ -263,26 +263,28 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   candidate, `c06dc39`, voided; ADR-044 decision 4 names what ADR-026
   decision 2 refused and why the advisory is not it; `concept-orphan`'s
   catalogue row names its corpus. **COMPLETE**
+- **S07** — [what the request's reviewer found](./steps/S07.md): the
+  candidate `095ff6e` voided on request 31; a registration request is one
+  commit, not one set of names, with its fixture; the module note's rule
+  count. **COMPLETE**
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 095ff6edf0c32ce8bf7767f54695ad208e1445c7 — S06, on origin/path/cp-cairn-014, the candidate C
-unit   : 06 — the last completed unit; this section is the administrative commit's
+commit : c51d78cabb69c619a2594fef186ac1da9e7b710f — the administrative commit of candidate 095ff6e, voided by S07, on origin/path/cp-cairn-014
+unit   : 06 — the last completed on the remote; S07 is the commit that carries this section
 base   : 886c398f6f8955e2ea5b623cf26b3352db6d5452
 trunk  : 886c398f6f8955e2ea5b623cf26b3352db6d5452 — origin/main at registration
 ```
 
 ### Next action
 
-The owner tries the checker at `C` and merges the request, as a merge
-commit — the click is the acceptance. Then, from a clean trunk checkout,
-the integrating unit: `status: done`, `resolution: completed`, the live
-view, one journal entry — noting that `project/backlog/` has no index
-until row 3's kit installs it; then register row 2 flipped to *done* in
-a commit of its own, as row 1 was; then the worktree removed.
+Close again with `cairn-close`: the candidate is S07's commit with the
+trunk merged in; the gates bare; a fresh coherence read of it with its
+five inputs; the request's description pointed at it; the administrative
+commit; then the owner's try and the merge of request 31.
 
 ### Blockers
 

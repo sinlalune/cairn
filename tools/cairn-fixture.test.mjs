@@ -781,6 +781,23 @@ test('adversarial: registration — a registration request that also carries a p
   }
 })
 
+// A second commit that touches only the record's folder — a step written
+// before the request merged — names no file outside the registration's, so
+// reading file names alone let it through. The request is one commit.
+test('adversarial: registration — a registration request with a second commit inside the record', () => {
+  COVERED.add('registration')
+  const dir = registrationRequest()
+  try {
+    write(dir, STEP, STEP_RECORD)
+    commit(dir, 'a unit written before the registration has merged')
+    const found = check(dir, '--base', 'origin/main')
+    assert.ok(blocking(found).includes('registration'),
+      `registration did not fire — blocking findings were: ${describe(found)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
 /* ADR-037 decision 1. A portrayal of another repository, or a history frozen
  * as it was, holds links that resolve somewhere else; the repository declares
  * the path, with its reason, in its configuration, and `links` skips it. The
