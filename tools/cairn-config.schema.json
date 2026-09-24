@@ -83,6 +83,19 @@
         "integration": { "enum": ["pull-request", "manual-git"] }
       }
     },
+    "linkExemptions": {
+      "description": "Files and folders whose relative links the links rule does not resolve, each with its reason (ADR-037). The loader also refuses a path declared twice.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "reason"],
+        "properties": {
+          "path": { "$ref": "#/$defs/path" },
+          "reason": { "type": "string", "pattern": "\\S" }
+        }
+      }
+    },
     "migration": {
       "type": "object",
       "additionalProperties": false,

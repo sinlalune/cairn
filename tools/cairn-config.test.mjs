@@ -56,6 +56,20 @@ test('cairn-config: a schema-1 file is refused by name, and its retired fields w
   assert.ok(errors.some((error) => error.includes('unknown top-level field staleAfterDays')))
 })
 
+test('cairn-config: a link exemption names a path and its reason, or is refused', () => {
+  // ADR-037 decision 1: the paths `links` does not resolve are declared here,
+  // each with the reason beside it, and a declaration with no reason is an error.
+  const withExemptions = (linkExemptions) => configErrors({ ...structuredClone(CAIRN_CONFIG), linkExemptions })
+  assert.deepEqual(withExemptions([{ path: 'docs/portrait', reason: 'a portrayal of another repository' }]), [])
+  assert.ok(withExemptions([{ path: 'docs/portrait' }]).some((error) => error.includes('linkExemptions[0].reason')))
+  assert.ok(withExemptions([{ path: 'docs/portrait', reason: ' ' }]).some((error) => error.includes('linkExemptions[0].reason')))
+  assert.ok(withExemptions([{ path: '../outside', reason: 'x' }]).some((error) => error.includes('linkExemptions[0].path')))
+  assert.ok(withExemptions([{ path: 'a', reason: 'x' }, { path: 'a', reason: 'y' }]).some((error) => error.includes('must not repeat')))
+  assert.ok(withExemptions({}).some((error) => error.includes('linkExemptions must be an array')))
+  assert.ok(!withExemptions([null, null]).some((error) => error.includes('must not repeat')),
+    'two entries with no path are two errors each, not a repetition')
+})
+
 test('cairn-config: the retention ref and the history policy must agree', () => {
   const withPolicy = (ref, policy) => {
     const config = structuredClone(CAIRN_CONFIG)

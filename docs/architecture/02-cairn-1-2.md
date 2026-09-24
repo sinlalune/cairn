@@ -1,7 +1,7 @@
 ---
 type: Cairn Architecture
 title: Cairn 1.2 — what 1.1 taught, for a repository that is not this one
-description: What changes for a sole owner's repository once Cairn 1.2 lands, in the sections of the 1.1 page, naming the record behind every statement, ADR-030 to ADR-043, and what 1.2 removes from 1.1.
+description: What changes for a sole owner's repository once Cairn 1.2 lands, in the sections of the 1.1 page, naming the record behind every statement, ADR-030 to ADR-044, and what 1.2 removes from 1.1.
 tags: [cairn, architecture, 1.2, sole-owner, adopter, kit, checker]
 timestamp: 2026-09-22T00:00:00Z
 ---
@@ -21,6 +21,16 @@ decide as one shape, in the sections of [the 1.1 page](./01-cairn-1-1.md);
 where a sentence relies on a record, the record is named, and where a
 record supersedes one of 1.1, the 1.1 page's sentence keeps its words and
 carries a *superseded by* mark.
+
+**Amended on 2026-09-24** by what path 1 of 1.2 left to a record,
+[ADR-044](../adr/ADR-044-what-path-1-of-1-2-left-to-a-record.md),
+promoted from the [journal entry](../../project/log/2026-09-24-cp-cairn-013.md)
+of CP-CAIRN-013 at blob `6d4f869ab6242b99bd7e77e18306305c71d7ea0e`, which
+stays exactly as it was. ADR-040 decision 1 gains what `ready` states,
+ADR-043 decision 1 the reader's fifth input, ADR-032 decision 2 the
+squash limit, and the checker one advisory. A sentence this amendment
+adds is marked *since 2026-09-24* where it changes what an earlier
+sentence of this page said.
 
 ## What 1.2 is for
 
@@ -83,8 +93,11 @@ requires a request registers through a request carrying the same
 commit, on `transport.registration: pull-request`, a value that now has
 a sequence behind it; the branch and its worktree are created from the
 trunk once the request has merged, and nothing is coded before (ADR-032,
-decisions 1 and 2, superseding two clauses of ADR-001 decision 1). The
-kit still installs `manual-git` (ADR-024).
+decisions 1 and 2, superseding two clauses of ADR-001 decision 1). Since
+2026-09-24 that request merges in a way that keeps the commit, never a
+squash or a rebase-merge, so a trunk that allows only squash merges
+cannot register by request (ADR-044, decision 3). The kit still installs
+`manual-git` (ADR-024).
 
 ## How a path runs
 
@@ -116,10 +129,16 @@ description with a first line naming the reader, and the owner
 arbitrates what was found rather than hunting for it; `cairn-audit`
 scaffolds the records the diff touches, the sibling paths' `writes:` and
 the architecture pages changed with no record beside them (ADR-043,
-extending ADR-017 decision 1). On `pull-request` transport with one
+extending ADR-017 decision 1). Since 2026-09-24 the reader is also given
+the records of the running sibling paths, never the closing path's own,
+because the live view names a sibling and not what it builds (ADR-044,
+decision 2). On `pull-request` transport with one
 owner, the administrative commit lands on the branch before the owner is
 asked to read and try the result, so an owner who reads and clicks merge
-integrates a branch whose `ready` is already there (ADR-040). The close
+integrates a branch whose `ready` is already there (ADR-040). Since
+2026-09-24, `ready` states the candidate checked, administratively closed
+and proposed: the acceptance comes with it on `manual-git` and follows it
+on `pull-request` (ADR-044, decision 1). The close
 skill's sentence beside the README question says that a measured figure
 the path changed is written once and linked from everywhere else
 (ADR-031, decision 1). A `deferred` disposition names its backlog file
@@ -134,7 +153,8 @@ index names what answered each (ADR-038, decision 3).
 
 ## What the checker reads at each transition
 
-The checker is the same tool, reading one more folder and one more case.
+The checker is the same tool, reading one more folder and one more case,
+and, since 2026-09-24, reporting one more advisory.
 
 | Transition | What is read | Record |
 | :-- | :-- | :-- |
@@ -142,6 +162,7 @@ The checker is the same tool, reading one more folder and one more case.
 | every run, the corpus | `feedbacks/` joins the roots `links` reads; `schema` has nothing to read there | ADR-038 d1 |
 | every run, `links` | a path the configuration declares, with its reason, is not resolved — a portrayal, a frozen history | ADR-037 d1 |
 | any run, `comparison` | its two messages say GitHub where GitHub is meant | ADR-034 d6 |
+| every run, a `running` or `ready` record | since 2026-09-24, the advisory `current-step` names a record whose `current_step` is not its last step file, and that file; silent before the first unit; never a refusal | ADR-044 d4 |
 
 The checker still asks the host nothing and makes no network call
 (ADR-029); the one host reading 1.2 adds is the installer's, once, at
@@ -235,7 +256,7 @@ carries the shape.
 
 | Command | Does, since 1.2 | Record |
 | :-- | :-- | :-- |
-| `cairn-check` | reads `feedbacks/`; reads a registration in the change under review; skips the declared link exemptions; says GitHub in its `comparison` messages | ADR-038 d1; ADR-032 d3; ADR-037 d1; ADR-034 d6 |
+| `cairn-check` | reads `feedbacks/`; reads a registration in the change under review; skips the declared link exemptions; says GitHub in its `comparison` messages; reports a stale `current_step` | ADR-038 d1; ADR-032 d3; ADR-037 d1; ADR-034 d6; ADR-044 d4 |
 | `cairn-active` | fills the register's state cells from the records, and reports a stale one | ADR-031 d2 |
 | `cairn-audit` | scaffolds the three facts under the coherence questions; reads a definition-of-done item from a plain list; points a deferral at its backlog file | ADR-043; ADR-042; ADR-041 |
 | `cairn-postmortem` | counts the run it runs in; prints a closed request as closed; on the trunk reads the one path that arrived, or the finding first and no path | ADR-034 d9, d10, d11 |

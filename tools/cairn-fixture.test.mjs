@@ -355,6 +355,17 @@ function publishedRepository(options = {}) {
   return dir
 }
 
+/** A published trunk with no path of this fixture's own, whose history carries
+ *  another path's merged unit (ADR-004 decision 4), checked out on `main`. */
+function publishedTrunk(options = {}) {
+  const dir = repository(options)
+  git(dir, 'init', '-q', '--bare', `${dir}.git`)
+  git(dir, 'remote', 'add', 'origin', `${dir}.git`)
+  git(dir, 'push', '-q', '-u', 'origin', 'main')
+  withAnotherPathsUnitMergedIn(dir)
+  return dir
+}
+
 /** ADR-008 decision 6. Where a fixture names the remedy its refusal owes, the
  *  refusal is held to it: three times on the first adopter a message that named
  *  only the fault led the agent to move the fault — a rewritten `base_commit`,
@@ -445,6 +456,25 @@ fixture('a concept nothing outside the wiki links', 'concept-orphan', (dir) => {
 fixture('a concept inside a folder of the root that nothing outside links', 'concept-orphan', (dir) => {
   write(dir, 'docs/concepts/learning/unused-idea.md',
     '---\ntype: Cairn Concept\ntitle: Unused idea\ndescription: Nobody links this.\ntags: [cairn, concept]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Unused idea\n\nA concept no text needed, one folder down.\n')
+})
+
+// A concept root at the top level makes the corpus walk `.`, whose paths
+// printed as `./wiki/...`: the wiki's own index then read as linking from
+// outside it, and every note it listed passed. Linked from inside alone, it
+// is an orphan. The trunk carries another path's unit (ADR-004 decision 4).
+test('adversarial: concept-orphan — a top-level concept root, linked only from its own index', () => {
+  const dir = publishedTrunk({ conceptsRoot: 'wiki' })
+  try {
+    assert.deepEqual(blocking(check(dir)), [], `the baseline must be green: ${describe(check(dir))}`)
+    write(dir, 'wiki/unused-idea.md',
+      '---\ntype: Cairn Concept\ntitle: Unused idea\ndescription: Only the wiki links this.\ntags: [cairn, concept]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Unused idea\n\nA concept only its own index needed.\n')
+    appendFileSync(join(dir, 'wiki/learning/index.md'), '\n- [Unused idea](../unused-idea.md)\n')
+    commit(dir, 'a concept only the wiki links')
+    const found = check(dir)
+    assert.ok(blocking(found).includes('concept-orphan'), `concept-orphan did not fire: ${describe(found)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
 })
 
 fixture('a running path the generated view does not know about', 'derived-view', (dir) => {
@@ -706,6 +736,135 @@ fixture('a path branched before its declaration reached the trunk', 'registratio
   writeAcceptedRecord(dir, { base_commit: base })
   regenerateView(dir)
   commit(dir, 'declare CP-FIXTURE-001 on its own branch only')
+})
+
+/* ADR-032 decision 3. On `pull-request` registration the declaration reaches
+ * the trunk through a request on `register/<id>`, which `registration` never
+ * read: a request that registered and coded was green there. The honest
+ * request stays green, and the other is refused by name. The trunk this
+ * request is cut from carries another path's merged unit, as ADR-004
+ * decision 4 asks. */
+function registrationRequest() {
+  const dir = publishedTrunk({ registrationTransport: 'pull-request' })
+  const base = git(dir, 'rev-parse', 'origin/main').trim()
+  git(dir, 'checkout', '-q', '-b', 'register/cp-fixture-001', 'origin/main')
+  writeAcceptedRecord(dir, { base_commit: base })
+  regenerateView(dir)
+  commit(dir, 'register CP-FIXTURE-001')
+  return dir
+}
+
+test('adversarial: registration — a registration request is read as registered', () => {
+  const dir = registrationRequest()
+  try {
+    assert.deepEqual(blocking(check(dir, '--base', 'origin/main')), [],
+      `the record and the view, alone, parented on base_commit: ${describe(check(dir, '--base', 'origin/main'))}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+test('adversarial: registration — a registration request that also carries a product file', () => {
+  COVERED.add('registration')
+  const dir = registrationRequest()
+  try {
+    assert.deepEqual(blocking(check(dir, '--base', 'origin/main')), [],
+      'the registration alone must be green, or this fixture proves nothing')
+    write(dir, 'src/feature.js', 'export const feature = true\n')
+    commit(dir, 'code before the registration has merged')
+    const found = check(dir, '--base', 'origin/main')
+    assert.ok(blocking(found).includes('registration'),
+      `registration did not fire — blocking findings were: ${describe(found)}`)
+    assertRemedy(found, 'registration', /nothing else.*path branch/s)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+// A second commit that touches only the record's folder — a step written
+// before the request merged — names no file outside the registration's, so
+// reading file names alone let it through. The request is one commit.
+test('adversarial: registration — a registration request with a second commit inside the record', () => {
+  COVERED.add('registration')
+  const dir = registrationRequest()
+  try {
+    write(dir, STEP, STEP_RECORD)
+    commit(dir, 'a unit written before the registration has merged')
+    const found = check(dir, '--base', 'origin/main')
+    assert.ok(blocking(found).includes('registration'),
+      `registration did not fire — blocking findings were: ${describe(found)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+/* ADR-037 decision 1. A portrayal of another repository, or a history frozen
+ * as it was, holds links that resolve somewhere else; the repository declares
+ * the path, with its reason, in its configuration, and `links` skips it. The
+ * same file undeclared is refused, so the declaration is what turns it green. */
+test('adversarial: links — a declared exemption is skipped, and the same file undeclared refused', () => {
+  COVERED.add('links')
+  const dir = publishedTrunk()
+  const setExemptions = (linkExemptions) => {
+    const config = JSON.parse(readFileSync(join(dir, 'cairn.config.json'), 'utf8'))
+    if (linkExemptions) config.linkExemptions = linkExemptions
+    else delete config.linkExemptions
+    write(dir, 'cairn.config.json', `${JSON.stringify(config, null, 2)}\n`)
+  }
+  try {
+    assert.deepEqual(blocking(check(dir)), [], 'the baseline must be green, or this fixture proves nothing')
+    write(dir, 'docs/portrait/page.md',
+      '---\ntype: Note\ntitle: Portrait\ndescription: x\ntags: [x]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Portrait\n\nSee [the other page](./elsewhere.md).\n')
+    setExemptions([{ path: 'docs/portrait', reason: 'a portrayal of another repository, whose links resolve there' }])
+    commit(dir, 'a declared portrayal')
+    assert.deepEqual(blocking(check(dir)), [], `the declared file is not resolved: ${describe(check(dir))}`)
+    setExemptions(null)
+    commit(dir, 'the declaration withdrawn')
+    const found = check(dir)
+    assert.ok(blocking(found).includes('links'), `links did not fire — blocking findings were: ${describe(found)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+/* ADR-038 decision 1. `feedbacks/` is where a note about the protocol is
+ * written, and a note that links a page that moved misleads its reader as any
+ * other page does; the folder joins the corpus `links` reads. */
+test('adversarial: links — a broken relative link in a feedback note', () => {
+  COVERED.add('links')
+  const dir = publishedTrunk()
+  try {
+    assert.deepEqual(blocking(check(dir)), [], 'the baseline must be green, or this fixture proves nothing')
+    write(dir, 'feedbacks/2026-09-24-a-note.md',
+      '---\ntype: Cairn Feedback\ntitle: A note\ndescription: x\ntags: [x]\ntimestamp: 2026-09-24T00:00:00Z\n---\n\n# A note\n\nSee [the page that moved](../docs/moved.md).\n')
+    commit(dir, 'a feedback note linking a page that moved')
+    const found = check(dir)
+    assert.ok(found.findings.some((f) => f.rule === 'links' && f.level === 'blocking' && f.message.startsWith('feedbacks/')),
+      `links did not read feedbacks/ — blocking findings were: ${describe(found)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+/* ADR-044 decision 4. Two integrated records carried a `current_step`
+ * naming an older unit under a green gate. The field is reported against the
+ * record's last step file, silent before the first unit, and never refused. */
+test('adversarial (advisory): current-step — a current_step behind the last step file', () => {
+  const dir = publishedRepository()
+  const currentStep = () => check(dir).findings.filter((f) => f.rule === 'current-step')
+  try {
+    assert.deepEqual(currentStep(), [], 'silent before the first unit')
+    write(dir, STEP, STEP_RECORD)
+    write(dir, STEP.replace('S01.md', 'S02.md'), STEP_RECORD.replace(/S01/g, 'S02').replace('unit: 01', 'unit: 02'))
+    const stale = currentStep()
+    assert.equal(stale.length, 1, `reported once: ${JSON.stringify(stale)}`)
+    assert.equal(stale[0].level, 'advisory', 'an advisory, never a refusal')
+    assert.match(stale[0].message, /current_step S01 .*last step file is S02/)
+    edit(dir, RECORD, 'current_step: S01', 'current_step: S02')
+    assert.deepEqual(currentStep(), [], 'silent once the field names the last step file')
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
 })
 
 fixture('a registration whose base_commit is not the registration parent', 'registration-base', (dir) => {

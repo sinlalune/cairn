@@ -7,13 +7,13 @@ timestamp: 2026-09-24T00:00:00Z
 cairn:
   id: CP-CAIRN-014
   route: full
-  status: running
-  current_step: S01
+  status: ready
+  current_step: S08
   base_commit: 886c398f6f8955e2ea5b623cf26b3352db6d5452
   branch: path/cp-cairn-014
   assigned_writer: cp-cairn-014-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: e65880ae77b916f524391d29a128567a5da612ea
   resolution: null
   writes:
     - tools/cairn-check.mjs
@@ -22,6 +22,7 @@ cairn:
     - tools/cairn-rules.mjs
     - tools/cairn-rules.test.mjs
     - tools/cairn-config.mjs
+    - tools/cairn-config.test.mjs
     - tools/cairn-config.schema.json
     - tools/soundness.md
     - spec/reference/conformance.md
@@ -29,7 +30,9 @@ cairn:
     - docs/modules/application.md
     - docs/adr/**
     - docs/architecture/02-cairn-1-2.md
+    - docs/architecture/index.md
     - project/coding-paths/index.md
+    - project/backlog/**
     - project/coding-paths/CP-CAIRN-014/**
   governs:
     - docs/architecture/02-cairn-1-2.md@e2463bbe52836b1feab79d834ab44b79d5d53e5c
@@ -229,23 +232,68 @@ trunk directly. The units run in a fresh session. Amendments: none.
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
-- **S01** — not started.
+- **S01** — [the record path 1 owes](./steps/S01.md): ADR-044, promoted
+  from path 1's journal entry — what `ready` states, the fresh reader's
+  fifth input, the squash limit, and the advisory `current-step` on the
+  owner's decision; ADR-040, ADR-043 and ADR-032 marked, the 1.2 page
+  amended in place, both indexes. Widened `writes:` by
+  `docs/architecture/index.md`. **COMPLETE**
+- **S02** — [the registration rule reads the change under review](./steps/S02.md):
+  on `pull-request` registration, a request that makes a path `running`
+  is a registration — the record's folder and the view alone, parented on
+  `base_commit`, nothing else — or `registration` refuses it naming which;
+  two fixtures, the catalogue, the conformance row, the soundness note, the
+  module note. **COMPLETE**
+- **S03** — [the links rule reads the declared exemptions](./steps/S03.md):
+  `linkExemptions` in `cairn.config.json`, a path and its reason, refused
+  without one by the loader and the schema; `links` skips the declared
+  files; one fixture; the configuration reference, the conformance row with
+  the line on the two 0.2 exemptions, the catalogue, the module note. Widened
+  `writes:` by `tools/cairn-config.test.mjs`. **COMPLETE**
+- **S04** — [the corpus, the messages, the fixture and the advisory](./steps/S04.md):
+  `feedbacks/` in the corpus `links` reads; the two `comparison` messages say
+  GitHub; `record-integrity`'s origin read in ancestry order; the advisory
+  `current-step`; one fixture each for the corpus and the advisory; the
+  backlog item S03 found. Widened `writes:` by `project/backlog/**`.
+  **COMPLETE**
+- **S05** — [the register names this path](./steps/S05.md): row 2 of the
+  coding paths of 1.2 links this record, *running*; the seventh item's
+  surfaces read by command before the candidate. **COMPLETE**
+- **S06** — [what the closing reader found](./steps/S06.md): the first
+  candidate, `c06dc39`, voided; ADR-044 decision 4 names what ADR-026
+  decision 2 refused and why the advisory is not it; `concept-orphan`'s
+  catalogue row names its corpus. **COMPLETE**
+- **S07** — [what the request's reviewer found](./steps/S07.md): the
+  candidate `095ff6e` voided on request 31; a registration request is one
+  commit, not one set of names, with its fixture; the module note's rule
+  count. **COMPLETE**
+- **S08** — [what the third closing read found](./steps/S08.md): the
+  candidate `32a8fdd` voided; ADR-044's claim that the unit skill asks for
+  `current_step` corrected — no skill, template or chapter does — and the
+  missing clause filed
+  under `project/backlog/`. **COMPLETE**
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — this record and the live view, nothing else, on origin/main; unit 0
-unit   : 0
+commit : e65880ae77b916f524391d29a128567a5da612ea — S08, on origin/path/cp-cairn-014, the candidate C
+unit   : 08 — the last completed unit; this section is the administrative commit's
 base   : 886c398f6f8955e2ea5b623cf26b3352db6d5452
 trunk  : 886c398f6f8955e2ea5b623cf26b3352db6d5452 — origin/main at registration
 ```
 
 ### Next action
 
-Start S01 with `cairn-unit` in the path's worktree: ADR-044, the record
-path 1 owes, as the plan's first item says.
+The owner tries the checker at `C` and merges request 31, as a merge
+commit — the click is the acceptance — or amends the scope for the
+README's rule count, which returns the path to `running`. After the
+merge, from a clean trunk checkout, the integrating unit: `status: done`,
+`resolution: completed`, the live view, one journal entry — naming the
+README's count and `project/backlog/`'s missing index as owed to rows 5
+and 3; then register row 2 flipped to *done* in a commit of its own, as
+row 1 was; then the worktree removed.
 
 ### Blockers
 
@@ -259,12 +307,14 @@ None.
 - A separate decision path for the record — one unit of this path
   writes it, as CP-CAIRN-006 S01 wrote ADR-024 and ADR-025; a path for
   one record is the volume the manifesto's first threat names.
-- Nothing for the stale `current_step` path 1's reader found in three
-  integrated records, the field being the writer's — the unit skill's
-  resume movement already says to refresh it, and three integrated
-  records carry it stale; the owner took the writer's recommendation on
-  2026-09-24, an advisory, because the checker already walks each path's
-  step files and a refusal would need three records grandfathered.
+- Nothing for the stale `current_step` path 1's S08 reader found, the
+  field being the writer's — no skill tells the writer to set it, the
+  unit skill refreshing the resume section and not the declaration, and
+  two integrated records, CP-CAIRN-008 and
+  CP-CAIRN-012, carry it stale; the owner took the writer's
+  recommendation on 2026-09-24, an advisory, because a stale field breaks
+  no reading of the checker (ADR-044, decision 4). The opening
+  acceptance says *three*; S01 corrects it.
 - Taking `adopt`'s naming of the shape that wants a declaration (ADR-037
   decision 2's second half) — it is `staleShapes` in the installer, row
   3's file; the conformance line is here.

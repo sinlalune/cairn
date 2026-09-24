@@ -24,7 +24,7 @@ const ROOT_FIELDS = new Set([
   '$schema', 'version', 'trunk', 'remote', 'metadataNamespace',
   'enforcementProfile', 'roots', 'areas',
   'defaultRoute', 'checkpointRetentionRef', 'pathHistoryPolicy',
-  'scopeDigestAlgorithm', 'transport', 'migration'
+  'scopeDigestAlgorithm', 'transport', 'migration', 'linkExemptions'
 ])
 const ROOT_ROLE_FIELDS = new Set([
   'documentation', 'project', 'architecture', 'decisions', 'modules', 'concepts', 'source'
@@ -32,6 +32,7 @@ const ROOT_ROLE_FIELDS = new Set([
 const AREA_FIELDS = new Set(['name', 'match', 'note'])
 const TRANSPORT_FIELDS = new Set(['registration', 'integration'])
 const MIGRATION_FIELDS = new Set(['unregisteredPaths', 'undeclaredOpenings', 'v02Records'])
+const EXEMPTION_FIELDS = new Set(['path', 'reason'])
 const IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9._-]*$/
 
 function isPlainObject(value) {
@@ -172,6 +173,29 @@ export function configErrors(config) {
   } else {
     for (const field of unknownFields(config.transport, TRANSPORT_FIELDS)) {
       add(`transport has unknown field ${field}`)
+    }
+  }
+
+  // ADR-037 decision 1: optional; each path `links` does not resolve, with why.
+  if ('linkExemptions' in config) {
+    if (!Array.isArray(config.linkExemptions)) {
+      add('linkExemptions must be an array of { path, reason }')
+    } else {
+      for (const [index, exemption] of config.linkExemptions.entries()) {
+        const at = `linkExemptions[${index}]`
+        if (!isPlainObject(exemption)) {
+          add(`${at} must be an object`)
+          continue
+        }
+        for (const field of unknownFields(exemption, EXEMPTION_FIELDS)) add(`${at} has unknown field ${field}`)
+        if (!isRelativePath(exemption.path)) add(`${at}.path must be a repository-relative path`)
+        if (typeof exemption.reason !== 'string' || exemption.reason.trim() === '') {
+          add(`${at}.reason must say why its links are not resolved`)
+        }
+      }
+      if (hasDuplicates(config.linkExemptions.map((exemption) => exemption?.path).filter((path) => typeof path === 'string'))) {
+        add('linkExemptions must not repeat a path')
+      }
     }
   }
 

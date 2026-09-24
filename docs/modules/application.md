@@ -30,8 +30,10 @@ The specification lives at `spec/` in the root of this repository, beside its
 concept wiki at `spec/concepts/`, which the configuration binds as
 `roots.concepts`. The checker's Markdown corpus — the files whose links are
 checked and whose links keep a concept from being an orphan — is the
-documentation plane, the project plane, and the parent of the concept root, so
-the specification is read wherever a host binds its wiki. `concept-orphan` and
+documentation plane, the project plane, `skills/`, `feedbacks/` and the parent of
+the concept root, so the specification is read wherever a host binds its wiki; `links` skips the
+files and folders the configuration declares under `linkExemptions`, each with
+its reason, and they still count as linking a concept. `concept-orphan` and
 `concept-growth` read that root **recursively** and name a note by its path
 under it — `learning/cache.md`, not `cache.md` — because an adopter's root is
 three folders (ADR-011 d2) and two of them may hold the same word. A link
@@ -43,7 +45,7 @@ index stays under its word budget.
 
 ## The rules
 
-The checker implements twenty-six rules — twenty blocking, six advisory —
+The checker implements twenty-eight rules — twenty-one blocking, seven advisory —
 inventoried on the [conformance page](../../spec/reference/conformance.md),
 which also records where every 0.2 name went. One invocation form judges a
 tree — `cairn-check [--base <ref>] [--branch <name>] [--json]`, and on a path
@@ -61,13 +63,19 @@ step carried, is deleted, and a fixture proves the run green with `fetch`,
 
 **What it reads of a path.** The opening acceptance from the record's own
 `## Opening acceptance` block; the checkpoint from the resume section; the
-registration commit as the trunk commit in which the record became `running`;
+registration commit as the trunk commit in which the record became `running`,
+and, on `pull-request` registration off a path branch, the commit in the
+change under review that declares it, refused unless it is not a merge,
+touches the record's folder and the live view alone, is parented on
+`base_commit`, and is all the comparison carries;
 the branch's tip from the local ref, else `HEAD` when the checkout is detached,
 else the remote-tracking ref. The range from a path's base to its candidate is
 read as this path's own commits alone, where a draft is resolved by the later
 commit that publishes the unit it was drafting, and an edited step record is
 answered by a later step of the same path binding the blob it replaces to the
-blob it adds. It reads the record of the review movement in the newest unit
+blob it adds. It reports a `running` or `ready` record whose `current_step` is not its last
+step file, and refuses nothing for it. It reads the record of the review
+movement in the newest unit
 kept in a ledger — the unit under review — and reads nothing of that section
 beyond whether it is empty. It validates `depends_on:` and knows two routes;
 the live-view generator marks each live path unblocked or names what it waits

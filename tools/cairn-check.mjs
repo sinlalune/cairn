@@ -42,6 +42,9 @@ export const PATH_DIR = `${PROJECT_DIR}/coding-paths`
  *  the checker proves only what Git holds. `manual-git` writes the same
  *  checklist and acceptance as one closing record in the path folder. */
 export const INTEGRATION_TRANSPORT = CAIRN_CONFIG.transport.integration
+/** How a path's declaration reaches the trunk: pushed to it (`manual-git`),
+ *  or through a request (`pull-request`), which ADR-032 decision 3 reads. */
+const REGISTRATION_TRANSPORT = CAIRN_CONFIG.transport.registration
 export const JOURNAL_DIR = `${PROJECT_DIR}/log`
 export const ADR_DIR = CAIRN_CONFIG.roots.decisions
 export const MODULE_DIR = CAIRN_CONFIG.roots.modules
@@ -1744,6 +1747,8 @@ export function evaluate({
   trunkContained,
   registrationState,
   registrationBaseState = 'match',
+  requests = new Map(),
+  lastStepFor = null,
   remoteCheckpoint,
   checkpointFor,
   closureFor,
@@ -1809,16 +1814,16 @@ export function evaluate({
   // deliberately and `trunk-containment` reports; refusing there would refuse a
   // clone for not having fetched yet.
   if (baseSource === 'unresolvable' && baseRequested) {
-    // The forge's sentinel for "nothing precedes this": a branch's first push.
+    // GitHub's sentinel for "nothing precedes this": a branch's first push.
     // That is a fact about the history, not a broken input, and failing a
     // repository's first push to its trunk would be the gate refusing a state
     // the writer cannot avoid.
     if (/^0{40,}$/.test(baseRequested)) {
       add('advisory', 'comparison',
-        'no commit precedes this push — the forge names none, so this run judged the working tree alone; the next push to this ref compares against this commit')
+        'no commit precedes this push — GitHub names none, so this run judged the working tree alone; the next push to this ref compares against this commit')
     } else {
       add('blocking', 'comparison',
-        `the base this run was asked to compare against cannot be compared with this commit (${baseRequested}), so every changed-file rule was narrowed to the working tree — fetch the ref first; where no ref reaches it, as after a force-push that rewound what the forge named, provide a --base that is still reachable`,
+        `the base this run was asked to compare against cannot be compared with this commit (${baseRequested}), so every changed-file rule was narrowed to the working tree — fetch the ref first; where no ref reaches it, as after a force-push that rewound what GitHub named, provide a --base that is still reachable`,
         'inconclusive')
     }
   }
@@ -1867,8 +1872,9 @@ export function evaluate({
   // false. New paths land a registration-only trunk commit before branching.
   if (onPath && match) {
     if (registrationState === 'missing') {
+      const reason = requests.get(match.front.id)
       add('blocking', 'registration',
-        `${match.file} is not registered as running on the trunk — land the accepted path declaration and regenerate ACTIVE.md before implementation`)
+        `${match.file} is not registered as running on the trunk${reason ? `, and this change is not a registration: ${reason}` : ''} — land the accepted path declaration and regenerate ACTIVE.md before implementation`)
     } else if (registrationState == null) {
       add('blocking', 'registration',
         `cannot resolve the trunk registration for ${match.front.id} — fetch the complete trunk ref and rerun the gate`,
@@ -1886,6 +1892,30 @@ export function evaluate({
         `cannot prove the registration parent for ${match.front.id} — fetch the complete trunk history and rerun the gate`,
         'inconclusive')
     }
+  }
+
+  // ADR-044 decision 4. `current_step` is the writer's to refresh, and two
+  // records were integrated with it naming an older unit under a green gate:
+  // `work-unit` asks whether the named step is complete, never whether it is
+  // the current one. A live record whose field is not its last step file is
+  // reported, never refused — the stale field misleads a reader and no rule.
+  for (const path of lastStepFor ? paths : []) {
+    const { status, current_step: current } = path.front ?? {}
+    if (!['running', 'ready'].includes(status)) continue
+    const last = lastStepFor(path.file)
+    if (last && current !== last) {
+      add('advisory', 'current-step',
+        `${path.file} names current_step ${current ?? 'none'} and its last step file is ${last} — make them agree: name in current_step the step the newest completed unit wrote`)
+    }
+  }
+
+  // A request that declares a path `running` off a path branch is a
+  // registration or it is refused (ADR-032 decision 3); on a path branch the
+  // block above says it.
+  for (const [id, reason] of requests) {
+    if (reason == null || (onPath && match?.front?.id === id)) continue
+    add('blocking', 'registration',
+      `${paths.find((path) => path.front?.id === id)?.file ?? id} is declared running in a change that is not a registration: ${reason} — land the registration alone, one commit carrying the record and the regenerated view and nothing else, its parent the declared base_commit, and land everything else on the path branch, created from the trunk once this request has merged`)
   }
 
   // Every commit is pushed immediately so each completed work unit has an
@@ -2935,9 +2965,11 @@ function verbatimRelocations(ref) {
 /**
  * The adding commit and path reported by `git log --follow`.
  *
- * `--follow --diff-filter=A --format=%H --name-only` emits newest first. A
- * delete/re-add can therefore yield several pairs; the oldest pair is the
- * identity the current record claims to preserve. Kept pure so the plumbing
+ * `--follow --diff-filter=A --format=%H --name-only` emits newest first —
+ * by ancestry, because the caller passes `--topo-order`: by date alone, a
+ * skewed clock or two same-second commits across a merge can invert it
+ * (ADR-034 decision 7). A delete/re-add can therefore yield several pairs;
+ * the oldest pair is the identity the current record claims to preserve. Kept pure so the plumbing
  * format has an adversarial fixture rather than being trusted by inspection.
  */
 export function recordOriginFromFollowLog(raw) {
@@ -2957,7 +2989,7 @@ export function recordOriginFromFollowLog(raw) {
 
 export function stepRecordOrigin(file) {
   const addedAt = (...flags) => {
-    const raw = gitOrNull(['log', ...flags, '--diff-filter=A', '--format=%H', '--name-only', '--', file])
+    const raw = gitOrNull(['log', '--topo-order', ...flags, '--diff-filter=A', '--format=%H', '--name-only', '--', file])
     return raw == null ? null : recordOriginFromFollowLog(raw)
   }
   const followed = addedAt('--follow')
@@ -3040,15 +3072,25 @@ function walk(dir, out = []) {
  *  a host binds. */
 export const SKILLS_DIR = 'skills'
 
+/** Where notes about the protocol are written — the owner's pages, the
+ *  agents' files — a fixed name at the root, which ADR-038 decision 2 has the
+ *  kit install in every adopter. Read for its links, never for a schema. */
+export const FEEDBACKS_DIR = 'feedbacks'
+
 function markdownCorpus() {
   // The specification lives beside its concept wiki — `spec/` at the root of
   // the protocol's own repository, wherever an adopter binds it — so the wiki's
   // parent joins the two planes, and the skills join them where they exist:
   // a procedure that links a page that moved is as broken as any other link.
-  // Files reached twice dedupe by path.
-  const roots = [...new Set([DOCUMENTATION_DIR, PROJECT_DIR, dirname(CONCEPTS_DIR), SKILLS_DIR])]
+  // The feedback notes join them (ADR-038 decision 1). Files reached twice
+  // dedupe by path.
+  const roots = [...new Set([DOCUMENTATION_DIR, PROJECT_DIR, dirname(CONCEPTS_DIR), SKILLS_DIR, FEEDBACKS_DIR])]
   return [...new Set(roots.flatMap((root) =>
-    existsSync(join(REPO, root)) ? walk(root, []).filter((file) => file.endsWith('.md')) : []
+    // A concept root at the top level makes the parent `.`, whose walk prints
+    // `./docs/...` — a path no declaration or dedupe would ever match.
+    existsSync(join(REPO, root))
+      ? walk(root, []).filter((file) => file.endsWith('.md')).map((file) => file.replace(/^\.\//, ''))
+      : []
   ))]
 }
 
@@ -3078,34 +3120,73 @@ function pathRegistrationState(trunkRef, branch, paths) {
   const id = match?.front?.id
   if (!match || !id) return null
   if (LEGACY_UNREGISTERED_PATHS.has(id)) return 'grandfathered'
+  if (!gitOrNull(['rev-parse', '--verify', trunkRef])) return null
+  return declaredOnTrunk(trunkRef, id, branch, match.front.base_commit) ? 'registered' : 'missing'
+}
 
-  try {
-    git(['rev-parse', '--verify', trunkRef])
-  } catch {
-    return null
-  }
+/**
+ * The declaration is looked up on the trunk by the ID it declares, in either
+ * shape. Keying on this checkout's file path made a record's registration
+ * depend on where the record sits TODAY, so migrating `CP-<id>.md` to
+ * `CP-<id>/index.md` reported a path registered weeks earlier as never
+ * registered at all.
+ */
+function declaredOnTrunk(trunkRef, id, branch, baseCommit) {
+  return [`${PATH_DIR}/${id}.md`, `${PATH_DIR}/${id}/index.md`].some((candidate) => {
+    // gitOrNull pipes stderr: the first shape tried is usually absent, and
+    // Git's `fatal: path ... does not exist` above an OK verdict teaches
+    // people to ignore the output (greenfield pilot, 2026-09-01).
+    const text = gitOrNull(['show', `${trunkRef}:${candidate}`])
+    return text != null && registrationMatches(text, id, branch, baseCommit)
+  })
+}
 
-  // The declaration is looked up on the trunk by the ID it declares, in either
-  // shape. Keying on this checkout's file path made a record's registration
-  // depend on where the record sits TODAY, so migrating `CP-<id>.md` to
-  // `CP-<id>/index.md` reported a path registered weeks earlier as never
-  // registered at all.
-  for (const candidate of [`${PATH_DIR}/${id}.md`, `${PATH_DIR}/${id}/index.md`]) {
-    try {
-      // stderr piped: the first shape tried is usually absent, and Git's
-      // `fatal: path ... does not exist` above an OK verdict teaches people to
-      // ignore the output (greenfield pilot, 2026-09-01).
-      const text = execFileSync('git', ['show', `${trunkRef}:${candidate}`], {
-        cwd: REPO,
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'pipe']
-      })
-      if (registrationMatches(text, id, branch, match.front.base_commit)) return 'registered'
-    } catch {
-      // this shape is not on the trunk; try the other
+/**
+ * ADR-032 decision 3. On `pull-request` registration the declaration reaches
+ * the trunk through a request, whose own run is judged before the trunk
+ * carries it — on `register/<id>`, a branch `registration` never read. Off the
+ * trunk, every record this comparison makes `running` that the trunk does not
+ * declare is read here: it is a registration when the commit that declared it
+ * `running` touches the record's folder and the live view and nothing else,
+ * its parent is the declared `base_commit`, and the comparison carries nothing
+ * else either. Returns id → `null` for a registration, or the reason it is not
+ * one. `merge` is the comparison's merge-base with `base`. On a trunk that
+ * took the commit directly the declaration is on the trunk ref already, and
+ * nothing is read.
+ */
+function requestRegistrations(merge, base, branch, paths, changed) {
+  const found = new Map()
+  if (REGISTRATION_TRANSPORT !== 'pull-request' || !base || !merge || branch === TRUNK_BRANCH) return found
+  for (const path of paths) {
+    const { id, status, branch: declared, base_commit: baseCommit } = path.front ?? {}
+    if (!id || status !== 'running' || !changed.includes(path.file)) continue
+    if (LEGACY_UNREGISTERED_PATHS.has(id) || declaredOnTrunk(base, id, declared, baseCommit)) continue
+    const shapes = recordShapes(id, path.file)
+    // Already `running` where this change starts: an edit, not a registration.
+    if (recordFrontAt(merge, shapes)?.status === 'running') continue
+    // The record is its folder: a registration may carry the plan beside it.
+    const own = (file) => file === ACTIVE_FILE || file === `${PATH_DIR}/${id}.md` ||
+      file.startsWith(`${PATH_DIR}/${id}/`)
+    const { commits, statusAt } = recordHistory(`${merge}..HEAD`, shapes)
+    const registration = statusCommit(commits, statusAt)
+    if (!registration) {
+      found.set(id, 'no commit in this comparison declares it running')
+      continue
     }
+    const parents = (gitOrNull(['rev-list', '--parents', '-n', '1', registration]) ?? '').split(' ').slice(1)
+    const files = gitRaw(['diff-tree', '--no-commit-id', '--name-only', '-r', '-z', registration]).split('\0').filter(Boolean)
+    const reason =
+      parents.length !== 1 ? `the commit that declares it running, ${registration}, is a merge` :
+      files.some((file) => !own(file)) ? `the commit that declares it running also changes ${files.filter((file) => !own(file)).join(', ')}` :
+      parents[0] !== gitOrNull(['rev-parse', '--verify', '--quiet', `${baseCommit}^{commit}`]) ? `the parent of the commit that declares it running is ${parents[0]}, not the declared base_commit ${baseCommit}` :
+      changed.some((file) => !own(file)) ? `this change also carries ${changed.filter((file) => !own(file)).join(', ')}` :
+      // One commit, not one set of names: a later commit inside the record's
+      // folder names no file the registration did not.
+      registration !== gitOrNull(['rev-parse', 'HEAD']) ? `this change carries commits after the one that declares it running, ${registration}, and a merge of the trunk into the request counts as one` :
+      null
+    found.set(id, reason)
   }
-  return 'missing'
+  return found
 }
 
 /**
@@ -3508,19 +3589,29 @@ function pathRecordFiles() {
  * Sorted by ordinal, because directory order is not chronology.
  */
 function pathWorkUnits(file) {
-  const dir = file.endsWith('/index.md') ? file.slice(0, -'/index.md'.length) : null
-  const files = [file]
-  if (dir && existsSync(join(REPO, dir, 'steps'))) {
-    for (const entry of readdirSync(join(REPO, dir, 'steps')).sort()) {
-      if (entry.endsWith('.md') && !['index.md', 'log.md'].includes(entry)) {
-        files.push(`${dir}/steps/${entry}`)
-      }
-    }
-  }
+  const files = [file, ...stepFiles(file)]
   const units = files.flatMap((rel) =>
     parseWorkUnits(readFileSync(join(REPO, rel), 'utf8')).map((unit) => ({ ...unit, __file: rel })))
   return units.sort((a, b) =>
     (Number.parseInt(a.unit, 10) || 0) - (Number.parseInt(b.unit, 10) || 0))
+}
+
+/** The step files of a born-sliced record, `[]` for a flat one. */
+function stepFiles(file) {
+  const dir = file.endsWith('/index.md') ? file.slice(0, -'/index.md'.length) : null
+  if (!dir || !existsSync(join(REPO, dir, 'steps'))) return []
+  return readdirSync(join(REPO, dir, 'steps')).sort()
+    .filter((entry) => entry.endsWith('.md') && !['index.md', 'log.md'].includes(entry))
+    .map((entry) => `${dir}/steps/${entry}`)
+}
+
+/** A born-sliced record's last step file by its number, `S10` after `S9`;
+ *  `null` for a flat record or one with no step yet (ADR-044 decision 4). */
+function lastStepFile(file) {
+  const numbers = stepFiles(file).map((step) => /\/S(\d+)\.md$/.exec(step)?.[1]).filter(Boolean)
+  if (numbers.length === 0) return null
+  const last = numbers.reduce((a, b) => (Number(b) > Number(a) ? b : a))
+  return `S${last}`
 }
 
 function loadPaths() {
@@ -3595,7 +3686,7 @@ function corpusFindings(previousRef = null, changed = [], viewCurrent = null) {
       findings.push({
         level: 'blocking',
         rule: 'concept-orphan',
-        message: `${CONCEPTS_DIR}/${orphan}: no normative or learning text links this concept — a word nobody needed is where vocabulary bloat begins; link it where it is used, or remove it`
+        message: `${CONCEPTS_DIR}/${orphan}: no document outside the wiki links this concept — a word nobody needed is where vocabulary bloat begins; link it where it is used, or remove it`
       })
     }
     // Growth is DIFF-SCOPED, like ledger-size and for the same reason: it speaks
@@ -3674,7 +3765,11 @@ function corpusFindings(previousRef = null, changed = [], viewCurrent = null) {
     }
   }
 
-  for (const doc of markdownCorpus()) {
+  // ADR-037 decision 1: a declared path — a portrayal, a frozen history — has
+  // its links resolved elsewhere, and says why in the configuration.
+  const exempt = (doc) => (CAIRN_CONFIG.linkExemptions ?? [])
+    .some(({ path }) => doc === path || doc.startsWith(slash(path)))
+  for (const doc of markdownCorpus().filter((file) => !exempt(file))) {
     const text = stripCode(readFileSync(join(REPO, doc), 'utf8'))
     for (const match of text.matchAll(/\[[^\]]*\]\((\.[^)#\s]+)(?:#[^)\s]*)?\)/g)) {
       const target = resolve(REPO, dirname(doc), match[1].replace(/\\/g, ''))
@@ -3751,6 +3846,7 @@ async function main() {
   const workUnits = pathForBranch ? pathWorkUnits(pathForBranch.file) : null
   const trunkRef = base ?? TRUNK_BRANCH
   const previousRef = comparisonRef(base)
+  const requests = requestRegistrations(previousRef, base, branch, paths, changed)
   const stateChanged = previousRef ? changedFiles(previousRef) : changed
   // Record immutability is judged against the SAME comparison every other
   // changed-file rule uses: the merge-base with the trunk on a path branch,
@@ -3770,6 +3866,8 @@ async function main() {
       resolveFile: (file) => existsSync(join(REPO, file)),
       trunkContained: trunkContained(trunkRef),
       registrationState: pathRegistrationState(trunkRef, branch, paths),
+      requests,
+      lastStepFor: lastStepFile,
       registrationBaseState: pathRegistrationBaseState(trunkRef, branch, paths),
       remoteCheckpoint: pathRemoteCheckpoint(branch),
       checkpointFor: (file) => checkpointCommit(readFileSync(join(REPO, file), 'utf8')),

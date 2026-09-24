@@ -169,7 +169,10 @@ writer who numbers a new unit at or below an older one moves the subject back;
 and a newest unit typed `closure` skips the rule for the whole record, because
 ADR-017 decision 2 excepts the type that writes no step file and nothing forbids
 that block in a step record. The field a writer forgets no longer selects; a
-field a writer mistypes still can.
+field a writer mistypes still can. Since ADR-044 the field a writer forgets
+is also said: `current-step` compares it with the record's last step file and
+reports, never refuses, because a stale field misleads the reader of the
+record and breaks no reading of the checker.
 
 A rule that reads a transport-shaped fact asks which transport. `acceptance`
 refused an integrating commit that is a merge object carrying `done` — true on
@@ -212,6 +215,21 @@ rule was replaced by a sound one beside a second rule nobody read, and the
 second rule's own widening had a cost that only a reader building the case
 found. Neither of them was reached at all until the comparison was fixed, which
 is what *What none of this proves* records.
+
+`registration` shows the rule that reads too little, rather than too much. It
+read the trunk alone, and only on a path branch: sound on `manual-git`, where
+the declaration is pushed before anything else runs, and silent on
+`pull-request`, where the declaration travels on `register/<id>` — a branch it
+never looked at. A request that registered and coded in one change was green
+there, refused, when it was, by whichever rule the code happened to trip. On
+that transport, off a path branch, it now reads the change under review
+(ADR-032 decision 3): a change that makes a path `running` the trunk does not
+declare is a registration when the commit that declared it is not a merge,
+touches the record's folder and the live view alone, has `base_commit` as its
+parent, and the comparison carries nothing else; otherwise the rule names what
+failed. A path branch still needs the declaration on the trunk, as before. On
+`manual-git` nothing more is read, because the trunk push the old reading
+answers is the only change that registers there.
 
 **4. A stated requirement with no predicate is listed as unenforced.** The
 conformance page is where that is said. An unenforced requirement and an
