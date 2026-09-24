@@ -61,7 +61,11 @@ step carried, is deleted, and a fixture proves the run green with `fetch`,
 
 **What it reads of a path.** The opening acceptance from the record's own
 `## Opening acceptance` block; the checkpoint from the resume section; the
-registration commit as the trunk commit in which the record became `running`;
+registration commit as the trunk commit in which the record became `running`,
+and, on `pull-request` registration off a path branch, the commit in the
+change under review that declares it, refused unless it is not a merge,
+touches the record's folder and the live view alone, is parented on
+`base_commit`, and is all the comparison carries;
 the branch's tip from the local ref, else `HEAD` when the checkout is detached,
 else the remote-tracking ref. The range from a path's base to its candidate is
 read as this path's own commits alone, where a draft is resolved by the later

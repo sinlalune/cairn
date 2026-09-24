@@ -188,8 +188,8 @@ export const RULE_METADATA = {
     enforcing: "isPathBranch(branch) && (!match || !PATH_BRANCH_STATUSES.includes(status) || !isCommitPin(base)); branchSource === 'detached' && guarded.length > 0"
   },
   'registration': {
-    condition: 'Path declaration tuple (id, running, branch, base) missing from trunk',
-    enforcing: "pathRegistrationState() === 'missing' (blocking) or declared migration exception (advisory)"
+    condition: 'Path declaration tuple (id, running, branch, base) missing from trunk on a path branch; and on pull-request registration, off a path branch, a change that makes a path running without being a registration — its declaring commit not a merge, touching the record\'s folder and the live view alone, parented on base_commit, with nothing else in the comparison (ADR-032 d3)',
+    enforcing: "pathRegistrationState() === 'missing' on a path branch, or requestRegistrations(mergeBase, base, branch, paths, changed) naming a reason off one (blocking); declared migration exception (advisory)"
   },
   'registration-base': {
     condition: 'Path base_commit cannot be proved to equal the parent of the registration commit — the commit in which the record became running, in either record shape, a draft landed earlier notwithstanding (ADR-004 d1)',

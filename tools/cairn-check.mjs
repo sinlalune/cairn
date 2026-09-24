@@ -42,6 +42,9 @@ export const PATH_DIR = `${PROJECT_DIR}/coding-paths`
  *  the checker proves only what Git holds. `manual-git` writes the same
  *  checklist and acceptance as one closing record in the path folder. */
 export const INTEGRATION_TRANSPORT = CAIRN_CONFIG.transport.integration
+/** How a path's declaration reaches the trunk: pushed to it (`manual-git`),
+ *  or through a request (`pull-request`), which ADR-032 decision 3 reads. */
+const REGISTRATION_TRANSPORT = CAIRN_CONFIG.transport.registration
 export const JOURNAL_DIR = `${PROJECT_DIR}/log`
 export const ADR_DIR = CAIRN_CONFIG.roots.decisions
 export const MODULE_DIR = CAIRN_CONFIG.roots.modules
@@ -1744,6 +1747,7 @@ export function evaluate({
   trunkContained,
   registrationState,
   registrationBaseState = 'match',
+  requests = new Map(),
   remoteCheckpoint,
   checkpointFor,
   closureFor,
@@ -1867,8 +1871,9 @@ export function evaluate({
   // false. New paths land a registration-only trunk commit before branching.
   if (onPath && match) {
     if (registrationState === 'missing') {
+      const reason = requests.get(match.front.id)
       add('blocking', 'registration',
-        `${match.file} is not registered as running on the trunk — land the accepted path declaration and regenerate ACTIVE.md before implementation`)
+        `${match.file} is not registered as running on the trunk${reason ? `, and this change is not a registration: ${reason}` : ''} — land the accepted path declaration and regenerate ACTIVE.md before implementation`)
     } else if (registrationState == null) {
       add('blocking', 'registration',
         `cannot resolve the trunk registration for ${match.front.id} — fetch the complete trunk ref and rerun the gate`,
@@ -1886,6 +1891,15 @@ export function evaluate({
         `cannot prove the registration parent for ${match.front.id} — fetch the complete trunk history and rerun the gate`,
         'inconclusive')
     }
+  }
+
+  // A request that declares a path `running` off a path branch is a
+  // registration or it is refused (ADR-032 decision 3); on a path branch the
+  // block above says it.
+  for (const [id, reason] of requests) {
+    if (reason == null || (onPath && match?.front?.id === id)) continue
+    add('blocking', 'registration',
+      `${paths.find((path) => path.front?.id === id)?.file ?? id} is declared running in a change that is not a registration: ${reason} — land the registration alone, one commit carrying the record and the regenerated view and nothing else, its parent the declared base_commit, and land everything else on the path branch, created from the trunk once this request has merged`)
   }
 
   // Every commit is pushed immediately so each completed work unit has an
@@ -3078,34 +3092,70 @@ function pathRegistrationState(trunkRef, branch, paths) {
   const id = match?.front?.id
   if (!match || !id) return null
   if (LEGACY_UNREGISTERED_PATHS.has(id)) return 'grandfathered'
+  if (!gitOrNull(['rev-parse', '--verify', trunkRef])) return null
+  return declaredOnTrunk(trunkRef, id, branch, match.front.base_commit) ? 'registered' : 'missing'
+}
 
-  try {
-    git(['rev-parse', '--verify', trunkRef])
-  } catch {
-    return null
-  }
+/**
+ * The declaration is looked up on the trunk by the ID it declares, in either
+ * shape. Keying on this checkout's file path made a record's registration
+ * depend on where the record sits TODAY, so migrating `CP-<id>.md` to
+ * `CP-<id>/index.md` reported a path registered weeks earlier as never
+ * registered at all.
+ */
+function declaredOnTrunk(trunkRef, id, branch, baseCommit) {
+  return [`${PATH_DIR}/${id}.md`, `${PATH_DIR}/${id}/index.md`].some((candidate) => {
+    // gitOrNull pipes stderr: the first shape tried is usually absent, and
+    // Git's `fatal: path ... does not exist` above an OK verdict teaches
+    // people to ignore the output (greenfield pilot, 2026-09-01).
+    const text = gitOrNull(['show', `${trunkRef}:${candidate}`])
+    return text != null && registrationMatches(text, id, branch, baseCommit)
+  })
+}
 
-  // The declaration is looked up on the trunk by the ID it declares, in either
-  // shape. Keying on this checkout's file path made a record's registration
-  // depend on where the record sits TODAY, so migrating `CP-<id>.md` to
-  // `CP-<id>/index.md` reported a path registered weeks earlier as never
-  // registered at all.
-  for (const candidate of [`${PATH_DIR}/${id}.md`, `${PATH_DIR}/${id}/index.md`]) {
-    try {
-      // stderr piped: the first shape tried is usually absent, and Git's
-      // `fatal: path ... does not exist` above an OK verdict teaches people to
-      // ignore the output (greenfield pilot, 2026-09-01).
-      const text = execFileSync('git', ['show', `${trunkRef}:${candidate}`], {
-        cwd: REPO,
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'pipe']
-      })
-      if (registrationMatches(text, id, branch, match.front.base_commit)) return 'registered'
-    } catch {
-      // this shape is not on the trunk; try the other
+/**
+ * ADR-032 decision 3. On `pull-request` registration the declaration reaches
+ * the trunk through a request, whose own run is judged before the trunk
+ * carries it — on `register/<id>`, a branch `registration` never read. Off the
+ * trunk, every record this comparison makes `running` that the trunk does not
+ * declare is read here: it is a registration when the commit that declared it
+ * `running` touches the record's folder and the live view and nothing else,
+ * its parent is the declared `base_commit`, and the comparison carries nothing
+ * else either. Returns id → `null` for a registration, or the reason it is not
+ * one. `merge` is the comparison's merge-base with `base`. On a trunk that
+ * took the commit directly the declaration is on the trunk ref already, and
+ * nothing is read.
+ */
+function requestRegistrations(merge, base, branch, paths, changed) {
+  const found = new Map()
+  if (REGISTRATION_TRANSPORT !== 'pull-request' || !base || !merge || branch === TRUNK_BRANCH) return found
+  for (const path of paths) {
+    const { id, status, branch: declared, base_commit: baseCommit } = path.front ?? {}
+    if (!id || status !== 'running' || !changed.includes(path.file)) continue
+    if (LEGACY_UNREGISTERED_PATHS.has(id) || declaredOnTrunk(base, id, declared, baseCommit)) continue
+    const shapes = recordShapes(id, path.file)
+    // Already `running` where this change starts: an edit, not a registration.
+    if (recordFrontAt(merge, shapes)?.status === 'running') continue
+    // The record is its folder: a registration may carry the plan beside it.
+    const own = (file) => file === ACTIVE_FILE || file === `${PATH_DIR}/${id}.md` ||
+      file.startsWith(`${PATH_DIR}/${id}/`)
+    const { commits, statusAt } = recordHistory(`${merge}..HEAD`, shapes)
+    const registration = statusCommit(commits, statusAt)
+    if (!registration) {
+      found.set(id, 'no commit in this comparison declares it running')
+      continue
     }
+    const parents = (gitOrNull(['rev-list', '--parents', '-n', '1', registration]) ?? '').split(' ').slice(1)
+    const files = gitRaw(['diff-tree', '--no-commit-id', '--name-only', '-r', '-z', registration]).split('\0').filter(Boolean)
+    const reason =
+      parents.length !== 1 ? `the commit that declares it running, ${registration}, is a merge` :
+      files.some((file) => !own(file)) ? `the commit that declares it running also changes ${files.filter((file) => !own(file)).join(', ')}` :
+      parents[0] !== gitOrNull(['rev-parse', '--verify', '--quiet', `${baseCommit}^{commit}`]) ? `the parent of the commit that declares it running is ${parents[0]}, not the declared base_commit ${baseCommit}` :
+      changed.some((file) => !own(file)) ? `this change also carries ${changed.filter((file) => !own(file)).join(', ')}` :
+      null
+    found.set(id, reason)
   }
-  return 'missing'
+  return found
 }
 
 /**
@@ -3751,6 +3801,7 @@ async function main() {
   const workUnits = pathForBranch ? pathWorkUnits(pathForBranch.file) : null
   const trunkRef = base ?? TRUNK_BRANCH
   const previousRef = comparisonRef(base)
+  const requests = requestRegistrations(previousRef, base, branch, paths, changed)
   const stateChanged = previousRef ? changedFiles(previousRef) : changed
   // Record immutability is judged against the SAME comparison every other
   // changed-file rule uses: the merge-base with the trunk on a path branch,
@@ -3770,6 +3821,7 @@ async function main() {
       resolveFile: (file) => existsSync(join(REPO, file)),
       trunkContained: trunkContained(trunkRef),
       registrationState: pathRegistrationState(trunkRef, branch, paths),
+      requests,
       registrationBaseState: pathRegistrationBaseState(trunkRef, branch, paths),
       remoteCheckpoint: pathRemoteCheckpoint(branch),
       checkpointFor: (file) => checkpointCommit(readFileSync(join(REPO, file), 'utf8')),

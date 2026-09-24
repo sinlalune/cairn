@@ -708,6 +708,53 @@ fixture('a path branched before its declaration reached the trunk', 'registratio
   commit(dir, 'declare CP-FIXTURE-001 on its own branch only')
 })
 
+/* ADR-032 decision 3. On `pull-request` registration the declaration reaches
+ * the trunk through a request on `register/<id>`, which `registration` never
+ * read: a request that registered and coded was green there. The honest
+ * request stays green, and the other is refused by name. The trunk this
+ * request is cut from carries another path's merged unit, as ADR-004
+ * decision 4 asks. */
+function registrationRequest() {
+  const dir = repository({ registrationTransport: 'pull-request' })
+  git(dir, 'init', '-q', '--bare', `${dir}.git`)
+  git(dir, 'remote', 'add', 'origin', `${dir}.git`)
+  git(dir, 'push', '-q', '-u', 'origin', 'main')
+  withAnotherPathsUnitMergedIn(dir)
+  const base = git(dir, 'rev-parse', 'origin/main').trim()
+  git(dir, 'checkout', '-q', '-b', 'register/cp-fixture-001', 'origin/main')
+  writeAcceptedRecord(dir, { base_commit: base })
+  regenerateView(dir)
+  commit(dir, 'register CP-FIXTURE-001')
+  return dir
+}
+
+test('adversarial: registration — a registration request is read as registered', () => {
+  const dir = registrationRequest()
+  try {
+    assert.deepEqual(blocking(check(dir, '--base', 'origin/main')), [],
+      `the record and the view, alone, parented on base_commit: ${describe(check(dir, '--base', 'origin/main'))}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+test('adversarial: registration — a registration request that also carries a product file', () => {
+  COVERED.add('registration')
+  const dir = registrationRequest()
+  try {
+    assert.deepEqual(blocking(check(dir, '--base', 'origin/main')), [],
+      'the registration alone must be green, or this fixture proves nothing')
+    write(dir, 'src/feature.js', 'export const feature = true\n')
+    commit(dir, 'code before the registration has merged')
+    const found = check(dir, '--base', 'origin/main')
+    assert.ok(blocking(found).includes('registration'),
+      `registration did not fire — blocking findings were: ${describe(found)}`)
+    assertRemedy(found, 'registration', /nothing else.*path branch/s)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
 fixture('a registration whose base_commit is not the registration parent', 'registration-base', (dir) => {
   const first = git(dir, 'rev-parse', 'HEAD').trim()
   write(dir, 'docs/between.md', '---\ntype: Note\ntitle: Between\ndescription: x\ntags: [x]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Between\n')

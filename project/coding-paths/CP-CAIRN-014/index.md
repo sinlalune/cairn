@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-014
   route: full
   status: running
-  current_step: S01
+  current_step: S02
   base_commit: 886c398f6f8955e2ea5b623cf26b3352db6d5452
   branch: path/cp-cairn-014
   assigned_writer: cp-cairn-014-writer
@@ -236,23 +236,29 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   owner's decision; ADR-040, ADR-043 and ADR-032 marked, the 1.2 page
   amended in place, both indexes. Widened `writes:` by
   `docs/architecture/index.md`. **COMPLETE**
+- **S02** — [the registration rule reads the change under review](./steps/S02.md):
+  on `pull-request` registration, a request that makes a path `running`
+  is a registration — the record's folder and the view alone, parented on
+  `base_commit`, nothing else — or `registration` refuses it naming which;
+  two fixtures, the catalogue, the conformance row, the soundness note, the
+  module note. **COMPLETE**
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 45c7fb64b6d5a22944fbf0205801b7397f95467a — the registration commit, on origin/main
-unit   : 0 — the last completed on the remote; S01 is the commit that carries this section
+commit : 94c242e14bba8cfb1cd2a9f50f11d8a983e8d7af — S01, on origin/path/cp-cairn-014
+unit   : 01 — the last completed on the remote; S02 is the commit that carries this section
 base   : 886c398f6f8955e2ea5b623cf26b3352db6d5452
 trunk  : 886c398f6f8955e2ea5b623cf26b3352db6d5452 — origin/main at registration
 ```
 
 ### Next action
 
-Start S02 with `cairn-unit` in the path's worktree: the `registration`
-rule reads a registration in the change under review, with its two
-fixtures and rows, as the plan's second item says (ADR-032 decision 3).
+Start S03 with `cairn-unit` in the path's worktree: the `links` rule
+reads the exemptions `cairn.config.json` declares, with its fixture and
+rows, as the plan's third item says (ADR-037 decisions 1 and 2).
 
 ### Blockers
 
