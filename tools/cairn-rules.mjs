@@ -87,6 +87,7 @@ export const RULE_CONFORMANCE = {
   'route': 'The route, its triggers and one-way escalation',
   'work-unit': 'A typed work unit, coherent in one commit',
   'review': 'A typed work unit, coherent in one commit',
+  'current-step': 'A typed work unit, coherent in one commit',
   'remote-checkpoint': 'Every completed unit pushed as a remote checkpoint',
   'provisional': 'Provisional commits never in a candidate',
   'path-history': 'A published path branch is never rewritten',
@@ -215,6 +216,10 @@ export const RULE_METADATA = {
     condition: 'A ready path\'s candidate is not an ancestor, or is followed by anything but one administrative commit, or implementation changed after it, or the closure moved a field acceptance was measured against; a done path\'s candidate is not reachable, one commit takes two paths to done, or — on `pull-request` integration alone — its arrival is carried by a merge object, the `--no-ff` merge being the integrating unit on `manual-git` (ADR-008 d2; ADR-026 d3, d4). On manual-git additionally: the closing record in the path folder is missing, names another candidate, lacks its fields, is not a completed review, or its dispositions do not match the advisories attested at the candidate (advisory: a collapsed reviewer, or a prose disposition on a grandfathered path). On pull-request the request\'s description and approval are the record and are not read',
     enforcing: 'pathClosureState(path) + one arrival at done per commit + closureFieldErrors(recordAtC, current) [+ pull-request: integrationState(record, comparisonRef, id).merge] [+ manual-git: closingAcceptanceErrors(record) + fillErrors(record) + dispositionErrors(disposition, advisories_at_candidate, raised) + opening.accepted_by === closing.accepted_by]'
   },
+  'current-step': {
+    condition: 'A running or ready record whose current_step is not its last step file, named with that file; silent for a flat record and before the first unit; never a refusal (ADR-044 d4)',
+    enforcing: "status in (running, ready) && lastStepFile(record) !== null && current_step !== lastStepFile(record) — the highest S<n> under steps/, by number (advisory)"
+  },
   'review': {
     condition: 'The ledger of a path\'s current unit — its step record, or the flat record that is one — carries no `#### Review` section, or carries it empty; the `closure` type, which writes no step file, is excepted (ADR-017 d2)',
     enforcing: "reviewSection(the current unit's ledger) — the ledger's NEWEST completed unit, the unit under review, `current_step` selecting nothing (ADR-026 d2); presence and emptiness only, and never the `index.md` of a folder record; the findings and their dispositions are the owner's to read at the candidate"
@@ -244,7 +249,7 @@ export const RULE_METADATA = {
     enforcing: "pathFrontmatterErrors(front) + duplicatePathIdentityFindings(paths) + dependencyFindings(paths) + adrFrontmatterErrors(front, file, bodyStatus) + openingAcceptanceErrors(openingFromRecord(record)) on a running record in the diff"
   },
   'links': {
-    condition: 'Relative Markdown link points to non-existent target (code fences stripped), outside the paths cairn.config.json declares under linkExemptions (ADR-037 d1)',
+    condition: 'Relative Markdown link points to non-existent target (code fences stripped), across the documentation and project planes, the specification, skills/ and feedbacks/ (ADR-038 d1), outside the paths cairn.config.json declares under linkExemptions (ADR-037 d1)',
     enforcing: "stripCode(text) => !existsSync(target), over markdownCorpus() less each declared file or folder"
   }
 }

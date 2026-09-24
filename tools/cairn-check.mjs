@@ -1748,6 +1748,7 @@ export function evaluate({
   registrationState,
   registrationBaseState = 'match',
   requests = new Map(),
+  lastStepFor = null,
   remoteCheckpoint,
   checkpointFor,
   closureFor,
@@ -1813,16 +1814,16 @@ export function evaluate({
   // deliberately and `trunk-containment` reports; refusing there would refuse a
   // clone for not having fetched yet.
   if (baseSource === 'unresolvable' && baseRequested) {
-    // The forge's sentinel for "nothing precedes this": a branch's first push.
+    // GitHub's sentinel for "nothing precedes this": a branch's first push.
     // That is a fact about the history, not a broken input, and failing a
     // repository's first push to its trunk would be the gate refusing a state
     // the writer cannot avoid.
     if (/^0{40,}$/.test(baseRequested)) {
       add('advisory', 'comparison',
-        'no commit precedes this push — the forge names none, so this run judged the working tree alone; the next push to this ref compares against this commit')
+        'no commit precedes this push — GitHub names none, so this run judged the working tree alone; the next push to this ref compares against this commit')
     } else {
       add('blocking', 'comparison',
-        `the base this run was asked to compare against cannot be compared with this commit (${baseRequested}), so every changed-file rule was narrowed to the working tree — fetch the ref first; where no ref reaches it, as after a force-push that rewound what the forge named, provide a --base that is still reachable`,
+        `the base this run was asked to compare against cannot be compared with this commit (${baseRequested}), so every changed-file rule was narrowed to the working tree — fetch the ref first; where no ref reaches it, as after a force-push that rewound what GitHub named, provide a --base that is still reachable`,
         'inconclusive')
     }
   }
@@ -1890,6 +1891,21 @@ export function evaluate({
       add('blocking', 'registration-base',
         `cannot prove the registration parent for ${match.front.id} — fetch the complete trunk history and rerun the gate`,
         'inconclusive')
+    }
+  }
+
+  // ADR-044 decision 4. `current_step` is the writer's to refresh, and two
+  // records were integrated with it naming an older unit under a green gate:
+  // `work-unit` asks whether the named step is complete, never whether it is
+  // the current one. A live record whose field is not its last step file is
+  // reported, never refused — the stale field misleads a reader and no rule.
+  for (const path of lastStepFor ? paths : []) {
+    const { status, current_step: current } = path.front ?? {}
+    if (!['running', 'ready'].includes(status)) continue
+    const last = lastStepFor(path.file)
+    if (last && current !== last) {
+      add('advisory', 'current-step',
+        `${path.file} names current_step ${current ?? 'none'} and its last step file is ${last} — make them agree: name in current_step the step the newest completed unit wrote`)
     }
   }
 
@@ -2949,9 +2965,11 @@ function verbatimRelocations(ref) {
 /**
  * The adding commit and path reported by `git log --follow`.
  *
- * `--follow --diff-filter=A --format=%H --name-only` emits newest first. A
- * delete/re-add can therefore yield several pairs; the oldest pair is the
- * identity the current record claims to preserve. Kept pure so the plumbing
+ * `--follow --diff-filter=A --format=%H --name-only` emits newest first —
+ * by ancestry, because the caller passes `--topo-order`: by date alone, a
+ * skewed clock or two same-second commits across a merge can invert it
+ * (ADR-034 decision 7). A delete/re-add can therefore yield several pairs;
+ * the oldest pair is the identity the current record claims to preserve. Kept pure so the plumbing
  * format has an adversarial fixture rather than being trusted by inspection.
  */
 export function recordOriginFromFollowLog(raw) {
@@ -2971,7 +2989,7 @@ export function recordOriginFromFollowLog(raw) {
 
 export function stepRecordOrigin(file) {
   const addedAt = (...flags) => {
-    const raw = gitOrNull(['log', ...flags, '--diff-filter=A', '--format=%H', '--name-only', '--', file])
+    const raw = gitOrNull(['log', '--topo-order', ...flags, '--diff-filter=A', '--format=%H', '--name-only', '--', file])
     return raw == null ? null : recordOriginFromFollowLog(raw)
   }
   const followed = addedAt('--follow')
@@ -3054,13 +3072,19 @@ function walk(dir, out = []) {
  *  a host binds. */
 export const SKILLS_DIR = 'skills'
 
+/** Where notes about the protocol are written — the owner's pages, the
+ *  agents' files — a fixed name at the root, which ADR-038 decision 2 has the
+ *  kit install in every adopter. Read for its links, never for a schema. */
+export const FEEDBACKS_DIR = 'feedbacks'
+
 function markdownCorpus() {
   // The specification lives beside its concept wiki — `spec/` at the root of
   // the protocol's own repository, wherever an adopter binds it — so the wiki's
   // parent joins the two planes, and the skills join them where they exist:
   // a procedure that links a page that moved is as broken as any other link.
-  // Files reached twice dedupe by path.
-  const roots = [...new Set([DOCUMENTATION_DIR, PROJECT_DIR, dirname(CONCEPTS_DIR), SKILLS_DIR])]
+  // The feedback notes join them (ADR-038 decision 1). Files reached twice
+  // dedupe by path.
+  const roots = [...new Set([DOCUMENTATION_DIR, PROJECT_DIR, dirname(CONCEPTS_DIR), SKILLS_DIR, FEEDBACKS_DIR])]
   return [...new Set(roots.flatMap((root) =>
     // A concept root at the top level makes the parent `.`, whose walk prints
     // `./docs/...` — a path no declaration or dedupe would ever match.
@@ -3562,19 +3586,29 @@ function pathRecordFiles() {
  * Sorted by ordinal, because directory order is not chronology.
  */
 function pathWorkUnits(file) {
-  const dir = file.endsWith('/index.md') ? file.slice(0, -'/index.md'.length) : null
-  const files = [file]
-  if (dir && existsSync(join(REPO, dir, 'steps'))) {
-    for (const entry of readdirSync(join(REPO, dir, 'steps')).sort()) {
-      if (entry.endsWith('.md') && !['index.md', 'log.md'].includes(entry)) {
-        files.push(`${dir}/steps/${entry}`)
-      }
-    }
-  }
+  const files = [file, ...stepFiles(file)]
   const units = files.flatMap((rel) =>
     parseWorkUnits(readFileSync(join(REPO, rel), 'utf8')).map((unit) => ({ ...unit, __file: rel })))
   return units.sort((a, b) =>
     (Number.parseInt(a.unit, 10) || 0) - (Number.parseInt(b.unit, 10) || 0))
+}
+
+/** The step files of a born-sliced record, `[]` for a flat one. */
+function stepFiles(file) {
+  const dir = file.endsWith('/index.md') ? file.slice(0, -'/index.md'.length) : null
+  if (!dir || !existsSync(join(REPO, dir, 'steps'))) return []
+  return readdirSync(join(REPO, dir, 'steps')).sort()
+    .filter((entry) => entry.endsWith('.md') && !['index.md', 'log.md'].includes(entry))
+    .map((entry) => `${dir}/steps/${entry}`)
+}
+
+/** A born-sliced record's last step file by its number, `S10` after `S9`;
+ *  `null` for a flat record or one with no step yet (ADR-044 decision 4). */
+function lastStepFile(file) {
+  const numbers = stepFiles(file).map((step) => /\/S(\d+)\.md$/.exec(step)?.[1]).filter(Boolean)
+  if (numbers.length === 0) return null
+  const last = numbers.reduce((a, b) => (Number(b) > Number(a) ? b : a))
+  return `S${last}`
 }
 
 function loadPaths() {
@@ -3830,6 +3864,7 @@ async function main() {
       trunkContained: trunkContained(trunkRef),
       registrationState: pathRegistrationState(trunkRef, branch, paths),
       requests,
+      lastStepFor: lastStepFile,
       registrationBaseState: pathRegistrationBaseState(trunkRef, branch, paths),
       remoteCheckpoint: pathRemoteCheckpoint(branch),
       checkpointFor: (file) => checkpointCommit(readFileSync(join(REPO, file), 'utf8')),

@@ -169,7 +169,10 @@ writer who numbers a new unit at or below an older one moves the subject back;
 and a newest unit typed `closure` skips the rule for the whole record, because
 ADR-017 decision 2 excepts the type that writes no step file and nothing forbids
 that block in a step record. The field a writer forgets no longer selects; a
-field a writer mistypes still can.
+field a writer mistypes still can. Since ADR-044 the field a writer forgets
+is also said: `current-step` compares it with the record's last step file and
+reports, never refuses, because a stale field misleads the reader of the
+record and breaks no reading of the checker.
 
 A rule that reads a transport-shaped fact asks which transport. `acceptance`
 refused an integrating commit that is a merge object carrying `done` — true on

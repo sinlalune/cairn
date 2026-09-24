@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-014
   route: full
   status: running
-  current_step: S03
+  current_step: S04
   base_commit: 886c398f6f8955e2ea5b623cf26b3352db6d5452
   branch: path/cp-cairn-014
   assigned_writer: cp-cairn-014-writer
@@ -32,6 +32,7 @@ cairn:
     - docs/architecture/02-cairn-1-2.md
     - docs/architecture/index.md
     - project/coding-paths/index.md
+    - project/backlog/**
     - project/coding-paths/CP-CAIRN-014/**
   governs:
     - docs/architecture/02-cairn-1-2.md@e2463bbe52836b1feab79d834ab44b79d5d53e5c
@@ -249,24 +250,32 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   files; one fixture; the configuration reference, the conformance row with
   the line on the two 0.2 exemptions, the catalogue, the module note. Widened
   `writes:` by `tools/cairn-config.test.mjs`. **COMPLETE**
+- **S04** — [the corpus, the messages, the fixture and the advisory](./steps/S04.md):
+  `feedbacks/` in the corpus `links` reads; the two `comparison` messages say
+  GitHub; `record-integrity`'s origin read in ancestry order; the advisory
+  `current-step`; one fixture each for the corpus and the advisory; the
+  backlog item S03 found. Widened `writes:` by `project/backlog/**`.
+  **COMPLETE**
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : adfb10f98b7dbea205d1d65ed8dd7e0ad541a9ac — S02, on origin/path/cp-cairn-014
-unit   : 02 — the last completed on the remote; S03 is the commit that carries this section
+commit : a2c8f8093444c272fecd22cfcfc47761aa3b4346 — S03, on origin/path/cp-cairn-014
+unit   : 03 — the last completed on the remote; S04 is the commit that carries this section
 base   : 886c398f6f8955e2ea5b623cf26b3352db6d5452
 trunk  : 886c398f6f8955e2ea5b623cf26b3352db6d5452 — origin/main at registration
 ```
 
 ### Next action
 
-Start S04 with `cairn-unit` in the path's worktree: `feedbacks/` in the
-corpus, the two `comparison` messages, the `record-integrity` fixture's
-order, and the advisory `current-step`, as the plan's fourth item says
-(ADR-038 d1, ADR-034 d6 and d7, ADR-044 d4).
+Start S05, the candidate, with `cairn-close` in the path's worktree:
+merge the trunk in, run the gates bare, name this path in the register's
+row 2 of 1.2, land the administrative commit, hand the candidate to a
+fresh context with its five inputs — telling it that the definition of
+done's second item is met on `register/<id>` and not on a path branch
+(S02) — then the owner's try and the merge.
 
 ### Blockers
 

@@ -30,8 +30,8 @@ The specification lives at `spec/` in the root of this repository, beside its
 concept wiki at `spec/concepts/`, which the configuration binds as
 `roots.concepts`. The checker's Markdown corpus — the files whose links are
 checked and whose links keep a concept from being an orphan — is the
-documentation plane, the project plane, and the parent of the concept root, so
-the specification is read wherever a host binds its wiki; `links` skips the
+documentation plane, the project plane, `skills/`, `feedbacks/` and the parent of
+the concept root, so the specification is read wherever a host binds its wiki; `links` skips the
 files and folders the configuration declares under `linkExemptions`, each with
 its reason, and they still count as linking a concept. `concept-orphan` and
 `concept-growth` read that root **recursively** and name a note by its path
@@ -73,7 +73,9 @@ else the remote-tracking ref. The range from a path's base to its candidate is
 read as this path's own commits alone, where a draft is resolved by the later
 commit that publishes the unit it was drafting, and an edited step record is
 answered by a later step of the same path binding the blob it replaces to the
-blob it adds. It reads the record of the review movement in the newest unit
+blob it adds. It reports a `running` or `ready` record whose `current_step` is not its last
+step file, and refuses nothing for it. It reads the record of the review
+movement in the newest unit
 kept in a ledger — the unit under review — and reads nothing of that section
 beyond whether it is empty. It validates `depends_on:` and knows two routes;
 the live-view generator marks each live path unblocked or names what it waits

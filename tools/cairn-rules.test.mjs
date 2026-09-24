@@ -87,7 +87,7 @@ const BLOCKING_RULES = [
   'scope-drift', 'transition', 'work-unit'
 ]
 const ADVISORY_ONLY_RULES = [
-  'concept-growth', 'decision-drift', 'record-date', 'redaction', 'remote-checkpoint',
+  'concept-growth', 'current-step', 'decision-drift', 'record-date', 'redaction', 'remote-checkpoint',
   'writes-overlap'
 ]
 

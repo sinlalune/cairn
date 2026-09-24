@@ -810,6 +810,46 @@ test('adversarial: links — a declared exemption is skipped, and the same file 
   }
 })
 
+/* ADR-038 decision 1. `feedbacks/` is where a note about the protocol is
+ * written, and a note that links a page that moved misleads its reader as any
+ * other page does; the folder joins the corpus `links` reads. */
+test('adversarial: links — a broken relative link in a feedback note', () => {
+  COVERED.add('links')
+  const dir = publishedTrunk()
+  try {
+    assert.deepEqual(blocking(check(dir)), [], 'the baseline must be green, or this fixture proves nothing')
+    write(dir, 'feedbacks/2026-09-24-a-note.md',
+      '---\ntype: Cairn Feedback\ntitle: A note\ndescription: x\ntags: [x]\ntimestamp: 2026-09-24T00:00:00Z\n---\n\n# A note\n\nSee [the page that moved](../docs/moved.md).\n')
+    commit(dir, 'a feedback note linking a page that moved')
+    const found = check(dir)
+    assert.ok(found.findings.some((f) => f.rule === 'links' && f.level === 'blocking' && f.message.startsWith('feedbacks/')),
+      `links did not read feedbacks/ — blocking findings were: ${describe(found)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+/* ADR-044 decision 4. Two integrated records carried a `current_step`
+ * naming an older unit under a green gate. The field is reported against the
+ * record's last step file, silent before the first unit, and never refused. */
+test('adversarial (advisory): current-step — a current_step behind the last step file', () => {
+  const dir = publishedRepository()
+  const currentStep = () => check(dir).findings.filter((f) => f.rule === 'current-step')
+  try {
+    assert.deepEqual(currentStep(), [], 'silent before the first unit')
+    write(dir, STEP, STEP_RECORD)
+    write(dir, STEP.replace('S01.md', 'S02.md'), STEP_RECORD.replace(/S01/g, 'S02').replace('unit: 01', 'unit: 02'))
+    const stale = currentStep()
+    assert.equal(stale.length, 1, `reported once: ${JSON.stringify(stale)}`)
+    assert.equal(stale[0].level, 'advisory', 'an advisory, never a refusal')
+    assert.match(stale[0].message, /current_step S01 .*last step file is S02/)
+    edit(dir, RECORD, 'current_step: S01', 'current_step: S02')
+    assert.deepEqual(currentStep(), [], 'silent once the field names the last step file')
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
 fixture('a registration whose base_commit is not the registration parent', 'registration-base', (dir) => {
   const first = git(dir, 'rev-parse', 'HEAD').trim()
   write(dir, 'docs/between.md', '---\ntype: Note\ntitle: Between\ndescription: x\ntags: [x]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Between\n')
