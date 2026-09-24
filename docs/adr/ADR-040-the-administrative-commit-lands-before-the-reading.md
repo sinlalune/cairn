@@ -12,7 +12,7 @@ adr:
 
 # ADR-040 — the administrative commit lands before the reading
 
-Status: accepted · 2026-09-21 · written by CP-CAIRN-012, S04
+Status: accepted · 2026-09-21 · written by CP-CAIRN-012, S04 · decision 1 amended by ADR-044 on 2026-09-24
 
 **Promoted from** the owner's
 [decisions page](../../feedbacks/2026-09-21-cairn-1-2-decisions.md) at blob
@@ -45,6 +45,11 @@ either, and `A` carries the closure surface alone.
 ## Decision
 
 ### Decision 1 — on `pull-request` with one owner, `A` lands before the owner is asked to read
+
+**Amended** on 2026-09-24 by [ADR-044](./ADR-044-what-path-1-of-1-2-left-to-a-record.md), decision 1: `ready` states the
+candidate checked, administratively closed and proposed; the acceptance
+comes with it on `manual-git` and follows it on `pull-request`. The rest
+stands.
 
 Promotes **K32**, from Q17, first option.
 

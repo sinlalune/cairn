@@ -29,6 +29,7 @@ cairn:
     - docs/modules/application.md
     - docs/adr/**
     - docs/architecture/02-cairn-1-2.md
+    - docs/architecture/index.md
     - project/coding-paths/index.md
     - project/coding-paths/CP-CAIRN-014/**
   governs:
@@ -229,23 +230,29 @@ trunk directly. The units run in a fresh session. Amendments: none.
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
-- **S01** — not started.
+- **S01** — [the record path 1 owes](./steps/S01.md): ADR-044, promoted
+  from path 1's journal entry — what `ready` states, the fresh reader's
+  fifth input, the squash limit, and the advisory `current-step` on the
+  owner's decision; ADR-040, ADR-043 and ADR-032 marked, the 1.2 page
+  amended in place, both indexes. Widened `writes:` by
+  `docs/architecture/index.md`. **COMPLETE**
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — this record and the live view, nothing else, on origin/main; unit 0
-unit   : 0
+commit : 45c7fb64b6d5a22944fbf0205801b7397f95467a — the registration commit, on origin/main
+unit   : 0 — the last completed on the remote; S01 is the commit that carries this section
 base   : 886c398f6f8955e2ea5b623cf26b3352db6d5452
 trunk  : 886c398f6f8955e2ea5b623cf26b3352db6d5452 — origin/main at registration
 ```
 
 ### Next action
 
-Start S01 with `cairn-unit` in the path's worktree: ADR-044, the record
-path 1 owes, as the plan's first item says.
+Start S02 with `cairn-unit` in the path's worktree: the `registration`
+rule reads a registration in the change under review, with its two
+fixtures and rows, as the plan's second item says (ADR-032 decision 3).
 
 ### Blockers
 
@@ -259,12 +266,13 @@ None.
 - A separate decision path for the record — one unit of this path
   writes it, as CP-CAIRN-006 S01 wrote ADR-024 and ADR-025; a path for
   one record is the volume the manifesto's first threat names.
-- Nothing for the stale `current_step` path 1's reader found in three
-  integrated records, the field being the writer's — the unit skill's
-  resume movement already says to refresh it, and three integrated
-  records carry it stale; the owner took the writer's recommendation on
-  2026-09-24, an advisory, because the checker already walks each path's
-  step files and a refusal would need three records grandfathered.
+- Nothing for the stale `current_step` path 1's S08 reader found, the
+  field being the writer's — the unit skill's resume movement already
+  says to refresh it, and two integrated records, CP-CAIRN-008 and
+  CP-CAIRN-012, carry it stale; the owner took the writer's
+  recommendation on 2026-09-24, an advisory, because a stale field breaks
+  no reading of the checker (ADR-044, decision 4). The opening
+  acceptance says *three*; S01 corrects it.
 - Taking `adopt`'s naming of the shape that wants a declaration (ADR-037
   decision 2's second half) — it is `staleShapes` in the installer, row
   3's file; the conformance line is here.

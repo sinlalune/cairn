@@ -12,7 +12,7 @@ adr:
 
 # ADR-043 — the coherence questions are a fresh-context read
 
-Status: accepted · 2026-09-21 · written by CP-CAIRN-012, S04
+Status: accepted · 2026-09-21 · written by CP-CAIRN-012, S04 · decision 1 amended by ADR-044 on 2026-09-24
 
 **Promoted from** the owner's
 [decisions page](../../feedbacks/2026-09-21-cairn-1-2-decisions.md) at blob
@@ -45,6 +45,11 @@ closing read, the higher-stakes one, had none.
 ## Decision
 
 ### Decision 1 — a fresh context answers the four, and the owner arbitrates
+
+**Amended** on 2026-09-24 by [ADR-044](./ADR-044-what-path-1-of-1-2-left-to-a-record.md), decision 2: the reader is also
+given the records of the running sibling paths, never the closing
+path's own, which the live view cannot stand in for; the inputs *and nothing
+else* bounds now include them. The rest stands.
 
 Promotes **K35**, from Q20, first option.
 

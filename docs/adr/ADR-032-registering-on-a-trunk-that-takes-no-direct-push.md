@@ -12,7 +12,7 @@ adr:
 
 # ADR-032 — registering on a trunk that takes no direct push
 
-Status: accepted · 2026-09-21 · written by CP-CAIRN-012, S01
+Status: accepted · 2026-09-21 · written by CP-CAIRN-012, S01 · decision 2 amended by ADR-044 on 2026-09-24
 
 This record **supersedes** two clauses of decision 1 of
 [ADR-001](./ADR-001-sole-owner-opens-and-closes-a-path.md), for the
@@ -88,6 +88,11 @@ What this changes: `skills/cairn-open/SKILL.md`, before step 3;
 `spec/reference/configuration.md`, the paragraph on what `init` declares.
 
 ### Decision 2 — `pull-request` registration gets its sequence
+
+**Amended** on 2026-09-24 by [ADR-044](./ADR-044-what-path-1-of-1-2-left-to-a-record.md), decision 3: *the merge the trunk's
+own rules allow* is a merge that keeps the registration commit, never a squash or a
+rebase-merge, so a trunk that allows only squash merges cannot register
+by request. The rest stands.
 
 Promotes **K07**, from Q2, third option: the sequence is supported, not
 removed, and the value stays.
