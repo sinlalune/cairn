@@ -7,13 +7,13 @@ timestamp: 2026-09-22T00:00:00Z
 cairn:
   id: CP-CAIRN-013
   route: full
-  status: running
+  status: ready
   current_step: S10
   base_commit: dc241ff0209d995c057ae5de5b06640193980281
   branch: path/cp-cairn-013
   assigned_writer: cp-cairn-013-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 7f74c2cf0eae03578776e56da51c231452567ca4
   resolution: null
   writes:
     - skills/**
@@ -289,20 +289,21 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 8d556733023c3f689887f452780cc533aa1f0a16 — S09, on origin/path/cp-cairn-013
-unit   : 9
+commit : 7f74c2cf0eae03578776e56da51c231452567ca4 — S10, the candidate C, on origin/path/cp-cairn-013
+unit   : 10
 base   : dc241ff0209d995c057ae5de5b06640193980281
 trunk  : dc241ff0209d995c057ae5de5b06640193980281 — origin/main at registration
 ```
 
 ### Next action
 
-Produce the candidate from S10's commit and close on it: the gate bare, a
-fresh context reading THIS candidate for the four questions, request 30's
-description rewritten for it, then the administrative commit ahead of the
-reading, the owner's try, and the merge that is the acceptance. After it: the
-integrating unit on a clean trunk checkout, the remote result proved, this
-worktree removed.
+The owner reads the pages and tries the skills, then merges request 30, which
+is the acceptance. Before it, all done: candidate `7f74c2c` checked and
+pushed, read fresh for the four questions, its review in the request's
+description, and this administrative commit on the branch ahead of the
+reading. After the merge: the integrating unit on a clean trunk checkout —
+`status: done`, `resolution: completed`, the live view, one journal entry —
+then `C` proved reachable from the remote trunk and this worktree removed.
 
 Owed by the next path, a superseding record ruled on 2026-09-22 and
 2026-09-24: what `ready` states (amends ADR-040), the fresh reader's fifth
