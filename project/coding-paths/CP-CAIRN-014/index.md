@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-014
   route: full
   status: running
-  current_step: S05
+  current_step: S06
   base_commit: 886c398f6f8955e2ea5b623cf26b3352db6d5452
   branch: path/cp-cairn-014
   assigned_writer: cp-cairn-014-writer
@@ -259,21 +259,25 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - **S05** — [the register names this path](./steps/S05.md): row 2 of the
   coding paths of 1.2 links this record, *running*; the seventh item's
   surfaces read by command before the candidate. **COMPLETE**
+- **S06** — [what the closing reader found](./steps/S06.md): the first
+  candidate, `c06dc39`, voided; ADR-044 decision 4 names what ADR-026
+  decision 2 refused and why the advisory is not it; `concept-orphan`'s
+  catalogue row names its corpus. **COMPLETE**
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 5857779f88d3f6d1e311fcf01d9041a1789b6e3d — S04, on origin/path/cp-cairn-014
-unit   : 04 — the last completed on the remote; S05 is the commit that carries this section
+commit : c06dc3922295740f39a7e71a0a6fdd03cdaa039b — S05, on origin/path/cp-cairn-014, the first candidate, voided by S06
+unit   : 05 — the last completed on the remote; S06 is the commit that carries this section
 base   : 886c398f6f8955e2ea5b623cf26b3352db6d5452
 trunk  : 886c398f6f8955e2ea5b623cf26b3352db6d5452 — origin/main at registration
 ```
 
 ### Next action
 
-Close with `cairn-close` in the path's worktree: the candidate is S05's
+Close with `cairn-close` in the path's worktree: the candidate is S06's
 commit with the trunk merged in; confirm no provisional commit, push, run
 the gates bare; hand the candidate to a fresh context with its five
 inputs and nothing else, and write the request's description — its line

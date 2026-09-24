@@ -177,7 +177,7 @@ export const RULE_METADATA = {
     enforcing: "journalRecords(loadJournal(), id) over the entries' own metadata block on the transition into done; inconclusive when the journal cannot be read"
   },
   'concept-orphan': {
-    condition: 'A concept note that no normative or learning text outside the wiki links to. The root is read RECURSIVELY, through every folder it holds (ADR-011 d2), and a note is named by its path under the root, so a link must reach the folder the note is in',
+    condition: 'A concept note that no document outside the wiki links to — any document the links rule reads, its declared exemptions included. The root is read RECURSIVELY, through every folder it holds (ADR-011 d2), and a note is named by its path under the root, so a link must reach the folder the note is in',
     enforcing: 'orphanConcepts(walk(concepts root) relative to it, conceptLinkTargets(documents outside the concepts folder))'
   },
   'concept-growth': {

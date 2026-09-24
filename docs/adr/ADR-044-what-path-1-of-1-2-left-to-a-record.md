@@ -112,6 +112,14 @@ reading of the checker. The two integrated records that carry the
 staleness, CP-CAIRN-008 and CP-CAIRN-012, are `done`, which the advisory
 never reads.
 
+It stands beside [ADR-026](./ADR-026-the-readings-that-must-not-lie.md)
+decision 2, which refused *keeping `current_step` as the rule's selector
+and adding a rule that it names the newest unit: a second rule to protect
+the first*. This is not that rule. `review` no longer selects by the
+field, and `work-unit` reads it only to ask whether the named step
+carries a `cairn-unit` block, which a field left behind still names; the
+advisory guards no rule.
+
 ## Alternatives rejected
 
 - **One record per amendment**: three records of one paragraph each for

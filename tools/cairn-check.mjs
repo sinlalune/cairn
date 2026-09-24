@@ -3683,7 +3683,7 @@ function corpusFindings(previousRef = null, changed = [], viewCurrent = null) {
       findings.push({
         level: 'blocking',
         rule: 'concept-orphan',
-        message: `${CONCEPTS_DIR}/${orphan}: no normative or learning text links this concept — a word nobody needed is where vocabulary bloat begins; link it where it is used, or remove it`
+        message: `${CONCEPTS_DIR}/${orphan}: no document outside the wiki links this concept — a word nobody needed is where vocabulary bloat begins; link it where it is used, or remove it`
       })
     }
     // Growth is DIFF-SCOPED, like ledger-size and for the same reason: it speaks
