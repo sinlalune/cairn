@@ -7,25 +7,33 @@ timestamp: 2026-09-22T00:00:00Z
 cairn:
   id: CP-CAIRN-013
   route: full
-  status: running
-  current_step: S01
+  status: ready
+  current_step: S10
   base_commit: dc241ff0209d995c057ae5de5b06640193980281
   branch: path/cp-cairn-013
   assigned_writer: cp-cairn-013-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 7f74c2cf0eae03578776e56da51c231452567ca4
   resolution: null
   writes:
     - skills/**
     - AGENTS.md
     - spec/index.md
     - spec/reference/execution-protocol.md
+    - spec/reference/paths.md
     - spec/reference/path-template.md
     - spec/reference/human-records.md
     - spec/reference/configuration.md
     - spec/reference/repository-layout.md
     - spec/concepts/administrative-closure.md
     - spec/concepts/coherence-audit.md
+    - spec/concepts/lifecycle.md
+    - spec/concepts/implementation-candidate.md
+    - spec/concepts/route.md
+    - spec/concepts/roles.md
+    - spec/concepts/index.md
+    - spec/concepts/finding.md
+    - spec/concepts/path-record.md
     - .github/pull_request_template.md
     - project/coding-paths/index.md
     - project/coding-paths/CP-CAIRN-013/**
@@ -227,29 +235,114 @@ fresh session. Amendments: none.
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
-- **S01** — not started.
+- **S01** — [the open skill and the configuration reference](./steps/S01.md):
+  the two reads before the go-ahead, the direct push's precondition and the
+  `pull-request` registration sequence beside it, step 1 reading
+  `project/backlog/`, the definition of done as a plain list — the skill, its
+  command reference, `spec/reference/configuration.md` and the path template's
+  own list. **COMPLETE**
+- **S02** — [the close skill's order and its sentences](./steps/S02.md): the
+  administrative commit before the reading with the protocol, chapter 5 and
+  the concept following; the measured figure, the dangling `soundness.md`
+  link, the `deferred` disposition, the checkbox clause, the two release-path
+  sentences; and, on the owner's ruling, what `ready` states in four pages.
+  **COMPLETE**
+- **S03** — [the coherence questions as a fresh-context read](./steps/S03.md):
+  the close skill's review step hands the candidate to a second context and
+  its acceptance step says the answers are there already; the reference's
+  commands, the human-records examples, chapter 5's `full` route, the audit
+  concept, the route and roles concepts, and this repository's request
+  template. **COMPLETE**
+- **S04** — [the unit skill and the seventh skill](./steps/S04.md): section
+  7's route for a note about Cairn and movement 4's `deferred` disposition;
+  `skills/cairn-update/SKILL.md`, the seventh, an adopter's update as a path
+  in seven movements; the bootloader's skills line. **COMPLETE**
+- **S05** — [the chapters and the layout](./steps/S05.md): chapters 1 and 4
+  naming the plane's backlog space and defining what a file there holds and
+  who reads the folder; the layout reference's tree and rows for the backlog,
+  for `feedbacks/` with its release subfolders and its type, and for
+  `CHANGELOG.md`; the path template's deferral naming its backlog file.
+  **COMPLETE**
+- **S06** — [the candidate](./steps/S06.md): the trunk merged in, the
+  register's row 1 of 1.2 naming this path, the gates bare, and the
+  definition of done's exclusions measured by command. **COMPLETE**
+- **S07** — [what the closing read found](./steps/S07.md): the coherence read
+  of `1b24173` answered two of its four questions *Yes*; the backlog's
+  absence corrected against ADR-041, the portable convention's closure order
+  brought to the one this path writes on the owner's ruling, and what `A`
+  does not change said truly in three places. **COMPLETE**
+- **S08** — [the audit glob, and the candidate it voided](./steps/S08.md):
+  the command block that hands the coherence reader its inputs matched every
+  path folder's record, this path's own among them; a reviewer on request 30
+  found it, and `62e1542` is void. **COMPLETE**
+- **S09** — [what the third closing read found](./steps/S09.md): the
+  feedbacks row corrected against ADR-038 and the concept index's closing
+  chain put in the new order; the owner's rulings on the squash ban and the
+  reader's fifth input recorded; `aa0e38a` is void. **COMPLETE**
+- **S10** — [what the fourth closing read found](./steps/S10.md): the
+  administrative-closure concept true on both transports, *the reader* that
+  meant the owner named as the owner, and the deferral examples following up
+  on a backlog file; `8d55673` is void. **COMPLETE**
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — this record and the live view, nothing else, on origin/main; unit 0
-unit   : 0
+commit : 7f74c2cf0eae03578776e56da51c231452567ca4 — S10, the candidate C, on origin/path/cp-cairn-013
+unit   : 10
 base   : dc241ff0209d995c057ae5de5b06640193980281
 trunk  : dc241ff0209d995c057ae5de5b06640193980281 — origin/main at registration
 ```
 
 ### Next action
 
-Start S01 with `cairn-unit` in the path's worktree: the open skill and the
-configuration reference, as the plan's first item says.
+The owner reads the pages and tries the skills, then merges request 30, which
+is the acceptance. Before it, all done: candidate `7f74c2c` checked and
+pushed, read fresh for the four questions, its review in the request's
+description, and this administrative commit on the branch ahead of the
+reading. After the merge: the integrating unit on a clean trunk checkout —
+`status: done`, `resolution: completed`, the live view, one journal entry —
+then `C` proved reachable from the remote trunk and this worktree removed.
+
+Owed by the next path, a superseding record ruled on 2026-09-22 and
+2026-09-24: what `ready` states (amends ADR-040), the fresh reader's fifth
+input, the records of the running siblings (amends ADR-043), and the limit
+the squash ban names — a trunk that allows only squash merges cannot register
+by request (amends ADR-032 decision 2).
 
 ### Blockers
 
 None.
 
 ### Tried and rejected
+
+- Merging the first candidate with what the coherence read found. Two of its
+  four answers were *Yes*: the layout page contradicted ADR-041 about the
+  backlog, and `spec/reference/paths.md` — the portable convention the
+  bootloader names as its first read — still printed the closure order this
+  path supersedes. The owner ruled on 2026-09-22 that the second is fixed in
+  the candidate rather than left live or given a path of its own, so
+  `writes:` is widened by that page and `1b24173` is void.
+
+- Leaving `spec/concepts/route.md` and `spec/concepts/roles.md` to a path of
+  their own — both still made the four coherence questions the reviewer's
+  read, which is the reader ADR-043 replaces, and the owner had ruled on the
+  same shape in S02. `writes:` was widened for the two and the ruling named
+  in the report rather than asked a second time.
+
+- Leaving what `ready` states to a superseding record on a path of its own,
+  as this path's coverage says to do with a record found wanting — the owner
+  ruled in the chat of 2026-09-22 that the wording follows the order ADR-040
+  already accepted, here, and `writes:` was widened by
+  `spec/concepts/lifecycle.md` and `spec/concepts/implementation-candidate.md`
+  for it. The two records this touches are read, never written.
+
+- Leaving the path template's definition of done to S05, as the plan says —
+  step 1 of the open skill links the template three lines from the sentence
+  that now refuses a box, and a template shipping five boxes would have made
+  the two pages disagree between units, which the plan's own preamble
+  forbids. The template's list moved in S01; S05 keeps the rest of its item.
 
 - Writing this record's own definition of done as a plain list, as
   ADR-042 decides — the template this record is born from still carries

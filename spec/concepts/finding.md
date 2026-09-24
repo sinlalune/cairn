@@ -45,7 +45,7 @@ advisory_disposition:
   - rule: scope-drift
     disposition: deferred
     owner: participant-id
-    follow_up: CP-EXAMPLE-002
+    follow_up: project/backlog/2026-01-15-scope-drift.md
 ```
 
 `disposition` is `fixed`, `accepted` or `deferred`, and a deferral names an

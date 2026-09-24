@@ -16,6 +16,10 @@ trunk, remote, roots and transport. The commands below use the defaults
 
 ## 1. Write the record
 
+Read `project/backlog/` before the path folder is written: an item taken from
+there is named in the goal and its file declared in `writes:`, and this path's
+last unit deletes the file.
+
 One folder, born as one, from the
 [path template](../../spec/reference/path-template.md):
 
@@ -45,11 +49,19 @@ Write the **goal** so that its first three lines are the three `cairn-code`
 asks of every change: what the path does, why it is the least, what it does
 not do.
 
-The **definition of done** is what acceptance binds. Write it as checkable
-outcomes, not activities. Ticks are never added to it: what a path completed
-is stated by the closing review and the journal entry.
+The **definition of done** is what acceptance binds. Write it as a plain list
+of checkable outcomes, not activities, and never as checkboxes: nothing inside
+the text the digest pins is a control to tick. What a path completed is stated
+by the closing review and the journal entry.
 
 ## 2. The owner reviews the plan
+
+Read the record once more before the question goes to the owner. A
+`<placeholder>` in a surface the records this path is scoped from name — a
+folder, a file, a field — is a decision one of them left open: put it to the
+owner here, with the plan, and not to the unit that trips on it later. And
+read each item of the definition of done against the record it rests on,
+correcting the item where the two disagree.
 
 Put the question in the chat, not in a file the owner must open, and signal it
 as a decision before anything else: one opening line saying a decision is
@@ -80,28 +92,43 @@ first with `supersedes:`, records the amendment.
 
 ## 3. Register on the trunk
 
+The commit is the same under both transports — the record, the view, nothing
+else, its parent the trunk tip pinned as `base_commit`. How it reaches the
+trunk is what `transport.registration` declares, and the direct-push sequence
+requires a trunk that accepts a direct push: an unprotected trunk, or a bypass
+for the writer. A trunk that requires a request registers through the second
+sequence below.
+
 From a clean, current trunk checkout:
 
 ```bash
 git switch main
 git fetch origin main
+git merge --ff-only origin/main
 git status --porcelain=v1        # must print nothing
 git rev-parse origin/main        # this is base_commit
 ```
 
 Set `status: running`, `base_commit` to that tip, and `assigned_writer`, then
 regenerate the live view. No object id a record carries is ever typed by hand,
-or edited to satisfy a refusal. Run the gate bare and read its exit code. Land
-one metadata-only commit — the record, the view, nothing else — on the trunk
-directly, then read the run it triggers there. The sequence is in
-[reference.md](./reference.md).
+or edited to satisfy a refusal. Run the gate bare and read its exit code, then
+land the one metadata-only commit under the declaration it serves:
+
+- **`manual-git`** — push it to the trunk directly, then read the run it
+  triggers there.
+- **`pull-request`** — carry it on a branch that holds that commit and nothing
+  else, open one request, read its run green, and merge it in the way that
+  keeps that commit: never a squash, never a rebase-merge.
+
+Both sequences are in [reference.md](./reference.md).
 
 ## 4. Create and publish the branch
 
 Only after the registration commit is on the remote trunk:
 
 ```bash
-git worktree add ../repo-cp-example-001 -b path/cp-example-001 main
+git fetch origin main
+git worktree add ../repo-cp-example-001 -b path/cp-example-001 origin/main
 cd ../repo-cp-example-001
 git push -u origin path/cp-example-001
 ```

@@ -81,9 +81,9 @@ evidence from being tidied afterwards.
 [trunk registration](./trunk-registration.md) → [live view](./live-view.md) →
 [implementation candidate](./implementation-candidate.md) →
 [coherence audit](./coherence-audit.md) →
+[administrative closure](./administrative-closure.md) →
 [closing acceptance](./closing-acceptance.md) →
 [acceptance drift](./acceptance-drift.md) →
-[administrative closure](./administrative-closure.md) →
 [integration transport](./integration-transport.md) → [journal](./journal.md).
 
 ### State and route

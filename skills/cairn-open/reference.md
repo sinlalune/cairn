@@ -9,8 +9,10 @@ another command.
 ```bash
 git switch main
 git fetch origin main
+git merge --ff-only origin/main
 git status --porcelain=v1
 git rev-parse origin/main
+git switch -c register/cp-example-001 origin/main    # pull-request registration only
 node tools/cairn-check.mjs --scope-digest project/coding-paths/CP-EXAMPLE-001/index.md#definition-of-done
 ```
 
@@ -29,11 +31,35 @@ git rev-parse HEAD^
 ```
 
 The printed parent must equal `base_commit`. No product implementation belongs
-in this commit. Push it to the trunk directly:
+in this commit. How it reaches the trunk is what `transport.registration`
+declares.
+
+### On `manual-git` — the trunk takes the push
+
+Requires a trunk that accepts a direct push: unprotected, or a bypass for the
+writer. Push it, then read the run it triggers on the trunk.
 
 ```bash
 git push origin HEAD:main
 ```
+
+### On `pull-request` — the trunk takes a request
+
+The commit is alone on `register/cp-example-001`. Merge the request in the way
+that keeps it — a merge commit or a fast-forward, never a squash or a
+rebase-merge, which replaces it with a commit whose parent is the trunk at the
+merge; `registration-base` then goes red on the path's first run for every
+trunk that moved in between.
+
+```bash
+git push -u origin register/cp-example-001
+# open one request against the trunk, read its run green, and merge it
+git fetch origin main
+git merge-base --is-ancestor register/cp-example-001 origin/main
+```
+
+The last command exits 0 only if the merge kept the commit; it reads the local
+branch, so delete that one after it, not before.
 
 ## Create and publish the path
 

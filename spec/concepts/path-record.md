@@ -38,7 +38,7 @@ names is the accepted definition of done, and its
 acceptance.
 
 The record advances with every work unit: a new step file, a refreshed resume
-section. After acceptance, the only fields
+section. At closure, the only frontmatter fields
 [administrative closure](./administrative-closure.md) may touch are `status`
 and `subject_commit` — because the definition of done lives in this same file,
 and closure must not be able to rewrite what acceptance was measured against.

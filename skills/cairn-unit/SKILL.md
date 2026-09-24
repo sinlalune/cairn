@@ -100,9 +100,9 @@ context and which kind, or you, with the reason and how long you waited
 
 Write what it returns into a `#### Review` section of the step, between the
 self-review and the verification: one line per finding with its disposition —
-fixed in this unit, refused with the reason, or deferred to a named unit or
-path — or one sentence saying it found nothing. A step without that section is
-not a completed unit.
+fixed in this unit, refused with the reason, or deferred, with a file under
+`project/backlog/` that the disposition names — or one sentence saying it
+found nothing. A step without that section is not a completed unit.
 
 A finding you fix changes the diff the reader judged. Give the fix back to a
 fresh context — only the lines it changed, the same two criteria, nothing else
@@ -153,6 +153,12 @@ gate stayed green and the protocol still cost more than it should, write a
 file under `feedbacks/` naming the movement, the cost and the change to Cairn
 that would remove it — when there is something to say, never as a ritual, and
 never for a defect of the harness, which goes to its vendor (ADR-028).
+
+That note is about Cairn, so it travels: in the protocol's own repository it
+is written straight into `feedbacks/`; from anywhere else it reaches that
+folder as a pull request against that repository, or carried by the owner. A
+note about how this repository runs the protocol — its own conventions, its
+own harness — is not about Cairn and stays in this repository's `feedbacks/`.
 
 ## What you must not do
 

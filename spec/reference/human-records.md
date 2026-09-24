@@ -97,6 +97,8 @@ description and the acceptance as its approval. The kit installs
 
 ## Coherence
 
+Read by a fresh context of the writer's agent, a subagent of this harness.
+
 - [x] Does the diff contradict an accepted decision? No — …
 - [x] Does it duplicate something another running path is building? No — …
 - [x] Did it introduce architecture that belongs in a decision record and has none? No — …
@@ -105,7 +107,7 @@ description and the acceptance as its approval. The kit installs
 ## Advisories at `C`
 
 - `scope-drift` — accepted: the wider root cause is declared in `writes:` at this commit.
-- `record-date` — deferred to participant-id, CP-EXAMPLE-002.
+- `record-date` — deferred to participant-id, `project/backlog/2026-01-15-record-date.md`.
 
 ## Roles
 
@@ -153,13 +155,15 @@ cairn:
       disposition: deferred
       reason: the step carries the date its work started, and says why
       owner: participant-id
-      follow_up: CP-EXAMPLE-002
+      follow_up: project/backlog/2026-01-15-record-date.md
   verdict: clean
 ---
 
 # CP-EXAMPLE-001 — closing of fedcba9
 
 ## Findings
+
+Read by a fresh context of the writer's agent, a subagent of this harness.
 
 ### Does the diff contradict an accepted decision?
 

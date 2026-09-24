@@ -42,6 +42,13 @@ repository/
 │                       └── <ledger-unit-ordinal>
 ├── AGENTS.md
 ├── README.md                   what the project is, then one line per surface page
+├── CHANGELOG.md                the release notes
+├── feedbacks/
+│   ├── index.md
+│   ├── <date>-<slug>.md        a note a release still owes an answer
+│   └── <release>/
+│       ├── index.md            what answered each line of the notes below it
+│       └── <date>-<slug>.md    a note that release answered
 ├── cairn/
 │   └── README.md               GENERATED pointer: the installed release, the chapters, the skills, what the kit owns
 ├── manifesto.md
@@ -64,7 +71,7 @@ repository/
 │   ├── soundness.md
 │   └── <tool>.test.mjs
 ├── skills/
-│   └── <cairn-skill>/          brainstorm · open · unit · close · learn · the code stance
+│   └── <cairn-skill>/          brainstorm · open · unit · close · update · learn · the code stance
 │       ├── SKILL.md
 │       └── reference.md
 ├── site/
@@ -120,10 +127,13 @@ repository/
     ├── log/
     │   ├── index.md
     │   └── <date>-<path-id>.md
-    └── brainstorm/
+    ├── brainstorm/
+    │   ├── index.md
+    │   ├── log.md
+    │   └── <provisional-note>.md
+    └── backlog/
         ├── index.md
-        ├── log.md
-        └── <provisional-note>.md
+        └── <date>-<slug>.md
 ```
 
 `.git/refs/` is shown because two of Cairn's durable objects are refs rather
@@ -135,7 +145,9 @@ working tree for them finds nothing and reasonably concludes they do not exist.
 `shared/` is a guarded source root supported by the example binding even when a
 repository does not currently contain it. Repeatable records may be absent when
 no event of that kind exists; their directory, index, and folder log still name
-the role. `cairn.config.json`, its schema, and its loader are shown because the
+the role. `CHANGELOG.md` has no such placeholder: it is absent until the
+first release writes it.
+`cairn.config.json`, its schema, and its loader are shown because the
 reference tools now consume that binding before evaluating repository rules.
 
 A host repository may of course hold folders Cairn says nothing about. Those are
@@ -171,7 +183,7 @@ what Cairn defines, not what any one adoption happens to contain.
 | `spec/index.md` | canonical normative protocol | accepted specification change |
 | `spec/concepts/*.md` | one explanatory article per specialised object | same specification work unit |
 | `spec/reference/*.md` | exact layouts, schemas, and conformance | same specification work unit |
-| `skills/<name>/SKILL.md` | one procedure as an Agent Skill — brainstorm, open, unit, close, learn — or the coding stance; its `reference.md` carries the command sequences | same work unit as the procedure it teaches |
+| `skills/<name>/SKILL.md` | one procedure as an Agent Skill — brainstorm, open, unit, close, update, learn — or the coding stance; its `reference.md` carries the command sequences | same work unit as the procedure it teaches |
 | `README.md` | the beginner overview and the three quick starts | the protocol's own repository |
 | `manifesto.md` | the edited edition of the owner's statement; the verbatim original stays in the documentation plane | the protocol's own repository |
 | `site/` | the React Markdown renderer with Mermaid, built from the manifesto, the README, the specification and the skills, and published to GitHub Pages | the protocol's own repository, as a second implemented area |
@@ -186,6 +198,10 @@ what Cairn defines, not what any one adoption happens to contain.
 | `project/coding-paths/history/*.md` | verbatim completed ledger sections rolled out of a FLAT record; a born-sliced record has no rollup and writes the step where it lives | created by that path; immutable thereafter |
 | `project/log/*.md` | one integrated outcome per file | integration unit; immutable thereafter |
 | `project/brainstorm/` | explicitly provisional thinking | normal path work; never treated as accepted doctrine |
+| `project/backlog/` | one file per deferred item, as [chapter 4](../index.md#4-roadmap) defines it | the path that defers it; deleted by the path that takes it |
+| `feedbacks/*.md` | one note per observation about the protocol itself; a note written from 1.2 on carries the type `Cairn Feedback` | whoever writes it |
+| `feedbacks/<release>/` | the notes that release answered, with an index naming what answered each line | the release path that moves them |
+| `CHANGELOG.md` | one section per release: the adopter repairs it absorbed and the ones it did not, by their path ids, then what it changes for an adopter | the release path, before the tag |
 | `refs/heads/path/<id>` | one path's branch, carrying every checkpoint it has pushed | current assigned writer |
 | `refs/cairn/checkpoints/<id>/g<NN>/<n>` | one immovable pin per ledger-named checkpoint, inside the generation that was current when it was written | append-only; never moved or deleted while the path record lives |
 | each meaningful folder's `index.md` | what belongs there and how to navigate it | update when folder meaning or contents change materially |

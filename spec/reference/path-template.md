@@ -69,18 +69,19 @@ not do — the owner reads them at the plan review.
 This section is what `scope_ref` resolves to. Its
 [scope digest](../concepts/scope-digest.md) is recorded in the opening
 acceptance below and re-computed at closing; editing it after acceptance
-invalidates that acceptance until a scope amendment is recorded. Ticks are
-never added: what a path completed is stated by the closing review and the
-journal entry, not by a box.
+invalidates that acceptance until a scope amendment is recorded. The items are
+a plain list and carry no box: a box is an instruction to tick it, and a tick
+is an edit of the pinned text. What a path completed is stated by the closing
+review and the journal entry.
 
-- [ ] Product behaviour is implemented and covered by relevant tests.
-- [ ] Affected architecture, decisions and module notes are current.
-- [ ] Every completed step has one self-contained step record, a refreshed
-      resume section, one commit, and a remote checkpoint.
-- [ ] The final implementation candidate contains the trunk tip, is checked,
-      reviewed and accepted by exact full object id.
-- [ ] The exact candidate lands, the trunk records done, the remote result is
-      proved, and the clean secondary worktree is removed safely.
+- Product behaviour is implemented and covered by relevant tests.
+- Affected architecture, decisions and module notes are current.
+- Every completed step has one self-contained step record, a refreshed
+  resume section, one commit, and a remote checkpoint.
+- The final implementation candidate contains the trunk tip, is checked,
+  reviewed and accepted by exact full object id.
+- The exact candidate lands, the trunk records done, the remote result is
+  proved, and the clean secondary worktree is removed safely.
 
 ## Opening acceptance
 
@@ -225,7 +226,7 @@ verified: cairn-check, test, build
 
 First read — reader: <a fresh context, and which kind | the writer, with the reason no reader was obtainable and how long was waited> — given this unit's diff and the two criteria:
 
-- <finding> — **fixed** | **refused**, <reason> | **deferred** to <unit or path>
+- <finding> — **fixed** | **refused**, <reason> | **deferred** to <its file under project/backlog/>
 
 Second read — reader: <the same line, for the fix> — given only the diff of those fixes:
 
@@ -302,8 +303,8 @@ commits stay in the history as what they were. A host that declares
 
 ### Becoming ready
 
-After exact candidate `C` has passed its checks, its review and its
-acceptance, create one administrative commit that:
+After exact candidate `C` has passed its checks and its review — and, on
+`manual-git`, its acceptance — create one administrative commit that:
 
 - sets `status: ready`;
 - sets `subject_commit` to the full object id of `C`;

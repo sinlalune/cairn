@@ -95,6 +95,9 @@ The reference tools check nothing about a brainstorm note beyond its links and
 its [frontmatter](./concepts/frontmatter.md). That is deliberate: the stage
 where a rule would cost the most and catch the least is this one.
 
+Work a path decided not to do now is not a brainstorm note and does not go
+here: it goes to the plane's backlog space, which chapter 4 defines.
+
 ## 2. Research
 
 Through research you refine the vision. Research is reading, trying and asking,
@@ -187,6 +190,15 @@ index of the project plane:
 Every milestone is accounted for: it has a path, or it says it does not yet.
 That sentence is the whole rule, and it is what keeps a roadmap from being a
 list of wishes.
+
+A deferred item is not a milestone and is not a row here. It lives in the
+plane's backlog space — `project/backlog/`, one file per item, saying what the
+item is, which path deferred it and where, who owns it, and the shape of the
+work it wants: a decision, a promotion, a coding path. A path proposed from
+this register reads that folder first. A path that takes an item names it in
+the goal, declares its file in `writes:`, and deletes the file in its last
+unit. No rule reads the folder as a backlog; a file there is checked for its
+links, as every page of the plane is.
 
 Paths are born from the roadmap in the `draft` state of the
 [lifecycle](./concepts/lifecycle.md): a [path record](./concepts/path-record.md)
@@ -322,8 +334,10 @@ Every path declares a [route](./concepts/route.md): the ceremony it runs at.
   acceptance inline, steps, a pull request at the end. A protocol that demands
   nine artefacts for a one-line fix teaches people to route around it.
 - **`full`**: the same shape with two additions — the pull request's review
-  answers the coherence questions explicitly, and a control-plane change needs
-  an approval that is not the writer's own. It is required when the path changes
+  writes the coherence answers out explicitly, and a control-plane change needs
+  an approval that is not the writer's own. Who answers them does not change
+  with the route: a fresh context reads, and the owner arbitrates.
+  It is required when the path changes
   the [control plane](./concepts/control-plane.md), changes architecture or a
   decision record, writes across more than one implemented area, spans more
   than one work unit, or is designated high-risk by repository policy. A path
@@ -530,17 +544,18 @@ full, unabbreviated object id.
    is the [coherence audit](./concepts/coherence-audit.md): the candidate read
    against the documents pinned in `governs:` and against the paths running
    beside it, answered as a checklist. Every advisory raised at `C` is listed
-   with a disposition — fixed, accepted, or deferred to a named owner and
-   follow-up.
-4. An authorised reviewer's approval is the
+   with a disposition — fixed, accepted, or deferred, with its owner and a
+   follow-up file under `project/backlog/`.
+4. One [administrative closure](./concepts/administrative-closure.md) commit
+   sets `status: ready` and `subject_commit: C`, and changes nothing else: not
+   the definition of done, not the surfaces, not the plan, not the product. The
+   final protocol check runs on it. On `pull-request` it lands before the
+   reviewer is asked to read.
+5. An authorised reviewer's approval is the
    [closing acceptance](./concepts/closing-acceptance.md). It binds three
    things: the result, `C`; the scope, whose digest MUST equal the opening
    digest; and the base, `T` — the merge-base of the branch and the trunk,
    which is where step 1 left it.
-5. One [administrative closure](./concepts/administrative-closure.md) commit
-   sets `status: ready` and `subject_commit: C`, and changes nothing else: not
-   the definition of done, not the surfaces, not the plan, not the product. The
-   final protocol check runs on it.
 
 If implementation changes after `C` — even to resolve a conflict — `C` is no
 longer the candidate. The path returns to `running`, produces a new one, and
@@ -549,7 +564,9 @@ the review is repeated on it.
 A repository without a forge declares `manual-git` as its
 [integration transport](./concepts/integration-transport.md) and writes the
 same checklist and acceptance as a closing record in the path folder. The
-questions do not change; only where the answers are written does.
+questions do not change; only where the answers are written does — and because
+the closure commit carries that record, steps 4 and 5 there keep the other
+order: the reading first, the commit after it.
 
 #### Decide drift by predicate, not equality
 
@@ -571,8 +588,8 @@ article gives the predicate in full.
 #### Integrate without claiming the future
 
 `ready` and `done` name different facts: `ready`, the exact candidate is
-checked and accepted; `done`, it is reachable from the remote trunk. A path
-branch MUST NOT set itself to `done`.
+checked, administratively closed and proposed; `done`, it is reachable from
+the remote trunk. A path branch MUST NOT set itself to `done`.
 
 The pull request merges with `cairn-check` as its one required status check on
 the exact commit that lands. The integrating unit — the trunk commit that
@@ -598,7 +615,7 @@ draft ──► running ──► ready ──► done ──► archived
 | `draft` | proposed, not registered | id |
 | `running` | accepted, registered, executable | id, branch, base, writer |
 | `blocked` | paused on a named condition | running identity, blocker, unblock condition |
-| `ready` | exact `C` accepted, not integrated | running identity, `subject_commit` |
+| `ready` | exact `C` checked and proposed, not integrated | running identity, `subject_commit` |
 | `done` | `C` reachable from the remote trunk | subject and `resolution: completed` |
 | `archived` | terminal, retained | `resolution: completed \| abandoned \| superseded` |
 
