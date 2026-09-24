@@ -39,8 +39,10 @@ The fresh reader of the same path's S08 found that its record's
 `current_step` had read `S01` through eight units with the gate green:
 `work-unit` asks whether the named step is a completed unit, never
 whether it is the current one. CP-CAIRN-008 and CP-CAIRN-012 were
-integrated with the same staleness. The field is the writer's, and the
-unit skill already tells the writer to refresh it.
+integrated with the same staleness. The field is the writer's, and no
+skill, template or chapter tells the writer to set it: the unit skill's
+verify movement refreshes the resume section, and `current_step` is a
+field of the declaration above it.
 
 ## Decisions
 
@@ -134,8 +136,8 @@ advisory guards no rule.
   one the registrant made, which is the reading the rule exists to make
   exact; the limit is a sentence, the reading a new case.
 - **Nothing for the stale `current_step`** (decision 4, the first
-  option): the unit skill already asks for the refresh, and two
-  integrated records show the sentence alone does not hold.
+  option): no skill asks for the refresh, and two integrated records
+  show what a field nobody is told to set becomes.
 - **A refusal** (decision 4, the third option): a unit refused for a
   field whose staleness misleads a reader but breaks no reading of the
   checker.

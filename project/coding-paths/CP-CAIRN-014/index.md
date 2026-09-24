@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-014
   route: full
   status: running
-  current_step: S07
+  current_step: S08
   base_commit: 886c398f6f8955e2ea5b623cf26b3352db6d5452
   branch: path/cp-cairn-014
   assigned_writer: cp-cairn-014-writer
@@ -267,21 +267,26 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   candidate `095ff6e` voided on request 31; a registration request is one
   commit, not one set of names, with its fixture; the module note's rule
   count. **COMPLETE**
+- **S08** — [what the third closing read found](./steps/S08.md): the
+  candidate `32a8fdd` voided; ADR-044's claim that the unit skill asks for
+  `current_step` corrected — no skill, template or chapter does — and the
+  missing clause filed
+  under `project/backlog/`. **COMPLETE**
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : c51d78cabb69c619a2594fef186ac1da9e7b710f — the administrative commit of candidate 095ff6e, voided by S07, on origin/path/cp-cairn-014
-unit   : 06 — the last completed on the remote; S07 is the commit that carries this section
+commit : 32a8fdd6f89262208a7b6344e9f16c1847922951 — S07, the third candidate, voided by S08, on origin/path/cp-cairn-014
+unit   : 07 — the last completed on the remote; S08 is the commit that carries this section
 base   : 886c398f6f8955e2ea5b623cf26b3352db6d5452
 trunk  : 886c398f6f8955e2ea5b623cf26b3352db6d5452 — origin/main at registration
 ```
 
 ### Next action
 
-Close again with `cairn-close`: the candidate is S07's commit with the
+Close again with `cairn-close`: the candidate is S08's commit with the
 trunk merged in; the gates bare; a fresh coherence read of it with its
 five inputs; the request's description pointed at it; the administrative
 commit; then the owner's try and the merge of request 31.
@@ -299,8 +304,9 @@ None.
   writes it, as CP-CAIRN-006 S01 wrote ADR-024 and ADR-025; a path for
   one record is the volume the manifesto's first threat names.
 - Nothing for the stale `current_step` path 1's S08 reader found, the
-  field being the writer's — the unit skill's resume movement already
-  says to refresh it, and two integrated records, CP-CAIRN-008 and
+  field being the writer's — no skill tells the writer to set it, the
+  unit skill refreshing the resume section and not the declaration, and
+  two integrated records, CP-CAIRN-008 and
   CP-CAIRN-012, carry it stale; the owner took the writer's
   recommendation on 2026-09-24, an advisory, because a stale field breaks
   no reading of the checker (ADR-044, decision 4). The opening
