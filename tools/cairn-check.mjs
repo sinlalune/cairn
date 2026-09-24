@@ -3062,7 +3062,11 @@ function markdownCorpus() {
   // Files reached twice dedupe by path.
   const roots = [...new Set([DOCUMENTATION_DIR, PROJECT_DIR, dirname(CONCEPTS_DIR), SKILLS_DIR])]
   return [...new Set(roots.flatMap((root) =>
-    existsSync(join(REPO, root)) ? walk(root, []).filter((file) => file.endsWith('.md')) : []
+    // A concept root at the top level makes the parent `.`, whose walk prints
+    // `./docs/...` — a path no declaration or dedupe would ever match.
+    existsSync(join(REPO, root))
+      ? walk(root, []).filter((file) => file.endsWith('.md')).map((file) => file.replace(/^\.\//, ''))
+      : []
   ))]
 }
 
@@ -3724,7 +3728,11 @@ function corpusFindings(previousRef = null, changed = [], viewCurrent = null) {
     }
   }
 
-  for (const doc of markdownCorpus()) {
+  // ADR-037 decision 1: a declared path — a portrayal, a frozen history — has
+  // its links resolved elsewhere, and says why in the configuration.
+  const exempt = (doc) => (CAIRN_CONFIG.linkExemptions ?? [])
+    .some(({ path }) => doc === path || doc.startsWith(slash(path)))
+  for (const doc of markdownCorpus().filter((file) => !exempt(file))) {
     const text = stripCode(readFileSync(join(REPO, doc), 'utf8'))
     for (const match of text.matchAll(/\[[^\]]*\]\((\.[^)#\s]+)(?:#[^)\s]*)?\)/g)) {
       const target = resolve(REPO, dirname(doc), match[1].replace(/\\/g, ''))

@@ -355,6 +355,17 @@ function publishedRepository(options = {}) {
   return dir
 }
 
+/** A published trunk with no path of this fixture's own, whose history carries
+ *  another path's merged unit (ADR-004 decision 4), checked out on `main`. */
+function publishedTrunk(options = {}) {
+  const dir = repository(options)
+  git(dir, 'init', '-q', '--bare', `${dir}.git`)
+  git(dir, 'remote', 'add', 'origin', `${dir}.git`)
+  git(dir, 'push', '-q', '-u', 'origin', 'main')
+  withAnotherPathsUnitMergedIn(dir)
+  return dir
+}
+
 /** ADR-008 decision 6. Where a fixture names the remedy its refusal owes, the
  *  refusal is held to it: three times on the first adopter a message that named
  *  only the fault led the agent to move the fault — a rewritten `base_commit`,
@@ -445,6 +456,25 @@ fixture('a concept nothing outside the wiki links', 'concept-orphan', (dir) => {
 fixture('a concept inside a folder of the root that nothing outside links', 'concept-orphan', (dir) => {
   write(dir, 'docs/concepts/learning/unused-idea.md',
     '---\ntype: Cairn Concept\ntitle: Unused idea\ndescription: Nobody links this.\ntags: [cairn, concept]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Unused idea\n\nA concept no text needed, one folder down.\n')
+})
+
+// A concept root at the top level makes the corpus walk `.`, whose paths
+// printed as `./wiki/...`: the wiki's own index then read as linking from
+// outside it, and every note it listed passed. Linked from inside alone, it
+// is an orphan. The trunk carries another path's unit (ADR-004 decision 4).
+test('adversarial: concept-orphan — a top-level concept root, linked only from its own index', () => {
+  const dir = publishedTrunk({ conceptsRoot: 'wiki' })
+  try {
+    assert.deepEqual(blocking(check(dir)), [], `the baseline must be green: ${describe(check(dir))}`)
+    write(dir, 'wiki/unused-idea.md',
+      '---\ntype: Cairn Concept\ntitle: Unused idea\ndescription: Only the wiki links this.\ntags: [cairn, concept]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Unused idea\n\nA concept only its own index needed.\n')
+    appendFileSync(join(dir, 'wiki/learning/index.md'), '\n- [Unused idea](../unused-idea.md)\n')
+    commit(dir, 'a concept only the wiki links')
+    const found = check(dir)
+    assert.ok(blocking(found).includes('concept-orphan'), `concept-orphan did not fire: ${describe(found)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
 })
 
 fixture('a running path the generated view does not know about', 'derived-view', (dir) => {
@@ -715,11 +745,7 @@ fixture('a path branched before its declaration reached the trunk', 'registratio
  * request is cut from carries another path's merged unit, as ADR-004
  * decision 4 asks. */
 function registrationRequest() {
-  const dir = repository({ registrationTransport: 'pull-request' })
-  git(dir, 'init', '-q', '--bare', `${dir}.git`)
-  git(dir, 'remote', 'add', 'origin', `${dir}.git`)
-  git(dir, 'push', '-q', '-u', 'origin', 'main')
-  withAnotherPathsUnitMergedIn(dir)
+  const dir = publishedTrunk({ registrationTransport: 'pull-request' })
   const base = git(dir, 'rev-parse', 'origin/main').trim()
   git(dir, 'checkout', '-q', '-b', 'register/cp-fixture-001', 'origin/main')
   writeAcceptedRecord(dir, { base_commit: base })
@@ -750,6 +776,35 @@ test('adversarial: registration — a registration request that also carries a p
     assert.ok(blocking(found).includes('registration'),
       `registration did not fire — blocking findings were: ${describe(found)}`)
     assertRemedy(found, 'registration', /nothing else.*path branch/s)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
+/* ADR-037 decision 1. A portrayal of another repository, or a history frozen
+ * as it was, holds links that resolve somewhere else; the repository declares
+ * the path, with its reason, in its configuration, and `links` skips it. The
+ * same file undeclared is refused, so the declaration is what turns it green. */
+test('adversarial: links — a declared exemption is skipped, and the same file undeclared refused', () => {
+  COVERED.add('links')
+  const dir = publishedTrunk()
+  const setExemptions = (linkExemptions) => {
+    const config = JSON.parse(readFileSync(join(dir, 'cairn.config.json'), 'utf8'))
+    if (linkExemptions) config.linkExemptions = linkExemptions
+    else delete config.linkExemptions
+    write(dir, 'cairn.config.json', `${JSON.stringify(config, null, 2)}\n`)
+  }
+  try {
+    assert.deepEqual(blocking(check(dir)), [], 'the baseline must be green, or this fixture proves nothing')
+    write(dir, 'docs/portrait/page.md',
+      '---\ntype: Note\ntitle: Portrait\ndescription: x\ntags: [x]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Portrait\n\nSee [the other page](./elsewhere.md).\n')
+    setExemptions([{ path: 'docs/portrait', reason: 'a portrayal of another repository, whose links resolve there' }])
+    commit(dir, 'a declared portrayal')
+    assert.deepEqual(blocking(check(dir)), [], `the declared file is not resolved: ${describe(check(dir))}`)
+    setExemptions(null)
+    commit(dir, 'the declaration withdrawn')
+    const found = check(dir)
+    assert.ok(blocking(found).includes('links'), `links did not fire — blocking findings were: ${describe(found)}`)
   } finally {
     cleanup(dir, `${dir}.git`)
   }

@@ -244,8 +244,8 @@ export const RULE_METADATA = {
     enforcing: "pathFrontmatterErrors(front) + duplicatePathIdentityFindings(paths) + dependencyFindings(paths) + adrFrontmatterErrors(front, file, bodyStatus) + openingAcceptanceErrors(openingFromRecord(record)) on a running record in the diff"
   },
   'links': {
-    condition: 'Relative Markdown link points to non-existent target (code fences stripped)',
-    enforcing: "stripCode(text) => !existsSync(target)"
+    condition: 'Relative Markdown link points to non-existent target (code fences stripped), outside the paths cairn.config.json declares under linkExemptions (ADR-037 d1)',
+    enforcing: "stripCode(text) => !existsSync(target), over markdownCorpus() less each declared file or folder"
   }
 }
 

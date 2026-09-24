@@ -31,7 +31,9 @@ concept wiki at `spec/concepts/`, which the configuration binds as
 `roots.concepts`. The checker's Markdown corpus — the files whose links are
 checked and whose links keep a concept from being an orphan — is the
 documentation plane, the project plane, and the parent of the concept root, so
-the specification is read wherever a host binds its wiki. `concept-orphan` and
+the specification is read wherever a host binds its wiki; `links` skips the
+files and folders the configuration declares under `linkExemptions`, each with
+its reason, and they still count as linking a concept. `concept-orphan` and
 `concept-growth` read that root **recursively** and name a note by its path
 under it — `learning/cache.md`, not `cache.md` — because an adopter's root is
 three folders (ADR-011 d2) and two of them may hold the same word. A link

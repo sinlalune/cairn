@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-014
   route: full
   status: running
-  current_step: S02
+  current_step: S03
   base_commit: 886c398f6f8955e2ea5b623cf26b3352db6d5452
   branch: path/cp-cairn-014
   assigned_writer: cp-cairn-014-writer
@@ -22,6 +22,7 @@ cairn:
     - tools/cairn-rules.mjs
     - tools/cairn-rules.test.mjs
     - tools/cairn-config.mjs
+    - tools/cairn-config.test.mjs
     - tools/cairn-config.schema.json
     - tools/soundness.md
     - spec/reference/conformance.md
@@ -242,23 +243,30 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   `base_commit`, nothing else — or `registration` refuses it naming which;
   two fixtures, the catalogue, the conformance row, the soundness note, the
   module note. **COMPLETE**
+- **S03** — [the links rule reads the declared exemptions](./steps/S03.md):
+  `linkExemptions` in `cairn.config.json`, a path and its reason, refused
+  without one by the loader and the schema; `links` skips the declared
+  files; one fixture; the configuration reference, the conformance row with
+  the line on the two 0.2 exemptions, the catalogue, the module note. Widened
+  `writes:` by `tools/cairn-config.test.mjs`. **COMPLETE**
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 94c242e14bba8cfb1cd2a9f50f11d8a983e8d7af — S01, on origin/path/cp-cairn-014
-unit   : 01 — the last completed on the remote; S02 is the commit that carries this section
+commit : adfb10f98b7dbea205d1d65ed8dd7e0ad541a9ac — S02, on origin/path/cp-cairn-014
+unit   : 02 — the last completed on the remote; S03 is the commit that carries this section
 base   : 886c398f6f8955e2ea5b623cf26b3352db6d5452
 trunk  : 886c398f6f8955e2ea5b623cf26b3352db6d5452 — origin/main at registration
 ```
 
 ### Next action
 
-Start S03 with `cairn-unit` in the path's worktree: the `links` rule
-reads the exemptions `cairn.config.json` declares, with its fixture and
-rows, as the plan's third item says (ADR-037 decisions 1 and 2).
+Start S04 with `cairn-unit` in the path's worktree: `feedbacks/` in the
+corpus, the two `comparison` messages, the `record-integrity` fixture's
+order, and the advisory `current-step`, as the plan's fourth item says
+(ADR-038 d1, ADR-034 d6 and d7, ADR-044 d4).
 
 ### Blockers
 
