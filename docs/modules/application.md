@@ -239,7 +239,8 @@ the owner: the trunk's rulesets on GitHub, with `GITHUB_TOKEN`, `GH_TOKEN` or
 `gh auth token`, a ruleset that requires a request refusing unless it lets
 this owner bypass it always or does not apply to them. Other rules that can
 turn a push away — required checks, restricted updates, classic branch
-protection — are not read. The refusal names the two ways out — a bypass,
+protection — are not read, and a reading that finds no ruleset in the way
+says in one line that those were not read. The refusal names the two ways out — a bypass,
 or `pull-request` registration, which `init` takes as `--registration`.
 Without a remote, a remote on GitHub, a token or an answer, the command says
 in one line that it did not read and writes what was asked. The checker is
@@ -273,10 +274,8 @@ plain lines and the surface link, then the definition of done item by item,
 before the ledger; its *Coherence* section opens with the line naming the
 reader, as this repository's does, and every blank in it is backticked, so
 the forge strips none as an HTML tag — a test asserts no bare one survives.
-The pilot's record writes its definition of done as a plain list, which
-`cairn-audit` does not yet read as items — it prints its *no item was read*
-line there, whose advice to check `scope_ref` points at the wrong fault, and
-teaching it the plain list is row 4's of 1.2 (ADR-042).
+The pilot's record writes its definition of done as a plain list;
+`cairn-audit` reading such a list is row 4 of 1.2 on the register (ADR-042).
 
 ## Testing
 

@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-015
   route: full
   status: running
-  current_step: S08
+  current_step: S09
   base_commit: c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
   branch: path/cp-cairn-015
   assigned_writer: cp-cairn-015-writer
@@ -281,21 +281,25 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - [**S08**](./steps/S08.md) — repair: S07's step quoted a link that
   resolves nowhere and was committed with the gate red; the line
   quoted as code, S07 superseded. Complete.
+- [**S09**](./steps/S09.md) — what the coherence read of `1e7a32c`
+  found: the installer says when classic protection was not read, a
+  sentence that would go stale dropped, the copied link reading on the
+  backlog. Complete.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 40e1175d01d7aa69900adb0ef2169dd819419953 — S07, on origin/path/cp-cairn-015, red under links
-unit   : 8
+commit : 1e7a32c4ac019336a8e0f9b17e72c884c72dab7b — S08, on origin/path/cp-cairn-015; the first candidate, void
+unit   : 9
 base   : c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
-trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S08
+trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S09
 ```
 
 ### Next action
 
-Close with `cairn-close` on the candidate S08 produced: the review in
+Close with `cairn-close` on the candidate S09 produced: the review in
 the request's description with the fresh-context coherence read, the
 administrative commit, the owner's try of `init`, `update` and `adopt`
 on a scratch repository, the merge, then the integrating unit.

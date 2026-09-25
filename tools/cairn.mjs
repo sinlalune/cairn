@@ -56,7 +56,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, posix, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { configErrors } from './cairn-config.mjs'
+import { configErrors, slash } from './cairn-config.mjs'
 
 export const SOURCE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -1376,7 +1376,7 @@ export function staleShapes(target, config, planned = new Set()) {
   // repairs, when it portrays another repository or freezes a history; the
   // adopter declares it, and the field is named (ADR-037 d2). A link to a
   // file this adoption is about to write resolves.
-  const exempt = (path) => (config.linkExemptions ?? []).some((e) => path === e.path || path.startsWith(e.path.endsWith('/') ? e.path : `${e.path}/`))
+  const exempt = (path) => (config.linkExemptions ?? []).some((e) => path === e.path || path.startsWith(slash(e.path)))
   for (const root of [config.roots.documentation, project]) {
     if (!existsSync(join(target, root))) continue
     for (const path of walk(join(target, root)).map((p) => `${root}/${p}`).filter((p) => p.endsWith('.md') && !exempt(p)).sort()) {
@@ -1502,11 +1502,13 @@ async function refuseUnpushableTrunk(target, { remote, trunk, registration, wayO
     console.log(`cairn — did not read ${trunk}'s rules on GitHub: ${reading.why}; writing what was asked`)
     return
   }
-  if (!reading.direct) {
-    throw new Error(`cairn: ${trunk} on GitHub requires a pull request (ruleset "${reading.ruleset}") and gives you no bypass, ` +
-      'so manual-git registration — the registration commit pushed to the trunk directly — cannot land. ' +
-      `Two ways out: a bypass for you on that ruleset, or pull-request registration (${wayOut})`)
+  if (reading.direct) {
+    console.log(`cairn — read ${trunk}'s rulesets on GitHub: none requires a pull request of you; other push rules and classic branch protection are not read`)
+    return
   }
+  throw new Error(`cairn: ${trunk} on GitHub requires a pull request (ruleset "${reading.ruleset}") and gives you no bypass, ` +
+    'so manual-git registration — the registration commit pushed to the trunk directly — cannot land. ' +
+    `Two ways out: a bypass for you on that ruleset, or pull-request registration (${wayOut})`)
 }
 
 /** A repository that carries the protocol without a lock — an installation
