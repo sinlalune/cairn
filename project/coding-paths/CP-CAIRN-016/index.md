@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-016
   route: full
   status: running
-  current_step: S02
+  current_step: S03
   base_commit: b94ba4f8f0d80214ff6026e1425493a4f8a8a86c
   branch: path/cp-cairn-016
   assigned_writer: cp-cairn-016-writer
@@ -266,22 +266,25 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   trunk; both workflows pass the base, on actions off Node 20; the two
   GitHub functions live in `tools/cairn-config.mjs`, by the amendment.
   Complete.
+- [**S03**](./steps/S03.md) — `cairn-audit` reads a plain list as a
+  boxed one, names the coherence reader first, scaffolds the three facts
+  it can see, and points a deferral at its backlog file. Complete.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : fc61f08503a09d0178a34de225551a2cd17e6429 — S01, the last completed commit on origin/path/cp-cairn-016
-unit   : 2
+commit : 561b168d1b9c15b079e39477e1680e08fad52e4c — S02, the last completed commit on origin/path/cp-cairn-016
+unit   : 3
 base   : b94ba4f8f0d80214ff6026e1425493a4f8a8a86c
 trunk  : b94ba4f8f0d80214ff6026e1425493a4f8a8a86c — origin/main at registration
 ```
 
 ### Next action
 
-Start S03 with `cairn-unit` in the path's worktree: `cairn-audit`, as the
-plan's third item says.
+Start S04 with `cairn-unit` in the path's worktree: this repository's
+`AGENTS.md` and the tools' module note, as the plan's fourth item says.
 
 ### Blockers
 

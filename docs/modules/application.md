@@ -17,7 +17,7 @@ covers: dependency-free Node scripts that evaluate the protocol the
 | `cairn-config.mjs` | validates `cairn.config.json` against `cairn-config.schema.json` before any rule runs; holds the two GitHub functions the post-mortem and the installer import, since it loads no configuration on import and the kit ships it |
 | `cairn-check.mjs` | the checker: every blocking and advisory rule, reported by exit code |
 | `cairn-active.mjs` | regenerates the live view of running paths and the roadmap register's state cells — a path's from its `status:`, dated from its journal entry when done; a milestone's from the paths its row names and the table under the heading ending with its short name — or checks that both are current; reports a roadmap register still carrying the installer's row while any path is registered |
-| `cairn-audit.mjs` | scaffolds the closing review of one exact candidate: on `pull-request` the request's description, in the order the template gives, with the definition of done read item by item from the record; on `manual-git` the closing record in the path folder |
+| `cairn-audit.mjs` | scaffolds the closing review of one exact candidate: on `pull-request` the request's description, in the order the template gives, with the definition of done read item by item from the record, plain or boxed; on `manual-git` the closing record in the path folder. In both, the coherence section opens on the line naming its reader, carries under each of the first three questions what the tool can see — the decision records the diff touches, the running paths whose `writes:` meet this one's, the architecture pages changed with no record beside them — and asks a deferral for its file under the backlog |
 | `cairn-postmortem.mjs` | the mechanical half of a post-mortem; facts only, and no reading of it reaches an exit code |
 | `cairn-rules.mjs` | regenerates the rule catalogue and the rule-to-requirement linkage on the [conformance page](../../spec/reference/conformance.md); this repository's, not installed |
 | `cairn.mjs` | the `cairn` command: `init` installs the thin kit, `status` reads the lock, `update` rewrites every pristine file and prints what the release changes in an edited one (`--take <path>` hands over the release's version of one), `adopt` turns a lock-less installation into one; the package's, not installed |
@@ -289,7 +289,7 @@ before the ledger; its *Coherence* section opens with the line naming the
 reader, as this repository's does, and every blank in it is backticked, so
 the forge strips none as an HTML tag — a test asserts no bare one survives.
 The pilot's record writes its definition of done as a plain list;
-`cairn-audit` reading such a list is row 4 of 1.2 on the register (ADR-042).
+`cairn-audit` reads such a list as it reads a boxed one (ADR-042).
 
 ## Testing
 
