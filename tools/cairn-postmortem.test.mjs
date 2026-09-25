@@ -8,17 +8,15 @@
  */
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { test } from 'node:test'
 import { applyPlan, defaultOptions, planInstall } from './cairn.mjs'
-import { REPO } from './cairn-config.mjs'
+import { REPO, githubRequest, githubSlug } from './cairn-config.mjs'
 import {
   NO_JUDGEMENT,
   duration,
-  githubRequest,
-  githubSlug,
   readRedRuns,
   readRequests,
   registrationReading,
@@ -126,6 +124,12 @@ test('the forge readings say what they read, or why they were not read', () => {
     requests: [{ number: 17, created_at: '2026-09-13T08:00:00Z', merged_at: null }]
   })
   assert.match(open, /#17 open/)
+  // ADR-034 decision 10: a request closed without a merge was read as open.
+  const voided = requestsReading({
+    read: true,
+    requests: [{ number: 18, created_at: '2026-09-13T08:00:00Z', merged_at: null, state: 'closed', closed_at: '2026-09-13T10:00:00Z' }]
+  })
+  assert.equal(voided, '#18 opened 2026-09-13T08:00:00Z, closed 2h, never merged')
 })
 
 test('a duration is read in the units the incident is argued in', () => {
@@ -166,7 +170,7 @@ test('a GitHub read never throws: a refusal, a timeout and a broken fetch are al
     await githubRequest('https://api.github.com/repos/o/r', {
       token: 't',
       timeoutMs: 5,
-      doFetch: (url, { signal }) => new Promise((_, reject) => { signal.addEventListener('abort', () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' }))) })
+      doFetch: (url, { signal }) => new Promise((_, reject) => { signal.addEventListener('abort', () => reject(signal.reason)) })
     }),
     { error: 'no answer in 5ms' })
   const ok = await githubRequest('https://api.github.com/repos/o/r', { token: 't', doFetch: async () => ({ ok: true, json: async () => ({ private: false }) }) })
@@ -179,6 +183,9 @@ test('red runs and requests are read from the forge, and an error is an answer',
   const runs = await readRedRuns({ token: 't', slug: SLUG, branch: 'path/cp-ex-010', request: answer({ total_count: 3 }) })
   assert.deepEqual(runs, { read: true, red: 3 })
   assert.match(calls[0], /actions\/runs\?branch=path%2Fcp-ex-010&status=failure/)
+  // ADR-034 decision 9: the run still in progress is not in the forge's
+  // count of failures, so the first red run read *no red run*.
+  assert.deepEqual(await readRedRuns({ token: 't', slug: SLUG, branch: 'b', current: true, request: answer({ total_count: 0 }) }), { read: true, red: 1 })
 
   const requests = await readRequests({
     token: 't',
@@ -189,9 +196,9 @@ test('red runs and requests are read from the forge, and an error is an answer',
   assert.deepEqual(requests, {
     read: true,
     more: false,
-    requests: [{ number: 16, created_at: '2026-09-13T08:00:00Z', merged_at: '2026-09-13T12:30:00Z' }]
+    requests: [{ number: 16, created_at: '2026-09-13T08:00:00Z', merged_at: '2026-09-13T12:30:00Z', state: 'closed', closed_at: null }]
   })
-  assert.match(calls[1], /pulls\?state=all&head=sinlalune%3Apath%2Fcp-ex-010&per_page=100$/)
+  assert.match(calls[2], /pulls\?state=all&head=sinlalune%3Apath%2Fcp-ex-010&per_page=100$/)
 
   const failed = async () => ({ error: 'HTTP 403' })
   assert.deepEqual(await readRedRuns({ token: 't', slug: SLUG, branch: 'b', request: failed }), { read: false, why: 'the forge answered HTTP 403' })
@@ -359,12 +366,11 @@ scope_digest: ${digest}
 ` : ''}`
 
 /** A real installed repository, on a real path branch, carrying the shapes the
- *  readings are about. The post-mortem is copied in because the kit does not
- *  install it yet — the manifest is another path's. */
+ *  readings are about — with the post-mortem the kit installs, so its imports
+ *  are the ones an adopter has. */
 function fixture() {
   const dir = mkdtempSync(join(tmpdir(), 'cairn-postmortem-'))
   applyPlan(planInstall(defaultOptions()), dir)
-  copyFileSync(join(REPO, 'tools/cairn-postmortem.mjs'), join(dir, 'tools/cairn-postmortem.mjs'))
   const git = (...args) => execFileSync('git', args, { cwd: dir, encoding: 'utf8', stdio: 'pipe' }).trim()
   const write = (file, text) => {
     mkdirSync(dirname(join(dir, file)), { recursive: true })
@@ -450,4 +456,39 @@ test('a table of several paths keeps one block each, in id order', () => {
   const out = [block('CP-EX-010'), block('CP-EX-011')].join('\n')
   assert.ok(out.indexOf('CP-EX-010') < out.indexOf('CP-EX-011'))
   assert.equal(out.match(/registration/g).length, 2)
+})
+
+/** ADR-034 decision 11: on the trunk the corpus is not the incident. The path
+ *  whose record changed in the compared range is; where none changed, the
+ *  checker's own finding comes first and no path is read. */
+test('on the trunk the tool reads the path that arrived, or the checker\'s finding and no path', () => {
+  const { dir, write, commit } = fixture()
+  try {
+    const base = commit('install cairn')
+    write(FIXTURE_RECORD, fixtureRecord({ base }))
+    write('project/coding-paths/CP-FIX-002/index.md', fixtureRecord({ base }).replaceAll('CP-FIX-001', 'CP-FIX-002').replaceAll('cp-fix-001', 'cp-fix-002'))
+    const before = commit('register two paths')
+    write(FIXTURE_RECORD, fixtureRecord({ base }).replace('Be read.', 'Be read, again.'))
+    const after = commit('CP-FIX-001 arrives')
+
+    const run = (...args) => execFileSync(process.execPath, ['tools/cairn-postmortem.mjs', ...args], {
+      cwd: dir, encoding: 'utf8', stdio: 'pipe', env: { ...process.env, GITHUB_TOKEN: '', GH_TOKEN: '' }
+    })
+    const arrived = run('--branch', 'main', '--base', before)
+    assert.match(arrived, /^cairn-postmortem — CP-FIX-001 on path\/cp-fix-001$/m, arrived)
+    assert.ok(!arrived.includes('CP-FIX-002'), 'a path that did not arrive is not the incident')
+
+    // A red checker, as on the run this reading is printed in: a record
+    // outside the status vocabulary, left in the working tree.
+    write('project/coding-paths/CP-FIX-003/index.md', fixtureRecord({ base }).replaceAll('CP-FIX-001', 'CP-FIX-003').replace('status: running', 'status: bogus'))
+    const none = run('--branch', 'main', '--base', after)
+    assert.ok(!/^cairn-postmortem — CP-/m.test(none), 'no record changed, so no path is read')
+    assert.match(none, /^(FAIL|INCONCLUSIVE)$/m, none)
+    assert.ok(none.includes('bogus'), 'the finding itself, not only the verdict line')
+    assert.ok(/^(FAIL|INCONCLUSIVE)$/m.exec(none).index < none.indexOf('no path record changed between'), 'the checker\'s finding comes first')
+    assert.match(run('--branch', 'main', '--base', '0'.repeat(40)), /names no commit here, so the arrival was not read/,
+      'the first push to a trunk has no base, which is not a range with no record in it')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 })

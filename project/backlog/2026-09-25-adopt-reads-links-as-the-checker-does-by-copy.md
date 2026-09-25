@@ -27,8 +27,8 @@ path's S09. Not that path's scope: its definition of done keeps
 
 **Owner.** sinlalune.
 
-**Shape of the work.** The same move as
-[the GitHub reading's item](./2026-09-25-two-copies-of-the-github-reading.md):
-one module the checker and the installer both import, which loads no
-host configuration — in the next path that writes the checker. No
+**Shape of the work.** The same move as the GitHub reading's item, which
+CP-CAIRN-016 S02 landed by moving the two functions into
+`tools/cairn-config.mjs`: one module the checker and the installer both
+import, which loads no host configuration — in the next path that writes the checker. No
 record.

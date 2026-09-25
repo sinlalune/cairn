@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-016
   route: full
   status: running
-  current_step: S01
+  current_step: S02
   base_commit: b94ba4f8f0d80214ff6026e1425493a4f8a8a86c
   branch: path/cp-cairn-016
   assigned_writer: cp-cairn-016-writer
@@ -25,6 +25,7 @@ cairn:
     - tools/cairn-workflow.test.mjs
     - tools/cairn.mjs
     - tools/cairn.test.mjs
+    - tools/cairn-config.mjs
     - .github/workflows/cairn.yml
     - AGENTS.md
     - docs/modules/application.md
@@ -67,8 +68,8 @@ installer's behaviour, the skills, the specification or the README: rows
 **What row 3 handed to this row.** Path 3's
 [journal entry](../../log/2026-09-25-cp-cairn-015.md) leaves four things
 here: the GitHub reading carried twice, by the installer and the
-post-mortem — a
-[backlog item](../../backlog/2026-09-25-two-copies-of-the-github-reading.md)
+post-mortem — a backlog item,
+`project/backlog/2026-09-25-two-copies-of-the-github-reading.md`, that
 this path takes and deletes in the unit that lands it; `cairn-audit`
 reading only a boxed definition of done; the host's warning that the
 workflow's actions target a Node it is retiring; and the audit tool's
@@ -99,9 +100,10 @@ are the skills' and the checker's, not this path's.
       and where no record changed prints the checker's finding first and no
       path at all, both workflows passing the base (decision 11); the two
       tests and the workflow test prove each.
-- [ ] The post-mortem imports its two GitHub helpers from the installer,
-      which loads no host configuration, and its own copies are gone, one
-      test proving the remote forms both read; the backlog item that asked
+- [ ] The post-mortem and the installer import their two GitHub helpers
+      from `tools/cairn-config.mjs`, which the kit ships to every adopter
+      and which loads no host configuration on import, and both earlier
+      copies are gone, one test proving the remote forms both read; the backlog item that asked
       for it is deleted in the unit that lands it. The workflow's actions
       are pinned at versions that run on a Node the host is not retiring,
       in `.github/workflows/cairn.yml` and in the workflow the kit
@@ -124,7 +126,9 @@ are the skills' and the checker's, not this path's.
 - [ ] Nothing under `skills/`, `spec/`, `tools/cairn-check.mjs`,
       `tools/cairn-pilot.mjs`, `cairn.lock.json`, `README.md` or `site/`
       changes, and `tools/cairn.mjs` changes only in `workflow()`, the
-      register template and the export of its two GitHub helpers; the seven
+      register template and its two GitHub helpers, which it imports
+      instead of carrying, and `tools/cairn-config.mjs` only by receiving
+      them; the seven
       governing documents are byte-identical at the candidate to what they
       are at `base_commit`; the register gains this path's id in row 4 of
       1.2 by hand and every state cell by the tool, and nothing else.
@@ -172,7 +176,38 @@ units, the actions bump folded in without a record, the audit tool reading
 both list shapes, two backlog items left to other rows — and gave the
 go-ahead in the chat with the word "go"; that go-ahead is this acceptance
 (ADR-001 decisions 1 and 2), and the record lands on the trunk directly.
-The units run in a fresh session. Amendments: none.
+The units run in a fresh session. Amendments: one, below.
+
+### Amendment of 2026-09-25 — the GitHub helpers live in the configuration module
+
+S02 found the direction the backlog item and item 3 gave cannot run at an
+adopter: the kit copies `tools/cairn-postmortem.mjs` into every adopter's
+`tools/` and never `tools/cairn.mjs`, which adopters run through `npx`, so
+a post-mortem importing the installer would fail on its first line at
+Crumbz, Atomik and ECOS. The owner was asked in the chat where the one
+copy should live, with three options — `tools/cairn-config.mjs`, a new
+shipped file, or two copies kept — and chose the first: the kit already
+ships it, the installer already imports it, and it loads no configuration
+on import.
+
+This acceptance supersedes the one above it. Item 3 names
+`tools/cairn-config.mjs` as the helpers' home and both tools as importing
+them; item 6 lets `tools/cairn.mjs` lose its two copies and
+`tools/cairn-config.mjs` receive them; `writes:` gains
+`tools/cairn-config.mjs`. The other seven items are the text they were
+accepted with. The Goal's *the installer's is imported* and the excluded
+list's *this path imports from `tools/cairn.mjs`* stand as what was
+believed when they were written.
+
+```yaml
+decision: accepted
+accepted_by: sinlalune
+accepted_roles: [initiator, reviewer]
+accepted_at: 2026-09-25T15:34:16Z
+scope_ref: project/coding-paths/CP-CAIRN-016/index.md#definition-of-done
+scope_digest: sha256:a0baa20b41d54f64a3383ad2a7c1059a78dbbf91463a27c7dcd30eaff9d8c101
+supersedes: 2026-09-25T15:02:17Z
+```
 
 ## Documentation coverage
 
@@ -226,22 +261,27 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   state cells from the records and `--check` reports a stale one; a
   milestone counts its row and the table under its short name, on the
   owner's ruling. Complete.
+- [**S02**](./steps/S02.md) — the post-mortem counts the run it runs
+  in, prints a closed request closed, reads the path that arrived on the
+  trunk; both workflows pass the base, on actions off Node 20; the two
+  GitHub functions live in `tools/cairn-config.mjs`, by the amendment.
+  Complete.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 9538da43e62bf00ff98060e5d4d1bcc63a761567 — the registration commit, the last completed commit on origin/path/cp-cairn-016; S01 is the commit after it
-unit   : 1
+commit : fc61f08503a09d0178a34de225551a2cd17e6429 — S01, the last completed commit on origin/path/cp-cairn-016
+unit   : 2
 base   : b94ba4f8f0d80214ff6026e1425493a4f8a8a86c
 trunk  : b94ba4f8f0d80214ff6026e1425493a4f8a8a86c — origin/main at registration
 ```
 
 ### Next action
 
-Start S02 with `cairn-unit` in the path's worktree: the post-mortem and
-the two workflows, as the plan's second item says.
+Start S03 with `cairn-unit` in the path's worktree: `cairn-audit`, as the
+plan's third item says.
 
 ### Blockers
 
@@ -252,6 +292,11 @@ None.
 - A record for moving the workflow's actions off the retiring Node — a
   version bump in a file this path already opens, with no choice in it;
   the unit that changes the workflow's failure step changes its actions.
+- The post-mortem importing the two GitHub helpers from `tools/cairn.mjs`,
+  as the backlog item and the accepted scope had it — the kit ships the
+  post-mortem to every adopter and never the installer, so the import
+  would fail on its first line there; the amendment of 2026-09-25 moves
+  both into `tools/cairn-config.mjs`.
 - Reading the two GitHub helpers from the post-mortem into the installer,
   the other way round — the post-mortem imports the checker, which loads
   the host's configuration, and the installer runs where there is none;

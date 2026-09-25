@@ -56,7 +56,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, posix, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { configErrors, slash } from './cairn-config.mjs'
+import { configErrors, githubRequest, githubSlug, slash } from './cairn-config.mjs'
 
 export const SOURCE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -758,6 +758,17 @@ on:
 jobs:
   protocol:
     runs-on: ubuntu-latest
+    env:
+      # The base must span what the run judges. On a request that is the
+      # target branch. On a push to the TRUNK it is the commit the push
+      # replaced, because the trunk's own remote ref after that push
+      # already names the pushed commit, and comparing it with itself is
+      # how an integrating unit reaches zero changed files under a green
+      # run. On a push to a PATH branch it is the trunk: comparing a branch
+      # push with the push before it judges each unit against the last
+      # instead of against what it will merge into.
+      # The job's, so the post-mortem reads the range the checker judged.
+      CAIRN_BASE_REF: \${{ github.base_ref && format('origin/{0}', github.base_ref) || (github.ref_name == '${options.trunk}' && github.event.before || 'origin/${options.trunk}') }}
     permissions:
       contents: read
       # The red-run reading asks the forge how many runs of this branch went
@@ -772,13 +783,13 @@ jobs:
       # instead of posting — the reading is still printed into the log.
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           # The gate must judge the branch that will land, so it needs history
           # rather than a shallow single commit.
           fetch-depth: 0
           ref: \${{ github.event.pull_request.head.sha }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       # Bare. A pipe would report the LAST command's exit code, which is how a
@@ -788,16 +799,6 @@ jobs:
       # \`npm test\` is yours to add here if you keep one (ADR-014 decision 2).
       - name: cairn-check
         id: cairn-check
-        env:
-          # The base must span what the run judges. On a request that is the
-          # target branch. On a push to the TRUNK it is the commit the push
-          # replaced, because the trunk's own remote ref after that push
-          # already names the pushed commit, and comparing it with itself is
-          # how an integrating unit reaches zero changed files under a green
-          # run. On a push to a PATH branch it is the trunk: comparing a branch
-          # push with the push before it judges each unit against the last
-          # instead of against what it will merge into.
-          CAIRN_BASE_REF: \${{ github.base_ref && format('origin/{0}', github.base_ref) || (github.ref_name == '${options.trunk}' && github.event.before || 'origin/${options.trunk}') }}
         run: node tools/cairn-check.mjs --base "$CAIRN_BASE_REF"
       # Only on the CHECKER's failure, so the incident is written while it
       # happens (ADR-014 decision 1). It prints, and commits nothing: a branch
@@ -809,12 +810,15 @@ jobs:
           GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
           CAIRN_BRANCH: \${{ github.head_ref || github.ref_name }}
           CAIRN_REQUEST: \${{ github.event.pull_request.number }}
+          # This step runs only on a red run, which the forge does not count
+          # as failed until it ends (ADR-034 decision 9).
+          CAIRN_RUN_RED: 'true'
         run: |
           # The shell is \`bash -e\`, so a non-zero exit would abort the step
           # before the reading is printed or posted, losing it on the one run
           # it was written for. stderr is captured with it: where the tool
           # stops, the reason it gives is written there.
-          node tools/cairn-postmortem.mjs --branch "$CAIRN_BRANCH" > postmortem.txt 2>&1 || true
+          node tools/cairn-postmortem.mjs --branch "$CAIRN_BRANCH" --base "$CAIRN_BASE_REF" > postmortem.txt 2>&1 || true
           cat postmortem.txt
           if [ -n "$CAIRN_REQUEST" ]; then
             gh pr comment "$CAIRN_REQUEST" --body-file postmortem.txt
@@ -1477,29 +1481,6 @@ export async function readTrunk({ url, trunk, token, request }) {
     if (!['always', 'exempt'].includes(bypass)) return { read: true, direct: false, ruleset: ruleset.value.name }
   }
   return { read: true, direct: true }
-}
-
-/** The owner and repository of a GitHub remote, or null — the post-mortem's
- *  pattern, anchored, so a look-alike host is never read. The post-mortem
- *  has its own copy; importing it here loads the checker, which needs a host
- *  configuration the package command runs without (backlog, 2026-09-25). */
-const githubSlug = (url) => {
-  const match = /^(?:(?:https?|ssh|git)(?::\/\/)(?:[^@/]+@)?|(?:[^@/\s]+@))github\.com[:/]([^/\s]+)\/([^/\s]+?)(?:\.git)?$/i
-    .exec(String(url ?? '').trim())
-  return match ? { owner: match[1], repo: match[2] } : null
-}
-
-/** One GitHub read, an error an answer and never an exception. */
-async function githubRequest(url, { token }) {
-  try {
-    const response = await fetch(url, {
-      signal: AbortSignal.timeout(3000),
-      headers: { accept: 'application/vnd.github+json', authorization: `Bearer ${token}`, 'user-agent': 'cairn', 'x-github-api-version': '2022-11-28' }
-    })
-    return response.ok ? { value: await response.json() } : { error: `HTTP ${response.status}` }
-  } catch (error) {
-    return { error: error?.name === 'TimeoutError' ? 'no answer in 3000ms' : String(error?.message ?? error) }
-  }
 }
 
 /** Refuse \`manual-git\` registration on a trunk that takes no direct push

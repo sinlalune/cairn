@@ -14,7 +14,7 @@ covers: dependency-free Node scripts that evaluate the protocol the
 
 | Tool | Does |
 | :-- | :-- |
-| `cairn-config.mjs` | validates `cairn.config.json` against `cairn-config.schema.json` before any rule runs |
+| `cairn-config.mjs` | validates `cairn.config.json` against `cairn-config.schema.json` before any rule runs; holds the two GitHub functions the post-mortem and the installer import, since it loads no configuration on import and the kit ships it |
 | `cairn-check.mjs` | the checker: every blocking and advisory rule, reported by exit code |
 | `cairn-active.mjs` | regenerates the live view of running paths and the roadmap register's state cells — a path's from its `status:`, dated from its journal entry when done; a milestone's from the paths its row names and the table under the heading ending with its short name — or checks that both are current; reports a roadmap register still carrying the installer's row while any path is registered |
 | `cairn-audit.mjs` | scaffolds the closing review of one exact candidate: on `pull-request` the request's description, in the order the template gives, with the definition of done read item by item from the record; on `manual-git` the closing record in the path folder |
@@ -111,9 +111,15 @@ The predicates it judges with, and the Git plumbing under them, are imported
 from `cairn-check.mjs`: a record's two shapes, its history in a range, the
 metadata it declared at a commit, whether a ref exists, the blob that added a
 step record. Its own are the rendering of each fact into a line, the two
-GitHub readings — a branch's red runs, and how long a request stayed open —
-and what it takes from the working tree rather than from Git: every path
-record, and each step's current content.
+GitHub readings — a branch's red runs, counting the run it is printed in
+when the workflow says that run is red, and how long a request stayed open
+or that it was closed unmerged — and what it takes from the working tree
+rather than from Git: every path record, and each step's current content.
+The remote's slug and the one GitHub request come from `cairn-config.mjs`.
+
+On the trunk it reads the paths whose records changed between `--base` and
+HEAD — the arrival the checker judged — and where none changed, prints the
+checker's failure against the same base first and no path at all.
 
 ## The kit
 
@@ -272,8 +278,10 @@ transports — never contradicts the file it sits next to.
 
 **The two host files an adopter's host reads.** The workflow matches this
 repository's own where the two are meant to: the push trigger on the trunk
-alone, the base per event, and the post-mortem step that runs on the checker's
-failure and posts once on the request. It differs in one place, and the test
+alone, the base per event, set once on the job so the checker and the
+post-mortem read one range, the post-mortem step that runs on the checker's
+failure, says the run is red and posts once on the request, and actions at
+versions that run on Node 24. It differs in one place, and the test
 says so — this repository runs its own suite before the gate, and the kit
 installs no suite and names none. The request template opens with the three
 plain lines and the surface link, then the definition of done item by item,

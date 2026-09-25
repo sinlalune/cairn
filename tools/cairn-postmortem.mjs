@@ -25,6 +25,7 @@
  *   node tools/cairn-postmortem.mjs                 # the path of this branch, else every path
  *   node tools/cairn-postmortem.mjs --path CP-X-001
  *   node tools/cairn-postmortem.mjs --branch path/cp-x-001
+ *   node tools/cairn-postmortem.mjs --branch main --base <sha>   # the path that arrived
  *
  * The forge half is read when `GITHUB_TOKEN` or `GH_TOKEN` is set and the
  * remote is a GitHub repository, and says why it was not read otherwise. No
@@ -32,6 +33,7 @@
  * malformed invocation does.
  */
 
+import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -39,6 +41,7 @@ import {
   PATH_DIR,
   REMOTE,
   TRUNK_BASE_CANDIDATES,
+  TRUNK_BRANCH,
   closureFieldErrors,
   gitOrNull,
   isAppendOnlyStepRecord,
@@ -55,7 +58,7 @@ import {
   statusCommit,
   stepRecordOrigin
 } from './cairn-check.mjs'
-import { REPO, metadataOf } from './cairn-config.mjs'
+import { REPO, githubRequest, githubSlug, metadataOf } from './cairn-config.mjs'
 
 /** The closing line. It says where the judgement is, and makes none. */
 export const NO_JUDGEMENT =
@@ -154,7 +157,8 @@ export function requestsReading(answer) {
   if (!answer.read) return `not read — ${answer.why}`
   if (answer.requests.length === 0) return 'no request from this branch'
   const each = answer.requests
-    .map(({ number, created_at: opened, merged_at: merged }) => {
+    .map(({ number, created_at: opened, merged_at: merged, state, closed_at: closed }) => {
+      if (!merged && state === 'closed') return `#${number} opened ${opened}, closed ${duration(opened, closed) ?? `at ${closed}`}, never merged`
       if (!merged) return `#${number} open since ${opened}`
       return `#${number} opened ${opened}, merged ${duration(opened, merged) ?? `at ${merged}`}`
     })
@@ -186,42 +190,9 @@ export function renderReadings({ pathId, branch, readings }) {
 
 /* ------------------------------------------------------------------ *
  * the forge — `request` is a parameter, so the suite proves the shape
- * without a network
+ * without a network; the two GitHub functions are the installer's too,
+ * so they live in the module both import and the kit ships
  * ------------------------------------------------------------------ */
-
-/** The owner and repository of a GitHub remote, or `null` for anything else —
- *  a self-hosted forge, and the local bare repositories the fixtures push to.
- *  "Not read" is an honest line; a wrong reading is not. */
-export function githubSlug(url) {
-  const match = /^(?:(?:https?|ssh|git)(?::\/\/)(?:[^@/]+@)?|(?:[^@/\s]+@))github\.com[:/]([^/\s]+)\/([^/\s]+?)(?:\.git)?$/i
-    .exec(String(url ?? '').trim())
-  return match ? { owner: match[1], repo: match[2] } : null
-}
-
-/** One GitHub read. An error is an ANSWER, never an exception: a reading must
- *  not be able to change an exit code, and an offline laptop must not wait on
- *  a socket. */
-export async function githubRequest(url, { token, timeoutMs = 3000, doFetch = fetch } = {}) {
-  const abort = new AbortController()
-  const timer = setTimeout(() => abort.abort(), timeoutMs)
-  try {
-    const response = await doFetch(url, {
-      signal: abort.signal,
-      headers: {
-        accept: 'application/vnd.github+json',
-        authorization: `Bearer ${token}`,
-        'user-agent': 'cairn-postmortem',
-        'x-github-api-version': '2022-11-28'
-      }
-    })
-    if (!response.ok) return { error: `HTTP ${response.status}` }
-    return { value: await response.json() }
-  } catch (error) {
-    return { error: error?.name === 'AbortError' ? `no answer in ${timeoutMs}ms` : String(error?.message ?? error) }
-  } finally {
-    clearTimeout(timer)
-  }
-}
 
 const NO_TOKEN = 'no token; set GITHUB_TOKEN or GH_TOKEN to read this branch\'s runs and requests'
 const NOT_GITHUB = 'the configured remote is not a GitHub repository'
@@ -229,7 +200,10 @@ const NO_BRANCH = 'the record declares no branch, so the forge has nothing to be
 /** The forge's own maximum. */
 const PAGE = 100
 
-export async function readRedRuns({ token, slug, branch, request }) {
+/** `current`: the run this reading is printed in is red — its failure step
+ *  says so — and the forge counts a run's failure only once it has ended
+ *  (ADR-034 decision 9). */
+export async function readRedRuns({ token, slug, branch, request, current = false }) {
   if (!branch) return { read: false, why: NO_BRANCH }
   if (!token) return { read: false, why: NO_TOKEN }
   if (!slug) return { read: false, why: NOT_GITHUB }
@@ -237,7 +211,7 @@ export async function readRedRuns({ token, slug, branch, request }) {
   // is a payload the reading never opens.
   const answer = await request(`https://api.github.com/repos/${slug.owner}/${slug.repo}/actions/runs?branch=${encodeURIComponent(branch)}&status=failure&per_page=1`)
   if (answer.error) return { read: false, why: `the forge answered ${answer.error}` }
-  return { read: true, red: answer.value?.total_count ?? 0 }
+  return { read: true, red: (answer.value?.total_count ?? 0) + (current ? 1 : 0) }
 }
 
 export async function readRequests({ token, slug, branch, request }) {
@@ -248,7 +222,7 @@ export async function readRequests({ token, slug, branch, request }) {
   const answer = await request(`https://api.github.com/repos/${slug.owner}/${slug.repo}/pulls?state=all&head=${head}&per_page=${PAGE}`)
   if (answer.error) return { read: false, why: `the forge answered ${answer.error}` }
   const requests = (Array.isArray(answer.value) ? answer.value : [])
-    .map(({ number, created_at, merged_at }) => ({ number, created_at, merged_at: merged_at ?? null }))
+    .map(({ number, created_at, merged_at, state, closed_at }) => ({ number, created_at, merged_at: merged_at ?? null, state, closed_at: closed_at ?? null }))
   // A full page is a page with more behind it. Raising the size moves that
   // line; saying so is what keeps a truncated list from reading as the list.
   return { read: true, requests, more: requests.length === PAGE }
@@ -359,12 +333,31 @@ async function readingsFor(record, forge, { detached, head }) {
       accepted: openingFromRecord(record.text)?.scope_digest ?? null
     })],
     ['step records', stepsReading(stepsOf(record))],
-    ['red runs', redRunsReading(await readRedRuns({ ...forge, branch }))],
+    ['red runs', redRunsReading(await readRedRuns({ ...forge, branch, current: forge.red && branch === head }))],
     ['requests', requestsReading(await readRequests({ ...forge, branch }))]
   ]
 }
 
-const OPTIONS = ['--path', '--branch']
+const OPTIONS = ['--path', '--branch', '--base']
+
+/** ADR-034 decision 11: on the trunk the incident is the arrival the checker
+ *  judged, not the corpus — the records that changed from `base` to HEAD. */
+function arrivedRecords(records, base) {
+  const changed = gitOrNull(['diff', '--name-only', base, 'HEAD'])
+  if (changed == null) return null
+  const files = new Set(changed.split('\n'))
+  return records.filter((record) => files.has(record.file))
+}
+
+/** Where no record arrived, what the checker said is the only reading there
+ *  is: its failure, run again against the same base, and printed first. */
+function checkerFinding(base) {
+  const run = spawnSync(process.execPath, [join(REPO, 'tools/cairn-check.mjs'), '--base', base], { cwd: REPO, encoding: 'utf8' })
+  const said = `${run.stdout ?? ''}${run.stderr ?? ''}`.trimEnd()
+  const fail = said.search(/^(FAIL|INCONCLUSIVE)$/m)
+  // No heading is a checker that stopped before its verdict: all it said is the reading.
+  return fail === -1 ? said : said.slice(fail)
+}
 
 async function main() {
   const argv = process.argv
@@ -388,9 +381,18 @@ async function main() {
   const id = flag('--path')
   const branch = flag('--branch') ?? gitOrNull(['rev-parse', '--abbrev-ref', 'HEAD'])
   const records = pathRecords()
+  const onTrunk = !id && branch === TRUNK_BRANCH
+  const base = flag('--base') ?? 'HEAD^'
   const named = id
     ? records.filter((record) => record.front.id === id)
-    : records.filter((record) => record.front.branch === branch)
+    : onTrunk ? arrivedRecords(records, base)
+      : records.filter((record) => record.front.branch === branch)
+
+  if (onTrunk && !named?.length) {
+    const why = named ? `no path record changed between ${base} and HEAD, so no path is read` : `the base ${base} names no commit here, so the arrival was not read`
+    console.log(`${checkerFinding(base)}\n\ncairn-postmortem — ${why}\n\n${NO_JUDGEMENT}\n`)
+    return
+  }
 
   if (id && named.length === 0) {
     console.log(`cairn-postmortem — no path record declares ${id}`)
@@ -411,7 +413,9 @@ async function main() {
   const forge = {
     token,
     slug: githubSlug(gitOrNull(['remote', 'get-url', REMOTE])),
-    request: (url) => githubRequest(url, { token })
+    request: (url) => githubRequest(url, { token }),
+    // Set by the workflow's failure step, which runs only on a red run.
+    red: process.env.CAIRN_RUN_RED === 'true'
   }
   const where = { detached: gitOrNull(['symbolic-ref', '--quiet', 'HEAD']) == null, head: branch }
   for (const record of wanted) {
