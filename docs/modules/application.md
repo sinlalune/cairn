@@ -16,7 +16,7 @@ covers: dependency-free Node scripts that evaluate the protocol the
 | :-- | :-- |
 | `cairn-config.mjs` | validates `cairn.config.json` against `cairn-config.schema.json` before any rule runs |
 | `cairn-check.mjs` | the checker: every blocking and advisory rule, reported by exit code |
-| `cairn-active.mjs` | regenerates the live view of running paths, or checks that it is current; reports a roadmap register still carrying the installer's row while any path is registered |
+| `cairn-active.mjs` | regenerates the live view of running paths and the roadmap register's state cells — a path's from its `status:`, dated from its journal entry when done; a milestone's from the paths its row names and the table under the heading ending with its short name — or checks that both are current; reports a roadmap register still carrying the installer's row while any path is registered |
 | `cairn-audit.mjs` | scaffolds the closing review of one exact candidate: on `pull-request` the request's description, in the order the template gives, with the definition of done read item by item from the record; on `manual-git` the closing record in the path folder |
 | `cairn-postmortem.mjs` | the mechanical half of a post-mortem; facts only, and no reading of it reaches an exit code |
 | `cairn-rules.mjs` | regenerates the rule catalogue and the rule-to-requirement linkage on the [conformance page](../../spec/reference/conformance.md); this repository's, not installed |

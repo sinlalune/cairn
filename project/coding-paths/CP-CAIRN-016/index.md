@@ -222,23 +222,26 @@ The units run in a fresh session. Amendments: none.
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
-- **S01** — not started.
+- [**S01**](./steps/S01.md) — `cairn-active` writes the register's
+  state cells from the records and `--check` reports a stale one; a
+  milestone counts its row and the table under its short name, on the
+  owner's ruling. Complete.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — this record and the live view, nothing else, on origin/main; unit 0
-unit   : 0
+commit : 9538da43e62bf00ff98060e5d4d1bcc63a761567 — the registration commit, the last completed commit on origin/path/cp-cairn-016; S01 is the commit after it
+unit   : 1
 base   : b94ba4f8f0d80214ff6026e1425493a4f8a8a86c
 trunk  : b94ba4f8f0d80214ff6026e1425493a4f8a8a86c — origin/main at registration
 ```
 
 ### Next action
 
-Start S01 with `cairn-unit` in the path's worktree: `cairn-active` and
-the register's cells, as the plan's first item says.
+Start S02 with `cairn-unit` in the path's worktree: the post-mortem and
+the two workflows, as the plan's second item says.
 
 ### Blockers
 
@@ -258,6 +261,13 @@ None.
   is one of them.
 - Leaving the audit tool's stale docblock to row 5 — one sentence in a
   file this path rewrites.
+- A milestone's state from the paths its row names alone — the 1.1 and
+  1.2 rows name the rest as *the coding paths below*, and their Paths
+  cells are the owner's; the owner ruled for the row and the table under
+  its short name in the chat of 2026-09-25.
+- A milestone taking its one path's raw status — the same state read
+  differently by how many paths there are; a milestone is *running* or
+  *done*.
 - Writing this record's own definition of done as a plain list — the
   audit tool reads it only after this path's third unit; the boxes stay
   unticked, and the first path opened after this one merges is the first
