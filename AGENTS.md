@@ -15,6 +15,8 @@ This file points; it does not carry project memory.
 5. `skills/` — the procedures as Agent Skills: `cairn-brainstorm`,
    `cairn-open`, `cairn-unit`, `cairn-close`, `cairn-update`,
    `cairn-learn`, and the `cairn-code` stance.
+6. `cairn/README.md` — which release is installed, the six chapters
+   linked at its commit, the skills, and every file the kit owns. Generated.
 
 ## The mechanical contract
 
