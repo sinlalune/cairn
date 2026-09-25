@@ -12,7 +12,7 @@ import { join } from 'node:path'
 import { test } from 'node:test'
 import { REPO } from './cairn-config.mjs'
 import { CLOSING_RECORD, METADATA_NAMESPACE, closingRecordIn, fillErrors, findingsSections } from './cairn-check.mjs'
-import { PLACEHOLDER, QUESTIONS, closingTemplate, coherenceFacts, definitionItems, requestDescription, resolveAuditBranch } from './cairn-audit.mjs'
+import { PLACEHOLDER, QUESTIONS, READER, closingTemplate, coherenceFacts, definitionItems, requestDescription, resolveAuditBranch } from './cairn-audit.mjs'
 
 /** The ceiling a lead is held to, written here rather than imported: a test
  *  that measures against the implementation's own constant cannot catch the
@@ -118,9 +118,7 @@ test('the description opens in the order the template gives, not with the ledger
     if (line.startsWith('<!--') || line.includes('-->')) continue
     assert.ok(!bare.test(line), `a bare angle-bracket blank in the template: ${line}`)
   }
-  // This repository's template offers the same shape. The KIT's generated one
-  // is the roadmap's row 4 and carries none of this yet, which is why the
-  // claim is about this repository and not about every adopter.
+  // This repository's template offers the same shape.
   for (const marker of ['`<what the path did>`', '`<why it is the least>`', '`<what it does not do>`', '`<unit>`', '`<command or page>`']) {
     assert.ok(template.includes(marker), `the template and the tool offer one shape: ${marker}`)
   }
@@ -339,4 +337,11 @@ test('the advisories placeholder points a deferral at the backlog', () => {
   const advisories = (text) => text.slice(text.indexOf('## Advisories'))
   assert.match(advisories(requestDescription(fields)), /deferred[^.]*`project\/backlog\/`/)
   assert.match(advisories(closingTemplate(fields)), /deferred[^.]*`project\/backlog\/`/)
+})
+
+/** The reader line is written three times — this tool, the kit's request
+ *  template, this repository's. The installer's test ties the kit's to this
+ *  repository's; this ties the tool's to it, so the three read as one. */
+test('the reader line the tool prints is the request template\'s', () => {
+  assert.ok(readFileSync(join(REPO, '.github/pull_request_template.md'), 'utf8').includes(READER))
 })

@@ -81,11 +81,12 @@ function phrase({ status, date }) {
  * coding-paths table — rewritten from `states` (id → { status, date }). A
  * milestone counts the paths its row names and the ones in the table under
  * the heading that ends with its short name (`Cairn 1.2` owns `### The coding
- * paths of 1.2`), the owner's ruling of 2026-09-25: running while any of them
- * is not done or archived, or a row there has no path yet; done on its last
- * path's date.
- * A cell with no path, or naming a path with no record, is its author's; so
- * is every other column. Cells are split on `|`, which a cell cannot hold.
+ * paths of 1.2`), the owner's ruling of 2026-09-25: done when every one is
+ * done or archived and one is done — dated by the last, where each done one
+ * has a date — and running otherwise, or while a row there has no path yet.
+ * A milestone counting no path, or a path with no record, keeps what its
+ * author wrote; so does every other column.
+ * Cells are split on `|`, which a cell cannot hold.
  */
 export function fillRegister(text, states) {
   const lines = text.split('\n')

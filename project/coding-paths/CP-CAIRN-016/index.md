@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-016
   route: full
   status: running
-  current_step: S05
+  current_step: S06
   base_commit: b94ba4f8f0d80214ff6026e1425493a4f8a8a86c
   branch: path/cp-cairn-016
   assigned_writer: cp-cairn-016-writer
@@ -275,21 +275,24 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - [**S05**](./steps/S05.md) — the candidate: row 4 of 1.2 names this
   path, its cell the tool's; the scope checked against the base.
   Complete.
+- [**S06**](./steps/S06.md) — what the coherence read of `eab7ddd`
+  found: the reader line tied across its three copies by a test, the
+  milestone rule placed on the backlog for a promotion. Complete.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : bc3357b4ce741450bee214370606580ebde599e2 — S04, the last completed commit on origin/path/cp-cairn-016
-unit   : 5
+commit : eab7ddd4fbe8906d5e78f53c7e7b5201af138049 — S05, the first candidate, the last completed commit on origin/path/cp-cairn-016
+unit   : 6
 base   : b94ba4f8f0d80214ff6026e1425493a4f8a8a86c
 trunk  : b94ba4f8f0d80214ff6026e1425493a4f8a8a86c — origin/main at registration
 ```
 
 ### Next action
 
-`cairn-close` on the candidate, S05's commit: the administrative commit,
+`cairn-close` on the candidate, S06's commit: the administrative commit,
 the fresh-context coherence read scaffolded by `cairn-audit`, the request,
 the owner's reading and the merge.
 
