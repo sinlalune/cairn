@@ -131,8 +131,8 @@ The application exports one constant, and the path that delivers it is closed on
 
 ## Definition of done
 
-- [ ] \`src/app.js\` exports \`app\`.
-- [ ] The module note says so.
+- \`src/app.js\` exports \`app\`.
+- The module note says so.
 
 ## Opening acceptance
 

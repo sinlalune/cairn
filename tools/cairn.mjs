@@ -853,6 +853,8 @@ Surface: \`<the page a newcomer reads for the surface this path changed, or the 
 
 ## Coherence
 
+Read by \`<a fresh context, and which kind | the writer, with the reason no reader was obtainable and how long was waited>\`.
+
 - [ ] Does the diff contradict an accepted decision?
 - [ ] Does it duplicate something another running path is building?
 - [ ] Did it introduce architecture that belongs in a decision record and has none?
@@ -865,7 +867,7 @@ deferred to a named owner and follow-up; or *none*.
 
 ## Roles
 
-- reviewer: <who approves>, holding the roles <initiator | writer | reviewer | integrator> on this path
+- reviewer: \`<who approves>\`, holding the roles \`<initiator | writer | reviewer | integrator>\` on this path
 `
 }
 

@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-015
   route: full
   status: running
-  current_step: S05
+  current_step: S06
   base_commit: c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
   branch: path/cp-cairn-015
   assigned_writer: cp-cairn-015-writer
@@ -272,26 +272,30 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - [**S05**](./steps/S05.md) — Ponytail and the harness: the two
   skills fetched from the latest release, the pin gone, every skill
   copied to `.claude/skills/`. Complete.
-- **S06** — not started.
+- [**S06**](./steps/S06.md) — the two templates and the module note:
+  the pilot's plain list, the request template's reader line and
+  backticked blanks, the module note current. Complete.
+- **S07** — not started.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : a19bdee150a3bc60541e0c03dfced5c45e90619d — S04, on origin/path/cp-cairn-015
-unit   : 5
+commit : 3a22c45166afffdf1e8521ea8082d24d10289f58 — S05, on origin/path/cp-cairn-015
+unit   : 6
 base   : c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
-trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S05
+trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S06
 ```
 
 ### Next action
 
-Start S06 with `cairn-unit` in the path's worktree: the two templates
-and the module note — the pilot's record as a plain list, the generated
-request template's *Coherence* section with every blank backticked and
-the no-bare-blank test, `docs/modules/application.md` current, the
-layout reference's lock row final — as the plan's sixth item says.
+Start S07 with `cairn-unit`, then `cairn-close`, in the path's
+worktree: merge the trunk in, run the gates bare, write this path's id
+into row 3 of 1.2 on the register; then the close skill's order — the
+administrative commit, the fresh-context coherence read in the
+request's description, the owner's try of `init`, `update` and `adopt`
+on a scratch repository, the merge.
 
 ### Blockers
 

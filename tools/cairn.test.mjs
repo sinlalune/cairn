@@ -486,10 +486,27 @@ test('the generated request template opens with what a reader needs before the l
   assert.match(text, /why it is the least/i)
   assert.match(text, /what it does not do/i)
   assert.match(text, /Surface:/)
-  // The blanks are backticked, or the forge strips them as HTML tags and the
-  // blank reads as answered.
-  assert.doesNotMatch(text.split('## Candidate')[0], /(^|[^`])<[a-z]/m,
-    'every blank is backticked')
+})
+
+test('the generated request template leaves no blank the forge can strip, and names the coherence reader', () => {
+  // Atomik's update note, observation 4: one bare `<who approves>` rendered as
+  // `reviewer: , holding the roles  on this path` — in the file whose header
+  // warns about exactly that. ADR-043: the first line under Coherence names
+  // the reader, as this repository's template does.
+  const template = requestTemplate()
+  const bare = template.replace(/`[^`\n]*`/g, '').replace(/<!--|-->/g, '').match(/<[a-z][^>]*>/gi)
+  assert.equal(bare, null, `every blank is backticked: ${bare}`)
+  const ours = readFileSync(join(REPO, '.github/pull_request_template.md'), 'utf8')
+  const readBy = (text) => text.slice(text.indexOf('## Coherence')).split('\n').find((line) => line.startsWith('Read by'))
+  assert.ok(readBy(template), 'the coherence section opens with the reader')
+  assert.equal(readBy(template), readBy(ours), 'in the words this repository uses')
+})
+
+test('the pilot writes its definition of done as a plain list', () => {
+  // ADR-042: nothing in the pinned text invites the tick the rule forbids.
+  const pilot = readFileSync(join(REPO, 'tools/cairn-pilot.mjs'), 'utf8')
+  const done = pilot.slice(pilot.indexOf('## Definition of done'), pilot.indexOf('## Opening acceptance'))
+  assert.doesNotMatch(done, /\[[ xX]\]/)
 })
 
 test('the generated host files and this repository\'s own differ only where they are meant to', () => {

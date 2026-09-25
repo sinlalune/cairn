@@ -241,22 +241,24 @@ this owner bypass it always or does not apply to them. Other rules that can
 turn a push away — required checks, restricted updates, classic branch
 protection — are not read. The refusal names the two ways out — a bypass,
 or `pull-request` registration, which `init` takes as `--registration`.
-Without a remote, a remote on GitHub, a token or an answer, the command says in one
-line that it did not read and writes what was asked. The checker is not touched: the reading is the
-installer's, at the owner's terminal, before a file is written.
+Without a remote, a remote on GitHub, a token or an answer, the command says
+in one line that it did not read and writes what was asked. The checker is
+not touched: the reading is the installer's, at the owner's terminal, before
+a file is written.
 
 **What `adopt` does.** It is the migration from a 0.2 installation: it keeps
 the host's answers, replaces the tools, adds the skills, and reports the
 shapes the kit no longer defines rather than deleting anything of the
 adopter's. Under that list it names the manifest and the workflows that
 still call a stale file — a path, a glob that matches one, or one
-`npm run` of a script that does; a stale page is never counted as called — and says the gate is red until they go.
-A Markdown file of either plane whose relative links resolve nowhere is
-reported as a shape that wants a `linkExemptions` declaration, its links
-read as the checker's `links` rule reads them and a link to a file the
-adoption writes counting as resolved. The lock it writes digests the migrated configuration it actually
-wrote, not the one a fresh install would have generated, so the next `status`
-does not call an untouched file edited. `update` and `adopt` both plan from
+`npm run` of a script that does; a stale page is never counted as called —
+and says the gate is red until they go. A Markdown file of either plane whose
+relative links resolve nowhere is reported as a shape that wants a
+`linkExemptions` declaration, its links read as the checker's `links` rule
+reads them and a link to a file the adoption writes counting as resolved. The
+lock it writes digests the migrated configuration it actually wrote, not the
+one a fresh install would have generated, so the next `status` does not call
+an untouched file edited. `update` and `adopt` both plan from
 the host's own declaration, so a repository that declared `pull-request`
 registration keeps it, and the binding generated beside it — which prints both
 transports — never contradicts the file it sits next to.
@@ -268,7 +270,13 @@ failure and posts once on the request. It differs in one place, and the test
 says so — this repository runs its own suite before the gate, and the kit
 installs no suite and names none. The request template opens with the three
 plain lines and the surface link, then the definition of done item by item,
-before the ledger.
+before the ledger; its *Coherence* section opens with the line naming the
+reader, as this repository's does, and every blank in it is backticked, so
+the forge strips none as an HTML tag — a test asserts no bare one survives.
+The pilot's record writes its definition of done as a plain list, which
+`cairn-audit` does not yet read as items — it prints its *no item was read*
+line there, whose advice to check `scope_ref` points at the wrong fault, and
+teaching it the plain list is row 4's of 1.2 (ADR-042).
 
 ## Testing
 
