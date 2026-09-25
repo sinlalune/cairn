@@ -268,8 +268,28 @@ const rootsOf = (options) => ({
   concepts: options.conceptsRoot ?? `${options.docsRoot}/concepts`
 })
 
+/** The day this release was cut: the stamp's, else the source commit's. Every
+ *  generated page carries it, so two plans of one release are byte-equal on
+ *  any two days and the lock does not churn on the clock (ADR-034 d2). */
+export function releaseDay(root = SOURCE_ROOT) {
+  const stamped = join(root, 'tools/release.json')
+  if (existsSync(stamped)) {
+    const { stampedAt } = JSON.parse(readFileSync(stamped, 'utf8'))
+    if (stampedAt) return stampedAt.slice(0, 10)
+  }
+  try {
+    return execFileSync('git', ['show', '-s', '--format=%cs', sourceCommit(root)],
+      { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
+  } catch {
+    // ponytail: a package with neither a stamp nor its own Git stamps today; `prepack` always stamps.
+    return new Date().toISOString().slice(0, 10)
+  }
+}
+
+let day = null
+
 const front = (type, title, description, tags) =>
-  `---\ntype: ${type}\ntitle: ${title}\ndescription: ${description}\ntags: [${tags.join(', ')}]\ntimestamp: ${new Date().toISOString().slice(0, 10)}T00:00:00Z\n---\n`
+  `---\ntype: ${type}\ntitle: ${title}\ndescription: ${description}\ntags: [${tags.join(', ')}]\ntimestamp: ${(day ??= releaseDay())}T00:00:00Z\n---\n`
 
 function folderIndex(title, purpose, extra = '') {
   return front('Cairn Folder Index', title, purpose, ['index', 'cairn']) + `\n# ${title}\n\n${purpose}\n${extra}`
@@ -869,7 +889,7 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
     )
   }
 
-  return { files, host, config, sourceCommit: commit }
+  return { files, host, hostBaseline: new Set(), config, sourceCommit: commit }
 }
 
 /** The live view is GENERATED, so it is generated rather than guessed. */
@@ -892,8 +912,15 @@ export function lockFor(plan, target, declined = []) {
   for (const [path, content] of [...plan.files].sort(([a], [b]) => a.localeCompare(b))) {
     if (!declined.includes(path)) manifest[path] = digest(content)
   }
+  // Digests that are deliberately the host's own bytes — the generated view,
+  // the migrated configuration — are named, so *pristine* keeps meaning *what
+  // the kit wrote* for every other file (Atomik's update note, observation 2).
+  const baseline = [...plan.hostBaseline]
   const view = `${plan.config.roots.project}/coding-paths/ACTIVE.md`
-  if (existsSync(join(target, view))) manifest[view] = digest(readFileSync(join(target, view)))
+  if (existsSync(join(target, view))) {
+    manifest[view] = digest(readFileSync(join(target, view)))
+    baseline.push(view)
+  }
   return {
     release: PROTOCOL_RELEASE,
     sourceCommit: plan.sourceCommit,
@@ -905,6 +932,7 @@ export function lockFor(plan, target, declined = []) {
     // Host files the repository declined: never written, never digested, and
     // read by `status` as declined rather than missing (ADR-033 d2).
     declined: [...declined].sort(),
+    hostBaseline: baseline.sort(),
     manifest
   }
 }
@@ -998,8 +1026,10 @@ export function installationStatus(lock, plan, stateOf) {
   const files = []
   // The live view is generated, never compared with the placeholder the plan
   // carries: it is rewritten by its generator at every update, and reported
-  // only when it is gone.
+  // only when it is gone. It and the other digests of the host's own bytes
+  // read `host`, never pristine or edited: the kit did not write them.
   const view = plan.config ? `${plan.config.roots.project}/coding-paths/ACTIVE.md` : null
+  const baseline = new Set([...(lock.hostBaseline ?? []), view])
   const declined = new Set(lock.declined ?? [])
   for (const [path, content] of plan.files) {
     if (declined.has(path)) { files.push({ path, state: 'declined', action: 'none' }); continue }
@@ -1014,7 +1044,14 @@ export function installationStatus(lock, plan, stateOf) {
     // and the release's version simply lands. Ownership decides only what
     // happens to a file that LEFT the kit, below.
     else if (!current) action = 'write'
-    files.push({ path, state, action })
+    // To reconcile by hand: kept, and what is on disk DIFFERS FROM THE
+    // TEMPLATE — a fact about now, recomputed every run. The obvious test, that
+    // the template moved since the lock, evaporates: the lock records what the
+    // kit WOULD have written, so a second update at the same release finds
+    // template and lock equal and drops a file nobody settled. The view is on
+    // this list never, as it is on the rewrite list never (ADR-034 d1).
+    const reconcile = action === 'keep' && path !== view && stateOf(path, digest(content)) !== 'pristine'
+    files.push({ path, state: baseline.has(path) && state !== 'missing' ? 'host' : state, action, reconcile })
   }
   const left = []
   const knownHost = Array.isArray(lock.host) ? new Set(lock.host) : null
@@ -1036,7 +1073,9 @@ function describeStatus(status) {
     `kit files: ${Object.entries(counts).map(([state, n]) => `${n} ${state}`).join(', ')}`
   ]
   for (const file of status.files.filter((f) => f.action === 'write')) lines.push(`  update would write   ${file.path} (${file.state})`)
-  for (const file of status.files.filter((f) => f.state === 'edited')) lines.push(`  update would keep    ${file.path} — edited here; review it against the kit's`)
+  for (const file of status.files.filter((f) => f.state === 'host' && f.reconcile)) lines.push(`  update would keep    ${file.path} — the host's own, and the release's differs: to reconcile by hand`)
+  for (const file of status.files.filter((f) => f.state === 'edited')) lines.push(`  update would keep    ${file.path} — edited here${file.reconcile ? ', and the release\'s differs: to reconcile by hand' : ''}`)
+  for (const file of status.files.filter((f) => f.state === 'unmanaged')) lines.push(`  update starts managing ${file.path} — yours before the kit carried it; kept${file.reconcile ? ', and to reconcile by hand' : ''}`)
   for (const file of status.files.filter((f) => f.state === 'declined')) lines.push(`  update would skip    ${file.path} — declined here; \`update --take ${file.path}\` takes it back`)
   for (const file of status.left) lines.push(`  update would ${file.action === 'delete' ? 'delete ' : 'report '} ${file.path} — no longer part of the kit${file.action === 'report' ? (file.state === 'pristine' ? ', and yours to delete' : ', and edited here') : ''}`)
   return lines.join('\n')
@@ -1071,42 +1110,51 @@ export function templateDiff(target, path, template) {
   }
 }
 
+/** The plan \`status\`, \`update\` and \`adopt\` compare against: the kit planned
+ *  from the host's own declaration, carrying the migrated configuration the
+ *  command lands. Built here once, so \`status\` names no rewrite \`update\` will
+ *  not make (ADR-034 d4). The configuration's digest is then the host's bytes,
+ *  and the plan says so. */
+export function hostPlan(target) {
+  const migrated = migrateConfig(readConfig(target))
+  const errors = configErrors(migrated)
+  if (errors.length) throw new Error(`cairn: the migrated configuration is invalid — ${errors.join('; ')}`)
+  const plan = planInstall(optionsFromConfig(migrated))
+  plan.files.set('cairn.config.json', Buffer.from(`${JSON.stringify(migrated, null, 2)}\n`, 'utf8'))
+  plan.hostBaseline.add('cairn.config.json')
+  plan.config = migrated
+  return plan
+}
+
+/** What \`status\` prints and \`update\` applies, from one reading: the pointer
+ *  page is planned with the reconcile and declined lists the tree gives, then
+ *  the plan is read again, so the page the lock digests is the page that lands
+ *  and the page lists exactly what the report does (ADR-034 d1). */
+export function updateStatus(target, plan, lock) {
+  const read = (path, recorded) => fileState(target, path, recorded)
+  const declined = (lock.declined ?? []).filter((path) => plan.files.has(path))
+  const reconcile = installationStatus(lock, plan, read).files.filter((f) => f.reconcile).map((f) => f.path)
+  plan.files.set(POINTER_PAGE, Buffer.from(pointerPage(plan.sourceCommit, {
+    paths: [...plan.files.keys(), 'cairn.lock.json'].filter((path) => !declined.includes(path)),
+    edited: reconcile,
+    declined
+  }), 'utf8'))
+  return { ...installationStatus(lock, plan, read), declined }
+}
+
 /** Rewrite what the kit owns and the tree has not edited; migrate the
  *  configuration field by field; report the rest; write the new lock.
  *
- *  `reconcile` is the files the owner must settle by hand — edited here, and
- *  the release changed their template — with `diffs` saying what it changed
- *  in each. The pointer page carries the same list to disk, so the work
- *  outlives the terminal it was printed in (ADR-015 d2). */
+ *  \`reconcile\` is the files the owner must settle by hand, with \`diffs\`
+ *  saying what the release changed in each, and the pointer page carries the
+ *  same list to disk, so the work outlives the terminal (ADR-015 d2).
+ *  \`managed\` is the files the repository had before the kit carried them,
+ *  kept and managed from this lock on (ADR-034 d3). */
 export function applyUpdate(target, plan, lock, { dryRun = false } = {}) {
-  const read = (path, recorded) => fileState(target, path, recorded)
-  const declined = (lock.declined ?? []).filter((path) => plan.files.has(path))
-
-  // Read once to find what this release cannot rewrite, because the pointer
-  // page has to name it.
-  //
-  // Unreconciled means the file on disk DIFFERS FROM THE TEMPLATE — a fact
-  // about now, recomputed every run. The obvious test, that the template moved
-  // since the lock, evaporates: `writeLock` records what the kit WOULD have
-  // written, deliberately, so `status` can still see the edit — and a second
-  // update at the same release then finds template and lock equal and drops
-  // the file, leaving the page saying "Nothing" over an edit nobody settled.
-  const reconcile = []
-  const diffs = {}
-  for (const file of installationStatus(lock, plan, read).files) {
-    if (file.action !== 'keep' || file.state !== 'edited') continue
-    const template = plan.files.get(file.path)
-    if (digest(template) === digest(readFileSync(join(target, file.path)))) continue
-    reconcile.push(file.path)
-    diffs[file.path] = templateDiff(target, file.path, template)
-  }
-  // ...then put that page in the plan and read again, so the page the lock
-  // digests is the page that lands. A page written outside the plan is a page
-  // the next `status` calls edited.
-  plan.files.set(POINTER_PAGE, Buffer.from(
-    pointerPage(plan.sourceCommit,
-      { paths: [...plan.files.keys(), 'cairn.lock.json'].filter((path) => !declined.includes(path)), edited: reconcile, declined }), 'utf8'))
-  const status = installationStatus(lock, plan, read)
+  const status = updateStatus(target, plan, lock)
+  const reconcile = status.files.filter((f) => f.reconcile).map((f) => f.path)
+  const diffs = Object.fromEntries(reconcile.map((path) => [path, templateDiff(target, path, plan.files.get(path))]))
+  const managed = status.files.filter((f) => f.state === 'unmanaged').map((f) => f.path)
 
   const written = []
   const deleted = []
@@ -1122,9 +1170,9 @@ export function applyUpdate(target, plan, lock, { dryRun = false } = {}) {
       deleted.push(file.path)
     }
     generateView(target)
-    writeLock(target, plan, declined)
+    writeLock(target, plan, status.declined)
   }
-  return { status, written, deleted, diffs, reconcile }
+  return { status, written, deleted, diffs, reconcile, managed }
 }
 
 /** Take the release's version of ONE edited file (ADR-015 d3). It says what it
@@ -1202,14 +1250,11 @@ export function staleShapes(target, config) {
  *  lock is written, and everything the kit no longer defines is reported. */
 export function applyAdopt(target, { dryRun = false } = {}) {
   if (readLock(target)) throw new Error('cairn: this repository carries a cairn.lock.json — it is installed; run `update`')
-  const migrated = migrateConfig(readConfig(target))
-  const errors = configErrors(migrated)
-  if (errors.length) throw new Error(`cairn: the migrated configuration is invalid — ${errors.join('; ')}`)
-  const plan = planInstall(optionsFromConfig(migrated))
   // The migrated configuration is what lands on disk, so it is what the lock
   // must digest. Locking the generated one instead made the very next
   // `status` call an untouched file edited (found by S01's review).
-  plan.files.set('cairn.config.json', Buffer.from(`${JSON.stringify(migrated, null, 2)}\n`, 'utf8'))
+  const plan = hostPlan(target)
+  const migrated = plan.config
   const written = []
   const kept = []
   const decide = (path) => {
@@ -1297,25 +1342,31 @@ function main(argv) {
   if (command === 'status') {
     const lock = readLock(target)
     if (!lock) throw new Error(`cairn: ${target} carries no cairn.lock.json — run \`adopt\` if it carries the protocol, \`init\` if it does not`)
-    const plan = planInstall(optionsFromConfig(migrateConfig(readConfig(target))))
-    console.log(describeStatus(installationStatus(lock, plan, (path, recorded) => fileState(target, path, recorded))))
+    console.log(describeStatus(updateStatus(target, hostPlan(target), lock)))
     return
   }
   if (command === 'update') {
     const lock = readLock(target)
     if (!lock) throw new Error(`cairn: ${target} carries no cairn.lock.json — run \`adopt\` first`)
-    const migrated = migrateConfig(readConfig(target))
-    const errors = configErrors(migrated)
-    if (errors.length) throw new Error(`cairn: the migrated configuration is invalid — ${errors.join('; ')}`)
-    const plan = planInstall(optionsFromConfig(migrated))
-    plan.files.set('cairn.config.json', Buffer.from(`${JSON.stringify(migrated, null, 2)}\n`, 'utf8'))
+    const plan = hostPlan(target)
     if (take !== null) {
       const { state, discarded } = takeRelease(target, plan, lock, take, { dryRun })
+      // The pointer page lists what is declined and what is to reconcile, so it
+      // follows the take — the page and the lock agree after it, as after an
+      // update. One the owner edited is kept, as \`update\` keeps it; across
+      // releases the page would name a release the lock does not, so it waits
+      // for the update the next line asks for.
+      let page = false
+      const taken = dryRun ? null : readLock(target)
+      if (taken && taken.release === PROTOCOL_RELEASE && taken.manifest[POINTER_PAGE] !== undefined) {
+        page = updateStatus(target, plan, taken).files.find((f) => f.path === POINTER_PAGE)?.action === 'write'
+        if (page) takeRelease(target, plan, taken, POINTER_PAGE)
+      }
       if (discarded) {
         console.log(`--- ${take} — about to be discarded (the + lines below)`)
         console.log(discarded)
       }
-      console.log(`cairn — ${dryRun ? 'would take' : 'took'} the release's version of ${take}, ${state === 'declined' ? 'declined until now' : `discarding what was ${state} here`}; nothing else was touched`)
+      console.log(`cairn — ${dryRun ? 'would take' : 'took'} the release's version of ${take}, ${state === 'declined' ? 'declined until now' : `discarding what was ${state} here`}; nothing else was touched${page ? ' but the pointer page, which follows it' : ''}`)
       console.log('next — run `update` with no --take to bring the rest of the kit to this release')
       return
     }
@@ -1334,7 +1385,7 @@ function main(argv) {
       console.log('    (- the release\'s version, + yours)')
       console.log(result.diffs[path])
     }
-    console.log(`cairn — ${dryRun ? 'would update' : 'updated'} to release ${PROTOCOL_RELEASE}: ${result.written.length} written, ${result.deleted.length} deleted`)
+    console.log(`cairn — ${dryRun ? 'would update' : 'updated'} to release ${PROTOCOL_RELEASE}: ${result.written.length} written, ${result.deleted.length} deleted, ${result.managed.length} newly managed`)
     if (result.reconcile.length > 0) {
       console.log(`to reconcile by hand (${result.reconcile.length}): ${result.reconcile.join(', ')}`)
       console.log(`they are listed on ${POINTER_PAGE} too, so the work is on disk and not only here`)

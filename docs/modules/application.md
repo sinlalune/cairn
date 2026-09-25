@@ -157,13 +157,20 @@ every folder is navigable from its index.
 **What the installation knows about itself.** `cairn.lock.json` records the
 digest of every kit file as the kit wrote it, which is what lets `status` tell
 an edit from an installation and `update` rewrite the first and keep the
-second. `cairn/README.md` is generated at `init` and at every `update` and
+second. Two digests are deliberately of the host's own content — the live
+view as its generator wrote it, and the host's configuration as `update` and
+`adopt` migrate and write it — and the lock names them under `hostBaseline`, so
+`status` reads them as `host` and *pristine* means *what the kit wrote* for
+every other file. Every page the kit generates is stamped with the day the
+release was cut — the stamp's, else the source commit's — so two runs of one
+release on two days write the same bytes and the lock does not move on the
+clock. `cairn/README.md` is generated at `init` and at every `update` and
 nothing on it is written by hand: the installed release and the commit it was
 cut from, the six chapters and the six skills linked at that commit, every
 file the kit owns, the files the repository declined, and the files an update
-could not rewrite. The chapters
-are six headings of one page, so each is linked at its own anchor, slugged
-from its title rather than written out beside it. The bootloader's
+could not rewrite. The chapters are six headings of one page, so each is
+linked at its own anchor, slugged from its title rather than written out
+beside it. The bootloader's
 *start here* list ends on it.
 
 **What `update` does, and what it refuses.** A file that still holds exactly
@@ -173,9 +180,12 @@ protect nothing. An edited file is never rewritten: `update` prints what the
 release changed in it, using Git's own `diff --no-index` against the template
 in a temporary file rather than a diff written here, and ends its report with
 the files to settle by hand. The pointer page carries that same list to disk,
-so the work outlives the terminal. `update --take <path>` replaces one named
-edited file with the release's version, shows the lines it discards, moves
-that file's lock entry with it, and touches nothing else. It refuses a path
+so the work outlives the terminal. A host file the repository had before the
+kit carried it is kept, reported as newly managed, and on that list when it
+differs from the release's. `update --take <path>` replaces one named edited
+file with the release's version, shows the lines it discards, moves that
+file's lock entry with it, and touches nothing else but the pointer page,
+which follows it. It refuses a path
 the **lock** does not carry: the plan says what the release would install,
 the lock says what this repository received, and `init` skips a
 `package.json` the adopter already had — so taking "the release's version"
@@ -188,11 +198,15 @@ file as declined rather than missing, whether the repository deleted it or
 kept its own. `update --take <path>` takes a declined file back: it writes the
 release's version and moves the name out of `declined`.
 
-A file counts as **to reconcile** while what is on disk differs from the
-release's template. That is a fact about now, recomputed each run, rather
-than a comparison with the lock: the lock records what the kit *would* have
-written, so a second update at the same release would find it equal to the
-template and drop a file nobody had settled.
+A file counts as **to reconcile** while it is kept and what is on disk
+differs from the release's template; the live view never does. That is a
+fact about now, recomputed each run, rather than a comparison with the lock:
+the lock records what the kit *would* have written, so a second update at the
+same release would find it equal to the template and drop a file nobody had
+settled. `status` and `update` build their plan through one function and read
+it through one predicate, which plans the pointer page's lists and reads the
+plan again — so `status` names no rewrite `update` will not make, and the
+page lists exactly what the report does.
 
 **What `adopt` does.** It is the migration from a 0.2 installation: it keeps
 the host's answers, replaces the tools, adds the skills, and reports the

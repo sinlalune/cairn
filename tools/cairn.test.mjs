@@ -1,7 +1,7 @@
-import { test } from 'node:test'
+import { mock, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { appendFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { tmpdir } from 'node:os'
 
@@ -691,6 +691,76 @@ test('cairn update --decline: a host file declined is never written again, reads
     assert.ok(existsSync(join(dir, unwanted)), 'taken back: the release\'s version is written')
     assert.deepEqual(readLock(dir).declined, [])
     assert.equal(fileState(dir, unwanted, readLock(dir).manifest[unwanted]), 'pristine')
+    const taken = readFileSync(join(dir, 'cairn/README.md'), 'utf8')
+    assert.ok(!taken.slice(taken.indexOf('## Declined')).split('## To reconcile')[0].includes(unwanted),
+      'the pointer page follows the take, so it and the lock agree')
+    assert.doesNotMatch(cairn(dir, 'status'), /would (write|keep)/, 'and status finds nothing left to do')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('cairn update and status: one reading — the report, the pointer page and the lock agree, and the view is on neither list', () => {
+  // ADR-034 d1 and d4, Atomik's update note, observations 2 and 3: the page
+  // listed the live view to reconcile while the lock called it pristine, and
+  // `status` named a rewrite of the configuration `update` would not make.
+  const dir = target()
+  try {
+    applyPlan(planInstall({ ...defaultOptions(), profile: 'ci' }), dir)
+    assert.deepEqual(readLock(dir).hostBaseline, ['project/coding-paths/ACTIVE.md'],
+      'the view is the generator\'s bytes from the first lock, and says so')
+    writeFileSync(join(dir, 'docs/index.md'), 'our own map\n')
+    appendFileSync(join(dir, 'project/coding-paths/ACTIVE.md'), '\n')
+    const before = cairn(dir, 'status')
+    assert.doesNotMatch(before, /would write\s+(cairn\.config\.json|project\/coding-paths\/ACTIVE\.md)/,
+      `status names no rewrite update will not make:\n${before}`)
+    assert.match(before, /would write\s+cairn\/README\.md/, 'the page it will make, since it gains a file to reconcile')
+    cairn(dir, 'update')
+    const after = cairn(dir, 'status')
+    assert.doesNotMatch(after, /would write/, `nor after an update:\n${after}`)
+    const listed = [...after.matchAll(/would keep\s+(\S+) — .*to reconcile by hand/g)].map(([, path]) => path)
+    assert.deepEqual(listed, ['docs/index.md'])
+    const page = readFileSync(join(dir, 'cairn/README.md'), 'utf8')
+    const onPage = [...page.slice(page.indexOf('## To reconcile')).matchAll(/^- `([^`]+)`/gm)].map(([, path]) => path)
+    assert.deepEqual(onPage, listed, 'the page lists what status lists, from the same predicate')
+    assert.deepEqual(readLock(dir).hostBaseline, ['cairn.config.json', 'project/coding-paths/ACTIVE.md'],
+      'the migrated configuration is the host\'s bytes too, and the lock says so')
+    assert.match(after, /\b2 host\b/, 'and status does not count either as pristine')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('cairn update: two plans of one release on two days are byte-equal', () => {
+  // ADR-034 d2, Atomik's first observation: eleven of fifteen digests moved
+  // between two runs because every page was stamped with the day it ran.
+  const on = (day) => {
+    mock.timers.enable({ apis: ['Date'], now: new Date(day) })
+    try { return planInstall({ ...defaultOptions(), profile: 'ci' }) } finally { mock.timers.reset() }
+  }
+  const first = on('2030-01-01T09:00:00Z')
+  const second = on('2031-06-15T23:00:00Z')
+  assert.deepEqual([...second.files.keys()], [...first.files.keys()])
+  for (const [path, content] of first.files) assert.ok(content.equals(second.files.get(path)), `${path} is byte-equal`)
+  assert.doesNotMatch(first.files.get('docs/index.md').toString('utf8'), /2030-01-01/, 'the stamp is the release\'s, not the clock\'s')
+})
+
+test('cairn update: a host file the repository had before the kit carried it is reported as newly managed', () => {
+  // ADR-034 d3: unmanaged at the old lock, edited at the new, and named by
+  // neither the report nor the pointer page.
+  const dir = target()
+  try {
+    applyPlan(planInstall(), dir)
+    const lock = readLock(dir)
+    delete lock.manifest['docs/inputs/index.md']
+    writeFileSync(join(dir, 'cairn.lock.json'), `${JSON.stringify(lock, null, 2)}\n`)
+    writeFileSync(join(dir, 'docs/inputs/index.md'), 'ours, from before\n')
+    const output = cairn(dir, 'update')
+    assert.match(output, /starts managing\s+docs\/inputs\/index\.md — yours before the kit carried it; kept, and to reconcile by hand/)
+    assert.match(output, /1 newly managed/)
+    assert.equal(readFileSync(join(dir, 'docs/inputs/index.md'), 'utf8'), 'ours, from before\n', 'kept')
+    const page = readFileSync(join(dir, 'cairn/README.md'), 'utf8')
+    assert.ok(page.slice(page.indexOf('## To reconcile')).includes('`docs/inputs/index.md`'), 'listed with the kept')
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

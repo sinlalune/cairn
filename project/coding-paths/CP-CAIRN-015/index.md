@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-015
   route: full
   status: running
-  current_step: S01
+  current_step: S02
   base_commit: c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
   branch: path/cp-cairn-015
   assigned_writer: cp-cairn-015-writer
@@ -259,28 +259,29 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - [**S01**](./steps/S01.md) — the installer reads what the repository
   declared: every role root, `update --decline`, the documentation
   index's two sentences, the backlog item for `steps/`. Complete.
-- **S02** — not started.
+- [**S02**](./steps/S02.md) — what `update` and `status` report: one
+  plan, one reading, the release's day, newly managed files, the lock's
+  host digests. Complete.
+- **S03** — not started.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — the registration commit, on origin/main and origin/path/cp-cairn-015; S01 is the commit after it
-unit   : 1
+commit : 37e1ae36c5f9201cc7d157fa329bfb42606d4cd9 — S01, on origin/path/cp-cairn-015
+unit   : 2
 base   : c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
-trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S01
+trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S02
 ```
 
 ### Next action
 
-Start S02 with `cairn-unit` in the path's worktree: what `update` and
-`status` report — one plan function, one reconcile predicate (which also
-gives `status` the pointer page's declined list), the release's stamp,
-the host-baseline mark — as the plan's second item says. Carried from
-S01's review: after `update --take` the pointer page still lists the file
-as declined (or to reconcile) until the next `update`; the one predicate
-must leave the page and the lock agreeing after `--take` too.
+Start S03 with `cairn-unit` in the path's worktree: what `adopt` and
+`init` say and refuse — the red-gate line under the stale list, the
+link-exemption shape, the two refused pairings with the one GitHub
+reading, the pilot registering by request — as the plan's third item
+says.
 
 ### Blockers
 
