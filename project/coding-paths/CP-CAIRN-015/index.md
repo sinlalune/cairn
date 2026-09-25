@@ -256,23 +256,31 @@ Amendments: none.
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
-- **S01** — not started.
+- [**S01**](./steps/S01.md) — the installer reads what the repository
+  declared: every role root, `update --decline`, the documentation
+  index's two sentences, the backlog item for `steps/`. Complete.
+- **S02** — not started.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — this record and the live view, nothing else, on origin/main; unit 0
-unit   : 0
+commit : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — the registration commit, on origin/main and origin/path/cp-cairn-015; S01 is the commit after it
+unit   : 1
 base   : c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
-trunk  : c7e92c83c8b79f6b89d8da747c1ed4b822d3248a — origin/main at registration
+trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S01
 ```
 
 ### Next action
 
-Start S01 with `cairn-unit` in the path's worktree: the installer reads
-what the repository declared, as the plan's first item says.
+Start S02 with `cairn-unit` in the path's worktree: what `update` and
+`status` report — one plan function, one reconcile predicate (which also
+gives `status` the pointer page's declined list), the release's stamp,
+the host-baseline mark — as the plan's second item says. Carried from
+S01's review: after `update --take` the pointer page still lists the file
+as declined (or to reconcile) until the next `update`; the one predicate
+must leave the page and the lock agreeing after `--take` too.
 
 ### Blockers
 

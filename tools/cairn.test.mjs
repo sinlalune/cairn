@@ -175,6 +175,36 @@ test('cairn init: the documentation plane of 1.1 is installed, not left for the 
   assert.ok(bound.files.has('spec/concepts/learning/index.md'))
   assert.ok(bound.files.get('docs/index.md').toString('utf8').includes('../spec/concepts/learning/index.md'))
   assert.deepEqual(outwardLinks(bound.files), [], 'and the link still resolves inside the kit')
+
+  // ADR-033 d3: the template says the shape the plane will have, not a state
+  // it asserts on the day it lands.
+  assert.match(docs, /one page at this root per surface, as they are written/)
+  assert.match(docs, /adds its line to the README, where the repository has one/)
+})
+
+test('cairn: the kit plans under every root the configuration declares, and derives none it named', () => {
+  // ADR-033 d1: Atomik declares `roots.architecture: docs/bedrock` and was
+  // given a second, empty `docs/architecture/` beside it.
+  const config = {
+    ...buildConfig(defaultOptions()),
+    roots: { documentation: 'docs', project: 'project', architecture: 'docs/bedrock', decisions: 'records',
+      modules: 'notes', concepts: 'wiki', source: ['src'] }
+  }
+  const plan = planInstall(optionsFromConfig(config))
+  const paths = [...plan.files.keys()]
+  for (const path of ['docs/bedrock/index.md', 'notes/index.md', 'notes/application.md', 'wiki/product/index.md']) {
+    assert.ok(plan.files.has(path), path)
+  }
+  for (const derived of ['docs/architecture/', 'docs/adr/', 'docs/modules/', 'docs/concepts/']) {
+    assert.ok(!paths.some((p) => p.startsWith(derived)), `nothing under ${derived}, which the repository did not declare`)
+  }
+  assert.deepEqual(plan.config.roots, config.roots, 'the configuration the plan carries is the declared one')
+  assert.equal(plan.config.areas[0].note, 'notes/application.md')
+  const binding = plan.files.get('project/coding-paths/binding.md').toString('utf8')
+  for (const root of ['`docs/bedrock/`', '`records/`', '`notes/`']) assert.ok(binding.includes(root), `the binding names ${root}`)
+  const docs = plan.files.get('docs/index.md').toString('utf8')
+  assert.ok(docs.includes('(./bedrock/index.md)') && docs.includes('(../notes/index.md)') && docs.includes('`records/`'))
+  assert.deepEqual(outwardLinks(plan.files), [])
 })
 
 test('cairn init: an existing file is refused rather than overwritten, and a lock refuses a second init', () => {
@@ -626,6 +656,41 @@ test('cairn update: rewrites pristine kit files, keeps edited ones, and writes t
     assert.equal(after.manifest['skills/cairn-open/SKILL.md'], digest('a newer open skill\n'))
     assert.equal(after.manifest['skills/cairn-code/SKILL.md'], digest(planInstall().files.get('skills/cairn-code/SKILL.md')), 'the lock records what the kit would have written, so the edit stays visible')
     assert.notEqual(after.installedAt, before.installedAt)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('cairn update --decline: a host file declined is never written again, reads declined, and --take takes it back', () => {
+  // ADR-033 d2: the release's `update` wrote three concept indexes this
+  // repository does not want; deleting them made them *missing* at every
+  // `status` after, and the next update wrote them again.
+  const dir = target()
+  const unwanted = 'docs/concepts/product/index.md'
+  try {
+    applyPlan(planInstall(), dir)
+    assert.throws(() => cairn(dir, 'update', '--decline', 'tools/cairn-check.mjs'), /not a host file/,
+      'the kit\'s own files are not the adopter\'s to decline')
+    rmSync(join(dir, unwanted))
+    cairn(dir, 'update', '--decline', unwanted)
+    assert.equal(existsSync(join(dir, unwanted)), false, 'not written now')
+    const lock = readLock(dir)
+    assert.deepEqual(lock.declined, [unwanted], 'the lock is the one place that remembers it')
+    assert.equal(lock.manifest[unwanted], undefined, 'and owns no digest of it')
+    cairn(dir, 'update')
+    assert.equal(existsSync(join(dir, unwanted)), false, 'nor at a later update')
+    const status = cairn(dir, 'status')
+    assert.match(status, /\b1 declined\b/)
+    assert.doesNotMatch(status, /missing/, 'declined, never missing')
+    const page = readFileSync(join(dir, 'cairn/README.md'), 'utf8')
+    const declined = page.slice(page.indexOf('## Declined'))
+    assert.ok(declined.includes(`\`${unwanted}\``), 'the pointer page lists it')
+    assert.ok(!page.slice(0, page.indexOf('## Declined')).includes(`\`${unwanted}\``), 'and not among what the kit owns')
+
+    cairn(dir, 'update', '--take', unwanted)
+    assert.ok(existsSync(join(dir, unwanted)), 'taken back: the release\'s version is written')
+    assert.deepEqual(readLock(dir).declined, [])
+    assert.equal(fileState(dir, unwanted, readLock(dir).manifest[unwanted]), 'pristine')
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

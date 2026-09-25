@@ -125,11 +125,17 @@ files and the lock on the `ci` profile and 32 on `local`, which has no
 workflow; the number is measured here and bounds nothing (ADR-022 d2).
 
 The documentation plane it writes is the one 1.1 decided: `docs/inputs/` for
-what the project had before the protocol, `docs/architecture/` with its index,
-`docs/modules/`, and a concept root of three folders — `cairn`, `product`,
-`learning` — each with its own index and none at the root. The documentation
-index is the map: it links them and says where a surface page goes, and that
-such a page opens with one worked example and links its API's documentation.
+what the project had before the protocol, the architecture root with its
+index, the modules root, and a concept root of three folders — `cairn`,
+`product`, `learning` — each with its own index and none at the root. Every
+role root is the one the configuration declares, and is derived under the
+documentation root only where none is; the plan refuses itself if a path it
+writes below the repository's root falls under no declared root and outside
+the kit's own folders — `tools/`, `skills/`, `cairn/`, `.github/`. The
+documentation index is the map: it links them and says where a surface page
+goes, one per surface as they are written, that such a page opens with one
+worked example and links its API's documentation, and that its line goes in
+the README where the repository has one.
 The configuration declares `transport.registration: manual-git`, the one
 registration sequence `cairn-open` ships, whatever `--transport` answers for
 `transport.integration`. The bootloader carries the five absolute rules of 1.0
@@ -154,7 +160,8 @@ an edit from an installation and `update` rewrite the first and keep the
 second. `cairn/README.md` is generated at `init` and at every `update` and
 nothing on it is written by hand: the installed release and the commit it was
 cut from, the six chapters and the six skills linked at that commit, every
-file the kit owns, and the files an update could not rewrite. The chapters
+file the kit owns, the files the repository declined, and the files an update
+could not rewrite. The chapters
 are six headings of one page, so each is linked at its own anchor, slugged
 from its title rather than written out beside it. The bootloader's
 *start here* list ends on it.
@@ -173,6 +180,13 @@ the **lock** does not carry: the plan says what the release would install,
 the lock says what this repository received, and `init` skips a
 `package.json` the adopter already had — so taking "the release's version"
 of that would overwrite a real manifest with the kit's template.
+
+`update --decline <path>` names a host file the kit must not write, now or at
+any later update — the configuration excepted, which every tool reads. The
+lock keeps the name in `declined` and no digest for it, so `status` reads the
+file as declined rather than missing, whether the repository deleted it or
+kept its own. `update --take <path>` takes a declined file back: it writes the
+release's version and moves the name out of `declined`.
 
 A file counts as **to reconcile** while what is on disk differs from the
 release's template. That is a fact about now, recomputed each run, rather

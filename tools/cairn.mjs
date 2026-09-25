@@ -8,11 +8,13 @@
  *                             [--source src,packages] [--transport pull-request|manual-git]
  *                             [--dry-run]
  *   npx cairn-protocol status [--target <dir>]
- *   npx cairn-protocol update [--target <dir>] [--dry-run]
+ *   npx cairn-protocol update [--target <dir>] [--dry-run] [--decline <path>] [--take <path>]
  *   npx cairn-protocol adopt  [--target <dir>] [--dry-run]
  *
  * `--transport` names the INTEGRATION transport alone; `init` declares
  * `transport.registration` from `REGISTRATION_TRANSPORT` (ADR-024).
+ * `--decline` names a host file `update` must not write, now or later; `--take`
+ * takes one back (ADR-033 d2).
  *
  * The npm name `cairn` belongs to another package, so the package is
  * `cairn-protocol` and its binary is `cairn`.
@@ -50,7 +52,7 @@ import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join, relative, resolve, sep } from 'node:path'
+import { dirname, join, posix, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { configErrors } from './cairn-config.mjs'
@@ -187,11 +189,15 @@ export function optionsFromConfig(config) {
     sourceRoots: [...config.roots.source],
     transport: config.transport?.integration ?? 'pull-request',
     registrationTransport: config.transport?.registration ?? REGISTRATION_TRANSPORT,
+    architectureRoot: config.roots.architecture,
+    decisionsRoot: config.roots.decisions,
+    modulesRoot: config.roots.modules,
     conceptsRoot: config.roots.concepts
   }
 }
 
 export function buildConfig(options) {
+  const roots = rootsOf(options)
   return {
     $schema: './tools/cairn-config.schema.json',
     version: 2,
@@ -202,19 +208,19 @@ export function buildConfig(options) {
     roots: {
       documentation: options.docsRoot,
       project: options.projectRoot,
-      architecture: `${options.docsRoot}/architecture`,
-      decisions: `${options.docsRoot}/adr`,
-      modules: `${options.docsRoot}/modules`,
+      architecture: roots.architecture,
+      decisions: roots.decisions,
+      modules: roots.modules,
       // The adopter's OWN wiki — the project scope of chapter 6. The
       // protocol's wiki is read at the release, never written into.
-      concepts: conceptsRootOf(options),
+      concepts: roots.concepts,
       source: options.sourceRoots
     },
     areas: [
       {
         name: 'application',
         match: options.sourceRoots.map((root) => `${root}/**`),
-        note: `${options.docsRoot}/modules/application.md`
+        note: `${roots.modules}/application.md`
       }
     ],
     defaultRoute: 'lightweight',
@@ -252,9 +258,15 @@ export function migrateConfig(config) {
   }
 }
 
-/** The wiki's root: the adopter's own, and a host may bind it outside the
- *  documentation plane — this repository binds `spec/concepts`. */
-const conceptsRootOf = (options) => options.conceptsRoot ?? `${options.docsRoot}/concepts`
+/** The role roots: each the one the configuration declares, derived under the
+ *  documentation root only where none is (ADR-033 d1). A host may bind any of
+ *  them outside that plane — this repository binds its wiki at `spec/concepts`. */
+const rootsOf = (options) => ({
+  architecture: options.architectureRoot ?? `${options.docsRoot}/architecture`,
+  decisions: options.decisionsRoot ?? `${options.docsRoot}/adr`,
+  modules: options.modulesRoot ?? `${options.docsRoot}/modules`,
+  concepts: options.conceptsRoot ?? `${options.docsRoot}/concepts`
+})
 
 const front = (type, title, description, tags) =>
   `---\ntype: ${type}\ntitle: ${title}\ndescription: ${description}\ntags: [${tags.join(', ')}]\ntimestamp: ${new Date().toISOString().slice(0, 10)}T00:00:00Z\n---\n`
@@ -321,7 +333,7 @@ npm run cairn-audit     # the closing review: the request's description to paste
 }
 
 export function hostBinding(options, commit) {
-  const concepts = conceptsRootOf(options)
+  const { architecture, decisions, modules, concepts } = rootsOf(options)
   return front('Cairn Binding', 'Host binding', 'How portable Cairn roles map onto this repository.', ['cairn', 'binding']) +
     `\n# Host binding
 
@@ -333,9 +345,9 @@ paths, command names and runtime details. Portable protocol text never does.
 | documentation plane | \`${options.docsRoot}/\` |
 | execution-state plane | \`${options.projectRoot}/\` |
 | path records and live view | \`${options.projectRoot}/coding-paths/\` |
-| accepted architecture | \`${options.docsRoot}/architecture/\` |
-| decisions | \`${options.docsRoot}/adr/\` |
-| implemented-area notes | \`${options.docsRoot}/modules/\` |
+| accepted architecture | \`${architecture}/\` |
+| decisions | \`${decisions}/\` |
+| implemented-area notes | \`${modules}/\` |
 | concept wiki | \`${concepts}/\` |
 | source roots | ${options.sourceRoots.map((r) => `\`${r}/\``).join(', ')} |
 | trunk | \`${options.trunk}\` |
@@ -426,7 +438,7 @@ all three of its folders.
 /** The map a reader meets first: where each kind of page lives, and what the
  *  pages the kit does NOT install are for. */
 export function documentationIndex(options) {
-  const concepts = conceptsRootOf(options)
+  const { architecture, decisions, modules, concepts } = rootsOf(options)
   const to = (path) => {
     const rel = relative(options.docsRoot, path).split(sep).join('/')
     return rel.startsWith('.') ? rel : `./${rel}`
@@ -444,18 +456,19 @@ not here.
 | :-- | :-- |
 | [\`${options.docsRoot}/inputs/\`](./inputs/index.md) | documents this project had before the protocol, any format, unedited |
 | \`${options.docsRoot}/<surface>.md\` | one page per product surface, at this root |
-| [\`${options.docsRoot}/architecture/\`](./architecture/index.md) | accepted architecture, one page per feature, interface, contract or flow |
-| \`${options.docsRoot}/adr/\` | one record per decision, numbered from ADR-001 with no gaps |
-| [\`${options.docsRoot}/modules/\`](./modules/index.md) | one note per implemented area, as the area is now |
+| [\`${architecture}/\`](${to(`${architecture}/index.md`)}) | accepted architecture, one page per feature, interface, contract or flow |
+| \`${decisions}/\` | one record per decision, numbered from ADR-001 with no gaps |
+| [\`${modules}/\`](${to(`${modules}/index.md`)}) | one note per implemented area, as the area is now |
 ${scopeRows}
 
 ## The page a newcomer reads first
 
-For every surface a user meets — a screen, a command, an API, a document set —
-there is one page at this root, \`${options.docsRoot}/<surface>.md\`, listed above.
-It **opens with one worked example**: a user doing the one thing the surface is
-for, start to finish, before any explanation. Then it says what the surface does
-and how to use it, in plain words.
+A surface is what a user meets — a screen, a command, an API, a document set.
+There is one page at this root per surface, as they are written, at
+\`${options.docsRoot}/<surface>.md\`. It **opens with one worked example**: a user
+doing the one thing the surface is for, start to finish, before any
+explanation. Then it says what the surface does and how to use it, in plain
+words.
 
 It links the concept notes as its glossary instead of redefining the words, and
 links the architecture page that governs the surface — nothing more technical
@@ -464,8 +477,8 @@ written and kept current where the language's ecosystem expects it; Cairn names
 no API page and installs none.
 
 A promotion unit that changes what a surface does writes that surface's page in
-the same unit, and adds its line to the README. One that changes no surface
-leaves the pages alone and says so.
+the same unit, and adds its line to the README, where the repository has one.
+One that changes no surface leaves the pages alone and says so.
 `
 }
 
@@ -500,16 +513,16 @@ const SKILL_LINES = [
  *  to read, and what the kit owns. Nothing on it is written by hand (ADR-013).
  *  `edited` is the list the last `update` could not rewrite (ADR-015 d2); it
  *  is empty at `init` and until an update finds one. */
-export function pointerPage(commit, { paths, edited = [] }) {
+export function pointerPage(commit, { paths, edited = [], declined = [] }) {
   const spec = specUrl(commit)
   const chapters = SPEC_CHAPTERS
     .map(([title, purpose]) => `- [${title}](${spec}/index.md#${anchorOf(title)}) — ${purpose}`).join('\n')
   const skills = SKILL_LINES
     .map(([name, when]) => `- [\`${name}\`](../${SKILLS}/${name}/SKILL.md) — ${when}`).join('\n')
-  const owned = [...paths].sort().map((path) => `- \`${path}\``).join('\n')
-  const reconcile = edited.length === 0
-    ? 'Nothing. The last update rewrote every file it owns.'
-    : [...edited].sort().map((path) => `- \`${path}\``).join('\n')
+  const bullets = (list, none) => (list.length === 0 ? none : [...list].sort().map((path) => `- \`${path}\``).join('\n'))
+  const owned = bullets(paths, '')
+  const refused = bullets(declined, 'None.')
+  const reconcile = bullets(edited, 'Nothing. The last update rewrote every file it owns.')
   return front('Cairn Pointer', 'Cairn here', `Release ${PROTOCOL_RELEASE} of the Cairn protocol, installed in this repository: what to read, and what the kit owns.`, ['cairn', 'pointer', 'generated']) +
     `\n# Cairn here
 
@@ -543,6 +556,13 @@ which is which, and \`update --take <path>\` takes the release's version of one
 you name.
 
 ${owned}
+
+## Declined
+
+Files this repository declined with \`update --decline <path>\`. The kit does not
+write them, now or at a later update; \`update --take <path>\` takes one back.
+
+${refused}
 
 ## To reconcile by hand
 
@@ -818,13 +838,13 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
 
   put(`${options.docsRoot}/index.md`, documentationIndex(options), 'host')
   put(`${options.docsRoot}/inputs/index.md`, inputsIndex(), 'host')
-  put(`${options.docsRoot}/architecture/index.md`, architectureIndex(), 'host')
-  put(`${options.docsRoot}/modules/index.md`, folderIndex('Module notes', 'One note per implemented area: flow, boundaries and tests, as the area is now.'), 'host')
+  const roots = rootsOf(options)
+  put(`${roots.architecture}/index.md`, architectureIndex(), 'host')
+  put(`${roots.modules}/index.md`, folderIndex('Module notes', 'One note per implemented area: flow, boundaries and tests, as the area is now.'), 'host')
   // The one area the generated configuration names must exist, or the first
   // implementation unit is asked for a note the initializer never wrote.
-  put(`${options.docsRoot}/modules/application.md`, moduleNote(options), 'host')
-  const concepts = conceptsRootOf(options)
-  for (const scope of CONCEPT_SCOPES) put(`${concepts}/${scope[0]}/index.md`, conceptIndex(commit, scope), 'host')
+  put(`${roots.modules}/application.md`, moduleNote(options), 'host')
+  for (const scope of CONCEPT_SCOPES) put(`${roots.concepts}/${scope[0]}/index.md`, conceptIndex(commit, scope), 'host')
 
   if (options.profile === 'ci') put('.github/workflows/cairn.yml', workflow(options), 'host')
   if (options.transport === 'pull-request') put('.github/pull_request_template.md', requestTemplate())
@@ -833,6 +853,12 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
   // since `status` reads both and an adopter looking for "what is Cairn's
   // here" must find them on the list.
   put(POINTER_PAGE, pointerPage(commit, { paths: [...files.keys(), POINTER_PAGE, 'cairn.lock.json'] }))
+
+  // Every path lands under a declared root or in the kit's own places, so a
+  // root the configuration names never gets an undeclared sibling (ADR-033 d1).
+  const places = [...Object.values(config.roots).flat(), 'tools', SKILLS, dirname(POINTER_PAGE), '.github']
+  const astray = [...files.keys()].filter((path) => path.includes('/') && !places.some((root) => path.startsWith(`${root}/`)))
+  if (astray.length) throw new Error(`cairn: the plan writes outside every declared root — ${astray.join(', ')}`)
 
   const dangling = outwardLinks(files)
   if (dangling.length) {
@@ -861,10 +887,10 @@ function generateView(target) {
  *  from an installation. The generated view is recorded as written, and the
  *  host files are named, so a later update knows which files are the
  *  adopter's even after they have left the kit. */
-export function lockFor(plan, target) {
+export function lockFor(plan, target, declined = []) {
   const manifest = {}
   for (const [path, content] of [...plan.files].sort(([a], [b]) => a.localeCompare(b))) {
-    manifest[path] = digest(content)
+    if (!declined.includes(path)) manifest[path] = digest(content)
   }
   const view = `${plan.config.roots.project}/coding-paths/ACTIVE.md`
   if (existsSync(join(target, view))) manifest[view] = digest(readFileSync(join(target, view)))
@@ -876,12 +902,15 @@ export function lockFor(plan, target) {
     // tag this release was checked against (ADR-016 d1).
     dependencies: DEPENDENCIES,
     host: [...plan.host].sort(),
+    // Host files the repository declined: never written, never digested, and
+    // read by `status` as declined rather than missing (ADR-033 d2).
+    declined: [...declined].sort(),
     manifest
   }
 }
 
-export function writeLock(target, plan) {
-  const lock = lockFor(plan, target)
+export function writeLock(target, plan, declined = []) {
+  const lock = lockFor(plan, target, declined)
   writeFileSync(join(target, 'cairn.lock.json'), `${JSON.stringify(lock, null, 2)}\n`)
   return lock
 }
@@ -971,7 +1000,9 @@ export function installationStatus(lock, plan, stateOf) {
   // carries: it is rewritten by its generator at every update, and reported
   // only when it is gone.
   const view = plan.config ? `${plan.config.roots.project}/coding-paths/ACTIVE.md` : null
+  const declined = new Set(lock.declined ?? [])
   for (const [path, content] of plan.files) {
+    if (declined.has(path)) { files.push({ path, state: 'declined', action: 'none' }); continue }
     const recorded = lock.manifest[path]
     const state = recorded === undefined ? (stateOf(path, digest(content)) === 'missing' ? 'missing' : 'unmanaged') : stateOf(path, recorded)
     const current = path === view || digest(content) === recorded
@@ -1006,6 +1037,7 @@ function describeStatus(status) {
   ]
   for (const file of status.files.filter((f) => f.action === 'write')) lines.push(`  update would write   ${file.path} (${file.state})`)
   for (const file of status.files.filter((f) => f.state === 'edited')) lines.push(`  update would keep    ${file.path} — edited here; review it against the kit's`)
+  for (const file of status.files.filter((f) => f.state === 'declined')) lines.push(`  update would skip    ${file.path} — declined here; \`update --take ${file.path}\` takes it back`)
   for (const file of status.left) lines.push(`  update would ${file.action === 'delete' ? 'delete ' : 'report '} ${file.path} — no longer part of the kit${file.action === 'report' ? (file.state === 'pristine' ? ', and yours to delete' : ', and edited here') : ''}`)
   return lines.join('\n')
 }
@@ -1048,6 +1080,7 @@ export function templateDiff(target, path, template) {
  *  outlives the terminal it was printed in (ADR-015 d2). */
 export function applyUpdate(target, plan, lock, { dryRun = false } = {}) {
   const read = (path, recorded) => fileState(target, path, recorded)
+  const declined = (lock.declined ?? []).filter((path) => plan.files.has(path))
 
   // Read once to find what this release cannot rewrite, because the pointer
   // page has to name it.
@@ -1072,7 +1105,7 @@ export function applyUpdate(target, plan, lock, { dryRun = false } = {}) {
   // the next `status` calls edited.
   plan.files.set(POINTER_PAGE, Buffer.from(
     pointerPage(plan.sourceCommit,
-      { paths: [...plan.files.keys(), 'cairn.lock.json'], edited: reconcile }), 'utf8'))
+      { paths: [...plan.files.keys(), 'cairn.lock.json'].filter((path) => !declined.includes(path)), edited: reconcile, declined }), 'utf8'))
   const status = installationStatus(lock, plan, read)
 
   const written = []
@@ -1089,7 +1122,7 @@ export function applyUpdate(target, plan, lock, { dryRun = false } = {}) {
       deleted.push(file.path)
     }
     generateView(target)
-    writeLock(target, plan)
+    writeLock(target, plan, declined)
   }
   return { status, written, deleted, diffs, reconcile }
 }
@@ -1108,23 +1141,29 @@ export function takeRelease(target, plan, lock, path, { dryRun = false } = {}) {
   // "the release's version" of a file the release never installed here
   // overwrites the adopter's own manifest, scripts and dependencies with a
   // four-line template. Reproduced before this guard existed.
-  if (lock.manifest[path] === undefined) {
+  const declined = lock.declined ?? []
+  if (lock.manifest[path] === undefined && !declined.includes(path)) {
     throw new Error(
       `cairn: this installation does not carry ${path} — the kit never wrote it here, so there is no release version of it to take. ` +
       'A file the kit skipped at `init`, like a package.json you already had, stays yours')
   }
   const template = plan.files.get(path)
-  const state = fileState(target, path, lock.manifest[path])
+  // A declined file taken back is the kit's again (ADR-033 d2), and whatever
+  // the repository kept at its path is what is discarded.
+  const state = declined.includes(path) ? 'declined' : fileState(target, path, lock.manifest[path])
   // What is discarded, shown rather than described: the reason to run this is
   // that the repairs are upstream, and that is a claim about lines.
-  const discarded = state === 'edited' ? templateDiff(target, path, template) : ''
+  const kept = state === 'edited' || (state === 'declined' && existsSync(join(target, path)))
+  const discarded = kept ? templateDiff(target, path, template) : ''
   if (!dryRun) {
+    mkdirSync(dirname(join(target, path)), { recursive: true })
     writeFileSync(join(target, path), template)
     // ADR-015 d3 makes the file pristine AT THE NEW RELEASE, and pristine is
     // a statement about the lock. Only this entry moves: the installation is
     // still at the release the rest of it carries, until `update` runs.
-    writeFileSync(join(target, 'cairn.lock.json'),
-      `${JSON.stringify({ ...lock, manifest: { ...lock.manifest, [path]: digest(template) } }, null, 2)}\n`)
+    const next = { ...lock, manifest: { ...lock.manifest, [path]: digest(template) } }
+    if (state === 'declined') next.declined = declined.filter((p) => p !== path)
+    writeFileSync(join(target, 'cairn.lock.json'), `${JSON.stringify(next, null, 2)}\n`)
   }
   return { state, discarded }
 }
@@ -1204,6 +1243,7 @@ function parseArgs(argv) {
   let target = null
   let dryRun = false
   let take = null
+  const decline = []
   for (let i = 0; i < rest.length; i += 1) {
     const arg = rest[i]
     const next = () => {
@@ -1221,15 +1261,17 @@ function parseArgs(argv) {
     else if (arg === '--docs-root') options.docsRoot = next()
     else if (arg === '--source') options.sourceRoots = next().split(',').map((s) => s.trim()).filter(Boolean)
     else if (arg === '--transport') options.transport = next()
-    else if (arg === '--take') take = next()
+    else if (arg === '--take') take = posix.normalize(next())
+    else if (arg === '--decline') decline.push(posix.normalize(next()))
     else if (arg === '--dry-run') dryRun = true
     else throw new Error(`cairn: unknown argument ${arg}`)
   }
-  return { command, options, target: resolve(target ?? '.'), dryRun, take }
+  return { command, options, target: resolve(target ?? '.'), dryRun, take, decline }
 }
 
 function main(argv) {
-  const { command, options, target, dryRun, take } = parseArgs(argv)
+  const { command, options, target, dryRun, take, decline } = parseArgs(argv)
+  if (take !== null && decline.length > 0) throw new Error('cairn: --take and --decline are two runs — take the one file, then run update with --decline')
   if (command === 'init') {
     if (options.profile === 'protected') {
       throw new Error('cairn: --profile protected is not installable — it asserts host protection this command cannot configure. Install local or ci and declare protected once the host is actually configured')
@@ -1273,10 +1315,18 @@ function main(argv) {
         console.log(`--- ${take} — about to be discarded (the + lines below)`)
         console.log(discarded)
       }
-      console.log(`cairn — ${dryRun ? 'would take' : 'took'} the release's version of ${take}, discarding what was ${state} here; nothing else was touched`)
+      console.log(`cairn — ${dryRun ? 'would take' : 'took'} the release's version of ${take}, ${state === 'declined' ? 'declined until now' : `discarding what was ${state} here`}; nothing else was touched`)
       console.log('next — run `update` with no --take to bring the rest of the kit to this release')
       return
     }
+    for (const path of decline) {
+      // The configuration is the authority every tool reads; it is migrated,
+      // never declined.
+      if (!plan.host.has(path) || path === 'cairn.config.json') {
+        throw new Error(`cairn: ${path} is not a host file this release writes — only those can be declined; the kit's own files are kept when edited, and \`status\` lists both`)
+      }
+    }
+    lock.declined = [...new Set([...(lock.declined ?? []), ...decline])]
     const result = applyUpdate(target, plan, lock, { dryRun })
     console.log(describeStatus(result.status))
     for (const path of result.reconcile) {
@@ -1304,7 +1354,7 @@ function main(argv) {
     if (!dryRun) console.log('next — run npm run cairn-check, read its findings, and commit the adoption as one unit')
     return
   }
-  throw new Error('usage: cairn <init|status|update|adopt> [--target <dir>] [options]; `update --take <path>` takes the release\'s version of one edited file; `stamp` is the package\'s own, run by prepack')
+  throw new Error('usage: cairn <init|status|update|adopt> [--target <dir>] [options]; `update --take <path>` takes the release\'s version of one edited or declined file, `update --decline <path>` stops writing one host file; `stamp` is the package\'s own, run by prepack')
 }
 
 if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('/cairn')) {
