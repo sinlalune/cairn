@@ -7,13 +7,13 @@ timestamp: 2026-09-25T00:00:00Z
 cairn:
   id: CP-CAIRN-015
   route: full
-  status: running
-  current_step: S01
+  status: ready
+  current_step: S10
   base_commit: c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
   branch: path/cp-cairn-015
   assigned_writer: cp-cairn-015-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 59dcddaf6cb5b4cf4df3750ba7075d3b6793fe74
   resolution: null
   writes:
     - tools/cairn.mjs
@@ -256,23 +256,56 @@ Amendments: none.
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
-- **S01** — not started.
+- [**S01**](./steps/S01.md) — the installer reads what the repository
+  declared: every role root, `update --decline`, the documentation
+  index's two sentences, the backlog item for `steps/`. Complete.
+- [**S02**](./steps/S02.md) — what `update` and `status` report: one
+  plan, one reading, the release's day, newly managed files, the lock's
+  host digests. Complete.
+- [**S03**](./steps/S03.md) — what `adopt` and `init` say and refuse:
+  the red-gate line, the link-exemption shape, the two refused pairings
+  with the one GitHub reading, the pilot registering by request.
+  Complete.
+- [**S04**](./steps/S04.md) — what the kit installs: `cairn-update`
+  named, `feedbacks/` and the backlog with their indexes, the release
+  notes shipped and linked. Complete.
+- [**S05**](./steps/S05.md) — Ponytail and the harness: the two
+  skills fetched from the latest release, the pin gone, every skill
+  copied to `.claude/skills/`. Complete.
+- [**S06**](./steps/S06.md) — the two templates and the module note:
+  the pilot's plain list, the request template's reader line and
+  backticked blanks, the module note current. Complete.
+- [**S07**](./steps/S07.md) — the candidate: the trunk already in, the
+  scope checked, row 3 of 1.2 naming this path. Complete — committed on
+  a red gate, repaired by S08.
+- [**S08**](./steps/S08.md) — repair: S07's step quoted a link that
+  resolves nowhere and was committed with the gate red; the line
+  quoted as code, S07 superseded. Complete.
+- [**S09**](./steps/S09.md) — what the coherence read of `1e7a32c`
+  found: the installer says when classic protection was not read, a
+  sentence that would go stale dropped, the copied link reading on the
+  backlog. Complete.
+- [**S10**](./steps/S10.md) — what the request's reviewer found on
+  `67f1cb0`: every decline kept through a release that drops the file,
+  a missing copy of the stance kept and reported. Complete.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — this record and the live view, nothing else, on origin/main; unit 0
-unit   : 0
+commit : 59dcddaf6cb5b4cf4df3750ba7075d3b6793fe74 — S10, the candidate C
+unit   : 10
 base   : c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
-trunk  : c7e92c83c8b79f6b89d8da747c1ed4b822d3248a — origin/main at registration
+trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S10
 ```
 
 ### Next action
 
-Start S01 with `cairn-unit` in the path's worktree: the installer reads
-what the repository declared, as the plan's first item says.
+Close with `cairn-close` on the candidate S10 produced: the review in
+the request's description with the fresh-context coherence read, the
+administrative commit, the owner's try of `init`, `update` and `adopt`
+on a scratch repository, the merge, then the integrating unit.
 
 ### Blockers
 

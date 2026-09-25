@@ -1,19 +1,30 @@
-import { test } from 'node:test'
+import { mock, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { appendFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { tmpdir } from 'node:os'
 
 import {
   bootloader, hostBinding, pointerPage, requestTemplate, takeRelease, workflow,
   applyAdopt, applyPlan, applyUpdate, buildConfig, defaultOptions, digest, fileState, installationStatus,
-  migrateConfig, optionsFromConfig, outwardLinks, pinSpecLinks, planInstall, readLock, sourceCommit, specUrl, staleShapes,
+  migrateConfig, optionsFromConfig, outwardLinks, pinSpecLinks, planInstall, readLock, readPonytail, readTrunk, sourceCommit, specUrl, staleShapes,
   PROTOCOL_RELEASE, REFERENCE_TOOLS
 } from './cairn.mjs'
 import { REPO, configErrors } from './cairn-config.mjs'
 
 const CAIRN = 'tools/cairn.mjs'
+
+/** A local copy of Ponytail's repository, which `CAIRN_PONYTAIL` points the
+ *  command at: the suite reaches no network, and every command it runs reads
+ *  the stance from here (ADR-036 d1). */
+const PONYTAIL = mkdtempSync(join(tmpdir(), 'cairn-ponytail-'))
+writeFileSync(join(PONYTAIL, 'package.json'), '{"version":"9.9.9"}\n')
+for (const name of ['ponytail', 'ponytail-review']) {
+  mkdirSync(join(PONYTAIL, 'skills', name), { recursive: true })
+  writeFileSync(join(PONYTAIL, 'skills', name, 'SKILL.md'), `---\nname: ${name}\ndescription: the stance, as fetched\n---\n\n# ${name}\n`)
+}
+process.env.CAIRN_PONYTAIL = PONYTAIL
 const target = () => mkdtempSync(join(tmpdir(), 'cairn-kit-'))
 const git = (dir, ...args) => execFileSync('git', args, { cwd: dir, encoding: 'utf8', stdio: 'pipe' })
 const commit = (dir, message) => {
@@ -175,6 +186,71 @@ test('cairn init: the documentation plane of 1.1 is installed, not left for the 
   assert.ok(bound.files.has('spec/concepts/learning/index.md'))
   assert.ok(bound.files.get('docs/index.md').toString('utf8').includes('../spec/concepts/learning/index.md'))
   assert.deepEqual(outwardLinks(bound.files), [], 'and the link still resolves inside the kit')
+
+  // ADR-033 d3: the template says the shape the plane will have, not a state
+  // it asserts on the day it lands.
+  assert.match(docs, /one page at this root per surface, as they are written/)
+  assert.match(docs, /adds its line to the README, where the repository has one/)
+})
+
+test('cairn: the kit plans under every root the configuration declares, and derives none it named', () => {
+  // ADR-033 d1: Atomik declares `roots.architecture: docs/bedrock` and was
+  // given a second, empty `docs/architecture/` beside it.
+  const config = {
+    ...buildConfig(defaultOptions()),
+    roots: { documentation: 'docs', project: 'project', architecture: 'docs/bedrock', decisions: 'records',
+      modules: 'notes', concepts: 'wiki', source: ['src'] }
+  }
+  const plan = planInstall(optionsFromConfig(config))
+  const paths = [...plan.files.keys()]
+  for (const path of ['docs/bedrock/index.md', 'notes/index.md', 'notes/application.md', 'wiki/product/index.md']) {
+    assert.ok(plan.files.has(path), path)
+  }
+  for (const derived of ['docs/architecture/', 'docs/adr/', 'docs/modules/', 'docs/concepts/']) {
+    assert.ok(!paths.some((p) => p.startsWith(derived)), `nothing under ${derived}, which the repository did not declare`)
+  }
+  assert.deepEqual(plan.config.roots, config.roots, 'the configuration the plan carries is the declared one')
+  assert.equal(plan.config.areas[0].note, 'notes/application.md')
+  const binding = plan.files.get('project/coding-paths/binding.md').toString('utf8')
+  for (const root of ['`docs/bedrock/`', '`records/`', '`notes/`']) assert.ok(binding.includes(root), `the binding names ${root}`)
+  const docs = plan.files.get('docs/index.md').toString('utf8')
+  assert.ok(docs.includes('(./bedrock/index.md)') && docs.includes('(../notes/index.md)') && docs.includes('`records/`'))
+  assert.deepEqual(outwardLinks(plan.files), [])
+})
+
+test('cairn init: the kit installs the folders the skills of 1.2 write into — feedbacks and the backlog', () => {
+  // ADR-038 d2, d5 and ADR-041: the unit skill sends a writer to `feedbacks/`
+  // and a deferral to `project/backlog/`; an adopter had neither.
+  const plan = planInstall({ ...defaultOptions(), projectRoot: 'ops' })
+  const feedbacks = plan.files.get('feedbacks/index.md')?.toString('utf8') ?? ''
+  assert.match(feedbacks, /Cairn Feedback/, 'the index names the type a note carries')
+  assert.match(feedbacks, /^type: Cairn Folder Index$/m)
+  assert.match(feedbacks, /pull\s+request/i, 'and how a note about Cairn travels')
+  assert.ok(plan.host.has('feedbacks/index.md'))
+  const backlog = plan.files.get('ops/backlog/index.md')?.toString('utf8') ?? ''
+  assert.match(backlog, /one file per deferred item/i)
+  assert.match(backlog, /deletes the file/i, 'and who removes it')
+  assert.ok(plan.host.has('ops/backlog/index.md'), 'under the declared project root')
+  const pkg = JSON.parse(readFileSync('package.json', 'utf8'))
+  assert.ok(pkg.files.includes('CHANGELOG.md'), 'the package ships the release notes (ADR-039)')
+})
+
+test('cairn status: when a newer release exists, the line says where its notes are', () => {
+  const dir = target()
+  try {
+    applyPlan(planInstall(), dir)
+    assert.doesNotMatch(cairn(dir, 'status'), /CHANGELOG/, 'nothing to read at the release installed')
+    const lock = readLock(dir)
+    writeFileSync(join(dir, 'cairn.lock.json'), `${JSON.stringify({ ...lock, release: '0.9.0' }, null, 2)}\n`)
+    const output = cairn(dir, 'status')
+    assert.match(output, /an update is available\)\nrelease notes: https:\/\/github\.com\/sinlalune\/cairn\/blob\/[0-9a-f]+\/CHANGELOG\.md/)
+    writeFileSync(join(dir, 'cairn.lock.json'), `${JSON.stringify({ ...lock, release: '10.0.0' }, null, 2)}\n`)
+    const older = cairn(dir, 'status')
+    assert.match(older, /older than what is installed/, 'a lock newer than the package is not an update')
+    assert.doesNotMatch(older, /release notes/)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 })
 
 test('cairn init: an existing file is refused rather than overwritten, and a lock refuses a second init', () => {
@@ -267,7 +343,7 @@ test('cairn init: the command refuses a protected profile and leaves an existing
  * status and update — against the lock
  * ------------------------------------------------------------------ */
 
-test('cairn init: the kit ships the post-mortem, and names Ponytail without copying it', () => {
+test('cairn init: the kit ships the post-mortem, and no pinned stance', () => {
   const plan = planInstall({ ...defaultOptions(), profile: 'ci' })
   // ADR-014 d1: the tool joins the manifest, and the script the kit writes.
   assert.ok(REFERENCE_TOOLS.includes('cairn-postmortem.mjs'))
@@ -276,29 +352,105 @@ test('cairn init: the kit ships the post-mortem, and names Ponytail without copy
   assert.equal(scripts['cairn-postmortem'], 'node tools/cairn-postmortem.mjs')
   assert.ok(!scripts.test && !scripts['cairn-test'], 'the kit installs no suite and names none (ADR-014 d2)')
 
-  // ADR-016 d1: named at a pinned tag, copied nowhere.
-  const paths = [...plan.files.keys()]
-  assert.ok(!paths.some((p) => p.includes('ponytail')), 'Ponytail is a dependency, not a file the kit copies')
+  // ADR-036 d1: the pin is gone — no tag, no *what this needs beside it*.
   const page = plan.files.get('cairn/README.md').toString('utf8')
-  assert.ok(page.includes('DietrichGebert/ponytail') && page.includes('v4.9.0'),
-    'the pointer page names it at its tag, so an adopter knows what to install beside the skills')
+  assert.doesNotMatch(page, /What this needs beside it|v4\.9\.0/)
 
   // ADR-022 d2: the two candidates ADR-013 named, each kept for its own reason.
   assert.ok(plan.files.has('tools/cairn-config.schema.json'))
   assert.ok(plan.files.has('project/index.md'))
 })
 
-test('cairn init: the lock records the release, the source commit and the dependency it does not carry', () => {
+test('cairn init and update: Ponytail\'s two skills are fetched from its latest release, owned by the lock, and every skill lands where the harness loads it', () => {
   const dir = target()
   try {
-    const plan = planInstall()
-    applyPlan(plan, dir)
+    const output = cairn(dir, 'init')
+    assert.doesNotMatch(output, /Ponytail was not read/)
+    for (const name of ['ponytail', 'ponytail-review']) {
+      assert.match(readFileSync(join(dir, `skills/${name}/SKILL.md`), 'utf8'), /as fetched/, `${name} is installed beside the kit's skills`)
+    }
     const lock = readLock(dir)
-    assert.deepEqual(lock.dependencies, { 'DietrichGebert/ponytail': 'v4.9.0' },
-      'what the adopter must install beside the kit, at the tag this release was checked against (ADR-016 d1)')
+    assert.deepEqual(lock.ponytail, { version: 'v9.9.9', read: true }, 'the lock names the version')
+    assert.equal(lock.dependencies, undefined, 'and no pin')
+    // ADR-036 d2: a copy at Claude Code's location, for every skill, owned by the lock.
+    for (const path of ['skills/cairn-unit/SKILL.md', 'skills/cairn-unit/reference.md', 'skills/ponytail/SKILL.md']) {
+      assert.equal(readFileSync(join(dir, `.claude/${path}`), 'utf8'), readFileSync(join(dir, path), 'utf8'), `.claude/${path}`)
+      assert.ok(lock.manifest[`.claude/${path}`], `the lock owns .claude/${path}`)
+    }
+    assert.match(readFileSync(join(dir, 'cairn/README.md'), 'utf8'), /\[`ponytail-review`\]\(\.\.\/skills\/ponytail-review\/SKILL\.md\) — .*v9\.9\.9/,
+      'the pointer page lists the stance among the skills, with its version')
+    assert.match(cairn(dir, 'status'), /^ponytail v9\.9\.9$/m, 'status prints the version')
+
+    // Offline: one line, and what the repository has is kept — never deleted.
+    const offline = execFileSync(process.execPath, [join(process.cwd(), CAIRN), 'update', '--target', dir],
+      { encoding: 'utf8', stdio: 'pipe', env: { ...process.env, CAIRN_PONYTAIL: join(dir, 'nowhere') } })
+    assert.match(offline, /^cairn — Ponytail was not read: .+; kept v9\.9\.9$/m)
+    assert.ok(existsSync(join(dir, 'skills/ponytail/SKILL.md')) && existsSync(join(dir, '.claude/skills/ponytail/SKILL.md')))
+    assert.deepEqual(readLock(dir).ponytail, { version: 'v9.9.9', read: false }, 'the lock says it was not read')
+    assert.doesNotMatch(cairn(dir, 'status'), /would (write|delete)/)
+
+    // An edit the adopter made is still an edit after an offline update, and
+    // its harness copy is not overwritten with it.
+    appendFileSync(join(dir, 'skills/ponytail/SKILL.md'), 'ours\n')
+    execFileSync(process.execPath, [join(process.cwd(), CAIRN), 'update', '--target', dir],
+      { encoding: 'utf8', stdio: 'pipe', env: { ...process.env, CAIRN_PONYTAIL: join(dir, 'nowhere') } })
+    assert.match(cairn(dir, 'status'), /would keep\s+skills\/ponytail\/SKILL\.md — edited here/)
+    assert.doesNotMatch(readFileSync(join(dir, '.claude/skills/ponytail/SKILL.md'), 'utf8'), /ours/)
+    rmSync(join(dir, 'skills/ponytail-review/SKILL.md'))
+    assert.match(cairn(dir, 'status'), /^ {2}missing\s+skills\/ponytail-review\/SKILL\.md — /m,
+      'a lock-owned copy of the stance that is gone is reported, though Ponytail is not read')
+    const alone = execFileSync(process.execPath, [join(process.cwd(), CAIRN), 'update', '--target', dir],
+      { encoding: 'utf8', stdio: 'pipe', env: { ...process.env, CAIRN_PONYTAIL: join(dir, 'nowhere') } })
+    assert.match(alone, /0 deleted/, 'a harness copy is kept on its own when its twin is gone')
+    assert.ok(existsSync(join(dir, '.claude/skills/ponytail-review/SKILL.md')))
+    assert.ok(readLock(dir).manifest['skills/ponytail-review/SKILL.md'], 'and the lock keeps owning it')
+    cairn(dir, 'update')
+    assert.ok(existsSync(join(dir, 'skills/ponytail-review/SKILL.md')), 'the next update that reads Ponytail restores it')
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
+  const first = target()
+  try {
+    const offline = execFileSync(process.execPath, [join(process.cwd(), CAIRN), 'init', '--target', first],
+      { encoding: 'utf8', stdio: 'pipe', env: { ...process.env, CAIRN_PONYTAIL: join(first, 'nowhere') } })
+    assert.match(offline, /^cairn — Ponytail was not read: .+; nothing installed$/m)
+    assert.deepEqual(readLock(first).ponytail, { version: null, read: false })
+    assert.ok(!existsSync(join(first, 'skills/ponytail')))
+  } finally {
+    rmSync(first, { recursive: true, force: true })
+  }
+})
+
+test('the protocol\'s own tree, an installation holding the stance, plans it once', () => {
+  // This repository carries a lock; after an update its `skills/` holds the
+  // stance, and the source walk must not put it beside the fetched one.
+  const source = target()
+  try {
+    cpSync(join(process.cwd(), 'tools'), join(source, 'tools'), { recursive: true })
+    cpSync(join(process.cwd(), 'skills'), join(source, 'skills'), { recursive: true })
+    writeFileSync(join(source, 'package.json'), readFileSync('package.json'))
+    write(source, 'skills/ponytail/SKILL.md', 'an installed copy\n')
+    const plan = planInstall(defaultOptions(), source, { version: 'v1', read: true, files: new Map([['ponytail', Buffer.from('fetched\n')]]) })
+    assert.equal(plan.files.get('skills/ponytail/SKILL.md').toString('utf8'), 'fetched\n')
+  } finally {
+    rmSync(source, { recursive: true, force: true })
+  }
+})
+
+test('the stance is read from Ponytail\'s latest release on GitHub, and a failed read is an answer', async () => {
+  const served = {
+    'https://api.github.com/repos/DietrichGebert/ponytail/releases/latest': JSON.stringify({ tag_name: 'v4.10.0' }),
+    'https://raw.githubusercontent.com/DietrichGebert/ponytail/v4.10.0/skills/ponytail/SKILL.md': 'the stance',
+    'https://raw.githubusercontent.com/DietrichGebert/ponytail/v4.10.0/skills/ponytail-review/SKILL.md': 'its review'
+  }
+  const request = async (url) => (url in served ? new Response(served[url]) : new Response('', { status: 404 }))
+  const read = await readPonytail({ source: '', request })
+  assert.equal(read.version, 'v4.10.0')
+  assert.equal(read.files.get('ponytail-review').toString('utf8'), 'its review')
+  const failed = await readPonytail({ source: '', request: async () => new Response('', { status: 503 }) })
+  assert.match(failed.error, /HTTP 503/)
+  const untagged = await readPonytail({ source: '', request: async () => new Response('{}') })
+  assert.match(untagged.error, /names no tag/)
 })
 
 test('the generated workflow runs once per commit that can land, and reads a red run', () => {
@@ -339,10 +491,27 @@ test('the generated request template opens with what a reader needs before the l
   assert.match(text, /why it is the least/i)
   assert.match(text, /what it does not do/i)
   assert.match(text, /Surface:/)
-  // The blanks are backticked, or the forge strips them as HTML tags and the
-  // blank reads as answered.
-  assert.doesNotMatch(text.split('## Candidate')[0], /(^|[^`])<[a-z]/m,
-    'every blank is backticked')
+})
+
+test('the generated request template leaves no blank the forge can strip, and names the coherence reader', () => {
+  // Atomik's update note, observation 4: one bare `<who approves>` rendered as
+  // `reviewer: , holding the roles  on this path` — in the file whose header
+  // warns about exactly that. ADR-043: the first line under Coherence names
+  // the reader, as this repository's template does.
+  const template = requestTemplate()
+  const bare = template.replace(/`[^`\n]*`/g, '').replace(/<!--|-->/g, '').match(/<[a-z][^>]*>/gi)
+  assert.equal(bare, null, `every blank is backticked: ${bare}`)
+  const ours = readFileSync(join(REPO, '.github/pull_request_template.md'), 'utf8')
+  const readBy = (text) => text.slice(text.indexOf('## Coherence')).split('\n').find((line) => line.startsWith('Read by'))
+  assert.ok(readBy(template), 'the coherence section opens with the reader')
+  assert.equal(readBy(template), readBy(ours), 'in the words this repository uses')
+})
+
+test('the pilot writes its definition of done as a plain list', () => {
+  // ADR-042: nothing in the pinned text invites the tick the rule forbids.
+  const pilot = readFileSync(join(REPO, 'tools/cairn-pilot.mjs'), 'utf8')
+  const done = pilot.slice(pilot.indexOf('## Definition of done'), pilot.indexOf('## Opening acceptance'))
+  assert.doesNotMatch(done, /\[[ xX]\]/)
 })
 
 test('the generated host files and this repository\'s own differ only where they are meant to', () => {
@@ -393,9 +562,14 @@ test('cairn init: the pointer page says which release this is and what the kit o
   const page = plan.files.get('cairn/README.md').toString('utf8')
   assert.match(page, new RegExp(`release ${PROTOCOL_RELEASE.replace(/\./g, '\\.')}`), 'the installed release')
   assert.ok(page.includes(plan.sourceCommit), 'and the commit it was cut from, in full')
-  for (const skill of ['cairn-brainstorm', 'cairn-open', 'cairn-unit', 'cairn-close', 'cairn-learn', 'cairn-code']) {
+  for (const skill of ['cairn-brainstorm', 'cairn-open', 'cairn-unit', 'cairn-close', 'cairn-update', 'cairn-learn', 'cairn-code']) {
     assert.ok(page.includes(`${skill}/SKILL.md`), `${skill} is linked`)
   }
+  // ADR-035: the seventh skill is named where the six are.
+  assert.ok(plan.files.has('skills/cairn-update/SKILL.md'), 'the kit installs it and the lock owns it')
+  assert.match(plan.files.get('AGENTS.md').toString('utf8'), /`cairn-update`/, 'the bootloader names it')
+  // ADR-039: the release notes, at the release's commit.
+  assert.ok(page.includes(`https://github.com/sinlalune/cairn/blob/${plan.sourceCommit}/CHANGELOG.md`), 'the page links the changelog')
   // ADR-013 d1 asks for the six chapters, EACH one link. The owner's try of
   // 2026-09-15 found six labels over one URL: every chapter went to the top of
   // the specification, so the page listed six destinations and had one.
@@ -631,6 +805,122 @@ test('cairn update: rewrites pristine kit files, keeps edited ones, and writes t
   }
 })
 
+test('cairn update --decline: a host file declined is never written again, reads declined, and --take takes it back', () => {
+  // ADR-033 d2: the release's `update` wrote three concept indexes this
+  // repository does not want; deleting them made them *missing* at every
+  // `status` after, and the next update wrote them again.
+  const dir = target()
+  const unwanted = 'docs/concepts/product/index.md'
+  try {
+    applyPlan(planInstall(), dir)
+    assert.throws(() => cairn(dir, 'update', '--decline', 'tools/cairn-check.mjs'), /not a host file/,
+      'the kit\'s own files are not the adopter\'s to decline')
+    rmSync(join(dir, unwanted))
+    cairn(dir, 'update', '--decline', unwanted)
+    assert.equal(existsSync(join(dir, unwanted)), false, 'not written now')
+    const lock = readLock(dir)
+    assert.deepEqual(lock.declined, [unwanted], 'the lock is the one place that remembers it')
+    assert.equal(lock.manifest[unwanted], undefined, 'and owns no digest of it')
+    cairn(dir, 'update')
+    assert.equal(existsSync(join(dir, unwanted)), false, 'nor at a later update')
+    const status = cairn(dir, 'status')
+    assert.match(status, /\b1 declined\b/)
+    assert.doesNotMatch(status, /missing/, 'declined, never missing')
+    const page = readFileSync(join(dir, 'cairn/README.md'), 'utf8')
+    const declined = page.slice(page.indexOf('## Declined'))
+    assert.ok(declined.includes(`\`${unwanted}\``), 'the pointer page lists it')
+    assert.ok(!page.slice(0, page.indexOf('## Declined')).includes(`\`${unwanted}\``), 'and not among what the kit owns')
+
+    // A release that drops the file, and one that brings it back: the
+    // declination outlives the release that did not carry it.
+    const held = readLock(dir)
+    writeFileSync(join(dir, 'cairn.lock.json'), `${JSON.stringify({ ...held, declined: [...held.declined, 'docs/gone/index.md'] }, null, 2)}\n`)
+    cairn(dir, 'update')
+    assert.deepEqual(readLock(dir).declined, ['docs/concepts/product/index.md', 'docs/gone/index.md'],
+      'a declined name the release does not carry is remembered, not dropped')
+
+    cairn(dir, 'update', '--take', unwanted)
+    assert.ok(existsSync(join(dir, unwanted)), 'taken back: the release\'s version is written')
+    assert.deepEqual(readLock(dir).declined, ['docs/gone/index.md'])
+    assert.equal(fileState(dir, unwanted, readLock(dir).manifest[unwanted]), 'pristine')
+    assert.match(cairn(dir, 'update', '--take', 'docs/gone/index.md'), /took back docs\/gone\/index\.md; this release does not carry it/)
+    assert.deepEqual(readLock(dir).declined, [], 'a name the release does not carry is taken back too, no file of it written')
+    assert.ok(!existsSync(join(dir, 'docs/gone/index.md')))
+    const taken = readFileSync(join(dir, 'cairn/README.md'), 'utf8')
+    assert.ok(!taken.slice(taken.indexOf('## Declined')).split('## To reconcile')[0].includes(unwanted),
+      'the pointer page follows the take, so it and the lock agree')
+    assert.doesNotMatch(cairn(dir, 'status'), /would (write|keep)/, 'and status finds nothing left to do')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('cairn update and status: one reading — the report, the pointer page and the lock agree, and the view is on neither list', () => {
+  // ADR-034 d1 and d4, Atomik's update note, observations 2 and 3: the page
+  // listed the live view to reconcile while the lock called it pristine, and
+  // `status` named a rewrite of the configuration `update` would not make.
+  const dir = target()
+  try {
+    applyPlan(planInstall({ ...defaultOptions(), profile: 'ci' }), dir)
+    assert.deepEqual(readLock(dir).hostBaseline, ['project/coding-paths/ACTIVE.md'],
+      'the view is the generator\'s bytes from the first lock, and says so')
+    writeFileSync(join(dir, 'docs/index.md'), 'our own map\n')
+    appendFileSync(join(dir, 'project/coding-paths/ACTIVE.md'), '\n')
+    const before = cairn(dir, 'status')
+    assert.doesNotMatch(before, /would write\s+(cairn\.config\.json|project\/coding-paths\/ACTIVE\.md)/,
+      `status names no rewrite update will not make:\n${before}`)
+    assert.match(before, /would write\s+cairn\/README\.md/, 'the page it will make, since it gains a file to reconcile')
+    cairn(dir, 'update')
+    const after = cairn(dir, 'status')
+    assert.doesNotMatch(after, /would write/, `nor after an update:\n${after}`)
+    const listed = [...after.matchAll(/would keep\s+(\S+) — .*to reconcile by hand/g)].map(([, path]) => path)
+    assert.deepEqual(listed, ['docs/index.md'])
+    const page = readFileSync(join(dir, 'cairn/README.md'), 'utf8')
+    const onPage = [...page.slice(page.indexOf('## To reconcile')).matchAll(/^- `([^`]+)`/gm)].map(([, path]) => path)
+    assert.deepEqual(onPage, listed, 'the page lists what status lists, from the same predicate')
+    assert.deepEqual(readLock(dir).hostBaseline, ['cairn.config.json', 'project/coding-paths/ACTIVE.md'],
+      'the migrated configuration is the host\'s bytes too, and the lock says so')
+    assert.match(after, /\b2 host\b/, 'and status does not count either as pristine')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('cairn update: two plans of one release on two days are byte-equal', () => {
+  // ADR-034 d2, Atomik's first observation: eleven of fifteen digests moved
+  // between two runs because every page was stamped with the day it ran.
+  const on = (day) => {
+    mock.timers.enable({ apis: ['Date'], now: new Date(day) })
+    try { return planInstall({ ...defaultOptions(), profile: 'ci' }) } finally { mock.timers.reset() }
+  }
+  const first = on('2030-01-01T09:00:00Z')
+  const second = on('2031-06-15T23:00:00Z')
+  assert.deepEqual([...second.files.keys()], [...first.files.keys()])
+  for (const [path, content] of first.files) assert.ok(content.equals(second.files.get(path)), `${path} is byte-equal`)
+  assert.doesNotMatch(first.files.get('docs/index.md').toString('utf8'), /2030-01-01/, 'the stamp is the release\'s, not the clock\'s')
+})
+
+test('cairn update: a host file the repository had before the kit carried it is reported as newly managed', () => {
+  // ADR-034 d3: unmanaged at the old lock, edited at the new, and named by
+  // neither the report nor the pointer page.
+  const dir = target()
+  try {
+    applyPlan(planInstall(), dir)
+    const lock = readLock(dir)
+    delete lock.manifest['docs/inputs/index.md']
+    writeFileSync(join(dir, 'cairn.lock.json'), `${JSON.stringify(lock, null, 2)}\n`)
+    writeFileSync(join(dir, 'docs/inputs/index.md'), 'ours, from before\n')
+    const output = cairn(dir, 'update')
+    assert.match(output, /starts managing\s+docs\/inputs\/index\.md — yours before the kit carried it; kept, and to reconcile by hand/)
+    assert.match(output, /1 newly managed/)
+    assert.equal(readFileSync(join(dir, 'docs/inputs/index.md'), 'utf8'), 'ours, from before\n', 'kept')
+    const page = readFileSync(join(dir, 'cairn/README.md'), 'utf8')
+    assert.ok(page.slice(page.indexOf('## To reconcile')).includes('`docs/inputs/index.md`'), 'listed with the kept')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
 /* ------------------------------------------------------------------ *
  * the package — the command runs from the tarball, with no host configuration
  * ------------------------------------------------------------------ */
@@ -803,6 +1093,100 @@ test('cairn adopt: a 0.2 installation becomes a 1.0 installation, its own files 
     assert.match(cairn(dir, 'status'), /installed release/)
   } finally {
     rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('cairn adopt: a kept manifest and workflow that still call a stale suite are named, and the gate is said red', () => {
+  // ADR-033 d4: Atomik's workflow ran `npm run cairn-check:test`, whose script
+  // globbed the 0.2 tests `adopt` had just listed stale; the adoption was
+  // committed on a green check and CI went red on the next push.
+  const dir = legacyRepository()
+  try {
+    write(dir, 'package.json', '{"name":"theirs","scripts":{"cairn-check:test":"node --test \'tools/**/*.test.mjs\'","test":"node --test tools/cairn-?heck.test.mjs","cairn-check":"node tools/cairn-check.mjs"}}\n')
+    write(dir, '.github/workflows/gates.yml', 'jobs:\n  t:\n    steps:\n      - run: npm run cairn-check:test\n')
+    write(dir, '.github/workflows/test.yml', 'jobs:\n  t:\n    steps:\n      - run: npm test\n')
+    write(dir, '.github/workflows/other.yml', 'jobs:\n  t:\n    steps:\n      - run: npm run cairn-check\n      # see atomik-project/coding-paths/CP-MVP-008.md\n')
+    commit(dir, 'the adopter\'s gate')
+    const output = cairn(dir, 'adopt')
+    const stale = output.indexOf('stale    tools/cairn-check.test.mjs')
+    const red = output.indexOf('`package.json` and `.github/workflows/gates.yml` and `.github/workflows/test.yml` call these; your gate is red until they go')
+    assert.ok(stale !== -1 && red > stale, `the line stands under the stale list:\n${output}`)
+    assert.doesNotMatch(output, /other\.yml/, 'a workflow that calls only what the kit installed is not named')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('cairn adopt: a file whose relative links resolve nowhere is named as a shape that wants a declaration', () => {
+  // ADR-037 d2: a portrayal of another repository, or a history frozen as it
+  // was, is declared under `linkExemptions`, not repaired.
+  const dir = target()
+  try {
+    write(dir, 'docs/portrait.md', '# Theirs\n\nSee [their readme](../README.md) and [their notes](./notes/a.md).\n\n```\n[in code](./nowhere.md)\n```\n')
+    write(dir, 'docs/fine.md', 'See [the portrait](./portrait.md "titled"), [a bare one](nowhere.md), `[in a span](./gone.md)` and [a site](https://example.org/x.md).\n')
+    const config = migrateConfig(SCHEMA_1)
+    const shapes = staleShapes(dir, config)
+    assert.deepEqual(shapes.map((s) => s.path), ['docs/portrait.md'])
+    assert.match(shapes[0].why, /2 relative link\(s\) resolve nowhere/)
+    assert.match(shapes[0].why, /linkExemptions/, 'the field is named')
+    assert.deepEqual(staleShapes(dir, { ...config, linkExemptions: [{ path: 'docs/portrait.md', reason: 'a portrayal' }] }), [],
+      'a declared file is not named again')
+    assert.deepEqual(staleShapes(dir, { ...config, linkExemptions: [{ path: 'docs/', reason: 'a folder' }] }), [],
+      'nor one under a declared folder, written with its slash')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('cairn adopt: protected with manual-git registration is refused from the two declarations alone', () => {
+  // ADR-032 d4: the host prevents the direct push the writer is declared to make.
+  const dir = legacyRepository()
+  try {
+    write(dir, 'cairn.config.json', `${JSON.stringify({ ...SCHEMA_1, enforcementProfile: 'protected' }, null, 2)}\n`)
+    assert.throws(() => cairn(dir, 'adopt'), /protected[\s\S]*manual-git[\s\S]*pull-request/)
+    assert.ok(!existsSync(join(dir, 'cairn.lock.json')), 'nothing written')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('the installer reads the trunk\'s rules on GitHub once, and refuses on a reading obtained, never on one missing', async () => {
+  // ADR-032 d4, read by the installer with the owner's token — never by the
+  // checker, which still makes no network call (ADR-029).
+  const url = 'git@github.com:o/r.git'
+  const answers = (map) => async (url) => map[url.replace('https://api.github.com/repos/o/r', '')] ?? { error: 'HTTP 404' }
+  const requiring = (bypass) => answers({
+    '/rules/branches/main?per_page=100': { value: [{ type: 'pull_request', ruleset_id: 7 }, { type: 'deletion', ruleset_id: 8 }] },
+    '/rulesets/7': { value: { name: 'trunk', current_user_can_bypass: bypass } }
+  })
+  assert.deepEqual(await readTrunk({ url, trunk: 'main', token: 't', request: requiring('never') }), { read: true, direct: false, ruleset: 'trunk' })
+  assert.deepEqual(await readTrunk({ url, trunk: 'main', token: 't', request: requiring('pull_requests_only') }), { read: true, direct: false, ruleset: 'trunk' })
+  assert.deepEqual(await readTrunk({ url, trunk: 'main', token: 't', request: requiring('always') }), { read: true, direct: true })
+  assert.deepEqual(await readTrunk({ url, trunk: 'main', token: 't', request: requiring('exempt') }), { read: true, direct: true },
+    'a ruleset that does not apply to this owner refuses nothing')
+  assert.deepEqual(await readTrunk({ url, trunk: 'main', token: 't', request: answers({ '/rules/branches/main?per_page=100': { value: [] } }) }), { read: true, direct: true })
+  for (const [why, args] of [[/not on GitHub/, { url: 'https://evil.example/github.com/o/r.git', token: 't' }], [/no remote/, { url: null, token: 't' }],
+    [/no token/, { url, token: '' }], [/HTTP 404/, { url, token: 't' }], [/did not say/, { url, token: 't', request: requiring(undefined) }]]) {
+    const reading = await readTrunk({ trunk: 'main', request: answers({}), ...args })
+    assert.equal(reading.read, false)
+    assert.match(reading.why, why)
+  }
+
+  // Off GitHub the command says it did not read, in one line, and writes what was asked.
+  const dir = target()
+  try {
+    const output = cairn(dir, 'init')
+    assert.match(output, /^cairn — did not read main's rules on GitHub: there is no remote to read; writing what was asked$/m)
+    assert.ok(existsSync(join(dir, 'cairn.lock.json')))
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+  const other = target()
+  try {
+    assert.match(cairn(other, 'init', '--registration', 'pull-request', '--dry-run'), /registration pull-request/,
+      'the second way out is a flag at init')
+  } finally {
+    rmSync(other, { recursive: true, force: true })
   }
 })
 

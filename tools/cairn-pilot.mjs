@@ -12,9 +12,11 @@
  *
  *   node tools/cairn-pilot.mjs [--transport pull-request|manual-git] [--keep]
  *
- * On `pull-request` transport the forge's merge is simulated by the local
- * `--no-ff` merge the integrating checkout would fetch back, since a pilot
- * has no forge; everything before it — the request's description printed by
+ * On `pull-request` transport both transports are requests: the
+ * registration commit rides a `register/` branch of its own, its run is read
+ * green, and it lands by a merge that keeps it (ADR-032 d2). The forge's
+ * merges are simulated by the local `--no-ff` merge the integrating checkout
+ * would fetch back, since a pilot has no forge; everything before them — the request's description printed by
  * `cairn-audit`, the administrative commit, the checks on the exact
  * candidate — runs as it would. On `manual-git` the closing record is
  * scaffolded by the real command and the merge IS the integration.
@@ -35,6 +37,7 @@ const CHECK = 'tools/cairn-check.mjs'
 const TODAY = new Date().toISOString().slice(0, 10)
 const PATH_ID = 'CP-PILOT-001'
 const BRANCH = 'path/cp-pilot-001'
+const REGISTER = 'register/cp-pilot-001'
 const RECORD = `project/coding-paths/${PATH_ID}/index.md`
 const STEP = `project/coding-paths/${PATH_ID}/steps/S01.md`
 
@@ -128,8 +131,8 @@ The application exports one constant, and the path that delivers it is closed on
 
 ## Definition of done
 
-- [ ] \`src/app.js\` exports \`app\`.
-- [ ] The module note says so.
+- \`src/app.js\` exports \`app\`.
+- The module note says so.
 
 ## Opening acceptance
 
@@ -310,7 +313,7 @@ export function runPilot({ transport = 'pull-request', keep = false } = {}) {
   }
   try {
     // 1. Install, on a real remote.
-    applyPlan(planInstall({ ...defaultOptions(), profile: 'ci', transport }), dir)
+    applyPlan(planInstall({ ...defaultOptions(), profile: 'ci', transport, registrationTransport: transport }), dir)
     git(dir, 'init', '-q', '-b', 'main')
     const install = commit(dir, 'Install Cairn', ['-A'])
     git(dir, 'init', '-q', '--bare', remote)
@@ -323,10 +326,25 @@ export function runPilot({ transport = 'pull-request', keep = false } = {}) {
     write(dir, RECORD, record({ base, digest: 'x' }))
     write(dir, RECORD, record({ base, digest: digestOf(dir) }))
     node(dir, 'tools/cairn-active.mjs')
+    if (transport === 'pull-request') git(dir, 'checkout', '-q', '-b', REGISTER)
     const registration = commit(dir, `Register ${PATH_ID} before branching`, [`project/coding-paths/${PATH_ID}`, 'project/coding-paths/ACTIVE.md'])
     if (git(dir, 'rev-parse', 'HEAD^') !== base) throw new Error('pilot: the registration parent is not the base')
-    git(dir, 'push', '-q', 'origin', 'main')
-    stage('registered', true, registration)
+    if (transport === 'pull-request') {
+      // The request's run, then the merge that keeps the commit; the branch
+      // goes on merge, as every transport branch does.
+      git(dir, 'push', '-q', '-u', 'origin', REGISTER)
+      stage('registered', true, registration, { args: ['--base', 'origin/main'] })
+      git(dir, 'checkout', '-q', 'main')
+      git(dir, 'merge', '-q', '--no-ff', '--no-edit', REGISTER)
+      git(dir, 'push', '-q', 'origin', 'main')
+      git(dir, 'push', '-q', 'origin', '--delete', REGISTER)
+      git(dir, 'branch', '-q', '-D', REGISTER)
+      const trunkRun = gate(dir, '--base', base)
+      if (!trunkRun.ok) throw new Error(`pilot: the trunk's run on the registration's merge failed — ${trunkRun.blocking.join(', ')}`)
+    } else {
+      git(dir, 'push', '-q', 'origin', 'main')
+      stage('registered', true, registration)
+    }
     git(dir, 'checkout', '-q', '-b', BRANCH)
     git(dir, 'push', '-q', '-u', 'origin', BRANCH)
 

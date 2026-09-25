@@ -21,7 +21,7 @@ covers: dependency-free Node scripts that evaluate the protocol the
 | `cairn-postmortem.mjs` | the mechanical half of a post-mortem; facts only, and no reading of it reaches an exit code |
 | `cairn-rules.mjs` | regenerates the rule catalogue and the rule-to-requirement linkage on the [conformance page](../../spec/reference/conformance.md); this repository's, not installed |
 | `cairn.mjs` | the `cairn` command: `init` installs the thin kit, `status` reads the lock, `update` rewrites every pristine file and prints what the release changes in an edited one (`--take <path>` hands over the release's version of one), `adopt` turns a lock-less installation into one; the package's, not installed |
-| `cairn-pilot.mjs` | the greenfield pilot as a command: drives a throwaway repository from `init` to `done` on one transport, green at every gate, and counts the protocol files each stage writes; this repository's, not installed |
+| `cairn-pilot.mjs` | the greenfield pilot as a command: drives a throwaway repository from `init` to `done` on one transport — on `pull-request`, the registration too, through a `register/` branch and a merge that keeps its commit — green at every gate, and counts the protocol files each stage writes; this repository's, not installed |
 | `*.test.mjs` | the tools' own suite, run by `npm run cairn-test`: the pure half of every rule against `evaluate()`, and one adversarial fixture per blocking rule against a real installed repository |
 
 ## How the tools find the specification
@@ -117,19 +117,31 @@ record, and each step's current content.
 
 ## The kit
 
-**What `npx cairn-protocol init` writes.** The six reference tools, the nine
-skill files of six skills, the folder indexes of both planes, and the host files — the
-configuration, the bootloader, the binding, the package scripts, the live
-view, a module note, the workflow and the request template. That comes to 33
-files and the lock on the `ci` profile and 32 on `local`, which has no
-workflow; the number is measured here and bounds nothing (ADR-022 d2).
+**What `npx cairn-protocol init` writes.** The reference tools, every skill
+under `skills/` — `cairn-update` among them — the folder indexes of both
+planes, `feedbacks/` and the project root's `backlog/` with their indexes, and
+the host files — the configuration, the bootloader, the binding, the package
+scripts, the live view, a module note, the workflow on the `ci` profile and
+the request template on `pull-request` integration. What that comes to is
+measured by the release and bounds nothing (ADR-022 d2, ADR-031 d1). The
+feedbacks index names the type a note carries, `Cairn Feedback`, and how a
+note about Cairn reaches the protocol's repository; the backlog index says
+what an item file holds and that the path taking it deletes it. A repository
+that already has either index keeps its own: the next `update` reports it as
+newly managed, and lists it to reconcile where it differs from the kit's.
 
 The documentation plane it writes is the one 1.1 decided: `docs/inputs/` for
-what the project had before the protocol, `docs/architecture/` with its index,
-`docs/modules/`, and a concept root of three folders — `cairn`, `product`,
-`learning` — each with its own index and none at the root. The documentation
-index is the map: it links them and says where a surface page goes, and that
-such a page opens with one worked example and links its API's documentation.
+what the project had before the protocol, the architecture root with its
+index, the modules root, and a concept root of three folders — `cairn`,
+`product`, `learning` — each with its own index and none at the root. Every
+role root is the one the configuration declares, and is derived under the
+documentation root only where none is; the plan refuses itself if a path it
+writes below the repository's root falls under no declared root and outside
+the kit's own folders — `tools/`, `skills/`, `cairn/`, `.github/`. The
+documentation index is the map: it links them and says where a surface page
+goes, one per surface as they are written, that such a page opens with one
+worked example and links its API's documentation, and that its line goes in
+the README where the repository has one.
 The configuration declares `transport.registration: manual-git`, the one
 registration sequence `cairn-open` ships, whatever `--transport` answers for
 `transport.integration`. The bootloader carries the five absolute rules of 1.0
@@ -139,10 +151,29 @@ reader who is learning it.
 
 **What it does not copy.** No specification: every link it writes into one is
 pinned to the commit the kit was cut from, so a repository installed today
-still resolves to the text it was installed from. No Ponytail either: the
-coding stance is named in the lock and on the pointer page at the tag this
-release was checked against, and installed in the adopter's harness beside the
-skills (ADR-016 d1). The two files ADR-013 offered for removal are kept, each
+still resolves to the text it was installed from.
+
+**The stance and the harness.** At `init`, `update` and `adopt` the kit
+fetches Ponytail's two skills, `ponytail` and `ponytail-review`, from the
+plugin's latest release on GitHub and installs them under `skills/` as kit
+files; the lock names the version and whether this run read it, the pointer
+page lists them with it, and `status` prints it. Offline or on a failed fetch
+the command says in one line that Ponytail was not read and keeps the copies
+the lock owns, each at its bytes on disk and its digest in the lock, so an
+edit stays an edit and a copy installed by hand is never claimed; a copy the
+lock owns that is gone keeps its lock entry, and `status` and that `update`
+name it missing until a run that reads Ponytail restores it — nothing at a
+first `init`; `status` never fetches and plans with those copies. The
+stance is never copied from the package's own tree, which in this repository
+is an installation that holds one. `CAIRN_PONYTAIL` names a local copy of
+the plugin's repository to read instead, which is how the suite runs with no
+network.
+Every skill under `skills/` — the kit's and the stance — is also written to
+`.claude/skills/`, where Claude Code loads skills: a copy, owned by the lock
+like the original, since a link is a second thing to digest and breaks on a
+Windows checkout. Codex reads `AGENTS.md` and needs no second location.
+
+The two files ADR-013 offered for removal are kept, each
 for its own worth and neither for a number — the configuration schema, which
 no tool reads but every editor does, on the one file an adopter hand-edits;
 and the project plane's index, because the manifesto commits to a tree where
@@ -151,13 +182,23 @@ every folder is navigable from its index.
 **What the installation knows about itself.** `cairn.lock.json` records the
 digest of every kit file as the kit wrote it, which is what lets `status` tell
 an edit from an installation and `update` rewrite the first and keep the
-second. `cairn/README.md` is generated at `init` and at every `update` and
+second. Two digests are deliberately of the host's own content — the live
+view as its generator wrote it, and the host's configuration as `update` and
+`adopt` migrate and write it — and the lock names them under `hostBaseline`, so
+`status` reads them as `host` and *pristine* means *what the kit wrote* for
+every other file. Every page the kit generates is stamped with the day the
+release was cut — the stamp's, else the source commit's — so two runs of one
+release on two days write the same bytes and the lock does not move on the
+clock. `cairn/README.md` is generated at `init` and at every `update` and
 nothing on it is written by hand: the installed release and the commit it was
-cut from, the six chapters and the six skills linked at that commit, every
-file the kit owns, and the files an update could not rewrite. The chapters
+cut from, the release notes, the six chapters and the skills linked at that
+commit, every file the kit owns, the files the repository declined, and the
+files an update could not rewrite. `status` prints the release notes' link at
+the package's commit under the line that says a newer release exists, and
+says so when the package is older than the installation instead. The chapters
 are six headings of one page, so each is linked at its own anchor, slugged
-from its title rather than written out beside it. The bootloader's
-*start here* list ends on it.
+from its title rather than written out beside it. The bootloader's *start
+here* list ends on it.
 
 **What `update` does, and what it refuses.** A file that still holds exactly
 what the kit wrote is rewritten when its template changed — whoever owns it,
@@ -166,26 +207,65 @@ protect nothing. An edited file is never rewritten: `update` prints what the
 release changed in it, using Git's own `diff --no-index` against the template
 in a temporary file rather than a diff written here, and ends its report with
 the files to settle by hand. The pointer page carries that same list to disk,
-so the work outlives the terminal. `update --take <path>` replaces one named
-edited file with the release's version, shows the lines it discards, moves
-that file's lock entry with it, and touches nothing else. It refuses a path
+so the work outlives the terminal. A host file the repository had before the
+kit carried it is kept, reported as newly managed, and on that list when it
+differs from the release's. `update --take <path>` replaces one named edited
+file with the release's version, shows the lines it discards, moves that
+file's lock entry with it, and touches nothing else but the pointer page,
+which follows it. It refuses a path
 the **lock** does not carry: the plan says what the release would install,
 the lock says what this repository received, and `init` skips a
 `package.json` the adopter already had — so taking "the release's version"
 of that would overwrite a real manifest with the kit's template.
 
-A file counts as **to reconcile** while what is on disk differs from the
-release's template. That is a fact about now, recomputed each run, rather
-than a comparison with the lock: the lock records what the kit *would* have
-written, so a second update at the same release would find it equal to the
-template and drop a file nobody had settled.
+`update --decline <path>` names a host file the kit must not write, now or at
+any later update — the configuration excepted, which every tool reads. The
+lock keeps the name in `declined` and no digest for it, so `status` reads the
+file as declined rather than missing, whether the repository deleted it or
+kept its own; the name stays through a release that does not carry the file,
+so one that brings it back does not write it. `update --take <path>` takes a declined file back: it writes the
+release's version and moves the name out of `declined`; for a name the
+release does not carry it only moves the name, so the next release that
+carries the file writes it.
+
+A file counts as **to reconcile** while it is kept and what is on disk
+differs from the release's template; the live view never does. That is a
+fact about now, recomputed each run, rather than a comparison with the lock:
+the lock records what the kit *would* have written, so a second update at the
+same release would find it equal to the template and drop a file nobody had
+settled. `status` and `update` build their plan through one function and read
+it through one predicate, which plans the pointer page's lists and reads the
+plan again — so `status` names no rewrite `update` will not make, and the
+page lists exactly what the report does.
+
+**What `init` and `adopt` refuse.** `adopt` refuses `protected` beside
+`manual-git` registration from the two declarations alone. On `manual-git`
+registration both read, once, whether the trunk requires a pull request of
+the owner: the trunk's rulesets on GitHub, with `GITHUB_TOKEN`, `GH_TOKEN` or
+`gh auth token`, a ruleset that requires a request refusing unless it lets
+this owner bypass it always or does not apply to them. Other rules that can
+turn a push away — required checks, restricted updates, classic branch
+protection — are not read, and a reading that finds no ruleset in the way
+says in one line that those were not read. The refusal names the two ways out — a bypass,
+or `pull-request` registration, which `init` takes as `--registration`.
+Without a remote, a remote on GitHub, a token or an answer, the command says
+in one line that it did not read and writes what was asked. The checker is
+not touched: the reading is the installer's, at the owner's terminal, before
+a file is written.
 
 **What `adopt` does.** It is the migration from a 0.2 installation: it keeps
 the host's answers, replaces the tools, adds the skills, and reports the
 shapes the kit no longer defines rather than deleting anything of the
-adopter's. The lock it writes digests the migrated configuration it actually
-wrote, not the one a fresh install would have generated, so the next `status`
-does not call an untouched file edited. `update` and `adopt` both plan from
+adopter's. Under that list it names the manifest and the workflows that
+still call a stale file — a path, a glob that matches one, or one
+`npm run` of a script that does; a stale page is never counted as called —
+and says the gate is red until they go. A Markdown file of either plane whose
+relative links resolve nowhere is reported as a shape that wants a
+`linkExemptions` declaration, its links read as the checker's `links` rule
+reads them and a link to a file the adoption writes counting as resolved. The
+lock it writes digests the migrated configuration it actually wrote, not the
+one a fresh install would have generated, so the next `status` does not call
+an untouched file edited. `update` and `adopt` both plan from
 the host's own declaration, so a repository that declared `pull-request`
 registration keeps it, and the binding generated beside it — which prints both
 transports — never contradicts the file it sits next to.
@@ -197,7 +277,11 @@ failure and posts once on the request. It differs in one place, and the test
 says so — this repository runs its own suite before the gate, and the kit
 installs no suite and names none. The request template opens with the three
 plain lines and the surface link, then the definition of done item by item,
-before the ledger.
+before the ledger; its *Coherence* section opens with the line naming the
+reader, as this repository's does, and every blank in it is backticked, so
+the forge strips none as an HTML tag — a test asserts no bare one survives.
+The pilot's record writes its definition of done as a plain list;
+`cairn-audit` reading such a list is row 4 of 1.2 on the register (ADR-042).
 
 ## Testing
 

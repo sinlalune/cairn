@@ -20,7 +20,8 @@
     "tools/cairn-audit.mjs",
     "tools/cairn-postmortem.mjs",
     "tools/release.json",
-    "skills/"
+    "skills/",
+    "CHANGELOG.md"
   ],
   "engines": {
     "node": ">=20"
