@@ -117,12 +117,18 @@ record, and each step's current content.
 
 ## The kit
 
-**What `npx cairn-protocol init` writes.** The six reference tools, the nine
-skill files of six skills, the folder indexes of both planes, and the host files — the
-configuration, the bootloader, the binding, the package scripts, the live
-view, a module note, the workflow and the request template. That comes to 33
-files and the lock on the `ci` profile and 32 on `local`, which has no
-workflow; the number is measured here and bounds nothing (ADR-022 d2).
+**What `npx cairn-protocol init` writes.** The reference tools, every skill
+under `skills/` — `cairn-update` among them — the folder indexes of both
+planes, `feedbacks/` and the project root's `backlog/` with their indexes, and
+the host files — the configuration, the bootloader, the binding, the package
+scripts, the live view, a module note, the workflow on the `ci` profile and
+the request template on `pull-request` integration. What that comes to is
+measured by the release and bounds nothing (ADR-022 d2, ADR-031 d1). The
+feedbacks index names the type a note carries, `Cairn Feedback`, and how a
+note about Cairn reaches the protocol's repository; the backlog index says
+what an item file holds and that the path taking it deletes it. A repository
+that already has either index keeps its own: the next `update` reports it as
+newly managed, and lists it to reconcile where it differs from the kit's.
 
 The documentation plane it writes is the one 1.1 decided: `docs/inputs/` for
 what the project had before the protocol, the architecture root with its
@@ -166,12 +172,14 @@ release was cut — the stamp's, else the source commit's — so two runs of one
 release on two days write the same bytes and the lock does not move on the
 clock. `cairn/README.md` is generated at `init` and at every `update` and
 nothing on it is written by hand: the installed release and the commit it was
-cut from, the six chapters and the six skills linked at that commit, every
-file the kit owns, the files the repository declined, and the files an update
-could not rewrite. The chapters are six headings of one page, so each is
-linked at its own anchor, slugged from its title rather than written out
-beside it. The bootloader's
-*start here* list ends on it.
+cut from, the release notes, the six chapters and the skills linked at that
+commit, every file the kit owns, the files the repository declined, and the
+files an update could not rewrite. `status` prints the release notes' link at
+the package's commit under the line that says a newer release exists, and
+says so when the package is older than the installation instead. The chapters
+are six headings of one page, so each is linked at its own anchor, slugged
+from its title rather than written out beside it. The bootloader's *start
+here* list ends on it.
 
 **What `update` does, and what it refuses.** A file that still holds exactly
 what the kit wrote is rewritten when its template changed — whoever owns it,

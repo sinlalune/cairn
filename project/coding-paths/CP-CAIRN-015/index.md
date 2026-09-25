@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-015
   route: full
   status: running
-  current_step: S03
+  current_step: S04
   base_commit: c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
   branch: path/cp-cairn-015
   assigned_writer: cp-cairn-015-writer
@@ -266,26 +266,29 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   the red-gate line, the link-exemption shape, the two refused pairings
   with the one GitHub reading, the pilot registering by request.
   Complete.
-- **S04** — not started.
+- [**S04**](./steps/S04.md) — what the kit installs: `cairn-update`
+  named, `feedbacks/` and the backlog with their indexes, the release
+  notes shipped and linked. Complete.
+- **S05** — not started.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 691e903a3f165d821ffba7434ecbeaba9d70182b — S02, on origin/path/cp-cairn-015
-unit   : 3
+commit : ef9fd3a9a8ca83a263f306dbe17534013e51f07c — S03, on origin/path/cp-cairn-015
+unit   : 4
 base   : c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
-trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S03
+trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S04
 ```
 
 ### Next action
 
-Start S04 with `cairn-unit` in the path's worktree: what the kit
-installs — `cairn-update` in the manifest, the pointer page and the
-bootloader; `feedbacks/` and its index naming the type; `project/backlog/`
-and its index; the changelog shipped and linked — as the plan's fourth
-item says.
+Start S05 with `cairn-unit` in the path's worktree: Ponytail and the
+harness — the two skills fetched from the plugin's latest release, the
+pin gone, the version in the lock and in `status`, the offline line;
+every skill where the harness loads it, the unit stating link or copy
+and which harnesses — as the plan's fifth item says.
 
 ### Blockers
 

@@ -20,7 +20,7 @@
  * The npm name `cairn` belongs to another package, so the package is
  * `cairn-protocol` and its binary is `cairn`.
  *
- * THE KIT IS THIN. It installs the reference tools, the six skills, the host
+ * THE KIT IS THIN. It installs the reference tools, the skills, the host
  * files — bootloader, configuration, binding, workflow, request template — and
  * the folder indexes the roles need, and nothing else. What that comes to is
  * measured and reported, never a target (ADR-022 d2). It does not copy the
@@ -136,9 +136,17 @@ export function stampRelease(root = SOURCE_ROOT) {
   return release
 }
 
+/** A file of the protocol's repository at the release's commit, or on the
+ *  moving trunk, stated as such, when the commit is unknown. */
+const atRelease = (commit, path) => `${REPOSITORY_URL}/blob/${commit && commit !== 'unknown' ? commit : 'main'}/${path}`
+
 export function specUrl(commit) {
-  return `${REPOSITORY_URL}/blob/${commit && commit !== 'unknown' ? commit : 'main'}/${PORTABLE_DOCS}`
+  return atRelease(commit, PORTABLE_DOCS)
 }
+
+/** What each release changed for an adopter, and which of their repairs it
+ *  absorbed (ADR-039). */
+const releaseNotes = (commit) => atRelease(commit, 'CHANGELOG.md')
 
 /** A portable file links the specification relatively in the protocol's own
  *  repository, where the `links` rule can check it; installed, it links the
@@ -313,10 +321,10 @@ This file points; it does not carry project memory.
 4. \`${options.projectRoot}/coding-paths/ACTIVE.md\` — what is running now. It is
    generated; never hand-edit it.
 5. \`${SKILLS}/\` — the procedures as Agent Skills: \`cairn-brainstorm\`,
-   \`cairn-open\`, \`cairn-unit\`, \`cairn-close\`, \`cairn-learn\`, and the
-   \`cairn-code\` stance.
+   \`cairn-open\`, \`cairn-unit\`, \`cairn-close\`, \`cairn-update\`,
+   \`cairn-learn\`, and the \`cairn-code\` stance.
 6. \`${POINTER_PAGE}\` — which release is installed, the six chapters and the
-   six skills linked at its commit, and every file the kit owns. Generated.
+   skills linked at its commit, and every file the kit owns. Generated.
 
 The [specification](${spec}/index.md) is read at the release this repository
 installed, release ${PROTOCOL_RELEASE}; \`npx cairn-protocol status\` says whether a
@@ -526,6 +534,7 @@ const SKILL_LINES = [
   ['cairn-open', 'a path is scoped, accepted and registered'],
   ['cairn-unit', 'one work unit: plan, change, self-review, review, verify, push'],
   ['cairn-close', 'a candidate is proposed, reviewed and integrated'],
+  ['cairn-update', 'the kit is brought to a newer release, as a path'],
   ['cairn-learn', 'a learning session, ending in a note with an order'],
   ['cairn-code', 'the stance the change movement is written with']
 ]
@@ -552,7 +561,9 @@ document-driven coding protocol.
 
 This repository carries **release ${PROTOCOL_RELEASE}**, cut from commit
 \`${commit}\`. Every link below resolves to the specification at that commit,
-so what you read is what you installed.
+so what you read is what you installed. What each release changes for an
+adopter, and which adopter repairs it absorbed, is in
+[the release notes](${releaseNotes(commit)}).
 
 This page is GENERATED, at \`init\` and at every \`update\`. Nothing on it is
 written by hand.
@@ -626,6 +637,36 @@ whichever of the two they can read, so the two must agree.
 
 Promotion units write these pages.
 `
+}
+
+function feedbacksIndex() {
+  return folderIndex('Feedbacks', 'What a writer met when the gate stayed green and the protocol still cost more than it should, one note per occasion.', `
+Each observation names the movement it happened in, what it cost, and the
+change that would remove it. A note is evidence for a change, never authority
+for one. Each carries \`type: Cairn Feedback\`.
+
+A note about how this repository runs the protocol — its own conventions, its
+harness — stays here. A note about Cairn itself travels: it reaches
+[the protocol's \`feedbacks/\`](${REPOSITORY_URL}/tree/main/feedbacks) as a pull
+request against that repository, or the owner carries it there. A defect of
+the harness goes to its vendor, not here.
+`)
+}
+
+function backlogIndex() {
+  return folderIndex('Backlog', 'Deferred work: one file per item a path deferred, until a path takes it.', `
+One file per deferred item, named as a journal entry is, the date first,
+saying what the item is, which path deferred it and where — the unit or the candidate — who
+owns it, and the shape of the work it wants: a decision unit, a promotion, a
+coding path.
+
+A \`deferred\` disposition, in a step's review section or in a closing review,
+names the file. An advisory that fires at every run on the same fact is
+deferred here once, rather than accepted again at every closing.
+
+A path that takes an item names it in its goal and declares the file in
+\`writes:\`; its last unit deletes the file. No rule reads this folder.
+`)
 }
 
 export function registerIndex() {
@@ -856,6 +897,8 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
   }
 
   put(`${options.projectRoot}/coding-paths/binding.md`, hostBinding(options, commit), 'host')
+  put(`${options.projectRoot}/backlog/index.md`, backlogIndex(), 'host')
+  put('feedbacks/index.md', feedbacksIndex(), 'host')
   put(`${options.projectRoot}/coding-paths/index.md`, registerIndex(), 'host')
   put(`${options.projectRoot}/index.md`, folderIndex('Project plane',
     'Durable execution state: one folder per coding path under `coding-paths/`, and the journal of integrated outcomes under `log/`.'), 'host')
@@ -886,7 +929,7 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
 
   // Every path lands under a declared root or in the kit's own places, so a
   // root the configuration names never gets an undeclared sibling (ADR-033 d1).
-  const places = [...Object.values(config.roots).flat(), 'tools', SKILLS, dirname(POINTER_PAGE), '.github']
+  const places = [...Object.values(config.roots).flat(), 'tools', SKILLS, dirname(POINTER_PAGE), 'feedbacks', '.github']
   const astray = [...files.keys()].filter((path) => path.includes('/') && !places.some((root) => path.startsWith(`${root}/`)))
   if (astray.length) throw new Error(`cairn: the plan writes outside every declared root — ${astray.join(', ')}`)
 
@@ -1075,11 +1118,14 @@ export function installationStatus(lock, plan, stateOf) {
   return { installed: lock.release, available: PROTOCOL_RELEASE, files, left }
 }
 
-function describeStatus(status) {
+function describeStatus(status, commit) {
   const counts = {}
   for (const file of status.files) counts[file.state] = (counts[file.state] ?? 0) + 1
+  // ponytail: numeric order, no prerelease tags — Cairn cuts none; compare the suffix apart if it ever does.
+  const order = status.installed.localeCompare(status.available, 'en', { numeric: true })
   const lines = [
-    `cairn — installed release ${status.installed}, this package is ${status.available}${status.installed === status.available ? ' (current)' : ' (an update is available)'}`,
+    `cairn — installed release ${status.installed}, this package is ${status.available}${order === 0 ? ' (current)' : order < 0 ? ' (an update is available)' : ' (older than what is installed — run the newer package)'}`,
+    ...(order < 0 ? [`release notes: ${releaseNotes(commit)}`] : []),
     `kit files: ${Object.entries(counts).map(([state, n]) => `${n} ${state}`).join(', ')}`
   ]
   for (const file of status.files.filter((f) => f.action === 'write')) lines.push(`  update would write   ${file.path} (${file.state})`)
@@ -1490,7 +1536,8 @@ async function main(argv) {
   if (command === 'status') {
     const lock = readLock(target)
     if (!lock) throw new Error(`cairn: ${target} carries no cairn.lock.json — run \`adopt\` if it carries the protocol, \`init\` if it does not`)
-    console.log(describeStatus(updateStatus(target, hostPlan(target), lock)))
+    const plan = hostPlan(target)
+    console.log(describeStatus(updateStatus(target, plan, lock), plan.sourceCommit))
     return
   }
   if (command === 'update') {
@@ -1527,7 +1574,7 @@ async function main(argv) {
     }
     lock.declined = [...new Set([...(lock.declined ?? []), ...decline])]
     const result = applyUpdate(target, plan, lock, { dryRun })
-    console.log(describeStatus(result.status))
+    console.log(describeStatus(result.status, plan.sourceCommit))
     for (const path of result.reconcile) {
       console.log(`\n--- ${path} — you edited this, and the release changed its template`)
       console.log('    (- the release\'s version, + yours)')

@@ -207,6 +207,41 @@ test('cairn: the kit plans under every root the configuration declares, and deri
   assert.deepEqual(outwardLinks(plan.files), [])
 })
 
+test('cairn init: the kit installs the folders the skills of 1.2 write into — feedbacks and the backlog', () => {
+  // ADR-038 d2, d5 and ADR-041: the unit skill sends a writer to `feedbacks/`
+  // and a deferral to `project/backlog/`; an adopter had neither.
+  const plan = planInstall({ ...defaultOptions(), projectRoot: 'ops' })
+  const feedbacks = plan.files.get('feedbacks/index.md')?.toString('utf8') ?? ''
+  assert.match(feedbacks, /Cairn Feedback/, 'the index names the type a note carries')
+  assert.match(feedbacks, /^type: Cairn Folder Index$/m)
+  assert.match(feedbacks, /pull\s+request/i, 'and how a note about Cairn travels')
+  assert.ok(plan.host.has('feedbacks/index.md'))
+  const backlog = plan.files.get('ops/backlog/index.md')?.toString('utf8') ?? ''
+  assert.match(backlog, /one file per deferred item/i)
+  assert.match(backlog, /deletes the file/i, 'and who removes it')
+  assert.ok(plan.host.has('ops/backlog/index.md'), 'under the declared project root')
+  const pkg = JSON.parse(readFileSync('package.json', 'utf8'))
+  assert.ok(pkg.files.includes('CHANGELOG.md'), 'the package ships the release notes (ADR-039)')
+})
+
+test('cairn status: when a newer release exists, the line says where its notes are', () => {
+  const dir = target()
+  try {
+    applyPlan(planInstall(), dir)
+    assert.doesNotMatch(cairn(dir, 'status'), /CHANGELOG/, 'nothing to read at the release installed')
+    const lock = readLock(dir)
+    writeFileSync(join(dir, 'cairn.lock.json'), `${JSON.stringify({ ...lock, release: '0.9.0' }, null, 2)}\n`)
+    const output = cairn(dir, 'status')
+    assert.match(output, /an update is available\)\nrelease notes: https:\/\/github\.com\/sinlalune\/cairn\/blob\/[0-9a-f]+\/CHANGELOG\.md/)
+    writeFileSync(join(dir, 'cairn.lock.json'), `${JSON.stringify({ ...lock, release: '10.0.0' }, null, 2)}\n`)
+    const older = cairn(dir, 'status')
+    assert.match(older, /older than what is installed/, 'a lock newer than the package is not an update')
+    assert.doesNotMatch(older, /release notes/)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
 test('cairn init: an existing file is refused rather than overwritten, and a lock refuses a second init', () => {
   const dir = target()
   try {
@@ -423,9 +458,14 @@ test('cairn init: the pointer page says which release this is and what the kit o
   const page = plan.files.get('cairn/README.md').toString('utf8')
   assert.match(page, new RegExp(`release ${PROTOCOL_RELEASE.replace(/\./g, '\\.')}`), 'the installed release')
   assert.ok(page.includes(plan.sourceCommit), 'and the commit it was cut from, in full')
-  for (const skill of ['cairn-brainstorm', 'cairn-open', 'cairn-unit', 'cairn-close', 'cairn-learn', 'cairn-code']) {
+  for (const skill of ['cairn-brainstorm', 'cairn-open', 'cairn-unit', 'cairn-close', 'cairn-update', 'cairn-learn', 'cairn-code']) {
     assert.ok(page.includes(`${skill}/SKILL.md`), `${skill} is linked`)
   }
+  // ADR-035: the seventh skill is named where the six are.
+  assert.ok(plan.files.has('skills/cairn-update/SKILL.md'), 'the kit installs it and the lock owns it')
+  assert.match(plan.files.get('AGENTS.md').toString('utf8'), /`cairn-update`/, 'the bootloader names it')
+  // ADR-039: the release notes, at the release's commit.
+  assert.ok(page.includes(`https://github.com/sinlalune/cairn/blob/${plan.sourceCommit}/CHANGELOG.md`), 'the page links the changelog')
   // ADR-013 d1 asks for the six chapters, EACH one link. The owner's try of
   // 2026-09-15 found six labels over one URL: every chapter went to the top of
   // the specification, so the page listed six destinations and had one.
