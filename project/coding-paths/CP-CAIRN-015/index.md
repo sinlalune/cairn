@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-015
   route: full
   status: running
-  current_step: S06
+  current_step: S07
   base_commit: c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
   branch: path/cp-cairn-015
   assigned_writer: cp-cairn-015-writer
@@ -275,27 +275,26 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - [**S06**](./steps/S06.md) — the two templates and the module note:
   the pilot's plain list, the request template's reader line and
   backticked blanks, the module note current. Complete.
-- **S07** — not started.
+- [**S07**](./steps/S07.md) — the candidate: the trunk already in, the
+  scope checked, row 3 of 1.2 naming this path. Complete.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 3a22c45166afffdf1e8521ea8082d24d10289f58 — S05, on origin/path/cp-cairn-015
-unit   : 6
+commit : a2f2085fe1b556663a9c6c3bf91955d3d2ff6aea — S06, on origin/path/cp-cairn-015
+unit   : 7
 base   : c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
-trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S06
+trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S07
 ```
 
 ### Next action
 
-Start S07 with `cairn-unit`, then `cairn-close`, in the path's
-worktree: merge the trunk in, run the gates bare, write this path's id
-into row 3 of 1.2 on the register; then the close skill's order — the
-administrative commit, the fresh-context coherence read in the
-request's description, the owner's try of `init`, `update` and `adopt`
-on a scratch repository, the merge.
+Close with `cairn-close` on the candidate S07 produced: the review in
+the request's description with the fresh-context coherence read, the
+administrative commit, the owner's try of `init`, `update` and `adopt`
+on a scratch repository, the merge, then the integrating unit.
 
 ### Blockers
 
