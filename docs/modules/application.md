@@ -21,7 +21,7 @@ covers: dependency-free Node scripts that evaluate the protocol the
 | `cairn-postmortem.mjs` | the mechanical half of a post-mortem; facts only, and no reading of it reaches an exit code |
 | `cairn-rules.mjs` | regenerates the rule catalogue and the rule-to-requirement linkage on the [conformance page](../../spec/reference/conformance.md); this repository's, not installed |
 | `cairn.mjs` | the `cairn` command: `init` installs the thin kit, `status` reads the lock, `update` rewrites every pristine file and prints what the release changes in an edited one (`--take <path>` hands over the release's version of one), `adopt` turns a lock-less installation into one; the package's, not installed |
-| `cairn-pilot.mjs` | the greenfield pilot as a command: drives a throwaway repository from `init` to `done` on one transport, green at every gate, and counts the protocol files each stage writes; this repository's, not installed |
+| `cairn-pilot.mjs` | the greenfield pilot as a command: drives a throwaway repository from `init` to `done` on one transport — on `pull-request`, the registration too, through a `register/` branch and a merge that keeps its commit — green at every gate, and counts the protocol files each stage writes; this repository's, not installed |
 | `*.test.mjs` | the tools' own suite, run by `npm run cairn-test`: the pure half of every rule against `evaluate()`, and one adversarial fixture per blocking rule against a real installed repository |
 
 ## How the tools find the specification
@@ -208,10 +208,29 @@ it through one predicate, which plans the pointer page's lists and reads the
 plan again — so `status` names no rewrite `update` will not make, and the
 page lists exactly what the report does.
 
+**What `init` and `adopt` refuse.** `adopt` refuses `protected` beside
+`manual-git` registration from the two declarations alone. On `manual-git`
+registration both read, once, whether the trunk requires a pull request of
+the owner: the trunk's rulesets on GitHub, with `GITHUB_TOKEN`, `GH_TOKEN` or
+`gh auth token`, a ruleset that requires a request refusing unless it lets
+this owner bypass it always or does not apply to them. Other rules that can
+turn a push away — required checks, restricted updates, classic branch
+protection — are not read. The refusal names the two ways out — a bypass,
+or `pull-request` registration, which `init` takes as `--registration`.
+Without a remote, a remote on GitHub, a token or an answer, the command says in one
+line that it did not read and writes what was asked. The checker is not touched: the reading is the
+installer's, at the owner's terminal, before a file is written.
+
 **What `adopt` does.** It is the migration from a 0.2 installation: it keeps
 the host's answers, replaces the tools, adds the skills, and reports the
 shapes the kit no longer defines rather than deleting anything of the
-adopter's. The lock it writes digests the migrated configuration it actually
+adopter's. Under that list it names the manifest and the workflows that
+still call a stale file — a path, a glob that matches one, or one
+`npm run` of a script that does; a stale page is never counted as called — and says the gate is red until they go.
+A Markdown file of either plane whose relative links resolve nowhere is
+reported as a shape that wants a `linkExemptions` declaration, its links
+read as the checker's `links` rule reads them and a link to a file the
+adoption writes counting as resolved. The lock it writes digests the migrated configuration it actually
 wrote, not the one a fresh install would have generated, so the next `status`
 does not call an untouched file edited. `update` and `adopt` both plan from
 the host's own declaration, so a repository that declared `pull-request`

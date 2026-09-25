@@ -95,7 +95,7 @@ parent-traversing, dot-segment, empty-segment, and backslash forms are rejected.
 | `trunk` | shared integration branch | resolvable local and remote ref |
 | `remote` | shared checkpoint remote | configured Git remote |
 | `metadataNamespace` | nested path and audit metadata key | one validated key |
-| `enforcementProfile` | installed capability | `local \| ci \| protected` |
+| `enforcementProfile` | installed capability | `local \| ci \| protected`; `init` installs no `protected`, and `adopt` refuses `protected` beside `manual-git` registration — a host that prevents the direct push, and a writer declared to make it (ADR-032 d4) |
 | `roots.documentation` | durable documentation plane | normalised repository-relative path |
 | `roots.project` | execution-state plane | normalised repository-relative path |
 | `roots.architecture` | accepted doctrine | normalised repository-relative path |
@@ -108,7 +108,7 @@ parent-traversing, dot-segment, empty-segment, and backslash forms are rejected.
 | `checkpointRetentionRef` | ref prefix for [checkpoint retention](../concepts/checkpoint-retention.md), which the host's own tooling maintains — the reference checker does not read it | a ref prefix the remote accepts, or `null` where the repository forbids rewriting pushes instead |
 | `pathHistoryPolicy` | which conforming rewrite policy the host chose | `retained` with a ref prefix, or `forbidden` with a null prefix |
 | `scopeDigestAlgorithm` | digest used for [scope digests](../concepts/scope-digest.md) | a named algorithm; the digest is never abbreviated |
-| `transport` | two independent fields: how a registration reaches the trunk, and how an accepted candidate reaches it and where its closing acceptance is recorded | each `pull-request` or `manual-git`: a registration lands as one request carrying the metadata-only commit alone, or as a direct push; a candidate lands as a request that is itself the record, or as a checked local merge with one closing record in the path folder |
+| `transport` | two independent fields: how a registration reaches the trunk, and how an accepted candidate reaches it and where its closing acceptance is recorded | each `pull-request` or `manual-git`: a registration lands as one request carrying the metadata-only commit alone, or as a direct push; a candidate lands as a request that is itself the record, or as a checked local merge with one closing record in the path folder. `init` and `adopt` refuse `manual-git` registration on a trunk whose GitHub rulesets require a request and give the owner no bypass, read once with the owner's own token; without a token, off GitHub or offline they say in one line that they did not read, and write what was asked (ADR-032 d4) |
 | `migration` | finite exceptions for records predating installed predicates | three explicit path-id arrays; not a schema-version migration mechanism |
 | `linkExemptions` | the files and folders whose relative links `links` does not resolve — a portrayal of another repository, a history frozen as it was | optional array of `{ path, reason }`: a repository-relative path, a folder covering what it holds, and a reason that is not blank; a path is declared once (ADR-037 d1) |
 

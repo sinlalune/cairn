@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-015
   route: full
   status: running
-  current_step: S02
+  current_step: S03
   base_commit: c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
   branch: path/cp-cairn-015
   assigned_writer: cp-cairn-015-writer
@@ -262,26 +262,30 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - [**S02**](./steps/S02.md) — what `update` and `status` report: one
   plan, one reading, the release's day, newly managed files, the lock's
   host digests. Complete.
-- **S03** — not started.
+- [**S03**](./steps/S03.md) — what `adopt` and `init` say and refuse:
+  the red-gate line, the link-exemption shape, the two refused pairings
+  with the one GitHub reading, the pilot registering by request.
+  Complete.
+- **S04** — not started.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 37e1ae36c5f9201cc7d157fa329bfb42606d4cd9 — S01, on origin/path/cp-cairn-015
-unit   : 2
+commit : 691e903a3f165d821ffba7434ecbeaba9d70182b — S02, on origin/path/cp-cairn-015
+unit   : 3
 base   : c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
-trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S02
+trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S03
 ```
 
 ### Next action
 
-Start S03 with `cairn-unit` in the path's worktree: what `adopt` and
-`init` say and refuse — the red-gate line under the stale list, the
-link-exemption shape, the two refused pairings with the one GitHub
-reading, the pilot registering by request — as the plan's third item
-says.
+Start S04 with `cairn-unit` in the path's worktree: what the kit
+installs — `cairn-update` in the manifest, the pointer page and the
+bootloader; `feedbacks/` and its index naming the type; `project/backlog/`
+and its index; the changelog shipped and linked — as the plan's fourth
+item says.
 
 ### Blockers
 

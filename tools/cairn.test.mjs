@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os'
 import {
   bootloader, hostBinding, pointerPage, requestTemplate, takeRelease, workflow,
   applyAdopt, applyPlan, applyUpdate, buildConfig, defaultOptions, digest, fileState, installationStatus,
-  migrateConfig, optionsFromConfig, outwardLinks, pinSpecLinks, planInstall, readLock, sourceCommit, specUrl, staleShapes,
+  migrateConfig, optionsFromConfig, outwardLinks, pinSpecLinks, planInstall, readLock, readTrunk, sourceCommit, specUrl, staleShapes,
   PROTOCOL_RELEASE, REFERENCE_TOOLS
 } from './cairn.mjs'
 import { REPO, configErrors } from './cairn-config.mjs'
@@ -938,6 +938,100 @@ test('cairn adopt: a 0.2 installation becomes a 1.0 installation, its own files 
     assert.match(cairn(dir, 'status'), /installed release/)
   } finally {
     rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('cairn adopt: a kept manifest and workflow that still call a stale suite are named, and the gate is said red', () => {
+  // ADR-033 d4: Atomik's workflow ran `npm run cairn-check:test`, whose script
+  // globbed the 0.2 tests `adopt` had just listed stale; the adoption was
+  // committed on a green check and CI went red on the next push.
+  const dir = legacyRepository()
+  try {
+    write(dir, 'package.json', '{"name":"theirs","scripts":{"cairn-check:test":"node --test \'tools/**/*.test.mjs\'","test":"node --test tools/cairn-?heck.test.mjs","cairn-check":"node tools/cairn-check.mjs"}}\n')
+    write(dir, '.github/workflows/gates.yml', 'jobs:\n  t:\n    steps:\n      - run: npm run cairn-check:test\n')
+    write(dir, '.github/workflows/test.yml', 'jobs:\n  t:\n    steps:\n      - run: npm test\n')
+    write(dir, '.github/workflows/other.yml', 'jobs:\n  t:\n    steps:\n      - run: npm run cairn-check\n      # see atomik-project/coding-paths/CP-MVP-008.md\n')
+    commit(dir, 'the adopter\'s gate')
+    const output = cairn(dir, 'adopt')
+    const stale = output.indexOf('stale    tools/cairn-check.test.mjs')
+    const red = output.indexOf('`package.json` and `.github/workflows/gates.yml` and `.github/workflows/test.yml` call these; your gate is red until they go')
+    assert.ok(stale !== -1 && red > stale, `the line stands under the stale list:\n${output}`)
+    assert.doesNotMatch(output, /other\.yml/, 'a workflow that calls only what the kit installed is not named')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('cairn adopt: a file whose relative links resolve nowhere is named as a shape that wants a declaration', () => {
+  // ADR-037 d2: a portrayal of another repository, or a history frozen as it
+  // was, is declared under `linkExemptions`, not repaired.
+  const dir = target()
+  try {
+    write(dir, 'docs/portrait.md', '# Theirs\n\nSee [their readme](../README.md) and [their notes](./notes/a.md).\n\n```\n[in code](./nowhere.md)\n```\n')
+    write(dir, 'docs/fine.md', 'See [the portrait](./portrait.md "titled"), [a bare one](nowhere.md), `[in a span](./gone.md)` and [a site](https://example.org/x.md).\n')
+    const config = migrateConfig(SCHEMA_1)
+    const shapes = staleShapes(dir, config)
+    assert.deepEqual(shapes.map((s) => s.path), ['docs/portrait.md'])
+    assert.match(shapes[0].why, /2 relative link\(s\) resolve nowhere/)
+    assert.match(shapes[0].why, /linkExemptions/, 'the field is named')
+    assert.deepEqual(staleShapes(dir, { ...config, linkExemptions: [{ path: 'docs/portrait.md', reason: 'a portrayal' }] }), [],
+      'a declared file is not named again')
+    assert.deepEqual(staleShapes(dir, { ...config, linkExemptions: [{ path: 'docs/', reason: 'a folder' }] }), [],
+      'nor one under a declared folder, written with its slash')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('cairn adopt: protected with manual-git registration is refused from the two declarations alone', () => {
+  // ADR-032 d4: the host prevents the direct push the writer is declared to make.
+  const dir = legacyRepository()
+  try {
+    write(dir, 'cairn.config.json', `${JSON.stringify({ ...SCHEMA_1, enforcementProfile: 'protected' }, null, 2)}\n`)
+    assert.throws(() => cairn(dir, 'adopt'), /protected[\s\S]*manual-git[\s\S]*pull-request/)
+    assert.ok(!existsSync(join(dir, 'cairn.lock.json')), 'nothing written')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('the installer reads the trunk\'s rules on GitHub once, and refuses on a reading obtained, never on one missing', async () => {
+  // ADR-032 d4, read by the installer with the owner's token — never by the
+  // checker, which still makes no network call (ADR-029).
+  const url = 'git@github.com:o/r.git'
+  const answers = (map) => async (url) => map[url.replace('https://api.github.com/repos/o/r', '')] ?? { error: 'HTTP 404' }
+  const requiring = (bypass) => answers({
+    '/rules/branches/main?per_page=100': { value: [{ type: 'pull_request', ruleset_id: 7 }, { type: 'deletion', ruleset_id: 8 }] },
+    '/rulesets/7': { value: { name: 'trunk', current_user_can_bypass: bypass } }
+  })
+  assert.deepEqual(await readTrunk({ url, trunk: 'main', token: 't', request: requiring('never') }), { read: true, direct: false, ruleset: 'trunk' })
+  assert.deepEqual(await readTrunk({ url, trunk: 'main', token: 't', request: requiring('pull_requests_only') }), { read: true, direct: false, ruleset: 'trunk' })
+  assert.deepEqual(await readTrunk({ url, trunk: 'main', token: 't', request: requiring('always') }), { read: true, direct: true })
+  assert.deepEqual(await readTrunk({ url, trunk: 'main', token: 't', request: requiring('exempt') }), { read: true, direct: true },
+    'a ruleset that does not apply to this owner refuses nothing')
+  assert.deepEqual(await readTrunk({ url, trunk: 'main', token: 't', request: answers({ '/rules/branches/main?per_page=100': { value: [] } }) }), { read: true, direct: true })
+  for (const [why, args] of [[/not on GitHub/, { url: 'https://evil.example/github.com/o/r.git', token: 't' }], [/no remote/, { url: null, token: 't' }],
+    [/no token/, { url, token: '' }], [/HTTP 404/, { url, token: 't' }], [/did not say/, { url, token: 't', request: requiring(undefined) }]]) {
+    const reading = await readTrunk({ trunk: 'main', request: answers({}), ...args })
+    assert.equal(reading.read, false)
+    assert.match(reading.why, why)
+  }
+
+  // Off GitHub the command says it did not read, in one line, and writes what was asked.
+  const dir = target()
+  try {
+    const output = cairn(dir, 'init')
+    assert.match(output, /^cairn — did not read main's rules on GitHub: there is no remote to read; writing what was asked$/m)
+    assert.ok(existsSync(join(dir, 'cairn.lock.json')))
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+  const other = target()
+  try {
+    assert.match(cairn(other, 'init', '--registration', 'pull-request', '--dry-run'), /registration pull-request/,
+      'the second way out is a flag at init')
+  } finally {
+    rmSync(other, { recursive: true, force: true })
   }
 })
 

@@ -6,13 +6,14 @@
  *                             [--namespace cairn] [--profile local|ci]
  *                             [--project-root project] [--docs-root docs]
  *                             [--source src,packages] [--transport pull-request|manual-git]
- *                             [--dry-run]
+ *                             [--registration manual-git|pull-request] [--dry-run]
  *   npx cairn-protocol status [--target <dir>]
  *   npx cairn-protocol update [--target <dir>] [--dry-run] [--decline <path>] [--take <path>]
  *   npx cairn-protocol adopt  [--target <dir>] [--dry-run]
  *
  * `--transport` names the INTEGRATION transport alone; `init` declares
- * `transport.registration` from `REGISTRATION_TRANSPORT` (ADR-024).
+ * `transport.registration` from `REGISTRATION_TRANSPORT` unless
+ * `--registration` names the other (ADR-024, ADR-032 d4).
  * `--decline` names a host file `update` must not write, now or later; `--take`
  * takes one back (ADR-033 d2).
  *
@@ -776,26 +777,35 @@ deferred to a named owner and follow-up; or *none*.
  *  relative link a kit file carries must land on another kit file; anything
  *  else is a URL, pinned. */
 export function outwardLinks(files) {
-  const link = /\]\(([^)]+)\)/g
   const offenders = []
   for (const [path, content] of files) {
     if (!path.endsWith('.md')) continue
-    const dir = path.split('/').slice(0, -1)
-    const text = content.toString('utf8').replace(/^(`{3,})[\s\S]*?^\1`*$/gm, '')
-    for (const match of text.matchAll(link)) {
-      const target = match[1].split('#')[0].trim()
-      if (!target || !target.startsWith('.')) continue
-      const parts = [...dir]
-      for (const segment of target.split('/')) {
-        if (segment === '.' || segment === '') continue
-        if (segment === '..') parts.pop()
-        else parts.push(segment)
-      }
-      const resolved = parts.join('/')
+    for (const { target, resolved } of relativeLinks(path, content)) {
       if (!files.has(resolved)) offenders.push(`${path} -> ${target}`)
     }
   }
   return offenders
+}
+
+/** Every relative link of a Markdown file, code stripped, with the
+ *  repository path it resolves to — read as the checker's \`links\` rule
+ *  reads one: a target starting with a dot, up to whitespace or an anchor,
+ *  backslashes dropped. */
+function relativeLinks(path, content) {
+  const dir = path.split('/').slice(0, -1)
+  const text = content.toString('utf8').replace(/^(`{3,})[\s\S]*?^\1`*$/gm, '').replace(/`[^`\n]*`/g, '')
+  const links = []
+  for (const match of text.matchAll(/\[[^\]]*\]\((\.[^)#\s]+)(?:#[^)\s]*)?\)/g)) {
+    const target = match[1].replace(/\\/g, '')
+    const parts = [...dir]
+    for (const segment of target.split('/')) {
+      if (segment === '.' || segment === '') continue
+      if (segment === '..') parts.pop()
+      else parts.push(segment)
+    }
+    links.push({ target, resolved: parts.join('/') })
+  }
+  return links
 }
 
 /** Resolve the complete kit in memory. Nothing touches the target here — a
@@ -1219,7 +1229,7 @@ export function takeRelease(target, plan, lock, path, { dryRun = false } = {}) {
 /** Shapes a 0.2 installation leaves behind, which the kit no longer defines.
  *  Reported, never deleted: they are the adopter's, and some of them are the
  *  adopter's history. */
-export function staleShapes(target, config) {
+export function staleShapes(target, config, planned = new Set()) {
   const project = config.roots.project
   const stale = []
   const note = (path, why) => { if (existsSync(join(target, path))) stale.push({ path, why }) }
@@ -1240,7 +1250,141 @@ export function staleShapes(target, config) {
       if (/^CP-.+\.md$/.test(name)) note(`${project}/coding-paths/${name}`, 'a flat path record; conforming, and migrated to one folder when it is next touched')
     }
   }
+  // A file whose relative links resolve nowhere is a shape, not a list of
+  // repairs, when it portrays another repository or freezes a history; the
+  // adopter declares it, and the field is named (ADR-037 d2). A link to a
+  // file this adoption is about to write resolves.
+  const exempt = (path) => (config.linkExemptions ?? []).some((e) => path === e.path || path.startsWith(e.path.endsWith('/') ? e.path : `${e.path}/`))
+  for (const root of [config.roots.documentation, project]) {
+    if (!existsSync(join(target, root))) continue
+    for (const path of walk(join(target, root)).map((p) => `${root}/${p}`).filter((p) => p.endsWith('.md') && !exempt(p)).sort()) {
+      const broken = relativeLinks(path, readFileSync(join(target, path)))
+        .filter(({ resolved }) => !existsSync(join(target, resolved)) && !planned.has(resolved)).length
+      if (broken > 0) stale.push({ path, why: `${broken} relative link(s) resolve nowhere — repair them, or, if the file portrays another repository or freezes a history, declare it under \`linkExemptions\` in cairn.config.json with its reason` })
+    }
+  }
   return stale
+}
+
+/** The host files `adopt` leaves in place — the manifest's scripts, the
+ *  workflows' steps — that still call what it just reported stale, so the
+ *  report can say the gate is red until they go (ADR-033 d4). A glob is read
+ *  as a glob, and a workflow step reaches a stale file through one
+ *  \`npm run\` of a script that calls it. */
+export function staleCallers(target, stale) {
+  // Pages are read, never called: a flat record or a page with dead links in
+  // a workflow's text turns no gate red.
+  const paths = stale.map((s) => s.path).filter((path) => !path.endsWith('.md'))
+  const glob = (word) => new RegExp(`^${word.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    .replace(/\*\*\//g, '\u0000').replace(/\*/g, '[^/]*').replace(/\?/g, '[^/]').replace(/\u0000/g, '(?:.*/)?')}$`)
+  const calls = (text) => text.split(/[\s'"`]+/).some((word) => paths.some((path) =>
+    word === path || word.startsWith(`${path}/`) || (/[*?]/.test(word) && glob(word).test(path))))
+  const read = (path) => readFileSync(join(target, path), 'utf8')
+  const callers = []
+  let scripts = []
+  if (existsSync(join(target, 'package.json'))) {
+    try {
+      scripts = Object.entries(JSON.parse(read('package.json')).scripts ?? {}).filter(([, run]) => calls(String(run))).map(([name]) => name)
+    } catch { /* a manifest that does not parse calls nothing we can name */ }
+    if (scripts.length > 0) callers.push('package.json')
+  }
+  const runs = (text) => scripts.some((name) =>
+    new RegExp(`npm run ${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w:-])`).test(text) ||
+    (name === 'test' && /npm (?:test|t)(?![\w:-])/.test(text)))
+  const workflows = '.github/workflows'
+  if (existsSync(join(target, workflows))) {
+    for (const name of readdirSync(join(target, workflows)).filter((n) => /\.ya?ml$/.test(n)).sort()) {
+      // A comment calls nothing — the kit's own workflow names \`npm test\` in one.
+      const text = read(`${workflows}/${name}`).replace(/(^|\s)#.*$/gm, '$1')
+      if (calls(text) || runs(text)) callers.push(`${workflows}/${name}`)
+    }
+  }
+  return callers
+}
+
+/** What `adopt` settles before it reads or writes anything: no lock, and a
+ *  pairing that can work. \`protected\` declares that the host prevents a
+ *  direct push to the trunk, \`manual-git\` registration that the writer makes
+ *  one — refused from the two declarations alone, no host asked (ADR-032 d4). */
+export function adoptable(target) {
+  if (readLock(target)) throw new Error('cairn: this repository carries a cairn.lock.json — it is installed; run `update`')
+  const migrated = migrateConfig(readConfig(target))
+  if (migrated.enforcementProfile === 'protected' && migrated.transport.registration === 'manual-git') {
+    throw new Error('cairn: cairn.config.json declares enforcementProfile: protected — the host prevents a direct push to the trunk — ' +
+      'and transport.registration: manual-git — the writer pushes the registration commit to the trunk directly. Both cannot hold: ' +
+      'declare transport.registration: pull-request, or the profile the host actually enforces')
+  }
+  return migrated
+}
+
+/** The installer's one reading of GitHub: whether the trunk requires a pull
+ *  request of the owner running it, read from the trunk's rulesets with the
+ *  owner's own token, which sees whether they may bypass (ADR-032 d4). It
+ *  never throws; a reading it could not make says why, and nothing is
+ *  refused on it. The checker asks the host nothing (ADR-029) — this runs
+ *  once, at the owner's terminal, before a file is written. */
+export async function readTrunk({ url, trunk, token, request }) {
+  if (!url) return { read: false, why: 'there is no remote to read' }
+  const slug = githubSlug(url)
+  if (!slug) return { read: false, why: 'the remote is not on GitHub' }
+  if (!token) return { read: false, why: 'no token — set GITHUB_TOKEN or GH_TOKEN, or log in with gh' }
+  const api = `https://api.github.com/repos/${slug.owner}/${slug.repo}`
+  const rules = await request(`${api}/rules/branches/${encodeURIComponent(trunk)}?per_page=100`)
+  if (rules.error) return { read: false, why: `GitHub answered ${rules.error}` }
+  // ponytail: rulesets only; classic branch protection is not read — add it when an adopter's trunk uses it.
+  for (const id of new Set(rules.value.filter((rule) => rule.type === 'pull_request').map((rule) => rule.ruleset_id))) {
+    const ruleset = await request(`${api}/rulesets/${id}`)
+    if (ruleset.error) return { read: false, why: `GitHub answered ${ruleset.error} for ruleset ${id}` }
+    // `exempt`: the ruleset does not apply to this owner at all. A host that
+    // does not say is a reading not obtained.
+    const bypass = ruleset.value.current_user_can_bypass
+    if (bypass === undefined) return { read: false, why: `GitHub did not say whether you may bypass ruleset ${id}` }
+    if (!['always', 'exempt'].includes(bypass)) return { read: true, direct: false, ruleset: ruleset.value.name }
+  }
+  return { read: true, direct: true }
+}
+
+/** The owner and repository of a GitHub remote, or null — the post-mortem's
+ *  pattern, anchored, so a look-alike host is never read. The post-mortem
+ *  has its own copy; importing it here loads the checker, which needs a host
+ *  configuration the package command runs without (backlog, 2026-09-25). */
+const githubSlug = (url) => {
+  const match = /^(?:(?:https?|ssh|git)(?::\/\/)(?:[^@/]+@)?|(?:[^@/\s]+@))github\.com[:/]([^/\s]+)\/([^/\s]+?)(?:\.git)?$/i
+    .exec(String(url ?? '').trim())
+  return match ? { owner: match[1], repo: match[2] } : null
+}
+
+/** One GitHub read, an error an answer and never an exception. */
+async function githubRequest(url, { token }) {
+  try {
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(3000),
+      headers: { accept: 'application/vnd.github+json', authorization: `Bearer ${token}`, 'user-agent': 'cairn', 'x-github-api-version': '2022-11-28' }
+    })
+    return response.ok ? { value: await response.json() } : { error: `HTTP ${response.status}` }
+  } catch (error) {
+    return { error: error?.name === 'TimeoutError' ? 'no answer in 3000ms' : String(error?.message ?? error) }
+  }
+}
+
+/** Refuse \`manual-git\` registration on a trunk that takes no direct push
+ *  from this owner, where GitHub says so; say in one line when it was not read. */
+async function refuseUnpushableTrunk(target, { remote, trunk, registration, wayOut }) {
+  if (registration !== 'manual-git') return
+  const quiet = { cwd: target, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
+  const attempt = (run) => { try { return run() } catch { return null } }
+  const url = attempt(() => execFileSync('git', ['remote', 'get-url', remote], quiet).trim())
+  const token = githubSlug(url) ? process.env.GITHUB_TOKEN || process.env.GH_TOKEN || attempt(() => execFileSync('gh', ['auth', 'token'], quiet).trim()) : null
+  const reading = await readTrunk({ url, trunk, token, request: (url) => githubRequest(url, { token }) })
+  if (!reading.read) {
+    console.log(`cairn — did not read ${trunk}'s rules on GitHub: ${reading.why}; writing what was asked`)
+    return
+  }
+  if (!reading.direct) {
+    throw new Error(`cairn: ${trunk} on GitHub requires a pull request (ruleset "${reading.ruleset}") and gives you no bypass, ` +
+      'so manual-git registration — the registration commit pushed to the trunk directly — cannot land. ' +
+      `Two ways out: a bypass for you on that ruleset, or pull-request registration (${wayOut})`)
+  }
 }
 
 /** A repository that carries the protocol without a lock — an installation
@@ -1249,7 +1393,7 @@ export function staleShapes(target, config) {
  *  host files are written only where absent, the view is regenerated, the
  *  lock is written, and everything the kit no longer defines is reported. */
 export function applyAdopt(target, { dryRun = false } = {}) {
-  if (readLock(target)) throw new Error('cairn: this repository carries a cairn.lock.json — it is installed; run `update`')
+  adoptable(target)
   // The migrated configuration is what lands on disk, so it is what the lock
   // must digest. Locking the generated one instead made the very next
   // `status` call an untouched file edited (found by S01's review).
@@ -1275,7 +1419,8 @@ export function applyAdopt(target, { dryRun = false } = {}) {
   } else {
     for (const path of plan.files.keys()) (decide(path) === 'keep' ? kept : written).push(path)
   }
-  return { written, kept, stale: staleShapes(target, migrated), config: migrated }
+  const stale = staleShapes(target, migrated, new Set(plan.files.keys()))
+  return { written, kept, stale, callers: staleCallers(target, stale), config: migrated }
 }
 
 /* ------------------------------------------------------------------ *
@@ -1306,6 +1451,7 @@ function parseArgs(argv) {
     else if (arg === '--docs-root') options.docsRoot = next()
     else if (arg === '--source') options.sourceRoots = next().split(',').map((s) => s.trim()).filter(Boolean)
     else if (arg === '--transport') options.transport = next()
+    else if (arg === '--registration') options.registrationTransport = next()
     else if (arg === '--take') take = posix.normalize(next())
     else if (arg === '--decline') decline.push(posix.normalize(next()))
     else if (arg === '--dry-run') dryRun = true
@@ -1314,7 +1460,7 @@ function parseArgs(argv) {
   return { command, options, target: resolve(target ?? '.'), dryRun, take, decline }
 }
 
-function main(argv) {
+async function main(argv) {
   const { command, options, target, dryRun, take, decline } = parseArgs(argv)
   if (take !== null && decline.length > 0) throw new Error('cairn: --take and --decline are two runs — take the one file, then run update with --decline')
   if (command === 'init') {
@@ -1322,6 +1468,8 @@ function main(argv) {
       throw new Error('cairn: --profile protected is not installable — it asserts host protection this command cannot configure. Install local or ci and declare protected once the host is actually configured')
     }
     const plan = planInstall(options, SOURCE_ROOT)
+    await refuseUnpushableTrunk(target, { remote: options.remote, trunk: options.trunk,
+      registration: plan.config.transport.registration, wayOut: '`init --registration pull-request`' })
     mkdirSync(target, { recursive: true })
     let scriptsNotice = null
     if (existsSync(join(target, 'package.json'))) {
@@ -1398,10 +1546,14 @@ function main(argv) {
     return
   }
   if (command === 'adopt') {
+    const declared = adoptable(target)
+    await refuseUnpushableTrunk(target, { remote: declared.remote, trunk: declared.trunk,
+      registration: declared.transport.registration, wayOut: 'transport.registration: pull-request in cairn.config.json' })
     const result = applyAdopt(target, { dryRun })
     console.log(`cairn — ${dryRun ? 'would adopt' : 'adopted'} ${target} at release ${PROTOCOL_RELEASE}: ${result.written.length} written, ${result.kept.length} host files kept`)
     for (const path of result.kept) console.log(`  kept     ${path} — yours; review it against the kit's`)
     for (const { path, why } of result.stale) console.log(`  stale    ${path} — ${why}`)
+    if (result.callers.length > 0) console.log(`  ${result.callers.map((path) => `\`${path}\``).join(' and ')} call these; your gate is red until they go`)
     if (!dryRun) console.log('next — run npm run cairn-check, read its findings, and commit the adoption as one unit')
     return
   }
@@ -1409,10 +1561,8 @@ function main(argv) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('/cairn')) {
-  try {
-    main(process.argv.slice(2))
-  } catch (error) {
+  main(process.argv.slice(2)).catch((error) => {
     console.error(error.message)
     process.exit(1)
-  }
+  })
 }
