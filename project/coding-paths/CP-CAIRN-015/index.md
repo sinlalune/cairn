@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-015
   route: full
   status: running
-  current_step: S04
+  current_step: S05
   base_commit: c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
   branch: path/cp-cairn-015
   assigned_writer: cp-cairn-015-writer
@@ -269,26 +269,29 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - [**S04**](./steps/S04.md) — what the kit installs: `cairn-update`
   named, `feedbacks/` and the backlog with their indexes, the release
   notes shipped and linked. Complete.
-- **S05** — not started.
+- [**S05**](./steps/S05.md) — Ponytail and the harness: the two
+  skills fetched from the latest release, the pin gone, every skill
+  copied to `.claude/skills/`. Complete.
+- **S06** — not started.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : ef9fd3a9a8ca83a263f306dbe17534013e51f07c — S03, on origin/path/cp-cairn-015
-unit   : 4
+commit : a19bdee150a3bc60541e0c03dfced5c45e90619d — S04, on origin/path/cp-cairn-015
+unit   : 5
 base   : c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
-trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S04
+trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S05
 ```
 
 ### Next action
 
-Start S05 with `cairn-unit` in the path's worktree: Ponytail and the
-harness — the two skills fetched from the plugin's latest release, the
-pin gone, the version in the lock and in `status`, the offline line;
-every skill where the harness loads it, the unit stating link or copy
-and which harnesses — as the plan's fifth item says.
+Start S06 with `cairn-unit` in the path's worktree: the two templates
+and the module note — the pilot's record as a plain list, the generated
+request template's *Coherence* section with every blank backticked and
+the no-bare-blank test, `docs/modules/application.md` current, the
+layout reference's lock row final — as the plan's sixth item says.
 
 ### Blockers
 

@@ -8,12 +8,23 @@ import { tmpdir } from 'node:os'
 import {
   bootloader, hostBinding, pointerPage, requestTemplate, takeRelease, workflow,
   applyAdopt, applyPlan, applyUpdate, buildConfig, defaultOptions, digest, fileState, installationStatus,
-  migrateConfig, optionsFromConfig, outwardLinks, pinSpecLinks, planInstall, readLock, readTrunk, sourceCommit, specUrl, staleShapes,
+  migrateConfig, optionsFromConfig, outwardLinks, pinSpecLinks, planInstall, readLock, readPonytail, readTrunk, sourceCommit, specUrl, staleShapes,
   PROTOCOL_RELEASE, REFERENCE_TOOLS
 } from './cairn.mjs'
 import { REPO, configErrors } from './cairn-config.mjs'
 
 const CAIRN = 'tools/cairn.mjs'
+
+/** A local copy of Ponytail's repository, which `CAIRN_PONYTAIL` points the
+ *  command at: the suite reaches no network, and every command it runs reads
+ *  the stance from here (ADR-036 d1). */
+const PONYTAIL = mkdtempSync(join(tmpdir(), 'cairn-ponytail-'))
+writeFileSync(join(PONYTAIL, 'package.json'), '{"version":"9.9.9"}\n')
+for (const name of ['ponytail', 'ponytail-review']) {
+  mkdirSync(join(PONYTAIL, 'skills', name), { recursive: true })
+  writeFileSync(join(PONYTAIL, 'skills', name, 'SKILL.md'), `---\nname: ${name}\ndescription: the stance, as fetched\n---\n\n# ${name}\n`)
+}
+process.env.CAIRN_PONYTAIL = PONYTAIL
 const target = () => mkdtempSync(join(tmpdir(), 'cairn-kit-'))
 const git = (dir, ...args) => execFileSync('git', args, { cwd: dir, encoding: 'utf8', stdio: 'pipe' })
 const commit = (dir, message) => {
@@ -332,7 +343,7 @@ test('cairn init: the command refuses a protected profile and leaves an existing
  * status and update — against the lock
  * ------------------------------------------------------------------ */
 
-test('cairn init: the kit ships the post-mortem, and names Ponytail without copying it', () => {
+test('cairn init: the kit ships the post-mortem, and no pinned stance', () => {
   const plan = planInstall({ ...defaultOptions(), profile: 'ci' })
   // ADR-014 d1: the tool joins the manifest, and the script the kit writes.
   assert.ok(REFERENCE_TOOLS.includes('cairn-postmortem.mjs'))
@@ -341,29 +352,100 @@ test('cairn init: the kit ships the post-mortem, and names Ponytail without copy
   assert.equal(scripts['cairn-postmortem'], 'node tools/cairn-postmortem.mjs')
   assert.ok(!scripts.test && !scripts['cairn-test'], 'the kit installs no suite and names none (ADR-014 d2)')
 
-  // ADR-016 d1: named at a pinned tag, copied nowhere.
-  const paths = [...plan.files.keys()]
-  assert.ok(!paths.some((p) => p.includes('ponytail')), 'Ponytail is a dependency, not a file the kit copies')
+  // ADR-036 d1: the pin is gone — no tag, no *what this needs beside it*.
   const page = plan.files.get('cairn/README.md').toString('utf8')
-  assert.ok(page.includes('DietrichGebert/ponytail') && page.includes('v4.9.0'),
-    'the pointer page names it at its tag, so an adopter knows what to install beside the skills')
+  assert.doesNotMatch(page, /What this needs beside it|v4\.9\.0/)
 
   // ADR-022 d2: the two candidates ADR-013 named, each kept for its own reason.
   assert.ok(plan.files.has('tools/cairn-config.schema.json'))
   assert.ok(plan.files.has('project/index.md'))
 })
 
-test('cairn init: the lock records the release, the source commit and the dependency it does not carry', () => {
+test('cairn init and update: Ponytail\'s two skills are fetched from its latest release, owned by the lock, and every skill lands where the harness loads it', () => {
   const dir = target()
   try {
-    const plan = planInstall()
-    applyPlan(plan, dir)
+    const output = cairn(dir, 'init')
+    assert.doesNotMatch(output, /Ponytail was not read/)
+    for (const name of ['ponytail', 'ponytail-review']) {
+      assert.match(readFileSync(join(dir, `skills/${name}/SKILL.md`), 'utf8'), /as fetched/, `${name} is installed beside the kit's skills`)
+    }
     const lock = readLock(dir)
-    assert.deepEqual(lock.dependencies, { 'DietrichGebert/ponytail': 'v4.9.0' },
-      'what the adopter must install beside the kit, at the tag this release was checked against (ADR-016 d1)')
+    assert.deepEqual(lock.ponytail, { version: 'v9.9.9', read: true }, 'the lock names the version')
+    assert.equal(lock.dependencies, undefined, 'and no pin')
+    // ADR-036 d2: a copy at Claude Code's location, for every skill, owned by the lock.
+    for (const path of ['skills/cairn-unit/SKILL.md', 'skills/cairn-unit/reference.md', 'skills/ponytail/SKILL.md']) {
+      assert.equal(readFileSync(join(dir, `.claude/${path}`), 'utf8'), readFileSync(join(dir, path), 'utf8'), `.claude/${path}`)
+      assert.ok(lock.manifest[`.claude/${path}`], `the lock owns .claude/${path}`)
+    }
+    assert.match(readFileSync(join(dir, 'cairn/README.md'), 'utf8'), /\[`ponytail-review`\]\(\.\.\/skills\/ponytail-review\/SKILL\.md\) — .*v9\.9\.9/,
+      'the pointer page lists the stance among the skills, with its version')
+    assert.match(cairn(dir, 'status'), /^ponytail v9\.9\.9$/m, 'status prints the version')
+
+    // Offline: one line, and what the repository has is kept — never deleted.
+    const offline = execFileSync(process.execPath, [join(process.cwd(), CAIRN), 'update', '--target', dir],
+      { encoding: 'utf8', stdio: 'pipe', env: { ...process.env, CAIRN_PONYTAIL: join(dir, 'nowhere') } })
+    assert.match(offline, /^cairn — Ponytail was not read: .+; kept v9\.9\.9$/m)
+    assert.ok(existsSync(join(dir, 'skills/ponytail/SKILL.md')) && existsSync(join(dir, '.claude/skills/ponytail/SKILL.md')))
+    assert.deepEqual(readLock(dir).ponytail, { version: 'v9.9.9', read: false }, 'the lock says it was not read')
+    assert.doesNotMatch(cairn(dir, 'status'), /would (write|delete)/)
+
+    // An edit the adopter made is still an edit after an offline update, and
+    // its harness copy is not overwritten with it.
+    appendFileSync(join(dir, 'skills/ponytail/SKILL.md'), 'ours\n')
+    execFileSync(process.execPath, [join(process.cwd(), CAIRN), 'update', '--target', dir],
+      { encoding: 'utf8', stdio: 'pipe', env: { ...process.env, CAIRN_PONYTAIL: join(dir, 'nowhere') } })
+    assert.match(cairn(dir, 'status'), /would keep\s+skills\/ponytail\/SKILL\.md — edited here/)
+    assert.doesNotMatch(readFileSync(join(dir, '.claude/skills/ponytail/SKILL.md'), 'utf8'), /ours/)
+    rmSync(join(dir, 'skills/ponytail-review/SKILL.md'))
+    const alone = execFileSync(process.execPath, [join(process.cwd(), CAIRN), 'update', '--target', dir],
+      { encoding: 'utf8', stdio: 'pipe', env: { ...process.env, CAIRN_PONYTAIL: join(dir, 'nowhere') } })
+    assert.match(alone, /0 deleted/, 'a harness copy is kept on its own when its twin is gone')
+    assert.ok(existsSync(join(dir, '.claude/skills/ponytail-review/SKILL.md')))
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
+  const first = target()
+  try {
+    const offline = execFileSync(process.execPath, [join(process.cwd(), CAIRN), 'init', '--target', first],
+      { encoding: 'utf8', stdio: 'pipe', env: { ...process.env, CAIRN_PONYTAIL: join(first, 'nowhere') } })
+    assert.match(offline, /^cairn — Ponytail was not read: .+; nothing installed$/m)
+    assert.deepEqual(readLock(first).ponytail, { version: null, read: false })
+    assert.ok(!existsSync(join(first, 'skills/ponytail')))
+  } finally {
+    rmSync(first, { recursive: true, force: true })
+  }
+})
+
+test('the protocol\'s own tree, an installation holding the stance, plans it once', () => {
+  // This repository carries a lock; after an update its `skills/` holds the
+  // stance, and the source walk must not put it beside the fetched one.
+  const source = target()
+  try {
+    cpSync(join(process.cwd(), 'tools'), join(source, 'tools'), { recursive: true })
+    cpSync(join(process.cwd(), 'skills'), join(source, 'skills'), { recursive: true })
+    writeFileSync(join(source, 'package.json'), readFileSync('package.json'))
+    write(source, 'skills/ponytail/SKILL.md', 'an installed copy\n')
+    const plan = planInstall(defaultOptions(), source, { version: 'v1', read: true, files: new Map([['ponytail', Buffer.from('fetched\n')]]) })
+    assert.equal(plan.files.get('skills/ponytail/SKILL.md').toString('utf8'), 'fetched\n')
+  } finally {
+    rmSync(source, { recursive: true, force: true })
+  }
+})
+
+test('the stance is read from Ponytail\'s latest release on GitHub, and a failed read is an answer', async () => {
+  const served = {
+    'https://api.github.com/repos/DietrichGebert/ponytail/releases/latest': JSON.stringify({ tag_name: 'v4.10.0' }),
+    'https://raw.githubusercontent.com/DietrichGebert/ponytail/v4.10.0/skills/ponytail/SKILL.md': 'the stance',
+    'https://raw.githubusercontent.com/DietrichGebert/ponytail/v4.10.0/skills/ponytail-review/SKILL.md': 'its review'
+  }
+  const request = async (url) => (url in served ? new Response(served[url]) : new Response('', { status: 404 }))
+  const read = await readPonytail({ source: '', request })
+  assert.equal(read.version, 'v4.10.0')
+  assert.equal(read.files.get('ponytail-review').toString('utf8'), 'its review')
+  const failed = await readPonytail({ source: '', request: async () => new Response('', { status: 503 }) })
+  assert.match(failed.error, /HTTP 503/)
+  const untagged = await readPonytail({ source: '', request: async () => new Response('{}') })
+  assert.match(untagged.error, /names no tag/)
 })
 
 test('the generated workflow runs once per commit that can land, and reads a red run', () => {

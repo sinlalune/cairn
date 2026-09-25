@@ -82,14 +82,24 @@ export const REFERENCE_TOOLS = [
   'cairn-postmortem.mjs'
 ]
 
-/** The coding stance is Ponytail's, named at the tag this release was checked
- *  against and copied nowhere (ADR-016 d1). The adopter installs it in their
- *  harness beside the skills; the tag moves only with a release of the kit, so
- *  a repository's stance is the one its release was proved with. */
-export const DEPENDENCIES = { 'DietrichGebert/ponytail': 'v4.9.0' }
+/** The coding stance is Ponytail's: its two skills, fetched at \`init\` and
+ *  \`update\` from the plugin's latest release and installed as kit files, the
+ *  lock naming the version (ADR-036 d1). The plugin's other skills, hooks and
+ *  server are the plugin's. */
+export const PONYTAIL = {
+  repo: 'DietrichGebert/ponytail',
+  skills: [['ponytail', 'the coding stance'], ['ponytail-review', 'the review for over-engineering']]
+}
+const STANCE = PONYTAIL.skills.map(([name]) => name)
 
 /** The procedures, as Agent Skills: copied whole, one folder per skill. */
 export const SKILLS = 'skills'
+
+/** Where Claude Code loads skills. Every skill is written there too, as a
+ *  copy owned by the lock — a link is a second thing to digest and breaks on
+ *  a Windows checkout — and Codex reads \`AGENTS.md\`, so it needs no second
+ *  location (ADR-036 d2). */
+export const HARNESS_SKILLS = '.claude/skills'
 
 /** The one page an adopter finds by name at the root (ADR-013). A folder of
  *  its own, so the pointer is found by looking rather than by knowing. */
@@ -157,6 +167,56 @@ export function pinSpecLinks(text, commit) {
 
 export function digest(content) {
   return createHash('sha256').update(content).digest('hex')
+}
+
+/** Ponytail's two skills at the plugin's latest release, or why they were not
+ *  read — an error is an answer, never an exception. \`CAIRN_PONYTAIL\` names a
+ *  local copy of the plugin's repository to read instead, its version its
+ *  \`package.json\`'s: an offline mirror, and how the suite runs with no
+ *  network. */
+export async function readPonytail({ source = process.env.CAIRN_PONYTAIL, request = fetch } = {}) {
+  try {
+    if (source) {
+      const version = `v${JSON.parse(readFileSync(join(source, 'package.json'), 'utf8')).version}`
+      return { version, files: new Map(STANCE.map((name) => [name, readFileSync(join(source, SKILLS, name, 'SKILL.md'))])) }
+    }
+    const get = async (url) => {
+      const response = await request(url, { signal: AbortSignal.timeout(5000), headers: { 'user-agent': 'cairn' } })
+      if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`)
+      return response
+    }
+    const { tag_name: version } = await (await get(`https://api.github.com/repos/${PONYTAIL.repo}/releases/latest`)).json()
+    if (!version) throw new Error('the latest release names no tag')
+    const files = new Map()
+    for (const name of STANCE) {
+      files.set(name, Buffer.from(await (await get(`https://raw.githubusercontent.com/${PONYTAIL.repo}/${version}/${SKILLS}/${name}/SKILL.md`)).arrayBuffer()))
+    }
+    return { version, files }
+  } catch (error) {
+    return { error: error?.name === 'TimeoutError' ? 'no answer in 5000ms' : String(error?.message ?? error) }
+  }
+}
+
+/** The stance the repository already has, for a command that did not read
+ *  Ponytail: \`status\`, which asks no network, and a fetch that failed, which
+ *  keeps what is there rather than delete it. Only what the lock owns is
+ *  kept, each copy — under \`skills/\` and the harness's — at its bytes on
+ *  disk and its digest in the lock, so an edit still reads as an edit and a
+ *  copy installed by hand is never claimed. */
+export function keptPonytail(target) {
+  const lock = readLock(target)
+  const files = new Map()
+  const harness = new Map()
+  const recorded = {}
+  for (const name of STANCE) {
+    for (const [root, into] of [[SKILLS, files], [HARNESS_SKILLS, harness]]) {
+      const path = `${root}/${name}/SKILL.md`
+      if (!lock?.manifest[path] || !existsSync(join(target, path))) continue
+      into.set(name, readFileSync(join(target, path)))
+      recorded[path] = lock.manifest[path]
+    }
+  }
+  return { version: files.size + harness.size > 0 ? lock.ponytail?.version ?? null : null, read: false, files, harness, recorded }
 }
 
 function walk(root, base = root, out = []) {
@@ -543,11 +603,13 @@ const SKILL_LINES = [
  *  to read, and what the kit owns. Nothing on it is written by hand (ADR-013).
  *  `edited` is the list the last `update` could not rewrite (ADR-015 d2); it
  *  is empty at `init` and until an update finds one. */
-export function pointerPage(commit, { paths, edited = [], declined = [] }) {
+export function pointerPage(commit, { paths, edited = [], declined = [], ponytail = null }) {
   const spec = specUrl(commit)
   const chapters = SPEC_CHAPTERS
     .map(([title, purpose]) => `- [${title}](${spec}/index.md#${anchorOf(title)}) — ${purpose}`).join('\n')
-  const skills = SKILL_LINES
+  const stance = PONYTAIL.skills.filter(([name]) => ponytail?.files.has(name))
+    .map(([name, what]) => [name, `${what}, Ponytail's, at ${ponytail.version}`])
+  const skills = [...SKILL_LINES, ...stance]
     .map(([name, when]) => `- [\`${name}\`](../${SKILLS}/${name}/SKILL.md) — ${when}`).join('\n')
   const bullets = (list, none) => (list.length === 0 ? none : [...list].sort().map((path) => `- \`${path}\``).join('\n'))
   const owned = bullets(paths, '')
@@ -575,10 +637,6 @@ ${chapters}
 ## The skills
 
 ${skills}
-
-## What this needs beside it
-
-${Object.entries(DEPENDENCIES).map(([name, tag]) => `- \`${name}\` at \`${tag}\` — the coding stance and its review tags, installed in your harness as that repository says. The kit names it and copies nothing of it, so the tag moves only when this release does.`).join('\n')}
 
 ## What the kit owns
 
@@ -854,7 +912,8 @@ function relativeLinks(path, content) {
  *
  *  `files` is what the kit writes; `host` names the entries that are the
  *  adopter's from day one, which `update` and `adopt` never overwrite. */
-export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT) {
+export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT,
+  ponytail = { version: null, read: false, files: new Map() }) {
   const files = new Map()
   const host = new Set()
   const put = (path, content, owner = 'portable') => {
@@ -891,9 +950,22 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
   }
   const skillsRoot = join(sourceRoot, SKILLS)
   if (!existsSync(skillsRoot)) throw new Error(`cairn: missing skills at ${SKILLS}`)
-  for (const relativePath of walk(skillsRoot)) {
+  // The stance is fetched, never copied from this package's tree — which, in
+  // the protocol's own repository, is an installation that holds a copy.
+  for (const relativePath of walk(skillsRoot).filter((path) => !STANCE.includes(path.split('/')[0]))) {
     const text = readFileSync(join(skillsRoot, relativePath))
     put(`${SKILLS}/${relativePath}`, relativePath.endsWith('.md') ? pinSpecLinks(text.toString('utf8'), commit) : text)
+  }
+  for (const [name, content] of ponytail.files) put(`${SKILLS}/${name}/SKILL.md`, content)
+  for (const [path, content] of [...files].filter(([path]) => path.startsWith(`${SKILLS}/`))) {
+    const rest = path.slice(SKILLS.length + 1)
+    if (!STANCE.includes(rest.split('/')[0])) put(`${HARNESS_SKILLS}/${rest}`, content)
+  }
+  // The stance's harness copy follows the fetched skill, or — not read — is
+  // kept on its own, whether or not its \`skills/\` twin is still there.
+  for (const name of STANCE) {
+    const copy = ponytail.harness ? ponytail.harness.get(name) : ponytail.files.get(name)
+    if (copy) put(`${HARNESS_SKILLS}/${name}/SKILL.md`, copy)
   }
 
   put(`${options.projectRoot}/coding-paths/binding.md`, hostBinding(options, commit), 'host')
@@ -925,11 +997,11 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
   // Last, because it names every other file — itself and the lock included,
   // since `status` reads both and an adopter looking for "what is Cairn's
   // here" must find them on the list.
-  put(POINTER_PAGE, pointerPage(commit, { paths: [...files.keys(), POINTER_PAGE, 'cairn.lock.json'] }))
+  put(POINTER_PAGE, pointerPage(commit, { paths: [...files.keys(), POINTER_PAGE, 'cairn.lock.json'], ponytail }))
 
   // Every path lands under a declared root or in the kit's own places, so a
   // root the configuration names never gets an undeclared sibling (ADR-033 d1).
-  const places = [...Object.values(config.roots).flat(), 'tools', SKILLS, dirname(POINTER_PAGE), 'feedbacks', '.github']
+  const places = [...Object.values(config.roots).flat(), 'tools', SKILLS, HARNESS_SKILLS, dirname(POINTER_PAGE), 'feedbacks', '.github']
   const astray = [...files.keys()].filter((path) => path.includes('/') && !places.some((root) => path.startsWith(`${root}/`)))
   if (astray.length) throw new Error(`cairn: the plan writes outside every declared root — ${astray.join(', ')}`)
 
@@ -942,7 +1014,7 @@ export function planInstall(options = defaultOptions(), sourceRoot = SOURCE_ROOT
     )
   }
 
-  return { files, host, hostBaseline: new Set(), config, sourceCommit: commit }
+  return { files, host, hostBaseline: new Set(), config, sourceCommit: commit, ponytail }
 }
 
 /** The live view is GENERATED, so it is generated rather than guessed. */
@@ -963,7 +1035,7 @@ function generateView(target) {
 export function lockFor(plan, target, declined = []) {
   const manifest = {}
   for (const [path, content] of [...plan.files].sort(([a], [b]) => a.localeCompare(b))) {
-    if (!declined.includes(path)) manifest[path] = digest(content)
+    if (!declined.includes(path)) manifest[path] = plan.ponytail.recorded?.[path] ?? digest(content)
   }
   // Digests that are deliberately the host's own bytes — the generated view,
   // the migrated configuration — are named, so *pristine* keeps meaning *what
@@ -978,9 +1050,9 @@ export function lockFor(plan, target, declined = []) {
     release: PROTOCOL_RELEASE,
     sourceCommit: plan.sourceCommit,
     installedAt: new Date().toISOString(),
-    // Named, never copied: what the adopter installs beside the kit, at the
-    // tag this release was checked against (ADR-016 d1).
-    dependencies: DEPENDENCIES,
+    // The version the stance was fetched at, and whether this run read it
+    // or kept the repository's copy (ADR-036 d1).
+    ponytail: { version: plan.ponytail.version, read: plan.ponytail.read },
     host: [...plan.host].sort(),
     // Host files the repository declined: never written, never digested, and
     // read by `status` as declined rather than missing (ADR-033 d2).
@@ -1118,7 +1190,7 @@ export function installationStatus(lock, plan, stateOf) {
   return { installed: lock.release, available: PROTOCOL_RELEASE, files, left }
 }
 
-function describeStatus(status, commit) {
+function describeStatus(status, { sourceCommit: commit, ponytail }) {
   const counts = {}
   for (const file of status.files) counts[file.state] = (counts[file.state] ?? 0) + 1
   // ponytail: numeric order, no prerelease tags — Cairn cuts none; compare the suffix apart if it ever does.
@@ -1126,6 +1198,7 @@ function describeStatus(status, commit) {
   const lines = [
     `cairn — installed release ${status.installed}, this package is ${status.available}${order === 0 ? ' (current)' : order < 0 ? ' (an update is available)' : ' (older than what is installed — run the newer package)'}`,
     ...(order < 0 ? [`release notes: ${releaseNotes(commit)}`] : []),
+    `ponytail ${ponytail.version ?? 'not installed'}`,
     `kit files: ${Object.entries(counts).map(([state, n]) => `${n} ${state}`).join(', ')}`
   ]
   for (const file of status.files.filter((f) => f.action === 'write')) lines.push(`  update would write   ${file.path} (${file.state})`)
@@ -1171,11 +1244,11 @@ export function templateDiff(target, path, template) {
  *  command lands. Built here once, so \`status\` names no rewrite \`update\` will
  *  not make (ADR-034 d4). The configuration's digest is then the host's bytes,
  *  and the plan says so. */
-export function hostPlan(target) {
+export function hostPlan(target, ponytail = keptPonytail(target)) {
   const migrated = migrateConfig(readConfig(target))
   const errors = configErrors(migrated)
   if (errors.length) throw new Error(`cairn: the migrated configuration is invalid — ${errors.join('; ')}`)
-  const plan = planInstall(optionsFromConfig(migrated))
+  const plan = planInstall(optionsFromConfig(migrated), SOURCE_ROOT, ponytail)
   plan.files.set('cairn.config.json', Buffer.from(`${JSON.stringify(migrated, null, 2)}\n`, 'utf8'))
   plan.hostBaseline.add('cairn.config.json')
   plan.config = migrated
@@ -1193,7 +1266,8 @@ export function updateStatus(target, plan, lock) {
   plan.files.set(POINTER_PAGE, Buffer.from(pointerPage(plan.sourceCommit, {
     paths: [...plan.files.keys(), 'cairn.lock.json'].filter((path) => !declined.includes(path)),
     edited: reconcile,
-    declined
+    declined,
+    ponytail: plan.ponytail
   }), 'utf8'))
   return { ...installationStatus(lock, plan, read), declined }
 }
@@ -1438,12 +1512,12 @@ async function refuseUnpushableTrunk(target, { remote, trunk, registration, wayO
  *  the configuration is migrated, the tools and the skills are written, the
  *  host files are written only where absent, the view is regenerated, the
  *  lock is written, and everything the kit no longer defines is reported. */
-export function applyAdopt(target, { dryRun = false } = {}) {
+export function applyAdopt(target, { dryRun = false, ponytail } = {}) {
   adoptable(target)
   // The migrated configuration is what lands on disk, so it is what the lock
   // must digest. Locking the generated one instead made the very next
   // `status` call an untouched file edited (found by S01's review).
-  const plan = hostPlan(target)
+  const plan = hostPlan(target, ponytail)
   const migrated = plan.config
   const written = []
   const kept = []
@@ -1506,6 +1580,16 @@ function parseArgs(argv) {
   return { command, options, target: resolve(target ?? '.'), dryRun, take, decline }
 }
 
+/** The stance for this run: fetched, or — offline, or on a failed fetch —
+ *  the repository's own copy, said in one line (ADR-036 d1). */
+async function stanceFor(target) {
+  const read = await readPonytail()
+  if (!read.error) return { version: read.version, read: true, files: read.files }
+  const kept = keptPonytail(target)
+  console.log(`cairn — Ponytail was not read: ${read.error}; ${kept.files.size > 0 ? `kept ${kept.version}` : 'nothing installed'}`)
+  return kept
+}
+
 async function main(argv) {
   const { command, options, target, dryRun, take, decline } = parseArgs(argv)
   if (take !== null && decline.length > 0) throw new Error('cairn: --take and --decline are two runs — take the one file, then run update with --decline')
@@ -1513,9 +1597,9 @@ async function main(argv) {
     if (options.profile === 'protected') {
       throw new Error('cairn: --profile protected is not installable — it asserts host protection this command cannot configure. Install local or ci and declare protected once the host is actually configured')
     }
-    const plan = planInstall(options, SOURCE_ROOT)
     await refuseUnpushableTrunk(target, { remote: options.remote, trunk: options.trunk,
-      registration: plan.config.transport.registration, wayOut: '`init --registration pull-request`' })
+      registration: options.registrationTransport ?? REGISTRATION_TRANSPORT, wayOut: '`init --registration pull-request`' })
+    const plan = planInstall(options, SOURCE_ROOT, await stanceFor(target))
     mkdirSync(target, { recursive: true })
     let scriptsNotice = null
     if (existsSync(join(target, 'package.json'))) {
@@ -1537,13 +1621,13 @@ async function main(argv) {
     const lock = readLock(target)
     if (!lock) throw new Error(`cairn: ${target} carries no cairn.lock.json — run \`adopt\` if it carries the protocol, \`init\` if it does not`)
     const plan = hostPlan(target)
-    console.log(describeStatus(updateStatus(target, plan, lock), plan.sourceCommit))
+    console.log(describeStatus(updateStatus(target, plan, lock), plan))
     return
   }
   if (command === 'update') {
     const lock = readLock(target)
     if (!lock) throw new Error(`cairn: ${target} carries no cairn.lock.json — run \`adopt\` first`)
-    const plan = hostPlan(target)
+    const plan = hostPlan(target, await stanceFor(target))
     if (take !== null) {
       const { state, discarded } = takeRelease(target, plan, lock, take, { dryRun })
       // The pointer page lists what is declined and what is to reconcile, so it
@@ -1574,7 +1658,7 @@ async function main(argv) {
     }
     lock.declined = [...new Set([...(lock.declined ?? []), ...decline])]
     const result = applyUpdate(target, plan, lock, { dryRun })
-    console.log(describeStatus(result.status, plan.sourceCommit))
+    console.log(describeStatus(result.status, plan))
     for (const path of result.reconcile) {
       console.log(`\n--- ${path} — you edited this, and the release changed its template`)
       console.log('    (- the release\'s version, + yours)')
@@ -1596,7 +1680,7 @@ async function main(argv) {
     const declared = adoptable(target)
     await refuseUnpushableTrunk(target, { remote: declared.remote, trunk: declared.trunk,
       registration: declared.transport.registration, wayOut: 'transport.registration: pull-request in cairn.config.json' })
-    const result = applyAdopt(target, { dryRun })
+    const result = applyAdopt(target, { dryRun, ponytail: await stanceFor(target) })
     console.log(`cairn — ${dryRun ? 'would adopt' : 'adopted'} ${target} at release ${PROTOCOL_RELEASE}: ${result.written.length} written, ${result.kept.length} host files kept`)
     for (const path of result.kept) console.log(`  kept     ${path} — yours; review it against the kit's`)
     for (const { path, why } of result.stale) console.log(`  stale    ${path} — ${why}`)

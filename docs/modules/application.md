@@ -151,10 +151,26 @@ reader who is learning it.
 
 **What it does not copy.** No specification: every link it writes into one is
 pinned to the commit the kit was cut from, so a repository installed today
-still resolves to the text it was installed from. No Ponytail either: the
-coding stance is named in the lock and on the pointer page at the tag this
-release was checked against, and installed in the adopter's harness beside the
-skills (ADR-016 d1). The two files ADR-013 offered for removal are kept, each
+still resolves to the text it was installed from.
+
+**The stance and the harness.** At `init`, `update` and `adopt` the kit
+fetches Ponytail's two skills, `ponytail` and `ponytail-review`, from the
+plugin's latest release on GitHub and installs them under `skills/` as kit
+files; the lock names the version and whether this run read it, the pointer
+page lists them with it, and `status` prints it. Offline or on a failed fetch
+the command says in one line that Ponytail was not read and keeps the copies
+the lock owns, each at its bytes on disk and its digest in the lock, so an
+edit stays an edit and a copy installed by hand is never claimed — nothing at
+a first `init`; `status` never fetches and plans with those copies. The
+stance is never copied from the package's own tree, which in this repository
+is an installation that holds one. `CAIRN_PONYTAIL` names a local copy of the plugin's
+repository to read instead, which is how the suite runs with no network.
+Every skill under `skills/` — the kit's and the stance — is also written to
+`.claude/skills/`, where Claude Code loads skills: a copy, owned by the lock
+like the original, since a link is a second thing to digest and breaks on a
+Windows checkout. Codex reads `AGENTS.md` and needs no second location.
+
+The two files ADR-013 offered for removal are kept, each
 for its own worth and neither for a number — the configuration schema, which
 no tool reads but every editor does, on the one file an adopter hand-edits;
 and the project plane's index, because the manifesto commits to a tree where
