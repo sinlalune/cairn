@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-015
   route: full
   status: running
-  current_step: S07
+  current_step: S08
   base_commit: c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
   branch: path/cp-cairn-015
   assigned_writer: cp-cairn-015-writer
@@ -276,22 +276,26 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   the pilot's plain list, the request template's reader line and
   backticked blanks, the module note current. Complete.
 - [**S07**](./steps/S07.md) — the candidate: the trunk already in, the
-  scope checked, row 3 of 1.2 naming this path. Complete.
+  scope checked, row 3 of 1.2 naming this path. Complete — committed on
+  a red gate, repaired by S08.
+- [**S08**](./steps/S08.md) — repair: S07's step quoted a link that
+  resolves nowhere and was committed with the gate red; the line
+  quoted as code, S07 superseded. Complete.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : a2f2085fe1b556663a9c6c3bf91955d3d2ff6aea — S06, on origin/path/cp-cairn-015
-unit   : 7
+commit : 40e1175d01d7aa69900adb0ef2169dd819419953 — S07, on origin/path/cp-cairn-015, red under links
+unit   : 8
 base   : c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
-trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S07
+trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S08
 ```
 
 ### Next action
 
-Close with `cairn-close` on the candidate S07 produced: the review in
+Close with `cairn-close` on the candidate S08 produced: the review in
 the request's description with the fresh-context coherence read, the
 administrative commit, the owner's try of `init`, `update` and `adopt`
 on a scratch repository, the merge, then the integrating unit.
