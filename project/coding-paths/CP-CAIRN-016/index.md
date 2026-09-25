@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-016
   route: full
   status: running
-  current_step: S04
+  current_step: S05
   base_commit: b94ba4f8f0d80214ff6026e1425493a4f8a8a86c
   branch: path/cp-cairn-016
   assigned_writer: cp-cairn-016-writer
@@ -272,25 +272,26 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - [**S04**](./steps/S04.md) — this repository's `AGENTS.md` names the
   pointer page as the kit's bootloader does; the module note read
   against the three tools and left as it is. Complete.
+- [**S05**](./steps/S05.md) — the candidate: row 4 of 1.2 names this
+  path, its cell the tool's; the scope checked against the base.
+  Complete.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : dac8b33dfb50ec658c7d79972fd92fbf5c1cac51 — S03, the last completed commit on origin/path/cp-cairn-016
-unit   : 4
+commit : bc3357b4ce741450bee214370606580ebde599e2 — S04, the last completed commit on origin/path/cp-cairn-016
+unit   : 5
 base   : b94ba4f8f0d80214ff6026e1425493a4f8a8a86c
 trunk  : b94ba4f8f0d80214ff6026e1425493a4f8a8a86c — origin/main at registration
 ```
 
 ### Next action
 
-Start S05 with `cairn-unit`, then `cairn-close`, in the path's worktree:
-the candidate, as the plan's fifth item says — trunk merged in, row 4 of
-1.2 naming this path by hand, gates bare, the administrative commit, the
-fresh-context coherence read scaffolded by `cairn-audit`, the owner's
-reading and the merge.
+`cairn-close` on the candidate, S05's commit: the administrative commit,
+the fresh-context coherence read scaffolded by `cairn-audit`, the request,
+the owner's reading and the merge.
 
 ### Blockers
 
