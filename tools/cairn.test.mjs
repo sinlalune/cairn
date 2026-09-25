@@ -397,10 +397,15 @@ test('cairn init and update: Ponytail\'s two skills are fetched from its latest 
     assert.match(cairn(dir, 'status'), /would keep\s+skills\/ponytail\/SKILL\.md — edited here/)
     assert.doesNotMatch(readFileSync(join(dir, '.claude/skills/ponytail/SKILL.md'), 'utf8'), /ours/)
     rmSync(join(dir, 'skills/ponytail-review/SKILL.md'))
+    assert.match(cairn(dir, 'status'), /^ {2}missing\s+skills\/ponytail-review\/SKILL\.md — /m,
+      'a lock-owned copy of the stance that is gone is reported, though Ponytail is not read')
     const alone = execFileSync(process.execPath, [join(process.cwd(), CAIRN), 'update', '--target', dir],
       { encoding: 'utf8', stdio: 'pipe', env: { ...process.env, CAIRN_PONYTAIL: join(dir, 'nowhere') } })
     assert.match(alone, /0 deleted/, 'a harness copy is kept on its own when its twin is gone')
     assert.ok(existsSync(join(dir, '.claude/skills/ponytail-review/SKILL.md')))
+    assert.ok(readLock(dir).manifest['skills/ponytail-review/SKILL.md'], 'and the lock keeps owning it')
+    cairn(dir, 'update')
+    assert.ok(existsSync(join(dir, 'skills/ponytail-review/SKILL.md')), 'the next update that reads Ponytail restores it')
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
@@ -826,10 +831,21 @@ test('cairn update --decline: a host file declined is never written again, reads
     assert.ok(declined.includes(`\`${unwanted}\``), 'the pointer page lists it')
     assert.ok(!page.slice(0, page.indexOf('## Declined')).includes(`\`${unwanted}\``), 'and not among what the kit owns')
 
+    // A release that drops the file, and one that brings it back: the
+    // declination outlives the release that did not carry it.
+    const held = readLock(dir)
+    writeFileSync(join(dir, 'cairn.lock.json'), `${JSON.stringify({ ...held, declined: [...held.declined, 'docs/gone/index.md'] }, null, 2)}\n`)
+    cairn(dir, 'update')
+    assert.deepEqual(readLock(dir).declined, ['docs/concepts/product/index.md', 'docs/gone/index.md'],
+      'a declined name the release does not carry is remembered, not dropped')
+
     cairn(dir, 'update', '--take', unwanted)
     assert.ok(existsSync(join(dir, unwanted)), 'taken back: the release\'s version is written')
-    assert.deepEqual(readLock(dir).declined, [])
+    assert.deepEqual(readLock(dir).declined, ['docs/gone/index.md'])
     assert.equal(fileState(dir, unwanted, readLock(dir).manifest[unwanted]), 'pristine')
+    assert.match(cairn(dir, 'update', '--take', 'docs/gone/index.md'), /took back docs\/gone\/index\.md; this release does not carry it/)
+    assert.deepEqual(readLock(dir).declined, [], 'a name the release does not carry is taken back too, no file of it written')
+    assert.ok(!existsSync(join(dir, 'docs/gone/index.md')))
     const taken = readFileSync(join(dir, 'cairn/README.md'), 'utf8')
     assert.ok(!taken.slice(taken.indexOf('## Declined')).split('## To reconcile')[0].includes(unwanted),
       'the pointer page follows the take, so it and the lock agree')

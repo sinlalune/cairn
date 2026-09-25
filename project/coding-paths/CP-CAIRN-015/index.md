@@ -7,13 +7,13 @@ timestamp: 2026-09-25T00:00:00Z
 cairn:
   id: CP-CAIRN-015
   route: full
-  status: ready
-  current_step: S09
+  status: running
+  current_step: S10
   base_commit: c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
   branch: path/cp-cairn-015
   assigned_writer: cp-cairn-015-writer
   depends_on: []
-  subject_commit: 67f1cb03c3debe62b22c2dfb6544aa0da66fa203
+  subject_commit: null
   resolution: null
   writes:
     - tools/cairn.mjs
@@ -285,21 +285,24 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   found: the installer says when classic protection was not read, a
   sentence that would go stale dropped, the copied link reading on the
   backlog. Complete.
+- [**S10**](./steps/S10.md) — what the request's reviewer found on
+  `67f1cb0`: every decline kept through a release that drops the file,
+  a missing copy of the stance kept and reported. Complete.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 67f1cb03c3debe62b22c2dfb6544aa0da66fa203 — S09, the candidate C
-unit   : 9
+commit : 84626f1dd82d682e52520f2fba4780ff51b07261 — the administrative commit on 67f1cb0, a candidate voided by S10
+unit   : 10
 base   : c7e92c83c8b79f6b89d8da747c1ed4b822d3248a
-trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S09
+trunk  : 4d5462db2c4ef19e79cc4e16ec19bdae7c0b4f55 — origin/main at S10
 ```
 
 ### Next action
 
-Close with `cairn-close` on the candidate S09 produced: the review in
+Close with `cairn-close` on the candidate S10 produced: the review in
 the request's description with the fresh-context coherence read, the
 administrative commit, the owner's try of `init`, `update` and `adopt`
 on a scratch repository, the merge, then the integrating unit.

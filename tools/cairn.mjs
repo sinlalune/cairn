@@ -208,15 +208,19 @@ export function keptPonytail(target) {
   const files = new Map()
   const harness = new Map()
   const recorded = {}
+  const missing = []
   for (const name of STANCE) {
     for (const [root, into] of [[SKILLS, files], [HARNESS_SKILLS, harness]]) {
       const path = `${root}/${name}/SKILL.md`
-      if (!lock?.manifest[path] || !existsSync(join(target, path))) continue
-      into.set(name, readFileSync(join(target, path)))
+      if (!lock?.manifest[path]) continue
+      // A copy that is gone has no bytes to plan; the lock keeps owning it
+      // and the report names it, until a run that reads Ponytail restores it.
       recorded[path] = lock.manifest[path]
+      if (existsSync(join(target, path))) into.set(name, readFileSync(join(target, path)))
+      else missing.push(path)
     }
   }
-  return { version: files.size + harness.size > 0 ? lock.ponytail?.version ?? null : null, read: false, files, harness, recorded }
+  return { version: Object.keys(recorded).length > 0 ? lock.ponytail?.version ?? null : null, read: false, files, harness, recorded, missing }
 }
 
 function walk(root, base = root, out = []) {
@@ -1035,9 +1039,11 @@ function generateView(target) {
  *  host files are named, so a later update knows which files are the
  *  adopter's even after they have left the kit. */
 export function lockFor(plan, target, declined = []) {
+  const owned = new Map([...plan.files].map(([path, content]) => [path, plan.ponytail.recorded?.[path] ?? digest(content)]))
+  for (const path of plan.ponytail.missing ?? []) owned.set(path, plan.ponytail.recorded[path])
   const manifest = {}
-  for (const [path, content] of [...plan.files].sort(([a], [b]) => a.localeCompare(b))) {
-    if (!declined.includes(path)) manifest[path] = plan.ponytail.recorded?.[path] ?? digest(content)
+  for (const [path, sum] of [...owned].sort(([a], [b]) => a.localeCompare(b))) {
+    if (!declined.includes(path)) manifest[path] = sum
   }
   // Digests that are deliberately the host's own bytes — the generated view,
   // the migrated configuration — are named, so *pristine* keeps meaning *what
@@ -1057,7 +1063,9 @@ export function lockFor(plan, target, declined = []) {
     ponytail: { version: plan.ponytail.version, read: plan.ponytail.read },
     host: [...plan.host].sort(),
     // Host files the repository declined: never written, never digested, and
-    // read by `status` as declined rather than missing (ADR-033 d2).
+    // read by `status` as declined rather than missing (ADR-033 d2). Every
+    // name is kept, carried by this release or not, so a release that drops
+    // a file and a later one that brings it back do not undo the decline.
     declined: [...declined].sort(),
     hostBaseline: baseline.sort(),
     manifest
@@ -1201,6 +1209,7 @@ function describeStatus(status, { sourceCommit: commit, ponytail }) {
     `cairn — installed release ${status.installed}, this package is ${status.available}${order === 0 ? ' (current)' : order < 0 ? ' (an update is available)' : ' (older than what is installed — run the newer package)'}`,
     ...(order < 0 ? [`release notes: ${releaseNotes(commit)}`] : []),
     `ponytail ${ponytail.version ?? 'not installed'}`,
+    ...(ponytail.missing ?? []).map((path) => `  missing              ${path} — Ponytail was not read, so the next update that reads it restores it`),
     `kit files: ${Object.entries(counts).map(([state, n]) => `${n} ${state}`).join(', ')}`
   ]
   for (const file of status.files.filter((f) => f.action === 'write')) lines.push(`  update would write   ${file.path} (${file.state})`)
@@ -1263,7 +1272,7 @@ export function hostPlan(target, ponytail = keptPonytail(target)) {
  *  and the page lists exactly what the report does (ADR-034 d1). */
 export function updateStatus(target, plan, lock) {
   const read = (path, recorded) => fileState(target, path, recorded)
-  const declined = (lock.declined ?? []).filter((path) => plan.files.has(path))
+  const declined = lock.declined ?? []
   const reconcile = installationStatus(lock, plan, read).files.filter((f) => f.reconcile).map((f) => f.path)
   plan.files.set(POINTER_PAGE, Buffer.from(pointerPage(plan.sourceCommit, {
     paths: [...plan.files.keys(), 'cairn.lock.json'].filter((path) => !declined.includes(path)),
@@ -1312,8 +1321,13 @@ export function applyUpdate(target, plan, lock, { dryRun = false } = {}) {
  *  adopter's edited checker becomes a version bump once its repairs are
  *  upstream. */
 export function takeRelease(target, plan, lock, path, { dryRun = false } = {}) {
+  const declined = lock.declined ?? []
   if (!plan.files.has(path)) {
-    throw new Error(`cairn: ${path} is not a file this release carries — \`status\` lists the ones it does`)
+    if (!declined.includes(path)) throw new Error(`cairn: ${path} is not a file this release carries — \`status\` lists the ones it does`)
+    // A declined name this release does not carry has nothing to write:
+    // taking it back only lets a later release that carries it write it.
+    if (!dryRun) writeFileSync(join(target, 'cairn.lock.json'), `${JSON.stringify({ ...lock, declined: declined.filter((p) => p !== path) }, null, 2)}\n`)
+    return { state: 'declined', discarded: '' }
   }
   // The PLAN says what the release would install; the LOCK says what this
   // repository actually received. `init` drops `package.json` when the adopter
@@ -1321,7 +1335,6 @@ export function takeRelease(target, plan, lock, path, { dryRun = false } = {}) {
   // "the release's version" of a file the release never installed here
   // overwrites the adopter's own manifest, scripts and dependencies with a
   // four-line template. Reproduced before this guard existed.
-  const declined = lock.declined ?? []
   if (lock.manifest[path] === undefined && !declined.includes(path)) {
     throw new Error(
       `cairn: this installation does not carry ${path} — the kit never wrote it here, so there is no release version of it to take. ` +
@@ -1590,7 +1603,7 @@ async function stanceFor(target) {
   const read = await readPonytail()
   if (!read.error) return { version: read.version, read: true, files: read.files }
   const kept = keptPonytail(target)
-  console.log(`cairn — Ponytail was not read: ${read.error}; ${kept.files.size > 0 ? `kept ${kept.version}` : 'nothing installed'}`)
+  console.log(`cairn — Ponytail was not read: ${read.error}; ${kept.version ? `kept ${kept.version}${kept.missing.length > 0 ? `, ${kept.missing.length} of its copies missing` : ''}` : 'nothing installed'}`)
   return kept
 }
 
@@ -1649,7 +1662,9 @@ async function main(argv) {
         console.log(`--- ${take} — about to be discarded (the + lines below)`)
         console.log(discarded)
       }
-      console.log(`cairn — ${dryRun ? 'would take' : 'took'} the release's version of ${take}, ${state === 'declined' ? 'declined until now' : `discarding what was ${state} here`}; nothing else was touched${page ? ' but the pointer page, which follows it' : ''}`)
+      console.log(plan.files.has(take)
+        ? `cairn — ${dryRun ? 'would take' : 'took'} the release's version of ${take}, ${state === 'declined' ? 'declined until now' : `discarding what was ${state} here`}; nothing else was touched${page ? ' but the pointer page, which follows it' : ''}`
+        : `cairn — ${dryRun ? 'would take' : 'took'} back ${take}; this release does not carry it, so the next one that does writes it${page ? '; the pointer page follows it' : ''}`)
       console.log('next — run `update` with no --take to bring the rest of the kit to this release')
       return
     }

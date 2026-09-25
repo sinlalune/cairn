@@ -160,11 +160,14 @@ files; the lock names the version and whether this run read it, the pointer
 page lists them with it, and `status` prints it. Offline or on a failed fetch
 the command says in one line that Ponytail was not read and keeps the copies
 the lock owns, each at its bytes on disk and its digest in the lock, so an
-edit stays an edit and a copy installed by hand is never claimed — nothing at
-a first `init`; `status` never fetches and plans with those copies. The
+edit stays an edit and a copy installed by hand is never claimed; a copy the
+lock owns that is gone keeps its lock entry, and `status` and that `update`
+name it missing until a run that reads Ponytail restores it — nothing at a
+first `init`; `status` never fetches and plans with those copies. The
 stance is never copied from the package's own tree, which in this repository
-is an installation that holds one. `CAIRN_PONYTAIL` names a local copy of the plugin's
-repository to read instead, which is how the suite runs with no network.
+is an installation that holds one. `CAIRN_PONYTAIL` names a local copy of
+the plugin's repository to read instead, which is how the suite runs with no
+network.
 Every skill under `skills/` — the kit's and the stance — is also written to
 `.claude/skills/`, where Claude Code loads skills: a copy, owned by the lock
 like the original, since a link is a second thing to digest and breaks on a
@@ -219,8 +222,11 @@ of that would overwrite a real manifest with the kit's template.
 any later update — the configuration excepted, which every tool reads. The
 lock keeps the name in `declined` and no digest for it, so `status` reads the
 file as declined rather than missing, whether the repository deleted it or
-kept its own. `update --take <path>` takes a declined file back: it writes the
-release's version and moves the name out of `declined`.
+kept its own; the name stays through a release that does not carry the file,
+so one that brings it back does not write it. `update --take <path>` takes a declined file back: it writes the
+release's version and moves the name out of `declined`; for a name the
+release does not carry it only moves the name, so the next release that
+carries the file writes it.
 
 A file counts as **to reconcile** while it is kept and what is on disk
 differs from the release's template; the live view never does. That is a
