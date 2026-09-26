@@ -12,7 +12,7 @@ adr:
 
 # ADR-031 — one place for a fact
 
-Status: accepted · 2026-09-21 · written by CP-CAIRN-012, S01
+Status: accepted · 2026-09-21 · written by CP-CAIRN-012, S01 · decision 2's *that path's* superseded for a milestone by ADR-045 on 2026-09-25
 
 **Promoted from** the owner's
 [decisions page](../../feedbacks/2026-09-21-cairn-1-2-decisions.md) at blob
@@ -75,6 +75,10 @@ header comment of `tools/cairn.mjs` — pointed at the budget row. The test
 that checks the count compares the lock to the plan and pins no literal.
 
 ### Decision 2 — the register's state cells are generated
+
+The clause *that path's* **superseded** for a milestone on 2026-09-25 by
+[ADR-045](./ADR-045-a-milestone-reads-the-paths-it-counts.md). A
+path's own cell stands.
 
 Promotes **K04**, from Q4.
 

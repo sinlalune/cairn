@@ -293,23 +293,26 @@ The units run in a fresh session. Amendments: none.
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
-- **S01** — not started.
+- **S01** — the milestone rule's record: ADR-045, ADR-031 marked, the
+  1.2 page amended, the backlog item deleted and chapter 4's sentence
+  filed. [Record](./steps/S01.md).
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — this record and the live view, nothing else, on origin/main; unit 0
-unit   : 0
+commit : 8ef8c76a0be53804d331d11c128faf81269db7ec — the registration commit, the last the remote holds; S01 is pushed on top
+unit   : 1
 base   : 3ed0f8cd8921381ab3e195e9095df6ead2514c28
 trunk  : 3ed0f8cd8921381ab3e195e9095df6ead2514c28 — origin/main at registration
 ```
 
 ### Next action
 
-Start S01 with `cairn-unit` in the path's worktree: ADR-045, the
-milestone rule's record, as the plan's first item says.
+Start S02 with `cairn-unit` in the path's worktree: the four backlog
+items and the unit skill's two sentences, as the plan's second item
+says.
 
 ### Blockers
 
