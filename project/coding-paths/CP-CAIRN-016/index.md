@@ -7,13 +7,13 @@ timestamp: 2026-09-25T00:00:00Z
 cairn:
   id: CP-CAIRN-016
   route: full
-  status: ready
-  current_step: S07
+  status: running
+  current_step: S08
   base_commit: b94ba4f8f0d80214ff6026e1425493a4f8a8a86c
   branch: path/cp-cairn-016
   assigned_writer: cp-cairn-016-writer
   depends_on: []
-  subject_commit: 4ea0101bff6e79a3630c6dd3fdd13609ed4892b7
+  subject_commit: null
   resolution: null
   writes:
     - tools/cairn-active.mjs
@@ -282,21 +282,25 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   `cairn-active --check` and never refused, the exit code the checker
   reads being the view's; the closing commits' register on the backlog.
   Complete.
+- [**S08**](./steps/S08.md) — the request's run on `4ea0101` cancelled
+  the post-mortem's test file: the timeout test's fake held nothing open
+  under `AbortSignal.timeout`; it now holds the loop as a real request
+  does. Complete.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 4ea0101bff6e79a3630c6dd3fdd13609ed4892b7 — S07, the candidate C
-unit   : 7
+commit : 76c7ed08e11e79603a5126fdf5b281395e8f89bc — the administrative commit on 4ea0101, a candidate voided by S08
+unit   : 8
 base   : b94ba4f8f0d80214ff6026e1425493a4f8a8a86c
 trunk  : b94ba4f8f0d80214ff6026e1425493a4f8a8a86c — origin/main at registration
 ```
 
 ### Next action
 
-`cairn-close` on the candidate, S07's commit — its administrative commit
+`cairn-close` on the candidate, S08's commit — its administrative commit
 without the register, which neither closing commit may carry: the administrative commit,
 the fresh-context coherence read scaffolded by `cairn-audit`, the request,
 the owner's reading and the merge.

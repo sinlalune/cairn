@@ -170,7 +170,11 @@ test('a GitHub read never throws: a refusal, a timeout and a broken fetch are al
     await githubRequest('https://api.github.com/repos/o/r', {
       token: 't',
       timeoutMs: 5,
-      doFetch: (url, { signal }) => new Promise((_, reject) => { signal.addEventListener('abort', () => reject(signal.reason)) })
+      // AbortSignal.timeout is unref'd; this bounded timer stands in for the socket that keeps a real fetch's loop alive.
+      doFetch: (url, { signal }) => new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('never aborted')), 100)
+        signal.addEventListener('abort', () => reject(signal.reason))
+      })
     }),
     { error: 'no answer in 5ms' })
   const ok = await githubRequest('https://api.github.com/repos/o/r', { token: 't', doFetch: async () => ({ ok: true, json: async () => ({ private: false }) }) })
