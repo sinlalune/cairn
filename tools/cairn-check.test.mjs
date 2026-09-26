@@ -2343,23 +2343,24 @@ test('a concept reached only from inside the wiki is still an orphan', () => {
 })
 
 test('a link is resolved to the note under the root, whatever it is written relative to', () => {
-  // `../concepts/x.md` carries `./` at offset one. Once the capture admits
-  // folders that earlier match wins and takes `concepts/` with it, and every
-  // concept in the corpus reads as linked to nothing — or, written the other
-  // way round, as linked by everything. The whole rule turns on this line.
-  assert.deepEqual([...conceptLinkTargets('see [a](../concepts/worktree.md)')], ['worktree.md'])
-  assert.deepEqual([...conceptLinkTargets('see [a](../../spec/concepts/git.md)')], ['git.md'])
-  assert.deepEqual([...conceptLinkTargets('see [a](./concepts/learning/cache.md)')], ['learning/cache.md'])
-  assert.deepEqual([...conceptLinkTargets('see [a](../concepts/product/fixture.md)')], ['product/fixture.md'])
-  assert.deepEqual([...conceptLinkTargets('see [a](./cache.md)')], ['cache.md'])
-  assert.deepEqual([...conceptLinkTargets('see [a](./modules/application.md)')], [],
-    'a relative link that never went through `concepts/` is some other document')
-  // A link written without a leading `./` reaches the note through the
-  // `concepts/` alternative, so its capture holds the folders with no
-  // `concepts/` left in it. Keying the guard off that absence drops it.
-  assert.deepEqual([...conceptLinkTargets('see [a](concepts/product/fixture.md)')], ['product/fixture.md'])
-  assert.deepEqual([...conceptLinkTargets('see [a](docs/concepts/learning/cache.md)')], ['learning/cache.md'])
-  assert.deepEqual([...conceptLinkTargets('nothing here')], [])
+  const targets = (text, from, root = 'docs/concepts') => [...conceptLinkTargets(text, from, root)]
+  assert.deepEqual(targets('see [a](../concepts/worktree.md)', 'docs/modules/x.md'), ['worktree.md'])
+  assert.deepEqual(targets('see [a](./concepts/learning/cache.md)', 'docs/index.md'), ['learning/cache.md'])
+  assert.deepEqual(targets('see [a](docs/concepts/learning/cache.md)', 'README.md'), ['learning/cache.md'])
+  assert.deepEqual(targets('see [a](./cache.md)', 'docs/concepts/learning/index.md'), ['learning/cache.md'])
+  assert.deepEqual(targets('see [a](./modules/application.md)', 'docs/index.md'), [],
+    'a link that resolves outside the root is some other document')
+  assert.deepEqual(targets('see [a](./cache.md)', 'docs/index.md'), [],
+    'the same name beside the linking file is not the note')
+  // A root named otherwise carries no `concepts/`: read from that word, no
+  // correct link cleared any of its notes.
+  assert.deepEqual(targets('see [a](../wiki/learning/cache.md)', 'docs/index.md', 'wiki'), ['learning/cache.md'])
+  assert.deepEqual(targets('[a]: ../../spec/concepts/git.md', 'docs/adr/x.md', 'spec/concepts'), ['git.md'])
+  assert.deepEqual(targets('see [a](/concepts/git.md) from anywhere', 'docs/adr/x.md', 'concepts'), ['git.md'])
+  assert.deepEqual(targets('see [a](<../concepts/git.md>)', 'docs/x.md', 'docs/concepts'), [], 'resolved from docs/, it leaves the root')
+  assert.deepEqual(targets('see [a](<./concepts/git.md>)', 'docs/x.md', 'docs/concepts'), ['git.md'])
+  assert.deepEqual(targets('see [a](https://x.org/concepts/git.md)', 'README.md', 'concepts'), [])
+  assert.deepEqual(targets('nothing here', 'README.md'), [])
 })
 
 test('a concept in a folder of the root is judged by its path, and each folder keeps its own index', () => {

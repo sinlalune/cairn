@@ -1105,21 +1105,18 @@ export function namesForReading(names, limit = 5) {
 const isConceptIndex = (file) => file.split('/').at(-1) === 'index.md'
 
 /** Every concept note one document's text sends a reader to, each as a path
- *  under the concept root. The capture admits folders, so `../concepts/x.md`
- *  — which holds `./` at offset one — matches there first and takes
- *  `concepts/` with it; the note is whatever follows the LAST `concepts/`.
- *  Pure, because the whole of `concept-orphan` turns on this resolution. */
-export function conceptLinkTargets(text) {
+ *  under the concept root: every link target, inline or by reference,
+ *  resolved as GitHub does — against the linking file's folder, or the
+ *  repository's root after a leading `/` — and kept when it lands under
+ *  `root`. Pure, because the whole of `concept-orphan` turns on this
+ *  resolution. */
+export function conceptLinkTargets(text, from, root) {
   const targets = new Set()
-  // Which alternative matched decides what the captured folders mean, so the
-  // prefix is captured too. Through `concepts/` — by either route — the
-  // folders are the note's own. Reached by a bare `./` they are some other
-  // document's: `./modules/application.md` is not a concept, and admitting it
-  // would clear an orphan of that name.
-  for (const [, prefix, path] of text.matchAll(/(concepts\/|\.\/)((?:[a-z0-9-]+\/)*[a-z0-9-]+\.md)/g)) {
-    const cut = path.lastIndexOf('concepts/')
-    if (cut !== -1) targets.add(path.slice(cut + 'concepts/'.length))
-    else if (prefix === 'concepts/' || !path.includes('/')) targets.add(path)
+  for (const [, inline, reference] of text.matchAll(/\]\(([^)#\s]+)|^\s*\[[^\]]+\]:\s*([^#\s]+)/gm)) {
+    const link = (inline ?? reference).replace(/^<|>$/g, '')
+    if (/^[a-z]+:/i.test(link) || !link.endsWith('.md')) continue
+    const under = relative(root, link.startsWith('/') ? link.slice(1) : join(dirname(from), link)).split('\\').join('/')
+    if (under !== '..' && !under.startsWith('../')) targets.add(under)
   }
   return targets
 }
@@ -3680,7 +3677,7 @@ function corpusFindings(previousRef = null, changed = [], viewCurrent = null) {
     for (const doc of corpusDocs) {
       if (doc.startsWith(`${CONCEPTS_DIR}/`)) continue
       const text = stripCode(readFileSync(join(REPO, doc), 'utf8'))
-      for (const target of conceptLinkTargets(text)) linked.add(target)
+      for (const target of conceptLinkTargets(text, doc, CONCEPTS_DIR)) linked.add(target)
     }
     for (const orphan of orphanConcepts(conceptFiles, linked)) {
       findings.push({

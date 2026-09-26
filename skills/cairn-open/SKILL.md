@@ -27,7 +27,7 @@ One folder, born as one, from the
 project/coding-paths/CP-<ID>/
 ├── index.md      declaration · goal · definition of done · opening acceptance · coverage · step index · resume
 ├── plan.md       forward steps, optional
-└── steps/        empty until the first unit
+└── steps/        made by the first unit: Git carries no empty folder
 ```
 
 Choose a stable `CP-<ID>`; the branch is `path/<lowercase-id>`, mechanically.

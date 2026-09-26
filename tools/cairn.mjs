@@ -387,8 +387,8 @@ This file points; it does not carry project memory.
 5. \`${SKILLS}/\` — the procedures as Agent Skills: \`cairn-brainstorm\`,
    \`cairn-open\`, \`cairn-unit\`, \`cairn-close\`, \`cairn-update\`,
    \`cairn-learn\`, and the \`cairn-code\` stance.
-6. \`${POINTER_PAGE}\` — which release is installed, the six chapters and the
-   skills linked at its commit, and every file the kit owns. Generated.
+6. \`${POINTER_PAGE}\` — which release is installed, the six chapters
+   linked at its commit, the skills, and every file the kit owns. Generated.
 
 The [specification](${spec}/index.md) is read at the release this repository
 installed, release ${PROTOCOL_RELEASE}; \`npx cairn-protocol status\` says whether a

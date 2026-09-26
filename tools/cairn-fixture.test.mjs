@@ -477,6 +477,23 @@ test('adversarial: concept-orphan — a top-level concept root, linked only from
   }
 })
 
+// Backlog 2026-09-24: a link was read for the word `concepts/`, so under a
+// root named otherwise no correct link cleared a note. It is resolved against
+// the linking file's folder and the declared root, as `links` resolves it.
+test('adversarial: concept-orphan — a root named otherwise, a note one folder down linked from outside', () => {
+  const dir = publishedTrunk({ conceptsRoot: 'wiki' })
+  try {
+    write(dir, 'wiki/learning/linked-idea.md',
+      '---\ntype: Cairn Concept\ntitle: Linked idea\ndescription: The docs link this.\ntags: [cairn, concept]\ntimestamp: 2026-09-01T00:00:00Z\n---\n\n# Linked idea\n\nA concept the docs needed.\n')
+    appendFileSync(join(dir, 'docs/index.md'), '\nSee [the idea](../wiki/learning/linked-idea.md).\n')
+    commit(dir, 'a concept the docs link')
+    const found = check(dir)
+    assert.ok(!blocking(found).includes('concept-orphan'), `concept-orphan refused a linked note: ${describe(found)}`)
+  } finally {
+    cleanup(dir, `${dir}.git`)
+  }
+})
+
 fixture('a running path the generated view does not know about', 'derived-view', (dir) => {
   write(dir, RECORD, PATH_RECORD())
 })

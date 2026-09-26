@@ -38,8 +38,10 @@ its reason, and they still count as linking a concept. `concept-orphan` and
 under it — `learning/cache.md`, not `cache.md` — because an adopter's root is
 three folders (ADR-011 d2) and two of them may hold the same word. A link
 counts as reaching the note only if it reaches the folder the note is in;
-`conceptLinkTargets` resolves a link to that path, and is pure because the
-whole of `concept-orphan` turns on it. The rule generator
+`conceptLinkTargets` resolves a link as GitHub does — against the linking
+file's folder, or the repository's root after a leading `/` — and keeps it
+when it lands under the declared root, whatever the root is named, and is
+pure because the whole of `concept-orphan` turns on it. The rule generator
 writes into the conformance page, not into the specification index, so the
 index stays under its word budget.
 
