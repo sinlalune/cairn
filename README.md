@@ -3,8 +3,9 @@
 **The lightest document-driven coding protocol.** Cairn is a set of files
 inside your Git repository — one record per piece of work, one page per
 decision, one entry per integration — and one checker that reads them and
-returns an exit code. One command installs it, six skills teach it to the
-coding agents you work with, and nothing that matters lives in a
+returns an exit code. One command installs it,
+[a handful of skills](./spec/reference/conformance.md#the-weight-budget)
+teach it to the coding agents you work with, and nothing that matters lives in a
 conversation. It was written for one owner working with several agents, and
 it holds for a team: at any time, anyone who can read the repository can
 answer which pieces of work are active, what each is meant to produce, who
@@ -49,11 +50,12 @@ pull request's description is the review, the merge is the acceptance, and
 the integration lands that commit and no other. A published branch is never
 rewritten.
 
-A dependency-free **checker** runs the same twenty-seven rules on a laptop
-and in CI and reaches one verdict; twenty-one of them block, and every one of
-those is proved by a fixture that builds a real repository and breaks it on
-purpose. It reads the repository and nothing else — no network call, no
-question to the host. What the checker proves is fact: a record matches its
+A dependency-free **checker** runs
+[the same rules](./spec/reference/conformance.md#implemented-rule-catalogue) on a
+laptop and in CI and reaches one verdict; every one that blocks is proved by
+a fixture that builds a real repository and breaks it on purpose. It reads
+the repository and nothing else — no network call, no question to the
+host. What the checker proves is fact: a record matches its
 schema, a commit is an ancestor, a diff stayed inside a surface. What people
 and agents judge — whether the outcome is right — stays a judgement,
 recorded on the pull request.
@@ -73,8 +75,10 @@ npx cairn-protocol init --target . --profile ci --source src
 git add -A && git commit -m "Install Cairn"
 ```
 
-That installs thirty-three files and a lock on the `ci` profile: the checker
-and its companions under `tools/`, the six skills under `skills/`, the
+That installs
+[the kit's files](./spec/reference/conformance.md#the-weight-budget) and a
+lock: the checker and its companions under `tools/`, the skills under
+`skills/` and `.claude/skills/`, the
 configuration, the bootloader, the binding, the CI workflow and the
 pull-request template, the folder indexes of both planes with the three
 concept folders and an inputs folder, and the pointer page `cairn/README.md`,
@@ -167,7 +171,7 @@ deletes none of it.
 | :-- | :-- |
 | understand why the protocol is shaped this way | [the manifesto](./manifesto.md) |
 | know the whole protocol | [the specification](./spec/index.md), six chapters |
-| load the procedures into your coding agent | [the six skills](./skills/), as Agent Skills — the five above and [`cairn-brainstorm`](./skills/cairn-brainstorm/SKILL.md) for the notes of the first two stages |
+| load the procedures into your coding agent | [the skills](./skills/), as Agent Skills |
 | know what 1.1 is, and the decision behind each sentence | [the 1.1 page](./docs/architecture/01-cairn-1-1.md) and [the decision records](./docs/adr/index.md) |
 | look up one word | [the concept wiki](./spec/concepts/index.md), borrowed terms kept apart from Cairn's own |
 | find an exact shape or command | [the reference](./spec/reference/index.md) and the skills' reference files |

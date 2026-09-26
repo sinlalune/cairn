@@ -52,7 +52,8 @@ Read from each adopter's register, lock and history on 2026-09-26.
   out of `steps/`**, because `record-integrity` cannot read a record a
   merge added nor a blob over one megabyte: **not absorbed.** The checker
   reads both as before. ECOS's notes of 2026-09-22 describe the two
-  defects; they have not reached this repository yet.
+  defects: [a record a merge added](feedbacks/2026-09-22-ecos-a-record-added-by-a-merge-cannot-be-read.md)
+  and [a record over a megabyte](feedbacks/2026-09-22-ecos-a-record-larger-than-a-megabyte-reads-as-rewritten.md).
 - **Crumbz** carries no repair of the kit. Its three checker repairs,
   CP-CAIRN-SUPERSESSION-005, CP-CAIRN-PROVISIONAL-006 and
   CP-CAIRN-DETACHED-CHECKOUT-007, were absorbed by 1.1.0 and dropped when

@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-017
   route: full
   status: running
-  current_step: S03
+  current_step: S04
   base_commit: 3ed0f8cd8921381ab3e195e9095df6ead2514c28
   branch: path/cp-cairn-017
   assigned_writer: cp-cairn-017-writer
@@ -304,22 +304,26 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - **S03** — the changelog: 1.2.0's section, the adopters' repairs by path
   id, the line per changed template; *pending* cleared in ADR-015 and row
   5. [Record](./steps/S03.md).
+- **S04** — the counts written once: the budget table at 1.2.0, the entry
+  chain past its target, the four restatements linked; the owner's ECOS
+  notes merged in. [Record](./steps/S04.md).
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 07ff835d372cbf88601521d1c76d0a056e4ca458 — S02, the backlog items and the two sentences
-unit   : 3
+commit : acf4ddaff59d61eeb640e4b07e05d9134a72c694 — the trunk merged in after S03, request 34's ECOS notes
+unit   : 4
 base   : 3ed0f8cd8921381ab3e195e9095df6ead2514c28
 trunk  : 3ed0f8cd8921381ab3e195e9095df6ead2514c28 — origin/main at registration
 ```
 
 ### Next action
 
-Start S04 with `cairn-unit` in the path's worktree: the counts written
-once, as the plan's fourth item says.
+Start S05 with `cairn-unit` in the path's worktree: the README and the
+site, as the plan's fifth item says; `site/index.html` still says *six
+skills*.
 
 ### Blockers
 

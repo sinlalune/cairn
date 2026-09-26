@@ -23,7 +23,8 @@
  * THE KIT IS THIN. It installs the reference tools, the skills, the host
  * files — bootloader, configuration, binding, workflow, request template — and
  * the folder indexes the roles need, and nothing else. What that comes to is
- * measured and reported, never a target (ADR-022 d2). It does not copy the
+ * counted in the weight budget of spec/reference/conformance.md and written
+ * nowhere else, never a target (ADR-022 d2, ADR-031 d1). It does not copy the
  * specification: an adopter reads it at the release the kit was cut from, by
  * link, and every link the kit writes is pinned to that release's commit, so a
  * repository installed today still resolves to the text it was installed from.
