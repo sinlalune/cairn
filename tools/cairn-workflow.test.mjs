@@ -70,10 +70,14 @@ test('the checker judges the base CI judges against, and carries no token', () =
   // The WHOLE expression, not a grep for its parts: swapped arms, a dropped
   // `format(...)`, or the wrong precedence would each satisfy a substring match
   // and each would send the run a base that judges the wrong thing.
-  assert.ok(checker.includes(
+  const job = WORKFLOW.slice(WORKFLOW.indexOf('runs-on:'), WORKFLOW.indexOf('steps:'))
+  assert.ok(job.includes(
     "CAIRN_BASE_REF: ${{ github.base_ref && format('origin/{0}', github.base_ref) " +
     "|| (github.ref_name == 'main' && github.event.before || 'origin/main') }}"),
   'a request compares with its target branch; a push to the trunk with the commit it replaced; a push to a path branch with the trunk')
+  const majors = [...WORKFLOW.matchAll(/uses: actions\/[\w-]+@v(\d+)/g)].map((m) => Number(m[1]))
+  assert.equal(majors.length, [...WORKFLOW.matchAll(/uses: /g)].length, 'every action is pinned at a major version')
+  assert.ok(majors.every((major) => major >= 5), 'the actions run on a Node the host is not retiring')
   assert.match(checker, /^ +run: node tools\/cairn-check\.mjs --base "\$CAIRN_BASE_REF"$/m, 'bare: a pipe would report the last command\'s status')
 })
 
@@ -98,7 +102,9 @@ test('the post-mortem runs only when the checker fails, keeps its reading, and c
   // request's timestamps are refused outright when the token may not see them,
   // never elided into a friendlier answer.
   assert.match(incident, /GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}/)
-  assert.match(incident, /node tools\/cairn-postmortem\.mjs --branch "\$CAIRN_BRANCH"/)
+  assert.match(incident, /node tools\/cairn-postmortem\.mjs --branch "\$CAIRN_BRANCH" --base "\$CAIRN_BASE_REF"/,
+    'on the trunk it reads the range the checker judged (ADR-034 decision 11)')
+  assert.match(incident, /CAIRN_RUN_RED: 'true'/, 'the run it runs in is red, and the forge cannot say so yet (decision 9)')
   // `bash -e`: a non-zero exit before `cat` would lose the reading on exactly
   // the run it was written for, and the tool says why it stopped on stderr.
   assert.ok(incident.includes('> postmortem.txt 2>&1 || true'),

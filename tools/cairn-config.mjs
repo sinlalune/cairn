@@ -248,3 +248,32 @@ export function metadataOf(data, config = installedConfig()) {
 export function slash(path) {
   return path.endsWith('/') ? path : `${path}/`
 }
+
+/* GitHub, for the two tools that read it — the post-mortem and the installer
+ * (ADR-032 d4) — and here because this is the module both import that loads
+ * no host configuration and that the kit ships. The checker asks the host
+ * nothing (ADR-029) and never calls them. */
+
+/** The owner and repository of a GitHub remote, or `null` for anything else —
+ *  a self-hosted forge, and the local bare repositories the fixtures push to.
+ *  "Not read" is an honest line; a wrong reading is not. */
+export function githubSlug(url) {
+  const match = /^(?:(?:https?|ssh|git)(?::\/\/)(?:[^@/]+@)?|(?:[^@/\s]+@))github\.com[:/]([^/\s]+)\/([^/\s]+?)(?:\.git)?$/i
+    .exec(String(url ?? '').trim())
+  return match ? { owner: match[1], repo: match[2] } : null
+}
+
+/** One GitHub read. An error is an ANSWER, never an exception: a reading must
+ *  not be able to change an exit code, and an offline laptop must not wait on
+ *  a socket. */
+export async function githubRequest(url, { token, timeoutMs = 3000, doFetch = fetch } = {}) {
+  try {
+    const response = await doFetch(url, {
+      signal: AbortSignal.timeout(timeoutMs),
+      headers: { accept: 'application/vnd.github+json', authorization: `Bearer ${token}`, 'user-agent': 'cairn', 'x-github-api-version': '2022-11-28' }
+    })
+    return response.ok ? { value: await response.json() } : { error: `HTTP ${response.status}` }
+  } catch (error) {
+    return { error: error?.name === 'TimeoutError' ? `no answer in ${timeoutMs}ms` : String(error?.message ?? error) }
+  }
+}

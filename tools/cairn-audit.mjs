@@ -32,16 +32,26 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
+  ADR_DIR,
   INTEGRATION_TRANSPORT,
   METADATA_NAMESPACE,
   PATH_DIR,
+  PROJECT_DIR,
   TRUNK_BASE_CANDIDATES,
+  parseWrites,
   readFrontmatter,
-  resolveScopeSection
+  resolveScopeSection,
+  writesOverlaps
 } from './cairn-check.mjs'
-import { REPO, metadataOf } from './cairn-config.mjs'
+import { REPO, installedConfig, metadataOf, slash } from './cairn-config.mjs'
 
 export const PLACEHOLDER = 'TO BE FILLED BY THE REVIEWER'
+
+/** ADR-017 decision 4: the section's first line names who read it. */
+export const READER = 'Read by `<a fresh context, and which kind | the writer, with the reason no reader was obtainable and how long was waited>`.'
+
+/** ADR-041: where a deferral points. */
+const DEFERRED = `each fixed, accepted, or deferred with its owner and a follow-up file under \`${slash(PROJECT_DIR)}backlog/\``
 
 export const QUESTIONS = [
   'Does the diff contradict an accepted decision?',
@@ -57,7 +67,8 @@ const LEAD = 110
 
 /**
  * The items of a record's definition of done, in order, each led by enough of
- * its own words to be recognised.
+ * its own words to be recognised — a plain `-` item as the template writes it
+ * since ADR-042, or a boxed one as every record accepted before keeps it.
  *
  * ADR-018 decision 2: the request answers the definition of done ITEM BY ITEM,
  * and the lines are printed FROM THE RECORD for the writer to fill. Nothing
@@ -71,7 +82,7 @@ export function definitionItems(text) {
   if (!section) return []
   const items = []
   for (const line of section.split('\n')) {
-    const opening = /^(\s*)[-*+]\s+\[[ xX]\]\s*(.*)$/.exec(line)
+    const opening = /^(\s*)[-*+]\s+(?:\[[ xX]\]\s*)?(.*)$/.exec(line)
     // An INDENTED checkbox is a sub-item of the one above it, not a sibling:
     // the writer who nests a list under an item did not add an item to the
     // definition of done, and promoting it would renumber every item after it.
@@ -108,9 +119,33 @@ function leadOf(item) {
   return (body.match(/`/g)?.length ?? 0) % 2 ? `${body}\`…` : `${body}…`
 }
 
+/**
+ * ADR-043: under each coherence question, what this tool can see — the
+ * decision records the diff touches, the running paths whose `writes:` meet
+ * this path's, the architecture pages changed with no record beside them (the
+ * fact `decision-drift` computes). The reader's starting point, never its
+ * answer; the fourth question is a judgement on meaning and gets nothing.
+ */
+export function coherenceFacts({ pathId, changed = [], paths = [], decisions, architecture }) {
+  const list = (files) => files.map((file) => `\`${file}\``).join(', ')
+  const records = changed.filter((file) => file.startsWith(decisions))
+  const pages = records.length ? [] : changed.filter((file) => file.startsWith(architecture))
+  const meets = writesOverlaps(paths).filter(({ paths: pair }) => pair.includes(pathId))
+    .map(({ paths: pair, patterns }) => `${pair.find((id) => id !== pathId)} (${patterns.join(', ')})`)
+  return [
+    `the decision records the diff touches: ${records.length ? list(records) : 'none'}`,
+    `the running paths whose \`writes:\` meet this path's: ${meets.length ? meets.join('; ') : 'none'}`,
+    `the architecture pages the diff changed with no record beside them: ${pages.length ? list(pages) : 'none'}`,
+    null
+  ]
+}
+
+/** A question with the tool's fact under it, as the reader starts from it. */
+const seen = (fact) => (fact ? `*seen by \`cairn-audit\`: ${fact}*` : null)
+
 /** The closing record on `manual-git`: acceptance fields and the review in
  *  one file, named after the candidate it binds. */
-export function closingTemplate({ pathId, branch, subjectCommit, base, scopeRef }) {
+export function closingTemplate({ pathId, branch, subjectCommit, base, scopeRef, facts = [] }) {
   return `---
 type: Cairn Closing Record
 title: ${pathId} — closing of ${subjectCommit.slice(0, 7)}
@@ -140,12 +175,19 @@ answers its questions and carries the acceptance is what the checker proves.
 
 ## Findings
 
+Read by ${PLACEHOLDER} — a fresh context, and which kind, or the writer, with the reason no reader was obtainable and how long was waited.
+${facts.some(Boolean) ? `
+What \`cairn-audit\` saw, for the reader to start from — above the questions, so
+no fact reads as an answer:
+
+${facts.map((fact, at) => fact && `- *${QUESTIONS[at]}* ${fact}`).filter(Boolean).join('\n')}
+` : ''}
 ${QUESTIONS.map((question) => `### ${question}\n\n${PLACEHOLDER}\n`).join('\n')}
 ## Advisories
 
 Every advisory the checker raised at the candidate is listed in
 \`advisories_at_candidate\`, and \`advisory_disposition\` carries one entry per
-advisory: \`fixed\`, \`accepted\`, or \`deferred\` with an owner and a follow-up.
+advisory, ${DEFERRED}.
 
 ## Decision
 
@@ -171,10 +213,10 @@ Candidate accepted for administrative closure and exact integration.
  * mostly boilerplate is a line nobody reads. They are backticked: a bare
  * `<unit>` matches an HTML open tag, and the forge's sanitiser strips it from
  * the rendered description — leaving a blank that reads as an answered one,
- * which is the failure this section exists to end. The kit's own generated
- * template is the roadmap's row 4, and does not carry these sections yet.
+ * which is the failure this section exists to end. The kit's generated
+ * template carries the same sections.
  */
-export function requestDescription({ pathId, subjectCommit, base, scopeRef, items = [] }) {
+export function requestDescription({ pathId, subjectCommit, base, scopeRef, items = [], facts = [] }) {
   return `## What this path did
 
 - \`<what the path did>\`
@@ -198,11 +240,13 @@ ${items.length === 0
 
 ## Coherence
 
-${QUESTIONS.map((question) => `- [ ] ${question} ${PLACEHOLDER}`).join('\n')}
+${READER}
+
+${QUESTIONS.map((question, at) => `- [ ] ${question} ${PLACEHOLDER}${facts[at] ? `\n  ${seen(facts[at])}` : ''}`).join('\n')}
 
 ## Advisories at \`C\`
 
-${PLACEHOLDER} — every advisory \`cairn-check\` raised at the candidate, each fixed, accepted, or deferred to a named owner and follow-up; or *none*.
+${PLACEHOLDER} — every advisory \`cairn-check\` raised at the candidate, ${DEFERRED}; or *none*.
 
 ## Roles
 
@@ -223,24 +267,24 @@ function gitOrNull(args) {
   try { return git(args) } catch { return null }
 }
 
-/** The declaring record for a branch: the folder shape, and the flat one. */
-function currentPath(branch) {
+/** Every path record, in the folder shape and the flat one, with its writes. */
+function allPaths() {
   const dir = join(REPO, PATH_DIR)
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (!entry.name.startsWith('CP-')) continue
-    const file = entry.isDirectory() ? join(entry.name, 'index.md') : entry.name
-    if (!file.endsWith('.md') || !existsSync(join(dir, file))) continue
-    const text = readFileSync(join(dir, file), 'utf8')
-    const front = metadataOf(readFrontmatter(text)?.data)
-    if (front?.branch === branch) return { front, text, file: `${PATH_DIR}/${file}`, folder: entry.isDirectory() ? `${PATH_DIR}/${entry.name}` : null }
-  }
-  return null
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((entry) => entry.name.startsWith('CP-'))
+    .map((entry) => ({ entry, file: entry.isDirectory() ? join(entry.name, 'index.md') : entry.name }))
+    .filter(({ file }) => file.endsWith('.md') && existsSync(join(dir, file)))
+    .map(({ entry, file }) => {
+      const text = readFileSync(join(dir, file), 'utf8')
+      return { front: metadataOf(readFrontmatter(text)?.data), text, writes: parseWrites(text), file: `${PATH_DIR}/${file}`, folder: entry.isDirectory() ? `${PATH_DIR}/${entry.name}` : null }
+    })
 }
 
 function main() {
   const argv = process.argv
   const branch = resolveAuditBranch(argv, gitOrNull(['rev-parse', '--abbrev-ref', 'HEAD']) ?? 'HEAD')
-  const path = currentPath(branch)
+  const paths = allPaths()
+  const path = paths.find(({ front }) => front?.branch === branch)
   if (!path) {
     // Not an error: a review only has meaning on a path branch, and the first
     // thing a newcomer does with a documented command is run it on the trunk.
@@ -251,7 +295,15 @@ function main() {
   const trunk = TRUNK_BASE_CANDIDATES.find((ref) => gitOrNull(['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]))
   const base = trunk ? gitOrNull(['merge-base', trunk, subject]) ?? 'unresolved' : 'unresolved'
   const scopeRef = `${path.file}#definition-of-done`
-  const fields = { pathId: path.front.id, branch, subjectCommit: subject, base, scopeRef }
+  const changed = base === 'unresolved' ? [] : (gitOrNull(['diff', '--name-only', base, subject]) ?? '').split('\n').filter(Boolean)
+  const facts = coherenceFacts({
+    pathId: path.front.id,
+    changed,
+    paths,
+    decisions: slash(ADR_DIR),
+    architecture: slash(installedConfig().roots.architecture)
+  })
+  const fields = { pathId: path.front.id, branch, subjectCommit: subject, base, scopeRef, facts }
 
   if (INTEGRATION_TRANSPORT === 'pull-request') {
     // Only here: the closing record on `manual-git` carries the four questions

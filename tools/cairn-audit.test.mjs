@@ -12,7 +12,7 @@ import { join } from 'node:path'
 import { test } from 'node:test'
 import { REPO } from './cairn-config.mjs'
 import { CLOSING_RECORD, METADATA_NAMESPACE, closingRecordIn, fillErrors, findingsSections } from './cairn-check.mjs'
-import { PLACEHOLDER, QUESTIONS, closingTemplate, definitionItems, requestDescription, resolveAuditBranch } from './cairn-audit.mjs'
+import { PLACEHOLDER, QUESTIONS, READER, closingTemplate, coherenceFacts, definitionItems, requestDescription, resolveAuditBranch } from './cairn-audit.mjs'
 
 /** The ceiling a lead is held to, written here rather than imported: a test
  *  that measures against the implementation's own constant cannot catch the
@@ -118,9 +118,7 @@ test('the description opens in the order the template gives, not with the ledger
     if (line.startsWith('<!--') || line.includes('-->')) continue
     assert.ok(!bare.test(line), `a bare angle-bracket blank in the template: ${line}`)
   }
-  // This repository's template offers the same shape. The KIT's generated one
-  // is the roadmap's row 4 and carries none of this yet, which is why the
-  // claim is about this repository and not about every adopter.
+  // This repository's template offers the same shape.
   for (const marker of ['`<what the path did>`', '`<why it is the least>`', '`<what it does not do>`', '`<unit>`', '`<command or page>`']) {
     assert.ok(template.includes(marker), `the template and the tool offer one shape: ${marker}`)
   }
@@ -279,4 +277,71 @@ test('findingsSections reads only the Findings block', () => {
   assert.equal(sections[0].body, 'No.')
   assert.ok(!sections.some((s) => s.body.includes('**No.**')))
   assert.deepEqual(findingsSections('# a record with no Findings section at all'), [])
+})
+
+/** ADR-042: the template writes plain items now, and every record accepted
+ *  before keeps its boxes — both are read, the same way. */
+test('a plain list is read as a boxed one is', () => {
+  const plain = definitionItems(RECORD.replace(/^- \[[ x]\] /gm, '- '))
+  assert.deepEqual(plain, definitionItems(RECORD))
+  assert.equal(plain.length, 3)
+  const nested = definitionItems('## Definition of done\n\n- The parent item.\n  - A sub-item nested under it.\n- The item after it.\n')
+  assert.equal(nested.length, 2, 'a nested plain bullet belongs to its item, as a nested box does')
+})
+
+/** ADR-043: under each question, what the tool can see, as the reader's
+ *  starting point — and the first line naming the reader (ADR-017 d4). */
+test('the coherence section names its reader and scaffolds what the tool can see', () => {
+  const running = (id, writes) => ({ front: { id, status: 'running' }, writes })
+  const facts = coherenceFacts({
+    pathId: PATH,
+    changed: ['docs/adr/ADR-009-x.md', 'docs/architecture/02-page.md', 'tools/a.mjs'],
+    paths: [running(PATH, ['tools/a.mjs']), running('CP-EX-011', ['tools/**']), running('CP-EX-012', ['site/**']),
+      { front: { id: 'CP-EX-013', status: 'done' }, writes: ['tools/a.mjs'] }],
+    decisions: 'docs/adr/',
+    architecture: 'docs/architecture/'
+  })
+  assert.equal(facts.length, QUESTIONS.length)
+  assert.match(facts[0], /`docs\/adr\/ADR-009-x\.md`/)
+  assert.match(facts[1], /CP-EX-011/)
+  assert.ok(!/CP-EX-012|CP-EX-013/.test(facts[1]), 'a path whose writes do not meet, or that is not running, is not named')
+  assert.match(facts[2], /none/, 'an architecture page with a record beside it is not the fact')
+  assert.equal(facts[3], null, 'the fourth is a judgement on meaning; the tool sees nothing for it')
+
+  const alone = coherenceFacts({ pathId: PATH, changed: ['docs/architecture/02-page.md'], paths: [running(PATH, ['docs/**'])], decisions: 'docs/adr/', architecture: 'docs/architecture/' })
+  assert.match(alone[0], /none/)
+  assert.match(alone[1], /none/)
+  assert.match(alone[2], /`docs\/architecture\/02-page\.md`/)
+
+  const text = requestDescription({ ...fields, facts })
+  const coherence = text.slice(text.indexOf('## Coherence'), text.indexOf('## Advisories'))
+  assert.match(coherence, /^Read by `<a fresh context, and which kind \| the writer, with the reason no reader was obtainable and how long was waited>`\.$/m)
+  assert.ok(coherence.indexOf('Read by') < coherence.indexOf('- [ ]'), 'the reader is named first')
+  assert.ok(coherence.includes('`docs/adr/ADR-009-x.md`') && coherence.includes('CP-EX-011'))
+  const closing = closingTemplate({ ...fields, facts })
+  assert.ok(closing.includes('CP-EX-011'), 'the closing record on manual-git carries the same scaffold')
+  // A hollowed-out scaffold with a verdict: the tool's facts must not read
+  // as the answer the checker asks for.
+  const verdict = closing.replace(`verdict: ${PLACEHOLDER}`, 'verdict: clean')
+  const hollowed = verdict.replaceAll(PLACEHOLDER, '')
+  assert.ok(fillErrors(hollowed).some((error) => /no findings section has been answered/.test(error)), fillErrors(hollowed).join('\n'))
+  // Every question answered, the reader unnamed: the reader line alone holds
+  // the placeholder the checker refuses.
+  const answered = verdict.replaceAll(`\n\n${PLACEHOLDER}\n`, '\n\nAnswered.\n').replaceAll(`: ${PLACEHOLDER}\n`, ': filled\n')
+  assert.equal(answered.split(PLACEHOLDER).length, 2, 'only the reader line is left unfilled')
+  assert.ok(fillErrors(answered).some((error) => /placeholder/.test(error)), 'the reader line carries the placeholder the checker refuses')
+})
+
+/** ADR-041: a deferral names its file under the backlog. */
+test('the advisories placeholder points a deferral at the backlog', () => {
+  const advisories = (text) => text.slice(text.indexOf('## Advisories'))
+  assert.match(advisories(requestDescription(fields)), /deferred[^.]*`project\/backlog\/`/)
+  assert.match(advisories(closingTemplate(fields)), /deferred[^.]*`project\/backlog\/`/)
+})
+
+/** The reader line is written three times — this tool, the kit's request
+ *  template, this repository's. The installer's test ties the kit's to this
+ *  repository's; this ties the tool's to it, so the three read as one. */
+test('the reader line the tool prints is the request template\'s', () => {
+  assert.ok(readFileSync(join(REPO, '.github/pull_request_template.md'), 'utf8').includes(READER))
 })

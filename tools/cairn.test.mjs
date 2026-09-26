@@ -527,7 +527,10 @@ test('the generated host files and this repository\'s own differ only where they
     '      pull-requests: write',
     '      - name: cairn-postmortem',
     "        if: failure() && steps.cairn-check.conclusion == 'failure'",
-    'node tools/cairn-postmortem.mjs --branch "$CAIRN_BRANCH" > postmortem.txt 2>&1 || true',
+    'node tools/cairn-postmortem.mjs --branch "$CAIRN_BRANCH" --base "$CAIRN_BASE_REF" > postmortem.txt 2>&1 || true',
+    "          CAIRN_RUN_RED: 'true'",
+    '      - uses: actions/checkout@v5',
+    '      - uses: actions/setup-node@v5',
     'gh pr comment "$CAIRN_REQUEST" --body-file postmortem.txt',
     "CAIRN_BASE_REF: ${{ github.base_ref && format('origin/{0}', github.base_ref) " +
       "|| (github.ref_name == 'main' && github.event.before || 'origin/main') }}"

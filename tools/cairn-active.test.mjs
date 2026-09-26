@@ -14,7 +14,7 @@ import { dirname, join } from 'node:path'
 import { test } from 'node:test'
 import { applyPlan, defaultOptions, planInstall } from './cairn.mjs'
 import { METADATA_NAMESPACE, PATHS_BEGIN, PATHS_END } from './cairn-check.mjs'
-import { INSTALLER_ROW, collectPaths, registerAdvisory, renderPaths, spliceBlock } from './cairn-active.mjs'
+import { INSTALLER_ROW, collectPaths, fillRegister, registerAdvisory, renderPaths, spliceBlock } from './cairn-active.mjs'
 
 const pathFile = (id, { status = 'running', branch, base = 'abc1234', depends = null, resolution = null } = {}) => ({
   name: `${id}.md`,
@@ -179,6 +179,99 @@ test('the advisory reaches the command\'s output in a real installed repository'
 
     writeFileSync(register, readFileSync(register, 'utf8').replace(INSTALLER_ROW, 'M1 — a milestone this project actually has'))
     assert.ok(!run().includes("installer's row"), 'a register the owner has written is read by nobody again')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+/**
+ * ADR-031 decision 2: the register's state cells are the records', never
+ * typed. A milestone counts the paths its row names and the table headed with
+ * its short name — `Cairn 1.2` owns `### The coding paths of 1.2` — and is
+ * running while any is not done or any row there has no path yet.
+ */
+test('the register\'s state cells are written from the records, and nothing else is', () => {
+  const register = [
+    '| Milestone | Outcome | Paths | State |',
+    '| :-- | :-- | :-- | :-- |',
+    '| Cairn 1.0 — the first | one | [CP-EX-001](./CP-EX-001/index.md) | running, typed by hand |',
+    '| Cairn 1.1 — the second | two | [CP-EX-002](./CP-EX-002/index.md), then the paths below | done |',
+    '| Cairn 1.2 — the third | three | [CP-EX-004](./CP-EX-004/index.md), then the paths below | done 2020-01-01 |',
+    `| ${INSTALLER_ROW} | what it can do | *no path yet* | planned |`,
+    '',
+    '### The coding paths of 1.1',
+    '',
+    '| Order | Outcome | Path |',
+    '| :-- | :-- | :-- |',
+    '| 1 | a surface | [CP-EX-003](./CP-EX-003/index.md), running |',
+    '',
+    '### The coding paths of 1.2',
+    '',
+    '| Order | Outcome | Path |',
+    '| :-- | :-- | :-- |',
+    '| 1 | a surface | [CP-EX-005](./CP-EX-005/index.md) |',
+    '| 2 | another | *no path yet* |',
+    '',
+    '| Milestone | Outcome | Paths | State |',
+    '| :-- | :-- | :-- | :-- |',
+    '| Cairn 2.0 — two in one cell | four | [CP-EX-001](./CP-EX-001/index.md) and [CP-EX-006](./CP-EX-006/index.md) | done |',
+    '| Cairn 2.1 — one archived | five | [CP-EX-001](./CP-EX-001/index.md), [CP-EX-007](./CP-EX-007/index.md) | running |',
+    ''
+  ].join('\n')
+  const states = new Map([
+    ['CP-EX-001', { status: 'done', date: '2026-09-03' }],
+    ['CP-EX-002', { status: 'done', date: '2026-09-07' }],
+    ['CP-EX-003', { status: 'done', date: '2026-09-16' }],
+    ['CP-EX-004', { status: 'done', date: '2026-09-22' }],
+    ['CP-EX-005', { status: 'done', date: '2026-09-24' }],
+    ['CP-EX-006', { status: 'blocked' }],
+    ['CP-EX-007', { status: 'archived' }]
+  ])
+  const filled = fillRegister(register, states)
+  const lines = filled.split('\n')
+  assert.equal(lines[2], '| Cairn 1.0 — the first | one | [CP-EX-001](./CP-EX-001/index.md) | done 2026-09-03 |', 'a typed state is replaced, dated from the journal')
+  assert.equal(lines[3], '| Cairn 1.1 — the second | two | [CP-EX-002](./CP-EX-002/index.md), then the paths below | done 2026-09-16 |', 'a milestone is done on the date its last path was')
+  assert.equal(lines[4], '| Cairn 1.2 — the third | three | [CP-EX-004](./CP-EX-004/index.md), then the paths below | running |', 'a row with no path yet keeps the milestone running, every path done')
+  assert.equal(lines[5], `| ${INSTALLER_ROW} | what it can do | *no path yet* | planned |`, 'a row that names no path is its author\'s')
+  assert.equal(lines[11], '| 1 | a surface | [CP-EX-003](./CP-EX-003/index.md), done 2026-09-16 |')
+  assert.equal(lines[17], '| 1 | a surface | [CP-EX-005](./CP-EX-005/index.md), done 2026-09-24 |', 'a path cell gains its state')
+  assert.equal(lines[22], '| Cairn 2.0 — two in one cell | four | [CP-EX-001](./CP-EX-001/index.md) and [CP-EX-006](./CP-EX-006/index.md) | running |', 'every path a cell names counts')
+  assert.equal(lines[23], '| Cairn 2.1 — one archived | five | [CP-EX-001](./CP-EX-001/index.md), [CP-EX-007](./CP-EX-007/index.md) | done 2026-09-03 |', 'an archived path holds nothing open')
+  assert.equal(lines[18], '| 2 | another | *no path yet* |')
+  assert.equal(filled.replace(/\| [^|]*\|\n/g, ''), register.replace(/\| [^|]*\|\n/g, ''), 'every other column and the shape are untouched')
+  const undated = new Map([...states, ['CP-EX-002', { status: 'done' }]])
+  assert.equal(fillRegister(register, undated).split('\n')[3].split('|').at(-2), ' done ', 'a done path with no journal date leaves the milestone undated, never dated earlier')
+  assert.equal(fillRegister(filled, states), filled, 'a filled register is current')
+  assert.equal(fillRegister(register, new Map()), register, 'a path with no record is not guessed at')
+})
+
+/** The wiring: the command writes the cells and `--check` reports a stale one. */
+test('cairn-active writes the register\'s cells and --check reports a stale one', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cairn-active-'))
+  try {
+    applyPlan(planInstall(defaultOptions()), dir)
+    const register = join(dir, 'project/coding-paths/index.md')
+    writeFileSync(register, readFileSync(register, 'utf8').replace(INSTALLER_ROW + ' | what the product can do when it is reached | *no path yet* | planned',
+      'M1 — ours | a thing | [CP-FIX-001](./CP-FIX-001/index.md) | planned'))
+    const record = join(dir, 'project/coding-paths/CP-FIX-001/index.md')
+    mkdirSync(dirname(record), { recursive: true })
+    writeFileSync(record, `---\ntitle: CP-FIX-001 — a path\ncairn:\n  id: CP-FIX-001\n  status: done\n  resolution: completed\n  branch: path/cp-fix-001\n  base_commit: ${'a'.repeat(40)}\n---\n\n# CP-FIX-001\n`)
+    mkdirSync(join(dir, 'project/log'), { recursive: true })
+    writeFileSync(join(dir, 'project/log/2026-09-03-cp-fix-001.md'), '---\ntitle: CP-FIX-001\ncairn:\n  path: CP-FIX-001\n---\n\n# CP-FIX-001\n')
+    const run = (...args) => execFileSync(process.execPath, ['tools/cairn-active.mjs', ...args], { cwd: dir, encoding: 'utf8', stdio: 'pipe' })
+    run()
+    const before = readFileSync(register, 'utf8')
+    assert.ok(before.includes('| [CP-FIX-001](./CP-FIX-001/index.md) | done 2026-09-03 |'), 'the cell is the record\'s, dated from its journal entry')
+
+    // Reported, never refused (ADR-031, the rejected checker rule): the
+    // checker's `derived-view` reads this command's exit code, and neither the
+    // administrative commit nor the integrating one may carry the register.
+    writeFileSync(register, before.replace('done 2026-09-03', 'running'))
+    assert.match(run('--check'), /register's state cells are STALE/, 'a stale cell is said, and the exit code stays the view\'s')
+    assert.ok(readFileSync(register, 'utf8').includes('| running |'), '--check writes nothing')
+    run()
+    assert.equal(readFileSync(register, 'utf8'), before)
+    assert.match(run('--check'), /already current/)
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
