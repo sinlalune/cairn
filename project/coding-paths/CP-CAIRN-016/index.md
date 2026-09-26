@@ -7,13 +7,13 @@ timestamp: 2026-09-25T00:00:00Z
 cairn:
   id: CP-CAIRN-016
   route: full
-  status: running
+  status: ready
   current_step: S07
   base_commit: b94ba4f8f0d80214ff6026e1425493a4f8a8a86c
   branch: path/cp-cairn-016
   assigned_writer: cp-cairn-016-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 4ea0101bff6e79a3630c6dd3fdd13609ed4892b7
   resolution: null
   writes:
     - tools/cairn-active.mjs
@@ -288,7 +288,7 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 47d329293ab79ba43fd44b743a2a355995ae8076 — S06, a candidate voided by S07, the last completed commit on origin/path/cp-cairn-016
+commit : 4ea0101bff6e79a3630c6dd3fdd13609ed4892b7 — S07, the candidate C
 unit   : 7
 base   : b94ba4f8f0d80214ff6026e1425493a4f8a8a86c
 trunk  : b94ba4f8f0d80214ff6026e1425493a4f8a8a86c — origin/main at registration
