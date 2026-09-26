@@ -1,6 +1,6 @@
 ---
 name: cairn-code
-description: Cairn's own additions to the coding stance for the change movement of a work unit — deletion turned on the protocol itself, the test that never fires, the three-line cap, absorbing the ecosystem, and the two lines on secrets and errors. The decision ladder and the review tags come from Ponytail at a pinned tag and are not repeated here. Use whenever you are about to write, change or explain code inside a coding path.
+description: Cairn's own additions to the coding stance for the change movement of a work unit — deletion turned on the protocol itself, the test that never fires, the three-line cap, absorbing the ecosystem, and the two lines on secrets and errors. The decision ladder and the review tags come from Ponytail's two skills, which the kit installs beside this one, and are not repeated here. Use whenever you are about to write, change or explain code inside a coding path.
 ---
 
 # cairn-code
@@ -10,9 +10,9 @@ rules. This is the stance that resists it, one decision at a time. A checker
 cannot judge simplicity, which is why this is a skill and not a rule.
 
 The ladder you climb during *change*, and the tags a self-review speaks in,
-are Ponytail's: `DietrichGebert/ponytail` at the tag `v4.9.0`, its
-`skills/ponytail` and `skills/ponytail-review`. Install them in your harness
-as that repository says, beside these skills. What follows is Cairn's own.
+are Ponytail's: its skills `ponytail` and `ponytail-review`, which the kit
+fetches from the plugin's latest release at `init` and `update` and writes
+beside these skills, the version in the lock. What follows is Cairn's own.
 
 ## Deletion, turned on the protocol
 

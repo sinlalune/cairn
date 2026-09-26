@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-017
   route: full
   status: running
-  current_step: S04
+  current_step: S05
   base_commit: 3ed0f8cd8921381ab3e195e9095df6ead2514c28
   branch: path/cp-cairn-017
   assigned_writer: cp-cairn-017-writer
@@ -37,6 +37,7 @@ cairn:
     - tools/cairn-fixture.test.mjs
     - tools/cairn-check.test.mjs
     - skills/cairn-open/**
+    - skills/cairn-code/**
     - skills/cairn-unit/**
     - project/coding-paths/index.md
     - project/coding-paths/CP-CAIRN-017/**
@@ -189,11 +190,13 @@ The owner ruled on 2026-09-26: *take four plus the two*.
 - [ ] Nothing under `.github/`, `spec/index.md`, `spec/concepts/` or
       `spec/reference/` other than the conformance page changes; the
       skills change only in the two sentences and the two clauses named
-      above, the checker only in `conceptLinkTargets` and its fixture, the
-      installer only in its header comment and the bootloader template; the eight
-      governing documents other than the 1.2 page and ADR-031 are
-      byte-identical at the candidate to what they are at `base_commit`,
-      and those two change only where S01 and the opening sentence say.
+      above and in `cairn-code`'s lines on Ponytail, brought to ADR-036,
+      the checker only in `conceptLinkTargets`, its fixture and its unit
+      test, the installer only in its header comment and the bootloader
+      template; the governing documents other than the 1.2 page, ADR-031
+      and ADR-015 are byte-identical at the candidate to what they are at
+      `base_commit`, and those three change only where S01, S03 and the
+      opening sentence say.
 - [ ] Every completed step has one self-contained step record naming the
       definition-of-done item it advances, a refreshed resume section and a
       `current_step` that names it, one commit after a gate read green, a
@@ -246,7 +249,34 @@ the four items that leave a defect in an adopter's hands and the closing
 report's two sentences, the three structural items left to the next row.
 The owner's go-ahead was given in the chat and is this acceptance
 (ADR-001 decisions 1 and 2), and the record lands on the trunk directly.
-The units run in a fresh session. Amendments: none.
+The units run in a fresh session. Amendments: one, below.
+
+### Amendment of 2026-09-26 — `cairn-code` brought to ADR-036
+
+S05's fresh reader found `skills/cairn-code/SKILL.md` still naming
+Ponytail at the tag `v4.9.0` and telling the adopter to install its two
+skills in the harness — the pin ADR-036 removed, and the install the kit
+has done since row 3. 1.2.0 would ship a skill that contradicts its own
+record. The owner was asked in the chat whether to fix it here or leave
+it to the backlog, and chose to fix it here.
+
+This acceptance supersedes the one above it. Item 9 lets the skills
+change in `cairn-code`'s lines on Ponytail and the checker in its unit
+test, and names ADR-015 beside the 1.2 page and ADR-031 as the governing
+documents that change, where S03 says — the contradiction S03 recorded
+between items 3 and 9 is resolved in item 3's favour; `writes:` gains
+`skills/cairn-code/**`. The other ten items are the text they were
+accepted with.
+
+```yaml
+decision: accepted
+accepted_by: sinlalune
+accepted_roles: [initiator, reviewer]
+accepted_at: 2026-09-26T14:09:07Z
+scope_ref: project/coding-paths/CP-CAIRN-017/index.md#definition-of-done
+scope_digest: sha256:7fe3b9b6b2ef8eb50d250c1808223831343651aa09b39c7fa4ef3330bcd96fd6
+supersedes: 2026-09-26T10:59:38Z
+```
 
 ## Documentation coverage
 
@@ -307,23 +337,25 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - **S04** — the counts written once: the budget table at 1.2.0, the entry
   chain past its target, the four restatements linked; the owner's ECOS
   notes merged in. [Record](./steps/S04.md).
+- **S05** — the README and the site for 1.2, the quick starts and the
+  build run; `cairn-code` brought to ADR-036 by the amendment of
+  2026-09-26. [Record](./steps/S05.md).
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : acf4ddaff59d61eeb640e4b07e05d9134a72c694 — the trunk merged in after S03, request 34's ECOS notes
-unit   : 4
+commit : 21117572ec8288a985c6ba4d8d3ce6dc067b45ee — S04, the counts written once
+unit   : 5
 base   : 3ed0f8cd8921381ab3e195e9095df6ead2514c28
 trunk  : 3ed0f8cd8921381ab3e195e9095df6ead2514c28 — origin/main at registration
 ```
 
 ### Next action
 
-Start S05 with `cairn-unit` in the path's worktree: the README and the
-site, as the plan's fifth item says; `site/index.html` still says *six
-skills*.
+Start S06 with `cairn-unit` in the path's worktree: this repository
+updated with its own kit, as the plan's sixth item says.
 
 ### Blockers
 

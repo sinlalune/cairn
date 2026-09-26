@@ -124,6 +124,8 @@ the pointer page and the lock, which nobody reconciles by hand.
   coherence questions and its inputs; `A` before the reading; the release
   path's changelog and treated notes; a deferral's backlog file; a figure
   linked, never restated.
+- `skills/cairn-code/SKILL.md` — Ponytail's two skills installed by the kit,
+  not pinned at a tag for the adopter to install.
 - `skills/cairn-open/SKILL.md`, `reference.md` — the backlog read first;
   the plan read for placeholders and contradictions; the plain list; the two registration sequences; `steps/` made by the
   first unit.

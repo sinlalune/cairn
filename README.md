@@ -15,16 +15,27 @@ state to resume from, and which exact commit is proposed for integration.
 Its surfaces, in the order a newcomer meets them:
 
 - **Adopting the protocol** — the `cairn` command: `init` installs the kit,
-  `status` reads it against the release, `update` and `adopt` bring a
-  repository to the current one. Quick starts 1 and 3 below.
+  `status` reads it against the release, `adopt` turns a hand-copied
+  installation into one. Quick starts 1 and 3 below.
 - **Opening and running a path** — the [`cairn-open`](./skills/cairn-open/SKILL.md)
   skill registers one bounded change on the trunk before any code; the
   [`cairn-unit`](./skills/cairn-unit/SKILL.md) skill advances it one work unit
-  at a time, in the coding stance of [`cairn-code`](./skills/cairn-code/SKILL.md).
-  Quick start 2.
+  at a time, in the coding stance of [`cairn-code`](./skills/cairn-code/SKILL.md)
+  and Ponytail's two skills, which the kit fetches. Quick start 2.
+- **Deferring work** — a review finding or a closing advisory left for later
+  is one file under `project/backlog/`, which the next path proposed reads
+  first.
 - **Closing one** — the [`cairn-close`](./skills/cairn-close/SKILL.md) skill
-  binds one exact candidate commit, opens the pull request whose description
-  is the review, and integrates that commit and no other.
+  binds one exact candidate commit, has a fresh context answer the coherence
+  questions, opens the pull request whose description is the review, and
+  integrates that commit and no other.
+- **Updating the kit** — the [`cairn-update`](./skills/cairn-update/SKILL.md)
+  skill brings a repository to a newer release as a path of its own, reading
+  `status` and [the release notes](./CHANGELOG.md) before anything is
+  written. Quick start 3.
+- **Telling Cairn what it cost** — a note under `feedbacks/` when the gate
+  stayed green and the protocol still cost more than it should; a note about
+  Cairn travels to this repository.
 - **Learning** — the [`cairn-learn`](./skills/cairn-learn/SKILL.md) skill runs
   one session on an abstraction the work explained, and writes the note a
   later reader learns from.
@@ -82,8 +93,10 @@ lock: the checker and its companions under `tools/`, the skills under
 configuration, the bootloader, the binding, the CI workflow and the
 pull-request template, the folder indexes of both planes with the three
 concept folders and an inputs folder, and the pointer page `cairn/README.md`,
-which names the installed release, the chapters and the skills at it. It
-copies no specification — every link it writes points at the specification
+which names the installed release, the chapters and the skills at it.
+Ponytail's `ponytail` and `ponytail-review` are fetched from the plugin's
+latest release; offline, `init` says so and the next `update` fetches them.
+It copies no specification — every link it writes points at the specification
 at the exact commit the kit was cut from. The configuration it writes declares
 registration on the trunk directly, `manual-git`, and integration by pull
 request. Then:
@@ -101,10 +114,12 @@ order, and states the one mechanical contract — the exit code is the verdict.
 Open a path with the `cairn-open` skill, or by hand from the
 [path template](./spec/reference/path-template.md):
 
-1. Write `project/coding-paths/CP-FIRST-001/index.md`: the goal in three
+1. Read `project/backlog/` first: an item the path takes is named in its
+   goal, and its file in `writes:`. Write
+   `project/coding-paths/CP-FIRST-001/index.md`: the goal in three
    plain lines — what the path does, why it is the least, what it does not
-   do — a definition of done written as checkable outcomes, the documents
-   the work is bound by, and what it may write.
+   do — a definition of done written as a plain list of checkable outcomes,
+   the documents the work is bound by, and what it may write.
 2. Put the plan to the owner in the chat. Their yes is the opening
    acceptance: record it inside the record, with the digest the checker
    computes — never by hand:
@@ -115,29 +130,36 @@ Open a path with the `cairn-open` skill, or by hand from the
 
 3. Register it on the trunk before any implementation: set it `running`
    with the trunk tip as its base, regenerate the live view with
-   `npm run cairn-active`, land that one metadata-only commit on the trunk
-   directly — a sole owner's repository declares `manual-git` registration,
-   so there is no registration request — and only then create
+   `npm run cairn-active`, and land that one metadata-only commit on the
+   trunk. The kit declares `manual-git` registration, a direct push, which
+   needs a trunk that accepts one; a trunk that takes only requests
+   declares `pull-request` registration and lands the same commit through
+   a request merged in a way that keeps it. Only then create
    `path/cp-first-001` in its own worktree and push it.
 
 Advance it with the `cairn-unit` skill: plan the unit in a new
 `steps/S01.md`, make the change with the `cairn-code` stance, read your own
 diff as a reviewer would, hand the diff to a fresh context of your agent and
-write its findings into the step with their dispositions, run every gate
-bare, refresh the resume section, commit the coherent unit with explicit
-paths, and push. Every pushed unit is a place anyone can resume from.
+write its findings into the step with their dispositions — a deferred one
+names its backlog file — run every gate bare, set `current_step` and
+refresh the resume section, commit the coherent unit with explicit paths,
+and push. Every pushed unit is a place anyone can resume from.
 
 Close it with the `cairn-close` skill: merge the trunk in, push the candidate,
-run the checks on exactly that commit, open the pull request with
-`npm run cairn-audit` printing its description, ask the owner to try the
-result, make the one administrative commit that sets `ready`, and merge —
-the merge is the acceptance. The trunk commit that follows records `done`
+run the checks on exactly that commit, hand its diff to a fresh context for
+the four coherence questions, open the pull request with `npm run
+cairn-audit` printing its description, make the one administrative commit
+that sets `ready`, then ask the owner to read and try the result, and merge
+— the merge is the acceptance. The trunk commit that follows records `done`
 and writes the journal entry.
 
 ## Quick start 3 — a repository that already carries the protocol
 
 A repository installed from an earlier release carries a lock, and comes to
-the current release with two commands:
+the current release as a path of its own, with the `cairn-update` skill:
+`status` first, then [the release notes](./CHANGELOG.md), then the owner
+decides which edited kit files to take and which host files to decline, the
+path is registered, and `update` runs:
 
 ```bash
 npx cairn-protocol status     # the installed release against this one, file by file
@@ -149,7 +171,8 @@ npm run cairn-check
 the ones the release adds, keeps every file you edited and prints what the
 release changes in each, lists those on the pointer page, and writes the new
 lock. `update --take <path>` takes the release's version of one file you
-name.
+name; `update --decline <path>` stops writing one host file you do not
+want.
 
 A repository that copied the protocol by hand, with no lock, becomes an
 installation with one command:
@@ -172,7 +195,8 @@ deletes none of it.
 | understand why the protocol is shaped this way | [the manifesto](./manifesto.md) |
 | know the whole protocol | [the specification](./spec/index.md), six chapters |
 | load the procedures into your coding agent | [the skills](./skills/), as Agent Skills |
-| know what 1.1 is, and the decision behind each sentence | [the 1.1 page](./docs/architecture/01-cairn-1-1.md) and [the decision records](./docs/adr/index.md) |
+| know what 1.2 changes, and the decision behind each sentence | [the 1.2 page](./docs/architecture/02-cairn-1-2.md), [the 1.1 page](./docs/architecture/01-cairn-1-1.md) and [the decision records](./docs/adr/index.md) |
+| know what a release changes for your repository | [the release notes](./CHANGELOG.md) |
 | look up one word | [the concept wiki](./spec/concepts/index.md), borrowed terms kept apart from Cairn's own |
 | find an exact shape or command | [the reference](./spec/reference/index.md) and the skills' reference files |
 | know what the checker actually checks | [the conformance page](./spec/reference/conformance.md), rule by rule |
@@ -183,9 +207,9 @@ deletes none of it.
 The protocol is measured, and the measure is stated on
 [the conformance page](./spec/reference/conformance.md): the words of the
 specification and of the required entry chain, the files the kit installs,
-the protocol files one unit writes. Each is a number counted by a tool at the
-release; where a number has a target, the page says whether the target has
-ever bound, and the kit's count has none.
+the skills, the rules, the protocol files one unit writes. Each is a number
+counted by a tool at the release; where a number has a target, the page says
+whether it bound, and the kit's counts have none.
 
 ## Licence
 
