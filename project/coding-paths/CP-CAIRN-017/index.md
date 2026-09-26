@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-017
   route: full
   status: running
-  current_step: S02
+  current_step: S03
   base_commit: 3ed0f8cd8921381ab3e195e9095df6ead2514c28
   branch: path/cp-cairn-017
   assigned_writer: cp-cairn-017-writer
@@ -301,22 +301,25 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   concept links resolved against the folder and the declared root, the
   first unit makes `steps/`, `current_step` set, print don't remember,
   the review before the commit, the bootloader's line. [Record](./steps/S02.md).
+- **S03** — the changelog: 1.2.0's section, the adopters' repairs by path
+  id, the line per changed template; *pending* cleared in ADR-015 and row
+  5. [Record](./steps/S03.md).
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 95527a6c2e0ed2d64fd4dd68e49a59bff1685dda — S01, ADR-045
-unit   : 2
+commit : 07ff835d372cbf88601521d1c76d0a056e4ca458 — S02, the backlog items and the two sentences
+unit   : 3
 base   : 3ed0f8cd8921381ab3e195e9095df6ead2514c28
 trunk  : 3ed0f8cd8921381ab3e195e9095df6ead2514c28 — origin/main at registration
 ```
 
 ### Next action
 
-Start S03 with `cairn-unit` in the path's worktree: the changelog, as
-the plan's third item says.
+Start S04 with `cairn-unit` in the path's worktree: the counts written
+once, as the plan's fourth item says.
 
 ### Blockers
 
