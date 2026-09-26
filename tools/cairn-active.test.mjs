@@ -245,7 +245,7 @@ test('the register\'s state cells are written from the records, and nothing else
   assert.equal(fillRegister(register, new Map()), register, 'a path with no record is not guessed at')
 })
 
-/** The wiring: the command writes the cells and `--check` refuses a stale one. */
+/** The wiring: the command writes the cells and `--check` reports a stale one. */
 test('cairn-active writes the register\'s cells and --check reports a stale one', () => {
   const dir = mkdtempSync(join(tmpdir(), 'cairn-active-'))
   try {
@@ -263,14 +263,11 @@ test('cairn-active writes the register\'s cells and --check reports a stale one'
     const before = readFileSync(register, 'utf8')
     assert.ok(before.includes('| [CP-FIX-001](./CP-FIX-001/index.md) | done 2026-09-03 |'), 'the cell is the record\'s, dated from its journal entry')
 
+    // Reported, never refused (ADR-031, the rejected checker rule): the
+    // checker's `derived-view` reads this command's exit code, and neither the
+    // administrative commit nor the integrating one may carry the register.
     writeFileSync(register, before.replace('done 2026-09-03', 'running'))
-    try {
-      run('--check')
-      assert.fail('a stale state cell must fail --check')
-    } catch (error) {
-      assert.equal(error.status, 1)
-      assert.match(error.stderr, /register's state cells are STALE/)
-    }
+    assert.match(run('--check'), /register's state cells are STALE/, 'a stale cell is said, and the exit code stays the view\'s')
     assert.ok(readFileSync(register, 'utf8').includes('| running |'), '--check writes nothing')
     run()
     assert.equal(readFileSync(register, 'utf8'), before)

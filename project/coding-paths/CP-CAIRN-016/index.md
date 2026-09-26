@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-016
   route: full
   status: running
-  current_step: S06
+  current_step: S07
   base_commit: b94ba4f8f0d80214ff6026e1425493a4f8a8a86c
   branch: path/cp-cairn-016
   assigned_writer: cp-cairn-016-writer
@@ -278,21 +278,26 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - [**S06**](./steps/S06.md) — what the coherence read of `eab7ddd`
   found: the reader line tied across its three copies by a test, the
   milestone rule placed on the backlog for a promotion. Complete.
+- [**S07**](./steps/S07.md) — a stale register cell is reported by
+  `cairn-active --check` and never refused, the exit code the checker
+  reads being the view's; the closing commits' register on the backlog.
+  Complete.
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : eab7ddd4fbe8906d5e78f53c7e7b5201af138049 — S05, the first candidate, the last completed commit on origin/path/cp-cairn-016
-unit   : 6
+commit : 47d329293ab79ba43fd44b743a2a355995ae8076 — S06, a candidate voided by S07, the last completed commit on origin/path/cp-cairn-016
+unit   : 7
 base   : b94ba4f8f0d80214ff6026e1425493a4f8a8a86c
 trunk  : b94ba4f8f0d80214ff6026e1425493a4f8a8a86c — origin/main at registration
 ```
 
 ### Next action
 
-`cairn-close` on the candidate, S06's commit: the administrative commit,
+`cairn-close` on the candidate, S07's commit — its administrative commit
+without the register, which neither closing commit may carry: the administrative commit,
 the fresh-context coherence read scaffolded by `cairn-audit`, the request,
 the owner's reading and the merge.
 
@@ -323,6 +328,9 @@ None.
   1.2 rows name the rest as *the coding paths below*, and their Paths
   cells are the owner's; the owner ruled for the row and the table under
   its short name in the chat of 2026-09-25.
+- `cairn-active --check` exiting 1 on a stale register cell — the
+  checker's `derived-view` reads that exit code, so it was the checker
+  rule on a cell ADR-031 rejected, and it refused every closing commit.
 - A milestone taking its one path's raw status — the same state read
   differently by how many paths there are; a milestone is *running* or
   *done*.

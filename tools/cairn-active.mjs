@@ -23,7 +23,7 @@
  * decision 2): a path's `status:` is the one place its state is written.
  *
  *   node tools/cairn-active.mjs           # rewrite the block and the cells
- *   node tools/cairn-active.mjs --check   # exit 1 if either is stale, write nothing
+ *   node tools/cairn-active.mjs --check   # exit 1 if the view is stale, say a stale cell; write nothing
  */
 
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
@@ -249,19 +249,23 @@ function main() {
   const states = new Map([...statuses].map(([id, { status }]) => [id, { status, date: dates.get(id) }]))
   const filled = registerText == null ? null : fillRegister(registerText, states)
 
-  const stale = [
-    ...(next === current ? [] : [{ file: active, text: next, what: 'running-paths view is', at: ACTIVE_FILE }]),
-    ...(filled === registerText ? [] : [{ file: register, text: filled, what: "roadmap register's state cells are", at: REGISTER_FILE }])
-  ]
-  if (stale.length === 0) {
+  // The register's cells are REPORTED, never refused: ADR-031 rejected a
+  // checker rule on them, and the checker's `derived-view` reads this
+  // command's exit code — while neither the administrative commit nor the
+  // integrating one may carry the register. The exit code is the view's.
+  const cells = filled !== registerText
+  const view = next !== current
+  if (!view && !cells) {
     console.log('cairn-active — running-paths view and register cells already current')
     process.exit(0)
   }
   if (check) {
-    for (const { what } of stale) console.error(`cairn-active — the ${what} STALE. Run: npm run cairn-active`)
-    process.exit(1)
+    if (cells) console.log("cairn-active — the roadmap register's state cells are STALE. Run: npm run cairn-active")
+    if (view) console.error('cairn-active — running-paths view is STALE. Run: npm run cairn-active')
+    process.exit(view ? 1 : 0)
   }
-  for (const { file, text, at } of stale) {
+  for (const [stale, file, text, at] of [[view, active, next, ACTIVE_FILE], [cells, register, filled, REGISTER_FILE]]) {
+    if (!stale) continue
     writeFileSync(file, text, 'utf8')
     console.log(`cairn-active — rewrote ${at}`)
   }
