@@ -7,14 +7,14 @@ timestamp: 2026-09-27T00:00:00Z
 cairn:
   id: CP-CAIRN-018
   route: full
-  status: ready
+  status: done
   current_step: S03
   base_commit: f78c338f8f83596c3a87a10010f193c2e9ea5e3e
   branch: path/cp-cairn-018
   assigned_writer: cp-cairn-018-writer
   depends_on: []
   subject_commit: 241ef43be3cf45461bf05514fe48b453647c9d16
-  resolution: null
+  resolution: completed
   writes:
     - docs/adr/**
     - spec/index.md
