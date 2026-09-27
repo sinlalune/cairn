@@ -55,7 +55,10 @@ path convention 27, the execution protocol 22, the binding none, each the
 sentence a record of 1.2 asked for. The kit gained seventeen files: the
 seventh skill, Ponytail's two, every skill's copy where Claude Code loads
 skills, and the backlog's and the channel's indexes, on the *Installation,
-update and adoption* row below.
+update and adoption* row below. The checker gained one rule, the advisory
+`current-step`, which names a running or ready record whose `current_step`
+is not its last step file — two integrated records had carried a stale one
+(ADR-044, decision 4).
 
 ## Where the matrix stands
 

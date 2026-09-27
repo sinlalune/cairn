@@ -7,13 +7,13 @@ timestamp: 2026-09-27T00:00:00Z
 cairn:
   id: CP-CAIRN-018
   route: full
-  status: ready
-  current_step: S01
+  status: running
+  current_step: S02
   base_commit: f78c338f8f83596c3a87a10010f193c2e9ea5e3e
   branch: path/cp-cairn-018
   assigned_writer: cp-cairn-018-writer
   depends_on: []
-  subject_commit: 54dc9978fba1950baaae99f3f93e383aac4284ed
+  subject_commit: null
   resolution: null
   writes:
     - docs/adr/**
@@ -114,21 +114,23 @@ record. Amendments: none.
 ## Steps
 
 - **S01** — ADR-047 and every surface it names. [Record](./steps/S01.md).
+- **S02** — the rule the checker gained, explained, from the request's
+  reviewer on `54dc997`. [Record](./steps/S02.md).
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 54dc9978fba1950baaae99f3f93e383aac4284ed — C, the candidate: S01
-unit   : 1
+commit : 850e2f9c8e5416dc9cc0ed2ea3aa9bddda0543d7 — A on the first candidate, void by the request's reviewer
+unit   : 2
 base   : f78c338f8f83596c3a87a10010f193c2e9ea5e3e
 trunk  : f78c338f8f83596c3a87a10010f193c2e9ea5e3e — origin/main at registration
 ```
 
 ### Next action
 
-The owner reads the request and merges; then the integrating commit, and
+Close on S02's commit; then the owner reads request #36 and merges; then the integrating commit, and
 `1.2.0` tagged on it.
 
 ### Blockers
