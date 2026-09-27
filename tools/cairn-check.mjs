@@ -1108,11 +1108,13 @@ const isConceptIndex = (file) => file.split('/').at(-1) === 'index.md'
  *  under the concept root: every link target, inline or by reference,
  *  resolved as GitHub does — against the linking file's folder, or the
  *  repository's root after a leading `/` — and kept when it lands under
- *  `root`. Pure, because the whole of `concept-orphan` turns on this
- *  resolution. */
+ *  `root`. Frontmatter is metadata a reader never follows, so it is skipped.
+ *  Pure, because the whole of `concept-orphan` turns on this resolution. */
 export function conceptLinkTargets(text, from, root) {
   const targets = new Set()
-  for (const [, inline, reference] of text.matchAll(/\]\(([^)#\s]+)|^\s*\[[^\]]+\]:\s*([^#\s]+)/gm)) {
+  const end = text.startsWith('---\n') ? text.indexOf('\n---', 4) : -1
+  const body = end === -1 ? text : text.slice(end + 4)
+  for (const [, inline, reference] of body.matchAll(/\]\(([^)#\s]+)|^\s*\[[^\]]+\]:\s*([^#\s]+)/gm)) {
     const link = (inline ?? reference).replace(/^<|>$/g, '')
     if (/^[a-z]+:/i.test(link) || !link.endsWith('.md')) continue
     const under = relative(root, link.startsWith('/') ? link.slice(1) : join(dirname(from), link)).split('\\').join('/')

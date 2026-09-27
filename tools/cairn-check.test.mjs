@@ -2361,6 +2361,10 @@ test('a link is resolved to the note under the root, whatever it is written rela
   assert.deepEqual(targets('see [a](<./concepts/git.md>)', 'docs/x.md', 'docs/concepts'), ['git.md'])
   assert.deepEqual(targets('see [a](https://x.org/concepts/git.md)', 'README.md', 'concepts'), [])
   assert.deepEqual(targets('nothing here', 'README.md'), [])
+  // Frontmatter is metadata, not a link a reader follows: a Markdown-shaped
+  // target there clears nothing.
+  assert.deepEqual(targets('---\ndescription: "See [C](./concepts/foo.md)"\n---\n# x\n', 'docs/x.md'), [])
+  assert.deepEqual(targets('---\ntitle: x\n---\nSee [C](./concepts/foo.md).\n', 'docs/x.md'), ['foo.md'])
 })
 
 test('a concept in a folder of the root is judged by its path, and each folder keeps its own index', () => {

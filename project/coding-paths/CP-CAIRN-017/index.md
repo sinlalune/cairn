@@ -7,13 +7,13 @@ timestamp: 2026-09-26T00:00:00Z
 cairn:
   id: CP-CAIRN-017
   route: full
-  status: ready
-  current_step: S09
+  status: running
+  current_step: S10
   base_commit: 3ed0f8cd8921381ab3e195e9095df6ead2514c28
   branch: path/cp-cairn-017
   assigned_writer: cp-cairn-017-writer
   depends_on: []
-  subject_commit: b4640a9fafa405834a76e3d72158ed48067384a4
+  subject_commit: null
   resolution: null
   writes:
     - CHANGELOG.md
@@ -441,22 +441,25 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
   kit's generated files pinned at a clean commit. [Record](./steps/S08.md).
 - **S09** — the changelog names what `concept-orphan` no longer counts,
   from the closing read of `a25f85f`. [Record](./steps/S09.md).
+- **S10** — a link in frontmatter clears no concept note, from the
+  request's reviewer on `b4640a9`. [Record](./steps/S10.md).
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : b4640a9fafa405834a76e3d72158ed48067384a4 — C, the candidate: S09
-unit   : 9
+commit : 3845454090afe115435d7d9270d1129e8ac4fba3 — A on the third candidate, void by the request's reviewer
+unit   : 10
 base   : 3ed0f8cd8921381ab3e195e9095df6ead2514c28
 trunk  : 3ed0f8cd8921381ab3e195e9095df6ead2514c28 — origin/main at registration
 ```
 
 ### Next action
 
-The owner reads the request, opens the site and the README, runs one
-quick start, and merges; then the integrating commit on the trunk, the
+Close on S10's commit as the fourth candidate: the coherence read, `A`,
+the request #35 updated; then the owner reads the request, opens the site
+and the README, runs one quick start, and merges; then the integrating commit on the trunk, the
 tag `1.2.0` on it, the owner's publish.
 
 ### Blockers
