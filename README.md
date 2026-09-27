@@ -208,8 +208,8 @@ The protocol is measured, and the measure is stated on
 [the conformance page](./spec/reference/conformance.md): the words of the
 specification and of the required entry chain, the files the kit installs,
 the skills, the rules, the protocol files one unit writes. Each is a number
-counted by a tool at the release; where a number has a target, the page says
-whether it bound, and the kit's counts have none.
+counted by a tool at the release and none is a target: a need that earns its
+place is taken, and the number follows.
 
 ## Licence
 

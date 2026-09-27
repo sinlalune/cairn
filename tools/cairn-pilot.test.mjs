@@ -13,8 +13,7 @@ for (const transport of ['pull-request', 'manual-git']) {
     assert.deepEqual(result.stages.map((s) => [s.name, s.ok]), [
       ['installed', true], ['registered', true], ['unit pushed', true], ['candidate', true], ['ready', true], ['done', true]
     ])
-    assert.ok(result.perUnit < 6, `one lightweight unit writes ${result.perUnit} protocol files; the budget is under six`)
     assert.equal(result.perUnit, 2, 'the step record and the record\'s resume section')
-    assert.ok(result.lifecycle <= 5, `the whole lifecycle touches ${result.lifecycle} protocol files`)
+    assert.equal(result.lifecycle, transport === 'manual-git' ? 5 : 4, 'the whole lifecycle, as the conformance page reads it')
   })
 }

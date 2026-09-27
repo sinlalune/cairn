@@ -43,8 +43,8 @@ file's folder, or the repository's root after a leading `/` — and keeps it
 when it lands under the declared root, whatever the root is named — never
 from the frontmatter, which a reader does not follow — and is pure because
 the whole of `concept-orphan` turns on it. The rule generator
-writes into the conformance page, not into the specification index, so the
-index stays under its word budget.
+writes into the conformance page, not into the specification index, which
+it would lengthen for no reader.
 
 ## The rules
 

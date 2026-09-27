@@ -7,13 +7,13 @@ timestamp: 2026-09-27T00:00:00Z
 cairn:
   id: CP-CAIRN-018
   route: full
-  status: running
-  current_step: null
+  status: ready
+  current_step: S03
   base_commit: f78c338f8f83596c3a87a10010f193c2e9ea5e3e
   branch: path/cp-cairn-018
   assigned_writer: cp-cairn-018-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 241ef43be3cf45461bf05514fe48b453647c9d16
   resolution: null
   writes:
     - docs/adr/**
@@ -22,6 +22,7 @@ cairn:
     - README.md
     - docs/modules/application.md
     - CHANGELOG.md
+    - tools/cairn-pilot.test.mjs
     - project/coding-paths/index.md
     - project/coding-paths/CP-CAIRN-018/**
   governs:
@@ -113,23 +114,27 @@ record. Amendments: none.
 
 ## Steps
 
-- **S01** — not started.
+- **S01** — ADR-047 and every surface it names. [Record](./steps/S01.md).
+- **S02** — the rule the checker gained, explained, from the request's
+  reviewer on `54dc997`. [Record](./steps/S02.md).
+- **S03** — the pilot test binds no withdrawn target, from the closing
+  read of `0b7ee43`. [Record](./steps/S03.md).
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — this record and the live view, nothing else, on origin/main; unit 0
-unit   : 0
+commit : 241ef43be3cf45461bf05514fe48b453647c9d16 — C, the third candidate: S03
+unit   : 3
 base   : f78c338f8f83596c3a87a10010f193c2e9ea5e3e
 trunk  : f78c338f8f83596c3a87a10010f193c2e9ea5e3e — origin/main at registration
 ```
 
 ### Next action
 
-S01 with `cairn-unit`: ADR-047 and every surface the definition of done
-names, in one decision unit.
+The owner reads request #36 and merges; then the integrating commit, and
+`1.2.0` tagged on it.
 
 ### Blockers
 
