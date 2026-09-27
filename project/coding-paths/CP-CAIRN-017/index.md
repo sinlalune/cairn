@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-017
   route: full
   status: running
-  current_step: S05
+  current_step: S06
   base_commit: 3ed0f8cd8921381ab3e195e9095df6ead2514c28
   branch: path/cp-cairn-017
   assigned_writer: cp-cairn-017-writer
@@ -38,6 +38,9 @@ cairn:
     - tools/cairn-check.test.mjs
     - skills/cairn-open/**
     - skills/cairn-code/**
+    - skills/ponytail/**
+    - skills/ponytail-review/**
+    - docs/inputs/index.md
     - skills/cairn-unit/**
     - project/coding-paths/index.md
     - project/coding-paths/CP-CAIRN-017/**
@@ -340,22 +343,26 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - **S05** — the README and the site for 1.2, the quick starts and the
   build run; `cairn-code` brought to ADR-036 by the amendment of
   2026-09-26. [Record](./steps/S05.md).
+- **S06** — this repository updated with its own kit: 1.2.0 in the lock
+  and the pointer page, Ponytail v4.10.0, three concept indexes declined,
+  the package and the site kept to Cairn's skills. [Record](./steps/S06.md).
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 21117572ec8288a985c6ba4d8d3ce6dc067b45ee — S04, the counts written once
-unit   : 5
+commit : df302781a2a326338ade01421e0196b9b2e41df1 — S05, the README and the site
+unit   : 6
 base   : 3ed0f8cd8921381ab3e195e9095df6ead2514c28
 trunk  : 3ed0f8cd8921381ab3e195e9095df6ead2514c28 — origin/main at registration
 ```
 
 ### Next action
 
-Start S06 with `cairn-unit` in the path's worktree: this repository
-updated with its own kit, as the plan's sixth item says.
+Start S07 with `cairn-unit` in the path's worktree: the treated notes
+into `feedbacks/1.2/`, the 1.2 page's opening, the register rows, as the
+plan's seventh item says; `package.json` is already `1.2.0` (S06).
 
 ### Blockers
 

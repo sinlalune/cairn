@@ -21,7 +21,8 @@ function walk(dir, out = []) {
   return out
 }
 
-const files = ['manifesto.md', 'README.md', ...walk('spec'), ...walk('skills')].sort()
+// Cairn's own skills: Ponytail's, which the kit writes beside them, are not this repository's text.
+const files = ['manifesto.md', 'README.md', ...walk('spec'), ...walk('skills').filter((f) => f.startsWith('skills/cairn-'))].sort()
 const content = {}
 for (const file of files) content[file] = readFileSync(join(REPO, file), 'utf8')
 

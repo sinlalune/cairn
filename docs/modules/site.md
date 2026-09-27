@@ -26,8 +26,9 @@ into the repository on the forge at the bundled commit, strips frontmatter
 and reads its title for the navigation. The navigation follows the four
 layers the owner asked for: the manifesto, the overview and quick starts, the
 specification for those who dig, and the skills. The *Skills* group is read
-off the bundle — every `SKILL.md` under `skills/` — so a skill the kit adds
-appears without a change here; the *Start* and *Specification* groups are the
+off the bundle — every `SKILL.md` under a `skills/cairn-*` folder — so a skill
+the kit adds appears without a change here, and Ponytail's two, which the kit
+writes beside them, stay Ponytail's; the *Start* and *Specification* groups are the
 five entries the app names.
 
 ## Boundaries
