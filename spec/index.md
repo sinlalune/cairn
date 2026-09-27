@@ -779,12 +779,10 @@ generated linkage from each rule to the requirement it stands behind, so a rule
 that enforces nothing stated, or a claim with no rule behind it, fails the build
 rather than drifting in silence.
 
-It also carries the **weight budget** Cairn 1.0 is measured against: this
-page under 8,000 words, the required entry chain under 3,000, one lightweight
-unit under 6 protocol files. Those are targets measured at release; a cap that
-has never bound is a count, not a constraint. What the kit installs is measured
-there too and has **no target**: a file that earns its place is added, and the
-number follows.
+It also carries the **weight budget**: this page's words, the required entry
+chain's, the files and skills the kit installs, the rules, the protocol files
+one unit writes — each measured at every release and none a target. A need
+that is balanced and justified is taken, and the number follows.
 
 ## Where to go next
 

@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-018
   route: full
   status: running
-  current_step: null
+  current_step: S01
   base_commit: f78c338f8f83596c3a87a10010f193c2e9ea5e3e
   branch: path/cp-cairn-018
   assigned_writer: cp-cairn-018-writer
@@ -113,23 +113,24 @@ record. Amendments: none.
 
 ## Steps
 
-- **S01** — not started.
+- **S01** — ADR-047 and every surface it names. [Record](./steps/S01.md).
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — this record and the live view, nothing else, on origin/main; unit 0
-unit   : 0
+commit : 78628c4d9edbe45b264b400441e3a24f34fab978 — the registration commit
+unit   : 1
 base   : f78c338f8f83596c3a87a10010f193c2e9ea5e3e
 trunk  : f78c338f8f83596c3a87a10010f193c2e9ea5e3e — origin/main at registration
 ```
 
 ### Next action
 
-S01 with `cairn-unit`: ADR-047 and every surface the definition of done
-names, in one decision unit.
+Close on S01's commit with `cairn-close`: the coherence read, `A`, the
+request, the owner's merge; then `1.2.0` tagged on the integrating
+commit.
 
 ### Blockers
 

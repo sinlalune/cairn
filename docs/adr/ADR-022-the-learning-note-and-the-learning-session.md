@@ -12,7 +12,7 @@ adr:
 
 # ADR-022 — the learning note and the learning session
 
-Status: accepted · 2026-09-09 · written by CP-CAIRN-004, S02
+Status: accepted · 2026-09-09 · written by CP-CAIRN-004, S02 · decision 2 extended by ADR-047 on 2026-09-27
 
 **Promoted from** the owner's
 [pedagogy feedback](../../feedbacks/1.1/2026-09-08-owner-feedback-pedagogy.md)
@@ -78,6 +78,10 @@ gains *and a learning session*; the concept template
 teaches a sequence orders its body.
 
 ### Decision 2 — a sixth skill, `cairn-learn`, and the thirtieth kit file
+
+**Extended** on 2026-09-27 by
+[ADR-047](./ADR-047-every-count-is-a-reading.md): every figure of the
+weight budget is a reading, not the kit's file count alone.
 
 Promotes **P3**, *Yes, a sixth skill* — adds a file.
 

@@ -1,7 +1,7 @@
 ---
 type: Cairn Reference
 title: Conformance
-description: Which requirements of the specification the reference tools check, which they only state, and what each check depends on — with the generated rule catalogue, the generated rule-to-requirement linkage, and the weight budget each release is measured against, read at 1.0.0, 1.1.0 and 1.2.0.
+description: Which requirements of the specification the reference tools check, which they only state, and what each check depends on — with the generated rule catalogue, the generated rule-to-requirement linkage, and the weight budget, every figure a reading taken at 1.0.0, 1.1.0 and 1.2.0.
 tags: [cairn, reference, conformance, enforcement, weight]
 timestamp: 2026-09-02T00:00:00Z
 ---
@@ -22,18 +22,20 @@ rather than drifting in silence.
 
 ## The weight budget
 
-Cairn is cut to a stated budget, measured at each release and recorded here.
-The targets are the convergence record's, section 4; a cap that has never
-bound is a count, not a constraint.
+Cairn's weight is measured at each release and recorded here, beside the
+earlier releases. Every figure is a reading, never a target: a need that is
+balanced and justified is taken whatever it adds, and a figure that grows is
+explained by the need that grew it
+([ADR-047](../../docs/adr/ADR-047-every-count-is-a-reading.md)).
 
-| Surface | Target | Measured at 1.0.0 | Measured at 1.1.0 | Measured at 1.2.0 |
-| :-- | --: | --: | --: | --: |
-| `spec/index.md` | under 8,000 words | 5,630 words | **6,112 words** — bound | **6,314 words** — bound |
-| the required entry chain — bootloader, path convention, binding, execution protocol | under 3,000 words | 2,895 words | **2,964 words** — bound, 36 under | **3,037 words** — **not bound, 37 over** |
-| files the kit installs | *none since ADR-022 d2 — measured, never a target* | 26 and the lock on the `ci` profile, 25 on `local` | **33 and the lock** on the `ci` profile, 32 on `local` — no target | **50 and the lock** on the `ci` profile, 49 on `local` — no target |
-| skills the kit installs | *none — measured, never a target* | 5 | 6 | **9** — Cairn's seven and Ponytail's two, each written twice, under `skills/` and `.claude/skills/` — no target |
-| rules of the checker, as the catalogue below counts them | *none — measured, never a target* | 24 — 19 blocking, 5 advisory | 27 — 21 blocking, 6 advisory | **28** — 21 blocking, 7 advisory — no target |
-| protocol files one lightweight unit writes | under 6 | 2 — the step record and the record's resume section; a whole lifecycle from registration to `done` touches 4 on `pull-request` transport and 5 on `manual-git` | **2** — the same two files; the lifecycle 4 on `pull-request` and 5 on `manual-git`, unchanged — bound | **2** — the same two files; the lifecycle 4 on `pull-request` and 5 on `manual-git`, unchanged — bound |
+| Surface | Measured at 1.0.0 | Measured at 1.1.0 | Measured at 1.2.0 |
+| :-- | --: | --: | --: |
+| `spec/index.md` | 5,630 words | 6,112 words | **6,294 words** |
+| the required entry chain — bootloader, path convention, binding, execution protocol | 2,895 words | 2,964 words | **3,037 words** |
+| files the kit installs | 26 and the lock on the `ci` profile, 25 on `local` | 33 and the lock on the `ci` profile, 32 on `local` | **50 and the lock** on the `ci` profile, 49 on `local` |
+| skills the kit installs | 5 | 6 | **9** — Cairn's seven and Ponytail's two, each written twice, under `skills/` and `.claude/skills/` |
+| rules of the checker, as the catalogue below counts them | 24 — 19 blocking, 5 advisory | 27 — 21 blocking, 6 advisory | **28** — 21 blocking, 7 advisory |
+| protocol files one lightweight unit writes | 2 — the step record and the record's resume section; a whole lifecycle from registration to `done` touches 4 on `pull-request` transport and 5 on `manual-git` | 2 — the same two files; the lifecycle 4 on `pull-request` and 5 on `manual-git` | **2** — the same two files; the lifecycle 4 on `pull-request` and 5 on `manual-git` |
 
 This table is the one place these figures are written; every other page
 links it (ADR-031 decision 1). The words are `wc -w` over each file as
@@ -43,19 +45,17 @@ folders `init` writes under `skills/`; the rules are the distinct names of
 `npm run cairn-rules`, a rule counted blocking where any of its rows
 blocks; the unit's files are what `tools/cairn-pilot.mjs` prints on each
 transport. The earlier columns were read again at their tags the same way.
-Nothing is estimated; a release that moves one past its target has to say
-so here.
+Nothing is estimated.
 
-**At 1.2.0 the required entry chain is past its target**, by 37 words, for
-the first time. It gained 73 over 1.1.0: the bootloader 24 — the seventh
-skill and the pointer page's line — the path convention 27, the execution
-protocol 22, the binding none, each the sentence a record of 1.2 asked
-for. The target is the convergence record's; whether a later release cuts
-the chain or the owner moves the target is not this release's to decide,
-and the row is the first a further release reads. The kit's row and the two rows
-beside it have no target since ADR-022 decision 2 — a file that earns its
-place is added and the number follows; the files 1.2 added are on the
-*Installation, update and adoption* row below.
+What grew at 1.2.0, and why. The specification gained 182 words over
+1.1.0, the sentences 1.2's records asked of its chapters. The entry chain
+gained 73 words:
+the bootloader 24 — the seventh skill and the pointer page's line — the
+path convention 27, the execution protocol 22, the binding none, each the
+sentence a record of 1.2 asked for. The kit gained seventeen files: the
+seventh skill, Ponytail's two, every skill's copy where Claude Code loads
+skills, and the backlog's and the channel's indexes, on the *Installation,
+update and adoption* row below.
 
 ## Where the matrix stands
 

@@ -65,6 +65,9 @@ Every other file the three adopters edited is the host's own by design.
 
 In the names of the pointer page, `cairn/README.md`:
 
+- **The weight budget** on the conformance page is readings only: the
+  specification's and the entry chain's word targets and the unit's file
+  target are withdrawn; every figure is measured and none binds (ADR-047).
 - **The skills**: `cairn-update` is new — an update of the kit
   run as a path, the owner's decisions on edited and unwanted files taken
   before the go-ahead (ADR-035). Ponytail's `ponytail` and
