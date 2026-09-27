@@ -87,8 +87,10 @@ In the names of the pointer page, `cairn/README.md`:
   commit lands before the owner reads (ADR-040).
 - **`cairn-check`** reads `feedbacks/`, a registration inside the change
   under review, the declared `linkExemptions`, and reports a stale
-  `current_step`; a concept note is cleared by any correct link from
-  outside the wiki, whatever the concept root is named.
+  `current_step`; a concept note is cleared by a Markdown link to its
+  file, relative or `/`-rooted, from outside the wiki, whatever the concept
+  root is named — and only by one: a note named only in prose, in frontmatter or by a full GitHub URL
+  now reads as an orphan.
 - **`cairn-active`** fills the register's state cells from the records
   (ADR-031, ADR-045). **`cairn-audit`** reads a plain-list definition of
   done and scaffolds the coherence facts. **`cairn-postmortem`** counts the

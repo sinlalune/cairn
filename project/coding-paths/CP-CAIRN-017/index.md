@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-017
   route: full
   status: running
-  current_step: S08
+  current_step: S09
   base_commit: 3ed0f8cd8921381ab3e195e9095df6ead2514c28
   branch: path/cp-cairn-017
   assigned_writer: cp-cairn-017-writer
@@ -439,14 +439,16 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - **S08** — ADR-046, from the closing read of `58d4080`: the line per
   changed template in the changelog, the reader running commands; the
   kit's generated files pinned at a clean commit. [Record](./steps/S08.md).
+- **S09** — the changelog names what `concept-orphan` no longer counts,
+  from the closing read of `a25f85f`. [Record](./steps/S09.md).
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 58d40800b1301109f5031dcda484ed0295ea2028 — S07; the first candidate, void by the closing read
-unit   : 8
+commit : a25f85f13b086e3cf1c2818c951a6f9de0c94749 — S08; the second candidate, void by the closing read
+unit   : 9
 base   : 3ed0f8cd8921381ab3e195e9095df6ead2514c28
 trunk  : 3ed0f8cd8921381ab3e195e9095df6ead2514c28 — origin/main at registration
 ```
