@@ -7,13 +7,13 @@ timestamp: 2026-09-27T00:00:00Z
 cairn:
   id: CP-CAIRN-018
   route: full
-  status: running
+  status: ready
   current_step: S03
   base_commit: f78c338f8f83596c3a87a10010f193c2e9ea5e3e
   branch: path/cp-cairn-018
   assigned_writer: cp-cairn-018-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 241ef43be3cf45461bf05514fe48b453647c9d16
   resolution: null
   writes:
     - docs/adr/**
@@ -125,7 +125,7 @@ record. Amendments: none.
 ### Checkpoint
 
 ```text
-commit : 0b7ee43f6507f2518c4386cd899b2f17aa31a1fb — S02; the second candidate, void by the closing read
+commit : 241ef43be3cf45461bf05514fe48b453647c9d16 — C, the third candidate: S03
 unit   : 3
 base   : f78c338f8f83596c3a87a10010f193c2e9ea5e3e
 trunk  : f78c338f8f83596c3a87a10010f193c2e9ea5e3e — origin/main at registration
@@ -133,7 +133,7 @@ trunk  : f78c338f8f83596c3a87a10010f193c2e9ea5e3e — origin/main at registratio
 
 ### Next action
 
-Close on S03's commit; then the owner reads request #36 and merges; then the integrating commit, and
+The owner reads request #36 and merges; then the integrating commit, and
 `1.2.0` tagged on it.
 
 ### Blockers
