@@ -12,22 +12,22 @@ Cairn is the most lightweight and minimalistic harness-agnostic,
 document-driven coding protocol.
 
 This repository carries **release 1.2.0**, cut from commit
-`01cef13cbeaf304aaf15ff0b811de3596d19ccf0`. Every link below resolves to the specification at that commit,
+`58d40800b1301109f5031dcda484ed0295ea2028`. Every link below resolves to the specification at that commit,
 so what you read is what you installed. What each release changes for an
 adopter, and which adopter repairs it absorbed, is in
-[the release notes](https://github.com/sinlalune/cairn/blob/01cef13cbeaf304aaf15ff0b811de3596d19ccf0/CHANGELOG.md).
+[the release notes](https://github.com/sinlalune/cairn/blob/58d40800b1301109f5031dcda484ed0295ea2028/CHANGELOG.md).
 
 This page is GENERATED, at `init` and at every `update`. Nothing on it is
 written by hand.
 
 ## The specification, in six chapters
 
-- [1. Idea and ideation](https://github.com/sinlalune/cairn/blob/01cef13cbeaf304aaf15ff0b811de3596d19ccf0/spec/index.md#1-idea-and-ideation) — where an idea is captured and turned into something a session can read
-- [2. Research](https://github.com/sinlalune/cairn/blob/01cef13cbeaf304aaf15ff0b811de3596d19ccf0/spec/index.md#2-research) — what is read before a decision, and where the notes land
-- [3. Vision and specifications](https://github.com/sinlalune/cairn/blob/01cef13cbeaf304aaf15ff0b811de3596d19ccf0/spec/index.md#3-vision-and-specifications) — what the product is, and the pages a promotion writes
-- [4. Roadmap](https://github.com/sinlalune/cairn/blob/01cef13cbeaf304aaf15ff0b811de3596d19ccf0/spec/index.md#4-roadmap) — the register of milestones, each with a coding path or none yet
-- [5. Coding cycle](https://github.com/sinlalune/cairn/blob/01cef13cbeaf304aaf15ff0b811de3596d19ccf0/spec/index.md#5-coding-cycle) — how a path opens, runs unit by unit, and closes
-- [6. Learning loop](https://github.com/sinlalune/cairn/blob/01cef13cbeaf304aaf15ff0b811de3596d19ccf0/spec/index.md#6-learning-loop) — the concept wiki, learning notes, and what a cycle leaves behind
+- [1. Idea and ideation](https://github.com/sinlalune/cairn/blob/58d40800b1301109f5031dcda484ed0295ea2028/spec/index.md#1-idea-and-ideation) — where an idea is captured and turned into something a session can read
+- [2. Research](https://github.com/sinlalune/cairn/blob/58d40800b1301109f5031dcda484ed0295ea2028/spec/index.md#2-research) — what is read before a decision, and where the notes land
+- [3. Vision and specifications](https://github.com/sinlalune/cairn/blob/58d40800b1301109f5031dcda484ed0295ea2028/spec/index.md#3-vision-and-specifications) — what the product is, and the pages a promotion writes
+- [4. Roadmap](https://github.com/sinlalune/cairn/blob/58d40800b1301109f5031dcda484ed0295ea2028/spec/index.md#4-roadmap) — the register of milestones, each with a coding path or none yet
+- [5. Coding cycle](https://github.com/sinlalune/cairn/blob/58d40800b1301109f5031dcda484ed0295ea2028/spec/index.md#5-coding-cycle) — how a path opens, runs unit by unit, and closes
+- [6. Learning loop](https://github.com/sinlalune/cairn/blob/58d40800b1301109f5031dcda484ed0295ea2028/spec/index.md#6-learning-loop) — the concept wiki, learning notes, and what a cycle leaves behind
 
 ## The skills
 

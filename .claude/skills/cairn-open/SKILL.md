@@ -21,7 +21,7 @@ there is named in the goal and its file declared in `writes:`, and this path's
 last unit deletes the file.
 
 One folder, born as one, from the
-[path template](https://github.com/sinlalune/cairn/blob/01cef13cbeaf304aaf15ff0b811de3596d19ccf0/spec/reference/path-template.md):
+[path template](https://github.com/sinlalune/cairn/blob/58d40800b1301109f5031dcda484ed0295ea2028/spec/reference/path-template.md):
 
 ```text
 project/coding-paths/CP-<ID>/

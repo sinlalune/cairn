@@ -1,7 +1,7 @@
 ---
 type: Cairn Folder Index
 title: Feedbacks — treated by 1.2
-description: The thirteen notes whose asks Cairn 1.2 promoted, implemented and released; each line names what answered it, so a reader standing on a note reaches the records and the paths without reading them all.
+description: The notes whose asks Cairn 1.2 promoted, implemented and released; each line names what answered it, so a reader standing on a note reaches the records and the paths without reading them all.
 tags: [index, cairn, feedback, 1.2]
 timestamp: 2026-09-27T00:00:00Z
 ---

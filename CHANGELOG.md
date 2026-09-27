@@ -65,7 +65,7 @@ Every other file the three adopters edited is the host's own by design.
 
 In the names of the pointer page, `cairn/README.md`:
 
-- **The skills** are seven: `cairn-update` is new — an update of the kit
+- **The skills**: `cairn-update` is new — an update of the kit
   run as a path, the owner's decisions on edited and unwanted files taken
   before the go-ahead (ADR-035). Ponytail's `ponytail` and
   `ponytail-review` are fetched from the plugin's latest release at `init`

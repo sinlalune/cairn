@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-017
   route: full
   status: running
-  current_step: S07
+  current_step: S08
   base_commit: 3ed0f8cd8921381ab3e195e9095df6ead2514c28
   branch: path/cp-cairn-017
   assigned_writer: cp-cairn-017-writer
@@ -114,7 +114,12 @@ The owner ruled on 2026-09-26: *take four plus the two*.
       its author's cell while it counts a path with no record; ADR-031
       gains a line naming it, the 1.2 page is amended in place and marked,
       the records' index lists it with no gap, and the backlog item that
-      asked for it is deleted in the same unit.
+      asked for it is deleted in the same unit. A second record, ADR-046,
+      states the two rulings the release met — the line per changed
+      template in the changelog, superseding ADR-015 decision 2's printed
+      line, and the reader checking a claim by running it, amending
+      ADR-017's first consequence — each marked on the record it changes
+      and listed in the index.
 - [ ] Four backlog items are answered and deleted in the unit that lands
       them: the open skill's registration commit carries `steps/` or its
       first unit creates it, and this repository's registration sequence
@@ -204,8 +209,8 @@ The owner ruled on 2026-09-26: *take four plus the two*.
       test, the installer only in its header comment and the bootloader
       template; the governing documents other than the 1.2 page, ADR-031
       and ADR-015 are byte-identical at the candidate to what they are at
-      `base_commit`, and those three change only where S01, S03 and the
-      opening sentence say — every document here excepted in the relative
+      `base_commit`, and those three change only where S01, S03, S08 and
+      the opening sentence say — every document here excepted in the relative
       links to the notes S07 moves into `feedbacks/1.2/`, rewritten one
       level down and nothing else.
 - [ ] Every completed step has one self-contained step record naming the
@@ -260,7 +265,7 @@ the four items that leave a defect in an adopter's hands and the closing
 report's two sentences, the three structural items left to the next row.
 The owner's go-ahead was given in the chat and is this acceptance
 (ADR-001 decisions 1 and 2), and the record lands on the trunk directly.
-The units run in a fresh session. Amendments: three, below.
+The units run in a fresh session. Amendments: four, below.
 
 ### Amendment of 2026-09-26 — `cairn-code` brought to ADR-036
 
@@ -339,6 +344,30 @@ scope_digest: sha256:020a85836b50eefd7863381d85bca4efa79e195df22ee9c30fff033e51f
 supersedes: 2026-09-27T16:05:58Z
 ```
 
+### Amendment of 2026-09-27 — ADR-046, from the closing read
+
+The fresh coherence reader of the first candidate, `58d4080`, found that
+it contradicts ADR-015 decision 2 — the decision still has `update` print
+the line per changed template, and the owner's ruling that the line lives
+in the changelog stood only in this record — and that ADR-017's first
+consequence was amended on a ruling this record alone carries. The owner
+was asked in the chat and chose a record and a new candidate: ADR-046,
+with the reader's four small findings the owner picked.
+
+This acceptance supersedes the one above it. Item 1 names a second
+record, ADR-046; item 9 lets ADR-015 change where S08 says. The other
+ten items are the text they were accepted with. `58d4080` is void.
+
+```yaml
+decision: accepted
+accepted_by: sinlalune
+accepted_roles: [initiator, reviewer]
+accepted_at: 2026-09-27T17:32:17Z
+scope_ref: project/coding-paths/CP-CAIRN-017/index.md#definition-of-done
+scope_digest: sha256:f50c0e344efa39309e23f6baab0a6ca77dd6dd5145b6d8be4a256b02085df131
+supersedes: 2026-09-27T16:14:34Z
+```
+
 ## Documentation coverage
 
 ### Required
@@ -407,14 +436,17 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 - **S07** — thirteen notes treated by 1.2 in `feedbacks/1.2/`, ADR-038
   decision 4's sentence, the reader's clause in the unit skill, the 1.2
   page's opening, the register rows; two amendments. [Record](./steps/S07.md).
+- **S08** — ADR-046, from the closing read of `58d4080`: the line per
+  changed template in the changelog, the reader running commands; the
+  kit's generated files pinned at a clean commit. [Record](./steps/S08.md).
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 01cef13cbeaf304aaf15ff0b811de3596d19ccf0 — S06, this repository updated with its own kit
-unit   : 7
+commit : 58d40800b1301109f5031dcda484ed0295ea2028 — S07; the first candidate, void by the closing read
+unit   : 8
 base   : 3ed0f8cd8921381ab3e195e9095df6ead2514c28
 trunk  : 3ed0f8cd8921381ab3e195e9095df6ead2514c28 — origin/main at registration
 ```

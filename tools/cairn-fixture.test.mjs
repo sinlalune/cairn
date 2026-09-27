@@ -479,7 +479,7 @@ test('adversarial: concept-orphan — a top-level concept root, linked only from
 
 // Backlog 2026-09-24: a link was read for the word `concepts/`, so under a
 // root named otherwise no correct link cleared a note. It is resolved against
-// the linking file's folder and the declared root, as `links` resolves it.
+// the linking file's folder and the declared root, as GitHub resolves it.
 test('adversarial: concept-orphan — a root named otherwise, a note one folder down linked from outside', () => {
   const dir = publishedTrunk({ conceptsRoot: 'wiki' })
   try {

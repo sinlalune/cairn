@@ -55,7 +55,7 @@ Name the unit's **type** — it fixes what must move together:
 
 Where the violation is a published step record that was edited, the repair's
 own `cairn-unit` block declares it, in the shape and with the two commands
-[the path template](https://github.com/sinlalune/cairn/blob/01cef13cbeaf304aaf15ff0b811de3596d19ccf0/spec/reference/path-template.md) gives. Both ids are
+[the path template](https://github.com/sinlalune/cairn/blob/58d40800b1301109f5031dcda484ed0295ea2028/spec/reference/path-template.md) gives. Both ids are
 read, never chosen.
 
 Every figure, id or outcome written into a record is pasted from a

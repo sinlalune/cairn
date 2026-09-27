@@ -7,7 +7,7 @@ description: Write the notes of the first two stages of a Cairn project — a br
 
 You get an idea. Instead of coding it, you write it down and sit on it. This
 skill writes the two notes that come before any specification, in the shape
-the [specification](https://github.com/sinlalune/cairn/blob/01cef13cbeaf304aaf15ff0b811de3596d19ccf0/spec/index.md) states in its chapters 1 and 2, and
+the [specification](https://github.com/sinlalune/cairn/blob/58d40800b1301109f5031dcda484ed0295ea2028/spec/index.md) states in its chapters 1 and 2, and
 knows when one of them is ready to become vision.
 
 ## When an idea arrives
