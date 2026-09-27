@@ -7,13 +7,13 @@ timestamp: 2026-09-26T00:00:00Z
 cairn:
   id: CP-CAIRN-017
   route: full
-  status: running
+  status: ready
   current_step: S10
   base_commit: 3ed0f8cd8921381ab3e195e9095df6ead2514c28
   branch: path/cp-cairn-017
   assigned_writer: cp-cairn-017-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: c8b5b269570f99fc93735a8b5e2a6686159583e7
   resolution: null
   writes:
     - CHANGELOG.md
@@ -449,7 +449,7 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : 3845454090afe115435d7d9270d1129e8ac4fba3 — A on the third candidate, void by the request's reviewer
+commit : c8b5b269570f99fc93735a8b5e2a6686159583e7 — C, the fourth candidate: S10
 unit   : 10
 base   : 3ed0f8cd8921381ab3e195e9095df6ead2514c28
 trunk  : 3ed0f8cd8921381ab3e195e9095df6ead2514c28 — origin/main at registration
@@ -457,9 +457,8 @@ trunk  : 3ed0f8cd8921381ab3e195e9095df6ead2514c28 — origin/main at registratio
 
 ### Next action
 
-Close on S10's commit as the fourth candidate: the coherence read, `A`,
-the request #35 updated; then the owner reads the request, opens the site
-and the README, runs one quick start, and merges; then the integrating commit on the trunk, the
+The owner reads request #35, opens the site and the README, runs one
+quick start, and merges; then the integrating commit on the trunk, the
 tag `1.2.0` on it, the owner's publish.
 
 ### Blockers
