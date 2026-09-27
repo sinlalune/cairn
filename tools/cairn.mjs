@@ -23,7 +23,8 @@
  * THE KIT IS THIN. It installs the reference tools, the skills, the host
  * files — bootloader, configuration, binding, workflow, request template — and
  * the folder indexes the roles need, and nothing else. What that comes to is
- * measured and reported, never a target (ADR-022 d2). It does not copy the
+ * counted in the weight budget of spec/reference/conformance.md and written
+ * nowhere else, never a target (ADR-022 d2, ADR-031 d1). It does not copy the
  * specification: an adopter reads it at the release the kit was cut from, by
  * link, and every link the kit writes is pinned to that release's commit, so a
  * repository installed today still resolves to the text it was installed from.
@@ -387,8 +388,8 @@ This file points; it does not carry project memory.
 5. \`${SKILLS}/\` — the procedures as Agent Skills: \`cairn-brainstorm\`,
    \`cairn-open\`, \`cairn-unit\`, \`cairn-close\`, \`cairn-update\`,
    \`cairn-learn\`, and the \`cairn-code\` stance.
-6. \`${POINTER_PAGE}\` — which release is installed, the six chapters and the
-   skills linked at its commit, and every file the kit owns. Generated.
+6. \`${POINTER_PAGE}\` — which release is installed, the six chapters
+   linked at its commit, the skills, and every file the kit owns. Generated.
 
 The [specification](${spec}/index.md) is read at the release this repository
 installed, release ${PROTOCOL_RELEASE}; \`npx cairn-protocol status\` says whether a

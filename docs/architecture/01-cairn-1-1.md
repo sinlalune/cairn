@@ -114,9 +114,9 @@ marked *since 2026-09-15* where it changes what an earlier sentence of
 this page said.
 
 **Marked from 2026-09-21** by the promotion of Cairn 1.2, CP-CAIRN-012,
-from the owner's [decisions page](../../feedbacks/2026-09-21-cairn-1-2-decisions.md)
+from the owner's [decisions page](../../feedbacks/1.2/2026-09-21-cairn-1-2-decisions.md)
 at blob `cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` and the
-[asks note](../../feedbacks/2026-09-21-cairn-1-2-the-asks.md) at blob
+[asks note](../../feedbacks/1.2/2026-09-21-cairn-1-2-the-asks.md) at blob
 `837262d5b3a761ef14d14bad0be8278133256e53`. This page is not amended:
 where a 1.2 record supersedes a decision a sentence here relies on, the
 sentence keeps its words and gains a *superseded by* mark naming the

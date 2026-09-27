@@ -35,8 +35,9 @@ it, and never commit it in place or widen `writes:` to hold it.
 ## 1. Plan
 
 Write, in the new step file `steps/S<NN>.md` — every type but `closure` has
-one — what this unit will change and what it deliberately will not, and name
-the item of the definition of done it advances. A unit that advances none is the signal to stop: amend the scope
+one, and the first unit makes `steps/` — what this unit will change and what
+it deliberately will not, and name the item of the definition of done it
+advances. A unit that advances none is the signal to stop: amend the scope
 with a superseding acceptance, or open another path.
 
 Name the unit's **type** — it fixes what must move together:
@@ -56,6 +57,9 @@ Where the violation is a published step record that was edited, the repair's
 own `cairn-unit` block declares it, in the shape and with the two commands
 [the path template](../../spec/reference/path-template.md) gives. Both ids are
 read, never chosen.
+
+Every figure, id or outcome written into a record is pasted from a
+command's output, never recalled.
 
 If the plan reveals a `full`-route trigger on a `lightweight` path, escalate
 now and say why in the step.
@@ -91,18 +95,19 @@ that apply to prose. Name any widening of `writes:` here.
 Hand the diff to a second context of your own agent — a fresh session, or a
 subagent, or your harness's own review command. Give it the diff and two
 criteria — the decision ladder `cairn-code` points at, and correctness — and
-nothing else: not the plan, not this conversation, not the step record. When
-no fresh context can be obtained — a subagent that hangs, a harness without
-one, a command that returns nothing — read the diff yourself against the same
-two criteria, and open the section with one line naming the reader: a fresh
-context and which kind, or you, with the reason and how long you waited
-(ADR-017, decision 4).
+nothing else: not the plan, not this conversation, not the step record. Tell
+it to check a claim by running the command that prints it, never by reading
+the prose alone. When no fresh context can be obtained — a subagent that
+hangs, a harness without one, a command that returns nothing — read the
+diff yourself against the same two criteria, and open the section with one
+line naming the reader: a fresh context and which kind, or you, with the
+reason and how long you waited (ADR-017, decision 4).
 
 Write what it returns into a `#### Review` section of the step, between the
-self-review and the verification: one line per finding with its disposition —
-fixed in this unit, refused with the reason, or deferred, with a file under
-`project/backlog/` that the disposition names — or one sentence saying it
-found nothing. A step without that section is not a completed unit.
+self-review and the verification, before the unit's commit and never after:
+one line per finding with its disposition — fixed in this unit, refused with
+the reason, or deferred, with a file under `project/backlog/` that the
+disposition names — or one sentence saying it found nothing. A step without that section is not a completed unit.
 
 A finding you fix changes the diff the reader judged. Give the fix back to a
 fresh context — only the lines it changed, the same two criteria, nothing else
@@ -124,7 +129,8 @@ npm test
 is the protocol repository's, not an adopter's concern.
 
 Then finish the step record with its `cairn-unit` block — step, ordinal, type,
-what verified it — and refresh the **resume section** of `index.md`: the
+what verified it — set the declaration's `current_step` to this unit's step,
+and refresh the **resume section** of `index.md`: the
 checkpoint (the last completed commit already on the remote, never this one),
 the single next action, blockers, tried and rejected, reading order, verify.
 

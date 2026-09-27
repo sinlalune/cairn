@@ -12,7 +12,7 @@ adr:
 
 # ADR-017 — the review movement
 
-Status: accepted · 2026-09-07 · written by CP-CAIRN-003, S02; decision 3 added by S07 on 2026-09-08; decision 4 added by CP-CAIRN-010 S01 on 2026-09-15
+Status: accepted · 2026-09-07 · written by CP-CAIRN-003, S02; decision 3 added by S07 on 2026-09-08; decision 4 added by CP-CAIRN-010 S01 on 2026-09-15; the first consequence amended by ADR-046 on 2026-09-27
 
 **Promoted from** the owner's
 [decisions page](../../project/brainstorm/2026-09-07-coding-guidelines-decisions.md)
@@ -229,7 +229,11 @@ change: the movement, its count and its order are what they were.
 
 - Every unit costs one more context: the reader's. It reads the diff and
   two criteria, not the repository, and the movement is the shortest of
-  the five.
+  the five. **Amended** on 2026-09-27 by
+  [ADR-046](./ADR-046-what-the-release-of-1-2-left-to-a-record.md),
+  decision 2: the reader checks a claim of the diff by running the
+  command that prints it, which reads the repository; it is still given
+  nothing but the diff and the two criteria.
 - The step record gains a section, and the checker reads a second thing
   in the step file: the `cairn-unit` block today, the review section now.
   It reads nothing of the section's content beyond emptiness, and it reads the

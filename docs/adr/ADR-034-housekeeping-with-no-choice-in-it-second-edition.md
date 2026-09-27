@@ -15,13 +15,13 @@ adr:
 Status: accepted · 2026-09-21 · written by CP-CAIRN-012, S02
 
 **Promoted from** the owner's
-[decisions page](../../feedbacks/2026-09-21-cairn-1-2-decisions.md) at blob
+[decisions page](../../feedbacks/1.2/2026-09-21-cairn-1-2-decisions.md) at blob
 `cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` (Q16, *do all of it in 1.2*)
-and the [asks note](../../feedbacks/2026-09-21-cairn-1-2-the-asks.md) at
+and the [asks note](../../feedbacks/1.2/2026-09-21-cairn-1-2-the-asks.md) at
 blob `837262d5b3a761ef14d14bad0be8278133256e53` (K09, K10, K11, K15,
 K19, K23, K24, K25, K29, K30 and K36, across themes 3 to 6). The lines
-come from [Crumbz's update note](../../feedbacks/2026-09-16-crumbz-update-to-1-1.md),
-observations 2, 3, 4, 5, 7, 8 and 9, [Atomik's adoption note](../../feedbacks/2026-09-21-atomik-adopts-1-1.md),
+come from [Crumbz's update note](../../feedbacks/1.2/2026-09-16-crumbz-update-to-1-1.md),
+observations 2, 3, 4, 5, 7, 8 and 9, [Atomik's adoption note](../../feedbacks/1.2/2026-09-21-atomik-adopts-1-1.md),
 observation 2, [coding path 6's journal entry](../../project/log/2026-09-15-cp-cairn-010.md),
 and [the release path](../../project/coding-paths/CP-CAIRN-011/index.md),
 S01 and S04. All of them stay exactly as they were.

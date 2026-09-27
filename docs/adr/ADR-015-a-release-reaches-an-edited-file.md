@@ -12,7 +12,7 @@ adr:
 
 # ADR-015 — a release reaches an edited file
 
-Status: accepted · 2026-09-07 · written by CP-CAIRN-002, S07
+Status: accepted · 2026-09-07 · written by CP-CAIRN-002, S07 · decision 2's printed line superseded by ADR-046 on 2026-09-27
 
 **Promoted from** the owner's
 [decisions page](../../feedbacks/1.1/2026-09-06-cairn-1-1-decisions.md) at blob
@@ -54,6 +54,13 @@ nothing of the adopter's is in it, so the review protected nothing. The
 lock already tells pristine from edited, for every file it names.
 
 ### Decision 2 — an edited file is never rewritten, and the release says what it changes
+
+The clause *`update` prints that line beside the diff; where the line
+is missing, the diff alone is printed* **superseded**
+on 2026-09-27 by
+[ADR-046](./ADR-046-what-the-release-of-1-2-left-to-a-record.md),
+decision 1: the line is written in the release's changelog section, and
+`update` prints the diff alone.
 
 An edited file, kit or host, is kept. For each one whose template the
 release changed, `update` prints the difference between the release's
@@ -118,5 +125,5 @@ recognise.
 | Decision | Surface it changes | Named today as |
 | :-- | :-- | :-- |
 | 1 | the installation status | `tools/cairn.mjs`, `installationStatus`; `tools/cairn.test.mjs` |
-| 2 | the update report, the pointer page, the release's package | `tools/cairn.mjs`, `update`; `cairn/README.md` as written; `package.json` of the release — the line per changed template is *pending*; row 5 of [the register's coding paths of 1.2](../../project/coding-paths/index.md) owes it (ADR-031 d3) |
+| 2 | the update report, the pointer page, the release's package | `tools/cairn.mjs`, `update`; `cairn/README.md` as written; `package.json` of the release; the line per changed template is written in the release's section of [`CHANGELOG.md`](../../CHANGELOG.md); `update` prints the diff and the pointer page it writes links the release notes, as [ADR-046](./ADR-046-what-the-release-of-1-2-left-to-a-record.md) decision 1 says |
 | 3 | the update command | `tools/cairn.mjs`, `update`; `tools/cairn.test.mjs` |

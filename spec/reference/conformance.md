@@ -1,7 +1,7 @@
 ---
 type: Cairn Reference
 title: Conformance
-description: Which requirements of the specification the reference tools check, which they only state, and what each check depends on — with the generated rule catalogue, the generated rule-to-requirement linkage, and the weight budget each release is measured against, read at 1.0.0 and at 1.1.0.
+description: Which requirements of the specification the reference tools check, which they only state, and what each check depends on — with the generated rule catalogue, the generated rule-to-requirement linkage, and the weight budget each release is measured against, read at 1.0.0, 1.1.0 and 1.2.0.
 tags: [cairn, reference, conformance, enforcement, weight]
 timestamp: 2026-09-02T00:00:00Z
 ---
@@ -26,28 +26,36 @@ Cairn is cut to a stated budget, measured at each release and recorded here.
 The targets are the convergence record's, section 4; a cap that has never
 bound is a count, not a constraint.
 
-| Surface | Target | Measured at 1.0.0 | Measured at 1.1.0 |
-| :-- | --: | --: | --: |
-| `spec/index.md` | under 8,000 words | 5,630 words | **6,112 words** — bound |
-| the required entry chain — bootloader, path convention, binding, execution protocol | under 3,000 words | 2,895 words | **2,964 words** — bound, 36 under |
-| files the kit installs | *none since ADR-022 d2 — measured, never a target* | 26 and the lock on the `ci` profile, 25 on `local` | **33 and the lock** on the `ci` profile, 32 on `local` — no target |
-| protocol files one lightweight unit writes | under 6 | 2 — the step record and the record's resume section; a whole lifecycle from registration to `done` touches 4 on `pull-request` transport and 5 on `manual-git` | **2** — the same two files; the lifecycle 4 on `pull-request` and 5 on `manual-git`, unchanged — bound |
+| Surface | Target | Measured at 1.0.0 | Measured at 1.1.0 | Measured at 1.2.0 |
+| :-- | --: | --: | --: | --: |
+| `spec/index.md` | under 8,000 words | 5,630 words | **6,112 words** — bound | **6,314 words** — bound |
+| the required entry chain — bootloader, path convention, binding, execution protocol | under 3,000 words | 2,895 words | **2,964 words** — bound, 36 under | **3,037 words** — **not bound, 37 over** |
+| files the kit installs | *none since ADR-022 d2 — measured, never a target* | 26 and the lock on the `ci` profile, 25 on `local` | **33 and the lock** on the `ci` profile, 32 on `local` — no target | **50 and the lock** on the `ci` profile, 49 on `local` — no target |
+| skills the kit installs | *none — measured, never a target* | 5 | 6 | **9** — Cairn's seven and Ponytail's two, each written twice, under `skills/` and `.claude/skills/` — no target |
+| rules of the checker, as the catalogue below counts them | *none — measured, never a target* | 24 — 19 blocking, 5 advisory | 27 — 21 blocking, 6 advisory | **28** — 21 blocking, 7 advisory — no target |
+| protocol files one lightweight unit writes | under 6 | 2 — the step record and the record's resume section; a whole lifecycle from registration to `done` touches 4 on `pull-request` transport and 5 on `manual-git` | **2** — the same two files; the lifecycle 4 on `pull-request` and 5 on `manual-git`, unchanged — bound | **2** — the same two files; the lifecycle 4 on `pull-request` and 5 on `manual-git`, unchanged — bound |
 
-Every target that has one bound at 1.0.0 and bound again at 1.1.0. The
-words are `wc -w` over each file as committed, frontmatter included — the
-reading that gave 5,630 and 2,895 at the 1.0.0 tag gives 6,112 and 2,964 at
-1.1.0; the kit's files are what `init` writes on each profile, as the lock's
-manifest counts them; the unit's files are what `tools/cairn-pilot.mjs`
-prints. Nothing is estimated; a release that moves one past its target has to
-say so here. The entry chain gained 69 words between the two releases, all in
-the bootloader and the binding — the sixth skill on the *start here* list, the
-two lines on explaining (ADR-011, ADR-021), `npm test` named as the alias of
-`cairn-test`, the registration transport's row — while the path convention
-and the execution protocol did not move; its row is the one reading a further
-release must watch. The kit's row lost its target at ADR-022
-decision 2 — a file that earns its place is added and the number follows — so
-that row is a reading and nothing is asked of it; the seven files 1.1 added
-are on the *Installation, update and adoption* row below.
+This table is the one place these figures are written; every other page
+links it (ADR-031 decision 1). The words are `wc -w` over each file as
+committed, frontmatter included; the kit's files are what `init` writes on
+each profile, as the lock's manifest counts them; the skills are the
+folders `init` writes under `skills/`; the rules are the distinct names of
+`npm run cairn-rules`, a rule counted blocking where any of its rows
+blocks; the unit's files are what `tools/cairn-pilot.mjs` prints on each
+transport. The earlier columns were read again at their tags the same way.
+Nothing is estimated; a release that moves one past its target has to say
+so here.
+
+**At 1.2.0 the required entry chain is past its target**, by 37 words, for
+the first time. It gained 73 over 1.1.0: the bootloader 24 — the seventh
+skill and the pointer page's line — the path convention 27, the execution
+protocol 22, the binding none, each the sentence a record of 1.2 asked
+for. The target is the convergence record's; whether a later release cuts
+the chain or the owner moves the target is not this release's to decide,
+and the row is the first a further release reads. The kit's row and the two rows
+beside it have no target since ADR-022 decision 2 — a file that earns its
+place is added and the number follows; the files 1.2 added are on the
+*Installation, update and adoption* row below.
 
 ## Where the matrix stands
 
@@ -113,10 +121,11 @@ the first adopter's candidate was refused by.
 | The concept wiki: an orphan blocks, growth is reported | **implemented**; `concept-orphan` blocks a concept that no document outside the wiki links, and `concept-growth` reports the articles a change adds (chapter 6). Both read the root recursively, through every folder under it, and name a note by its path there — an adopter's root is three folders (ADR-011 d2) and a flat read would police none of them | only the protocol scope is bound here, where the root is flat and is the `cairn` scope itself; a project's own wiki binds through `roots.concepts` |
 | Every relative link in the corpus resolves | **implemented**; `links` blocks a relative Markdown link that resolves nowhere, code stripped, across the documentation plane, the project plane, the specification, `skills/` and `feedbacks/` (ADR-038 d1), and does not read a file or folder `cairn.config.json` declares under `linkExemptions` with its reason (ADR-037 d1) | none; the two exemptions of 0.2 — a portrayal of another repository and a journal frozen by its own first lines — left the checker deliberately in CP-CAIRN-001 S02, as its S06 and ADR-037's context record, and a portrayal or a frozen history is the adopter's to declare (ADR-037 d2) |
 | An adversarial fixture per blocking rule | **implemented**; every blocking rule has a fixture that installs a real repository with `cairn-init`, proves it green, introduces exactly one violation and requires that rule among the blocking findings; coverage is declared, so a new blocking rule forces the choice; on a no-rewrite host every fixture built on the path and closure harnesses carries another path's completed unit, landed on the trunk through its own integration, so a rule that reads other paths' records as evidence about this one is not proved by a single-path history (ADR-004 decision 4) | a fixture proves the rule catches *that* violation, not the class. The fixtures that build their own registration on a fresh installation — `registration`, `registration-base` — and the corpus ones do not use those harnesses and carry no merge |
-| Installation, update and adoption | **implemented**; the `cairn` command of the `cairn-protocol` package: `init` installs a thin kit — the reference tools, the six skills, the host files and the folder indexes of both planes, measured at 33 files and the lock on the `ci` profile and 32 on `local`, a figure reported and never a target (ADR-022 d2) — that links the specification and the path convention at the commit it was cut from and passes its own gate on the first command; `status` tells pristine, edited and missing kit files apart by the lock's digests and says whether a newer release exists; `update` rewrites every pristine file whoever owns it, restores missing ones, keeps edited ones and prints what the release changed in each, takes the release's version of one named file on `--take`, deletes pristine files that left the kit, migrates the configuration from schema 1, and writes the new lock; `adopt` turns a repository carrying the protocol without a lock into an installation — configuration migrated, tools and skills written, host files kept where they exist, the view regenerated, the lock written, every 0.2 shape reported and none deleted | the npm name `cairn` is another package's, so the package is `cairn-protocol` and its binary `cairn`; publishing is the release's; the tarball is stamped with the commit it was cut from by `prepack`, and the specification links pin it — a package that is not stamped links the trunk and says so; ownership decides what happens to a file that LEFT the kit, not to one that is still in it: a pristine file is the release's to rewrite because nothing of the adopter's is in it (ADR-015 d1), while a host file that left the kit is reported and never deleted |
-| The pilots | **greenfield pilot rerun at 1.0.0 as a command**, `tools/cairn-pilot.mjs`, and as a test in the suite: a repository the kit installs is driven from `init` to `done` on each transport, green at every gate — installed, registered, unit pushed, candidate, ready, done — with two protocol files per unit. The 0.2 pilot of 2026-09-01 wrote 24 protocol files for one unit and could not close on the first run. **Cold resume run once** at 0.2 (20 trials, 35% would act without asking) against the brief; not rerun against the resume section | the pilot simulates the forge's merge on `pull-request` transport with the local merge the integrating checkout fetches back; a second writer and a hosted remote are outside it; the cold-resume trial against the resume section is a 1.1 measurement |
+| Installation, update and adoption | **implemented**; the `cairn` command of the `cairn-protocol` package: `init` installs a thin kit — the reference tools, the skills, the host files and the folder indexes of both planes, counted in [the weight budget](#the-weight-budget) and never a target (ADR-022 d2) — that links the specification and the path convention at the commit it was cut from and passes its own gate on the first command; `status` tells pristine, edited and missing kit files apart by the lock's digests and says whether a newer release exists; `update` rewrites every pristine file whoever owns it, restores missing ones, keeps edited ones and prints what the release changed in each, takes the release's version of one named file on `--take`, deletes pristine files that left the kit, migrates the configuration from schema 1, and writes the new lock; `adopt` turns a repository carrying the protocol without a lock into an installation — configuration migrated, tools and skills written, host files kept where they exist, the view regenerated, the lock written, every 0.2 shape reported and none deleted | the npm name `cairn` is another package's, so the package is `cairn-protocol` and its binary `cairn`; publishing is the release's; the tarball is stamped with the commit it was cut from by `prepack`, and the specification links pin it — a package that is not stamped links the trunk and says so; ownership decides what happens to a file that LEFT the kit, not to one that is still in it: a pristine file is the release's to rewrite because nothing of the adopter's is in it (ADR-015 d1), while a host file that left the kit is reported and never deleted |
+| The pilots | **greenfield pilot rerun at 1.0.0 as a command**, `tools/cairn-pilot.mjs`, and as a test in the suite: a repository the kit installs is driven from `init` to `done` on each transport, green at every gate — installed, registered, unit pushed, candidate, ready, done. The 0.2 pilot of 2026-09-01 wrote 24 protocol files for one unit and could not close on the first run. **Cold resume run once** at 0.2 (20 trials, 35% would act without asking) against the brief; not rerun against the resume section | the pilot simulates the forge's merge on `pull-request` transport with the local merge the integrating checkout fetches back; a second writer and a hosted remote are outside it; the cold-resume trial against the resume section is a 1.1 measurement |
 
-The current supported claim is therefore:
+The claim supported at 1.0.0 was, and holds at 1.2.0 with the figures of
+[the weight budget](#the-weight-budget):
 
 > Cairn 1.0 is a local-first coordination and project-memory protocol for a
 > team of trusted developers and coding agents working through remote Git

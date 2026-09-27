@@ -30,8 +30,8 @@ cairn:
 ## Goal
 
 The owner answered the twenty questions of the
-[decisions page](../../../feedbacks/2026-09-21-cairn-1-2-decisions.md) on
-2026-09-21 and the [asks note](../../../feedbacks/2026-09-21-cairn-1-2-the-asks.md)
+[decisions page](../../../feedbacks/1.2/2026-09-21-cairn-1-2-decisions.md) on
+2026-09-21 and the [asks note](../../../feedbacks/1.2/2026-09-21-cairn-1-2-the-asks.md)
 was ticked from those answers: thirty-six asks taken, none deferred, none
 refused, nothing undecided. Neither note designs anything. This path is the
 promotion unit of the specification's chapter 3: the asks become accepted

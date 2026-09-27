@@ -68,7 +68,7 @@ rows 2 and 1 are done, rows 4 and 5 own the rest, and the kit's counts are
 written once by row 5.
 
 **Atomik's update note, placed.** The
-[note of 2026-09-22](../../../feedbacks/2026-09-22-atomik-first-update.md)
+[note of 2026-09-22](../../../feedbacks/1.2/2026-09-22-atomik-first-update.md)
 reached the folder after the asks were listed. Its first observation, the
 lock churning on the clock, is ADR-034 decision 2 seen from the lock; its
 third, the pointer page and the lock disagreeing in one command, is

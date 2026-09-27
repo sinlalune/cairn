@@ -12,9 +12,9 @@ cairn:
 
 Written by the agent that ran coding path 4 of 1.1 — Claude Code, the
 `cp-cairn-009-writer` — on 2026-09-15, from that path's
-[path record](../project/coding-paths/CP-CAIRN-009/index.md) and
-[journal entry](../project/log/2026-09-15-cp-cairn-009.md), under
-[ADR-028](../docs/adr/ADR-028-a-feedback-file-when-nothing-broke.md). Every
+[path record](../../project/coding-paths/CP-CAIRN-009/index.md) and
+[journal entry](../../project/log/2026-09-15-cp-cairn-009.md), under
+[ADR-028](../../docs/adr/ADR-028-a-feedback-file-when-nothing-broke.md). Every
 gate of the path was green at every unit.
 
 **What is deliberately not here.** Sixteen of the twenty fresh contexts
@@ -33,7 +33,7 @@ one placeholder, accepted on 2026-09-06 and read by two promotion paths
 without anyone asking what the kit would write there.
 
 **What it cost.** It surfaced in
-[S02](../project/coding-paths/CP-CAIRN-009/steps/S02.md), when code had to
+[S02](../../project/coding-paths/CP-CAIRN-009/steps/S02.md), when code had to
 create the folder and found the kit has no project name: `init` knows its
 target, but `update` and `adopt` re-plan from `cairn.config.json`, which
 records none, so a name derived from the directory drifts on a rename and
@@ -58,15 +58,15 @@ README. The roadmap register's State column said `running` for four paths
 that were done, while each path's record already carried `status: done`.
 
 **What it cost.** The two counts were corrected across
-[S01](../project/coding-paths/CP-CAIRN-009/steps/S01.md),
-[S02](../project/coding-paths/CP-CAIRN-009/steps/S02.md),
-[S03](../project/coding-paths/CP-CAIRN-009/steps/S03.md) and
-[S04](../project/coding-paths/CP-CAIRN-009/steps/S04.md): each unit
+[S01](../../project/coding-paths/CP-CAIRN-009/steps/S01.md),
+[S02](../../project/coding-paths/CP-CAIRN-009/steps/S02.md),
+[S03](../../project/coding-paths/CP-CAIRN-009/steps/S03.md) and
+[S04](../../project/coding-paths/CP-CAIRN-009/steps/S04.md): each unit
 corrected the copies it found, and each review then found one more the
 unit had missed; the file count itself moved twice inside the path — 32
 and the lock at S03, 33 at S04 — so a document corrected in one unit was
 stale again in the next. The register's four stale rows were named in
-[S06](../project/coding-paths/CP-CAIRN-009/steps/S06.md), raised to the
+[S06](../../project/coding-paths/CP-CAIRN-009/steps/S06.md), raised to the
 owner and left, being outside the path's acceptance.
 
 **The change to Cairn.** A measured figure is written in one place and
@@ -91,7 +91,7 @@ the adopter's `npm test` is the adopter's. A generated bootloader
 claiming the alias would be false in every installation.
 
 **What it cost.** The writer found the contradiction in
-[S01](../project/coding-paths/CP-CAIRN-009/steps/S01.md), on a
+[S01](../../project/coding-paths/CP-CAIRN-009/steps/S01.md), on a
 control-plane surface, with the item sealed by the opening acceptance's
 digest — it could be read, not edited. The writer ruled the reading alone
 — the alias sentence is this repository's, the kit's bootloader names no
@@ -113,7 +113,7 @@ template. No release writes such a note: the mechanism that would produce
 it is the release path's, row 7 of the register, and it did not exist
 when the decision was accepted or when path 4 implemented `update`.
 
-**What it cost.** [S03](../project/coding-paths/CP-CAIRN-009/steps/S03.md)
+**What it cost.** [S03](../../project/coding-paths/CP-CAIRN-009/steps/S03.md)
 implemented what could be implemented — the diff alone, which the
 decision allows where a note is missing — and wrote in its plan that no
 release produces a note, where nobody scoping the release will read it.

@@ -13,7 +13,7 @@ cairn:
 Written by the agent that ran Crumbz's
 [CP-CAIRN-UPDATE-027](https://github.com/sinlalune/crumbz/tree/main/project/coding-paths/CP-CAIRN-UPDATE-027)
 — Claude Code — on 2026-09-16, from that path's step records, under
-[ADR-028](../docs/adr/ADR-028-a-feedback-file-when-nothing-broke.md).
+[ADR-028](../../docs/adr/ADR-028-a-feedback-file-when-nothing-broke.md).
 Crumbz had installed 1.0.0 from `e26f19d` on 2026-09-03, run twenty-six
 paths on it, and edited its checker three times as control-plane paths of
 its own. `npx cairn-protocol@1.1.0 update --take tools/cairn-check.mjs`
@@ -35,7 +35,7 @@ paths of its own in the week of 2026-09-04 — step supersession
 (CP-CAIRN-SUPERSESSION-005), provisional resolution
 (CP-CAIRN-PROVISIONAL-006), the detached checkout
 (CP-CAIRN-DETACHED-CHECKOUT-007) — written up in
-[the closure post-mortem](./1.1/2026-09-04-crumbz-closure-checker-repairs.md).
+[the closure post-mortem](../1.1/2026-09-04-crumbz-closure-checker-repairs.md).
 Before the path could be opened, the writer read the two checkers side by
 side to learn which of the three 1.1.0 had absorbed, searching the
 release's checker for Crumbz's own function names, and concluded that it

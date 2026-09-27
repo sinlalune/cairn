@@ -15,12 +15,12 @@ adr:
 Status: accepted · 2026-09-21 · written by CP-CAIRN-012, S01
 
 **Promoted from** the owner's
-[decisions page](../../feedbacks/2026-09-21-cairn-1-2-decisions.md) at blob
+[decisions page](../../feedbacks/1.2/2026-09-21-cairn-1-2-decisions.md) at blob
 `cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` (Q1, first option) and the
-[asks note](../../feedbacks/2026-09-21-cairn-1-2-the-asks.md) at blob
+[asks note](../../feedbacks/1.2/2026-09-21-cairn-1-2-the-asks.md) at blob
 `837262d5b3a761ef14d14bad0be8278133256e53` (theme 1, K01 and K02). Both
 lines come from observations 1 and 3 of
-[CP-CAIRN-009's writer](../../feedbacks/2026-09-15-cp-cairn-009-writer-feedback.md).
+[CP-CAIRN-009's writer](../../feedbacks/1.2/2026-09-15-cp-cairn-009-writer-feedback.md).
 All three notes stay exactly as they were.
 
 ## Context

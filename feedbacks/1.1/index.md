@@ -11,7 +11,7 @@ timestamp: 2026-09-21T00:00:00Z
 A note moves here when a release has answered it: every ask it makes is
 either implemented and released, or refused by the owner in writing. The
 convention is the owner's ruling of 2026-09-21 on
-[the third observation of Atomik's adoption](../2026-09-21-atomik-adopts-1-1.md):
+[the third observation of Atomik's adoption](../1.2/2026-09-21-atomik-adopts-1-1.md):
 treated notes move into `feedbacks/<release>/`, and the folder answers the
 question by being looked at. The notes stay exactly as they were below their
 frontmatter; only their relative links moved one level with them, and the

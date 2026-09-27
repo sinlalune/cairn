@@ -26,7 +26,7 @@ Atomik runs release 1.1.0 and diverges from it in exactly one file:
 ahead to carry the two `links` exemptions the release dropped and ruled
 the adopter's own while giving the adopter no way to declare them. Only a
 Cairn change retires it — the configuration field asked for in the
-adoption note, which [ADR-037](../docs/adr/ADR-037-a-repository-declares-its-link-exemptions.md)
+adoption note, which [ADR-037](../../docs/adr/ADR-037-a-repository-declares-its-link-exemptions.md)
 decided and coding path 2 of 1.2 landed as `linkExemptions`.
 
 Everything else is the host half working as designed: ten edited kit

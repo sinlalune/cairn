@@ -7,13 +7,13 @@ timestamp: 2026-09-26T00:00:00Z
 cairn:
   id: CP-CAIRN-017
   route: full
-  status: running
-  current_step: S01
+  status: ready
+  current_step: S10
   base_commit: 3ed0f8cd8921381ab3e195e9095df6ead2514c28
   branch: path/cp-cairn-017
   assigned_writer: cp-cairn-017-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: c8b5b269570f99fc93735a8b5e2a6686159583e7
   resolution: null
   writes:
     - CHANGELOG.md
@@ -28,6 +28,7 @@ cairn:
     - feedbacks/**
     - project/backlog/**
     - docs/adr/**
+    - docs/architecture/01-cairn-1-1.md
     - docs/architecture/02-cairn-1-2.md
     - docs/modules/application.md
     - docs/modules/site.md
@@ -35,9 +36,17 @@ cairn:
     - tools/cairn.mjs
     - tools/cairn-check.mjs
     - tools/cairn-fixture.test.mjs
+    - tools/cairn-check.test.mjs
     - skills/cairn-open/**
+    - skills/cairn-code/**
+    - skills/ponytail/**
+    - skills/ponytail-review/**
+    - docs/inputs/index.md
     - skills/cairn-unit/**
     - project/coding-paths/index.md
+    - project/coding-paths/CP-CAIRN-011/index.md
+    - project/coding-paths/CP-CAIRN-012/index.md
+    - project/coding-paths/CP-CAIRN-015/index.md
     - project/coding-paths/CP-CAIRN-017/**
   governs:
     - docs/architecture/02-cairn-1-2.md@7629b51a86e8da3ee999ba6542e02f195ca1ffab
@@ -84,7 +93,7 @@ cost a line or a function and leave a defect in every adopter's hands if
 untaken — the empty `steps/` folder, the unit skill never naming
 `current_step`, the generated bootloader's false sentence on the skills,
 and a concept root not named `concepts` clearing no note — and, with
-them, the two sentences [Atomik's closing report](../../../feedbacks/2026-09-26-atomik-adoption-finished.md)
+them, the two sentences [Atomik's closing report](../../../feedbacks/1.2/2026-09-26-atomik-adoption-finished.md)
 asks of the unit skill: print, don't remember; write the review into the
 step record before the commit. The three that change no behaviour for an
 adopter — the shared link pattern, the audit tool's copied reading, the
@@ -105,7 +114,12 @@ The owner ruled on 2026-09-26: *take four plus the two*.
       its author's cell while it counts a path with no record; ADR-031
       gains a line naming it, the 1.2 page is amended in place and marked,
       the records' index lists it with no gap, and the backlog item that
-      asked for it is deleted in the same unit.
+      asked for it is deleted in the same unit. A second record, ADR-046,
+      states the two rulings the release met — the line per changed
+      template in the changelog, superseding ADR-015 decision 2's printed
+      line, and the reader checking a claim by running it, amending
+      ADR-017's first consequence — each marked on the record it changes
+      and listed in the index.
 - [ ] Four backlog items are answered and deleted in the unit that lands
       them: the open skill's registration commit carries `steps/` or its
       first unit creates it, and this repository's registration sequence
@@ -188,11 +202,17 @@ The owner ruled on 2026-09-26: *take four plus the two*.
 - [ ] Nothing under `.github/`, `spec/index.md`, `spec/concepts/` or
       `spec/reference/` other than the conformance page changes; the
       skills change only in the two sentences and the two clauses named
-      above, the checker only in `conceptLinkTargets` and its fixture, the
-      installer only in its header comment and the bootloader template; the eight
-      governing documents other than the 1.2 page and ADR-031 are
-      byte-identical at the candidate to what they are at `base_commit`,
-      and those two change only where S01 and the opening sentence say.
+      above, in one clause of the unit skill's fourth movement from the
+      same report — the reader checks a claim by running the command that
+      prints it — and in `cairn-code`'s lines on Ponytail, brought to ADR-036,
+      the checker only in `conceptLinkTargets`, its fixture and its unit
+      test, the installer only in its header comment and the bootloader
+      template; the governing documents other than the 1.2 page, ADR-031
+      and ADR-015 are byte-identical at the candidate to what they are at
+      `base_commit`, and those three change only where S01, S03, S08 and
+      the opening sentence say — every document here excepted in the relative
+      links to the notes S07 moves into `feedbacks/1.2/`, rewritten one
+      level down and nothing else.
 - [ ] Every completed step has one self-contained step record naming the
       definition-of-done item it advances, a refreshed resume section and a
       `current_step` that names it, one commit after a gate read green, a
@@ -245,7 +265,108 @@ the four items that leave a defect in an adopter's hands and the closing
 report's two sentences, the three structural items left to the next row.
 The owner's go-ahead was given in the chat and is this acceptance
 (ADR-001 decisions 1 and 2), and the record lands on the trunk directly.
-The units run in a fresh session. Amendments: none.
+The units run in a fresh session. Amendments: four, below.
+
+### Amendment of 2026-09-26 — `cairn-code` brought to ADR-036
+
+S05's fresh reader found `skills/cairn-code/SKILL.md` still naming
+Ponytail at the tag `v4.9.0` and telling the adopter to install its two
+skills in the harness — the pin ADR-036 removed, and the install the kit
+has done since row 3. 1.2.0 would ship a skill that contradicts its own
+record. The owner was asked in the chat whether to fix it here or leave
+it to the backlog, and chose to fix it here.
+
+This acceptance supersedes the one above it. Item 9 lets the skills
+change in `cairn-code`'s lines on Ponytail and the checker in its unit
+test, and names ADR-015 beside the 1.2 page and ADR-031 as the governing
+documents that change, where S03 says — the contradiction S03 recorded
+between items 3 and 9 is resolved in item 3's favour; `writes:` gains
+`skills/cairn-code/**`. The other ten items are the text they were
+accepted with.
+
+```yaml
+decision: accepted
+accepted_by: sinlalune
+accepted_roles: [initiator, reviewer]
+accepted_at: 2026-09-26T14:09:07Z
+scope_ref: project/coding-paths/CP-CAIRN-017/index.md#definition-of-done
+scope_digest: sha256:7fe3b9b6b2ef8eb50d250c1808223831343651aa09b39c7fa4ef3330bcd96fd6
+supersedes: 2026-09-26T10:59:38Z
+```
+
+### Amendment of 2026-09-27 — the links to the notes S07 moves
+
+S07 found that moving the thirteen notes 1.2 answered breaks the
+relative links 31 files hold to them — among them ADR-038 and ADR-039,
+twelve other records of 1.2, both architecture pages, the register and
+the records of CP-CAIRN-011, 012 and 015 — and `links` refuses a broken
+link; the move into `feedbacks/1.1/` rewrote its links the same way.
+Item 9 kept the governing records byte-identical, and four of the files
+were outside `writes:`. The owner was asked in the chat and chose to
+amend and move all.
+
+This acceptance supersedes the one above it. Item 9 excepts, in every
+document, the relative links to the notes S07 moves, rewritten one level
+down and nothing else; `writes:` gains `docs/architecture/01-cairn-1-1.md`
+and the three path records. The other ten items are the text they were
+accepted with.
+
+```yaml
+decision: accepted
+accepted_by: sinlalune
+accepted_roles: [initiator, reviewer]
+accepted_at: 2026-09-27T16:05:58Z
+scope_ref: project/coding-paths/CP-CAIRN-017/index.md#definition-of-done
+scope_digest: sha256:ba32bf01329a6871b425d8fe7d11ff507ea9fa8808df55e5cca10ddb15ffca25
+supersedes: 2026-09-26T14:09:07Z
+```
+
+### Amendment of 2026-09-27 — the reader checks a claim by running it
+
+S07's second reader found that Atomik's closing report asks a third
+thing under its *change to Cairn*: tell the fresh reader to check claims
+by running commands, which the unit skill's fourth movement did not say;
+the note could not move with that ask open. The owner was asked in the
+chat — add the clause, refuse it in writing, or keep the note open — and
+chose to add it.
+
+This acceptance supersedes the one above it. Item 9 lets the unit skill
+change in one clause of its fourth movement. The other ten items are the
+text they were accepted with.
+
+```yaml
+decision: accepted
+accepted_by: sinlalune
+accepted_roles: [initiator, reviewer]
+accepted_at: 2026-09-27T16:14:34Z
+scope_ref: project/coding-paths/CP-CAIRN-017/index.md#definition-of-done
+scope_digest: sha256:020a85836b50eefd7863381d85bca4efa79e195df22ee9c30fff033e51ffa55d
+supersedes: 2026-09-27T16:05:58Z
+```
+
+### Amendment of 2026-09-27 — ADR-046, from the closing read
+
+The fresh coherence reader of the first candidate, `58d4080`, found that
+it contradicts ADR-015 decision 2 — the decision still has `update` print
+the line per changed template, and the owner's ruling that the line lives
+in the changelog stood only in this record — and that ADR-017's first
+consequence was amended on a ruling this record alone carries. The owner
+was asked in the chat and chose a record and a new candidate: ADR-046,
+with the reader's four small findings the owner picked.
+
+This acceptance supersedes the one above it. Item 1 names a second
+record, ADR-046; item 9 lets ADR-015 change where S08 says. The other
+ten items are the text they were accepted with. `58d4080` is void.
+
+```yaml
+decision: accepted
+accepted_by: sinlalune
+accepted_roles: [initiator, reviewer]
+accepted_at: 2026-09-27T17:32:17Z
+scope_ref: project/coding-paths/CP-CAIRN-017/index.md#definition-of-done
+scope_digest: sha256:f50c0e344efa39309e23f6baab0a6ca77dd6dd5145b6d8be4a256b02085df131
+supersedes: 2026-09-27T16:14:34Z
+```
 
 ## Documentation coverage
 
@@ -258,7 +379,7 @@ The units run in a fresh session. Amendments: none.
 - The seven records pinned in `governs:` after it — each unit reads the
   decisions it implements at their *what this changes* line before it
   writes.
-- `feedbacks/2026-09-21-cairn-1-2-the-asks.md` and the decisions page —
+- `feedbacks/1.2/2026-09-21-cairn-1-2-the-asks.md` and the decisions page —
   the lines the `feedbacks/1.2/` index answers one by one.
 - `project/coding-paths/CP-CAIRN-011/index.md` and its steps — how the
   1.1 release ran: the README, the site, the budget, the update of this
@@ -293,23 +414,52 @@ The units run in a fresh session. Amendments: none.
 
 Forward steps live in [plan.md](./plan.md) until they are executed.
 
-- **S01** — not started.
+- **S01** — the milestone rule's record: ADR-045, ADR-031 marked, the
+  1.2 page amended, the backlog item deleted and chapter 4's sentence
+  filed. [Record](./steps/S01.md).
+- **S02** — the four backlog items and the unit skill's two sentences:
+  concept links resolved against the folder and the declared root, the
+  first unit makes `steps/`, `current_step` set, print don't remember,
+  the review before the commit, the bootloader's line. [Record](./steps/S02.md).
+- **S03** — the changelog: 1.2.0's section, the adopters' repairs by path
+  id, the line per changed template; *pending* cleared in ADR-015 and row
+  5. [Record](./steps/S03.md).
+- **S04** — the counts written once: the budget table at 1.2.0, the entry
+  chain past its target, the four restatements linked; the owner's ECOS
+  notes merged in. [Record](./steps/S04.md).
+- **S05** — the README and the site for 1.2, the quick starts and the
+  build run; `cairn-code` brought to ADR-036 by the amendment of
+  2026-09-26. [Record](./steps/S05.md).
+- **S06** — this repository updated with its own kit: 1.2.0 in the lock
+  and the pointer page, Ponytail v4.10.0, three concept indexes declined,
+  the package and the site kept to Cairn's skills. [Record](./steps/S06.md).
+- **S07** — thirteen notes treated by 1.2 in `feedbacks/1.2/`, ADR-038
+  decision 4's sentence, the reader's clause in the unit skill, the 1.2
+  page's opening, the register rows; two amendments. [Record](./steps/S07.md).
+- **S08** — ADR-046, from the closing read of `58d4080`: the line per
+  changed template in the changelog, the reader running commands; the
+  kit's generated files pinned at a clean commit. [Record](./steps/S08.md).
+- **S09** — the changelog names what `concept-orphan` no longer counts,
+  from the closing read of `a25f85f`. [Record](./steps/S09.md).
+- **S10** — a link in frontmatter clears no concept note, from the
+  request's reviewer on `b4640a9`. [Record](./steps/S10.md).
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : the registration commit — this record and the live view, nothing else, on origin/main; unit 0
-unit   : 0
+commit : c8b5b269570f99fc93735a8b5e2a6686159583e7 — C, the fourth candidate: S10
+unit   : 10
 base   : 3ed0f8cd8921381ab3e195e9095df6ead2514c28
 trunk  : 3ed0f8cd8921381ab3e195e9095df6ead2514c28 — origin/main at registration
 ```
 
 ### Next action
 
-Start S01 with `cairn-unit` in the path's worktree: ADR-045, the
-milestone rule's record, as the plan's first item says.
+The owner reads request #35, opens the site and the README, runs one
+quick start, and merges; then the integrating commit on the trunk, the
+tag `1.2.0` on it, the owner's publish.
 
 ### Blockers
 

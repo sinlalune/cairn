@@ -15,13 +15,13 @@ adr:
 Status: accepted · 2026-09-21 · written by CP-CAIRN-012, S02
 
 **Promoted from** the owner's
-[decisions page](../../feedbacks/2026-09-21-cairn-1-2-decisions.md) at blob
+[decisions page](../../feedbacks/1.2/2026-09-21-cairn-1-2-decisions.md) at blob
 `cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` (Q6, first option; Q9 and Q10,
-first option) and the [asks note](../../feedbacks/2026-09-21-cairn-1-2-the-asks.md)
+first option) and the [asks note](../../feedbacks/1.2/2026-09-21-cairn-1-2-the-asks.md)
 at blob `837262d5b3a761ef14d14bad0be8278133256e53` (theme 3, K12, K13,
 K14 and K16). The four lines come from
-[Atomik's adoption note](../../feedbacks/2026-09-21-atomik-adopts-1-1.md),
-observations 4 and 5, [Crumbz's update note](../../feedbacks/2026-09-16-crumbz-update-to-1-1.md),
+[Atomik's adoption note](../../feedbacks/1.2/2026-09-21-atomik-adopts-1-1.md),
+observations 4 and 5, [Crumbz's update note](../../feedbacks/1.2/2026-09-16-crumbz-update-to-1-1.md),
 observation 6, and [the release path's S04](../../project/coding-paths/CP-CAIRN-011/steps/S04.md).
 All of them stay exactly as they were.
 
