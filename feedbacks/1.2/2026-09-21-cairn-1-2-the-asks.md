@@ -13,7 +13,7 @@ cairn:
 Ten notes in this folder, the release path's own step records, the journal
 entry of path 6 and two brainstorm notes end with a change to Cairn that
 nothing has made. This note lists every ask once, as
-[the 1.1 rulings note](./1.1/2026-09-06-cairn-1-1-rulings.md) did for the
+[the 1.1 rulings note](../1.1/2026-09-06-cairn-1-1-rulings.md) did for the
 notes 1.1 answered. Where two sources ask the same thing it appears once and
 names both. Every line was read against the tree at `a5ac064` on
 2026-09-21: *live* means the code, skill or page still lacks what is asked;
@@ -40,10 +40,10 @@ Sources by letter: **W** [CP-CAIRN-009's writer](./2026-09-15-cp-cairn-009-write
 **P** [the protected trunk](./2026-09-21-atomik-opens-a-path-on-a-protected-trunk.md),
 **C** [the channel](./2026-09-21-the-channel-an-adopter-cannot-reach.md),
 **E** the four ECOS notes of 2026-09-17 and 2026-09-18 — [the merge before the administrative commit](./2026-09-17-ecos-merge-before-administrative-commit.md), [a deferral has nowhere to land](./2026-09-18-ecos-a-deferral-has-nowhere-to-land.md), [checkboxes inside the scope digest](./2026-09-18-ecos-checkboxes-inside-the-scope-digest.md) and [the coherence questions](./2026-09-18-ecos-coherence-questions-need-a-fresh-reader.md), merged here on 2026-09-21 while this note was written,
-**J** [path 6's journal entry](../project/log/2026-09-15-cp-cairn-010.md),
-**R** [the release path](../project/coding-paths/CP-CAIRN-011/index.md), S01, S03 and S04,
-**B** the two brainstorm notes of 2026-09-16 — [an update skill](../project/brainstorm/2026-09-16-an-update-skill.md)
-and [what the harness loads](../project/brainstorm/2026-09-16-what-the-harness-loads.md).
+**J** [path 6's journal entry](../../project/log/2026-09-15-cp-cairn-010.md),
+**R** [the release path](../../project/coding-paths/CP-CAIRN-011/index.md), S01, S03 and S04,
+**B** the two brainstorm notes of 2026-09-16 — [an update skill](../../project/brainstorm/2026-09-16-an-update-skill.md)
+and [what the harness loads](../../project/brainstorm/2026-09-16-what-the-harness-loads.md).
 
 ## 1. What the open skill reads before the go-ahead
 
@@ -314,5 +314,5 @@ is written in no note, record or entry, and is not a line here until it is.
 - `project/coding-paths/CP-CAIRN-011/steps/S03.md` and `S04.md`, and the
   register's 1.2 row as CP-CAIRN-011 S05 opened it and the two brainstorm
   commits and three feedback merges grew it.
-- [The 1.1 rulings note](./1.1/2026-09-06-cairn-1-1-rulings.md), for the
+- [The 1.1 rulings note](../1.1/2026-09-06-cairn-1-1-rulings.md), for the
   checkbox-as-ruling form.

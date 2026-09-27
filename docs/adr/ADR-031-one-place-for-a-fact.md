@@ -15,14 +15,14 @@ adr:
 Status: accepted · 2026-09-21 · written by CP-CAIRN-012, S01 · decision 2's *that path's* superseded for a milestone by ADR-045 on 2026-09-25
 
 **Promoted from** the owner's
-[decisions page](../../feedbacks/2026-09-21-cairn-1-2-decisions.md) at blob
+[decisions page](../../feedbacks/1.2/2026-09-21-cairn-1-2-decisions.md) at blob
 `cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` (Q3, Q4 and Q5, first option
-of each) and the [asks note](../../feedbacks/2026-09-21-cairn-1-2-the-asks.md)
+of each) and the [asks note](../../feedbacks/1.2/2026-09-21-cairn-1-2-the-asks.md)
 at blob `837262d5b3a761ef14d14bad0be8278133256e53` (theme 1, K03, K04 and
 K05). The three lines come from observations 2 and 4 of
-[CP-CAIRN-009's writer](../../feedbacks/2026-09-15-cp-cairn-009-writer-feedback.md),
+[CP-CAIRN-009's writer](../../feedbacks/1.2/2026-09-15-cp-cairn-009-writer-feedback.md),
 and K03 carries the warning of
-[Atomik's adoption note](../../feedbacks/2026-09-21-atomik-adopts-1-1.md),
+[Atomik's adoption note](../../feedbacks/1.2/2026-09-21-atomik-adopts-1-1.md),
 observation 3, that whatever says *treated* must not be a fourth
 restatement. All four notes stay exactly as they were.
 

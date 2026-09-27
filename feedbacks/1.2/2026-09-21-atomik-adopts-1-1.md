@@ -12,16 +12,16 @@ cairn:
 
 Written by the agent that ran the adoption — Claude Code — on 2026-09-21.
 
-It is an adopter's field note in the first sense [the index](./index.md)
+It is an adopter's field note in the first sense [the index](../index.md)
 gives this folder — what an adopter hit, read from their repository — and
 observations 2, 3 and 5 are also what
-[ADR-028](../docs/adr/ADR-028-a-feedback-file-when-nothing-broke.md)
+[ADR-028](../../docs/adr/ADR-028-a-feedback-file-when-nothing-broke.md)
 decision 1 names: a gate that stayed green and a protocol that still cost
 more than it should. Observation 1 is a red gate, which ADR-028 leaves to
 the post-mortem. It is here because the red was in an adopter's repository
 at `adopt`, where no path, no unit and no post-mortem of this protocol
 reaches — the channel the folder's first sense exists for, as
-[the closure note of 2026-09-04](./1.1/2026-09-04-crumbz-closure-checker-repairs.md)
+[the closure note of 2026-09-04](../1.1/2026-09-04-crumbz-closure-checker-repairs.md)
 already is — and because what it argues is a change to Cairn.
 
 Atomik is where the protocol was written: this repository's genesis commit
@@ -71,7 +71,7 @@ const docs = markdownCorpus().filter((file) => !linkExempt(file))
 The exemptions left in `e18bbe4`, CP-CAIRN-001 S02, and the consequence
 was seen and ruled on at once: `adopt` was run against Atomik at
 `46bdd11` in that same path's S06, and
-[its record](../project/coding-paths/CP-CAIRN-001/steps/S06.md) at blob
+[its record](../../project/coding-paths/CP-CAIRN-001/steps/S06.md) at blob
 `0184093c7ab056bc3a961014faa425bcf0872f41` says, of these same five links
 in these same two classes —
 

@@ -15,11 +15,11 @@ adr:
 Status: accepted · 2026-09-21 · written by CP-CAIRN-012, S04 · decision 1 amended by ADR-044 on 2026-09-24
 
 **Promoted from** the owner's
-[decisions page](../../feedbacks/2026-09-21-cairn-1-2-decisions.md) at blob
+[decisions page](../../feedbacks/1.2/2026-09-21-cairn-1-2-decisions.md) at blob
 `cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` (Q20, first option) and the
-[asks note](../../feedbacks/2026-09-21-cairn-1-2-the-asks.md) at blob
+[asks note](../../feedbacks/1.2/2026-09-21-cairn-1-2-the-asks.md) at blob
 `837262d5b3a761ef14d14bad0be8278133256e53` (theme 7, K35). The line
-comes from [ECOS's fourth note](../../feedbacks/2026-09-18-ecos-coherence-questions-need-a-fresh-reader.md).
+comes from [ECOS's fourth note](../../feedbacks/1.2/2026-09-18-ecos-coherence-questions-need-a-fresh-reader.md).
 All three stay exactly as they were. It supersedes no record: it extends
 [ADR-017](./ADR-017-the-review-movement.md) decision 1 — the writer's
 own agent in a fresh context — from the unit's diff to the candidate.

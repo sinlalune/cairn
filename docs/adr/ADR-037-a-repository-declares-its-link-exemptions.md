@@ -15,11 +15,11 @@ adr:
 Status: accepted · 2026-09-21 · written by CP-CAIRN-012, S03
 
 **Promoted from** the owner's
-[decisions page](../../feedbacks/2026-09-21-cairn-1-2-decisions.md) at blob
+[decisions page](../../feedbacks/1.2/2026-09-21-cairn-1-2-decisions.md) at blob
 `cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` (Q11, first option) and the
-[asks note](../../feedbacks/2026-09-21-cairn-1-2-the-asks.md) at blob
+[asks note](../../feedbacks/1.2/2026-09-21-cairn-1-2-the-asks.md) at blob
 `837262d5b3a761ef14d14bad0be8278133256e53` (theme 4, K21). The line
-comes from [Atomik's adoption note](../../feedbacks/2026-09-21-atomik-adopts-1-1.md),
+comes from [Atomik's adoption note](../../feedbacks/1.2/2026-09-21-atomik-adopts-1-1.md),
 observation 1. Both stay exactly as they were. It supersedes no record:
 the ruling of [CP-CAIRN-001's S06](../../project/coding-paths/CP-CAIRN-001/steps/S06.md)
 — *those exemptions were Atomik's* — stands, and this record gives that

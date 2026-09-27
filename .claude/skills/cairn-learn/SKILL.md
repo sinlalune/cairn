@@ -32,7 +32,7 @@ everything else is padding.
 
 The **learning note** is a concept note with an order, in the concept root's
 `learning` folder, from the
-[concept template](https://github.com/sinlalune/cairn/blob/df302781a2a326338ade01421e0196b9b2e41df1/spec/concepts/concept-template.md): the plain meaning
+[concept template](https://github.com/sinlalune/cairn/blob/01cef13cbeaf304aaf15ff0b811de3596d19ccf0/spec/concepts/concept-template.md): the plain meaning
 of the thing being learned first, then the steps in the order a reader builds
 it, each step linking the concept it rests on instead of restating it.
 

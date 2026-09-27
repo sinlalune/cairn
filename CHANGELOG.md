@@ -79,7 +79,8 @@ In the names of the pointer page, `cairn/README.md`:
   first unit makes `steps/`.
 - **`cairn-unit`**: a deferral names a file under `project/backlog/`; the
   review is written before the commit; every figure, id or outcome in a
-  record is pasted from a command's output; `current_step` is set each
+  record is pasted from a command's output, and the fresh reader checks a
+  claim by running the command that prints it; `current_step` is set each
   unit; a note about Cairn travels to Cairn (ADR-038).
 - **`cairn-close`**: the four coherence questions are a fresh context's
   read (ADR-043, ADR-044 decision 2); on `pull-request` the administrative
@@ -130,8 +131,8 @@ the pointer page and the lock, which nobody reconciles by hand.
   the plan read for placeholders and contradictions; the plain list; the two registration sequences; `steps/` made by the
   first unit.
 - `skills/cairn-unit/SKILL.md` — the backlog file for a deferral; the
-  review before the commit; print, don't remember; `current_step`; where a
-  note travels.
+  review before the commit; print, don't remember, for the writer and the
+  reader; `current_step`; where a note travels.
 - `tools/cairn-active.mjs` — the register's state cells.
 - `tools/cairn-audit.mjs` — the plain list; the coherence facts; a
   deferral pointed at its backlog file.

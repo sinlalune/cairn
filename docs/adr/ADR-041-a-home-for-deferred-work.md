@@ -15,11 +15,11 @@ adr:
 Status: accepted · 2026-09-21 · written by CP-CAIRN-012, S04
 
 **Promoted from** the owner's
-[decisions page](../../feedbacks/2026-09-21-cairn-1-2-decisions.md) at blob
+[decisions page](../../feedbacks/1.2/2026-09-21-cairn-1-2-decisions.md) at blob
 `cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` (Q18, first option) and the
-[asks note](../../feedbacks/2026-09-21-cairn-1-2-the-asks.md) at blob
+[asks note](../../feedbacks/1.2/2026-09-21-cairn-1-2-the-asks.md) at blob
 `837262d5b3a761ef14d14bad0be8278133256e53` (theme 7, K33). The line
-comes from [ECOS's second note](../../feedbacks/2026-09-18-ecos-a-deferral-has-nowhere-to-land.md).
+comes from [ECOS's second note](../../feedbacks/1.2/2026-09-18-ecos-a-deferral-has-nowhere-to-land.md).
 All three stay exactly as they were.
 
 ## Context

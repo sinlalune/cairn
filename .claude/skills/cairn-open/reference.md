@@ -82,4 +82,4 @@ retroactively in a `repair` unit, with `base_commit` at that point:
 git merge-base origin/main path/cp-example-001
 ```
 
-The full procedure is in [repair](https://github.com/sinlalune/cairn/blob/df302781a2a326338ade01421e0196b9b2e41df1/spec/reference/repair.md).
+The full procedure is in [repair](https://github.com/sinlalune/cairn/blob/01cef13cbeaf304aaf15ff0b811de3596d19ccf0/spec/reference/repair.md).

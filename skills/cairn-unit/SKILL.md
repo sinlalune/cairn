@@ -95,12 +95,13 @@ that apply to prose. Name any widening of `writes:` here.
 Hand the diff to a second context of your own agent — a fresh session, or a
 subagent, or your harness's own review command. Give it the diff and two
 criteria — the decision ladder `cairn-code` points at, and correctness — and
-nothing else: not the plan, not this conversation, not the step record. When
-no fresh context can be obtained — a subagent that hangs, a harness without
-one, a command that returns nothing — read the diff yourself against the same
-two criteria, and open the section with one line naming the reader: a fresh
-context and which kind, or you, with the reason and how long you waited
-(ADR-017, decision 4).
+nothing else: not the plan, not this conversation, not the step record. Tell
+it to check a claim by running the command that prints it, never by reading
+the prose alone. When no fresh context can be obtained — a subagent that
+hangs, a harness without one, a command that returns nothing — read the
+diff yourself against the same two criteria, and open the section with one
+line naming the reader: a fresh context and which kind, or you, with the
+reason and how long you waited (ADR-017, decision 4).
 
 Write what it returns into a `#### Review` section of the step, between the
 self-review and the verification, before the unit's commit and never after:

@@ -9,9 +9,9 @@ timestamp: 2026-09-22T00:00:00Z
 # Cairn 1.2 — what 1.1 taught, for a repository that is not this one
 
 **Promoted from** the owner's
-[decisions page](../../feedbacks/2026-09-21-cairn-1-2-decisions.md) at blob
+[decisions page](../../feedbacks/1.2/2026-09-21-cairn-1-2-decisions.md) at blob
 `cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` and the
-[asks note](../../feedbacks/2026-09-21-cairn-1-2-the-asks.md) at blob
+[asks note](../../feedbacks/1.2/2026-09-21-cairn-1-2-the-asks.md) at blob
 `837262d5b3a761ef14d14bad0be8278133256e53`, through the fourteen
 [decision records](../adr/index.md) ADR-030 to ADR-043, by
 [CP-CAIRN-012](../../project/coding-paths/CP-CAIRN-012/index.md). The two
@@ -20,7 +20,11 @@ they gather stay exactly as they were. This page states what the records
 decide as one shape, in the sections of [the 1.1 page](./01-cairn-1-1.md);
 where a sentence relies on a record, the record is named, and where a
 record supersedes one of 1.1, the 1.1 page's sentence keeps its words and
-carries a *superseded by* mark.
+carries a *superseded by* mark. *Since 2026-09-27*: its records are
+implemented by paths 1 to 4 of the
+[roadmap register](../../project/coding-paths/index.md)'s coding paths of
+1.2 and released as 1.2.0 by the fifth,
+[CP-CAIRN-017](../../project/coding-paths/CP-CAIRN-017/index.md).
 
 **Amended on 2026-09-24** by what path 1 of 1.2 left to a record,
 [ADR-044](../adr/ADR-044-what-path-1-of-1-2-left-to-a-record.md),

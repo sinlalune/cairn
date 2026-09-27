@@ -15,13 +15,13 @@ adr:
 Status: accepted · 2026-09-21 · written by CP-CAIRN-012, S02
 
 **Promoted from** the owner's
-[decisions page](../../feedbacks/2026-09-21-cairn-1-2-decisions.md) at blob
+[decisions page](../../feedbacks/1.2/2026-09-21-cairn-1-2-decisions.md) at blob
 `cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` (Q7, first option) and the
-[asks note](../../feedbacks/2026-09-21-cairn-1-2-the-asks.md) at blob
+[asks note](../../feedbacks/1.2/2026-09-21-cairn-1-2-the-asks.md) at blob
 `837262d5b3a761ef14d14bad0be8278133256e53` (theme 3, K17). The line
 comes from [the brainstorm note of 2026-09-16](../../project/brainstorm/2026-09-16-an-update-skill.md),
 where the owner said *look like we could use a cairn update skill*, and
-its evidence is [Crumbz's update](../../feedbacks/2026-09-16-crumbz-update-to-1-1.md),
+its evidence is [Crumbz's update](../../feedbacks/1.2/2026-09-16-crumbz-update-to-1-1.md),
 run by hand along the chronology that note wrote. Both stay exactly as
 they were.
 

@@ -55,7 +55,7 @@ Name the unit's **type** — it fixes what must move together:
 
 Where the violation is a published step record that was edited, the repair's
 own `cairn-unit` block declares it, in the shape and with the two commands
-[the path template](https://github.com/sinlalune/cairn/blob/df302781a2a326338ade01421e0196b9b2e41df1/spec/reference/path-template.md) gives. Both ids are
+[the path template](https://github.com/sinlalune/cairn/blob/01cef13cbeaf304aaf15ff0b811de3596d19ccf0/spec/reference/path-template.md) gives. Both ids are
 read, never chosen.
 
 Every figure, id or outcome written into a record is pasted from a
@@ -95,12 +95,13 @@ that apply to prose. Name any widening of `writes:` here.
 Hand the diff to a second context of your own agent — a fresh session, or a
 subagent, or your harness's own review command. Give it the diff and two
 criteria — the decision ladder `cairn-code` points at, and correctness — and
-nothing else: not the plan, not this conversation, not the step record. When
-no fresh context can be obtained — a subagent that hangs, a harness without
-one, a command that returns nothing — read the diff yourself against the same
-two criteria, and open the section with one line naming the reader: a fresh
-context and which kind, or you, with the reason and how long you waited
-(ADR-017, decision 4).
+nothing else: not the plan, not this conversation, not the step record. Tell
+it to check a claim by running the command that prints it, never by reading
+the prose alone. When no fresh context can be obtained — a subagent that
+hangs, a harness without one, a command that returns nothing — read the
+diff yourself against the same two criteria, and open the section with one
+line naming the reader: a fresh context and which kind, or you, with the
+reason and how long you waited (ADR-017, decision 4).
 
 Write what it returns into a `#### Review` section of the step, between the
 self-review and the verification, before the unit's commit and never after:

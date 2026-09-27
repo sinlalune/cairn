@@ -25,14 +25,14 @@ sentences below in ADR-028; a record is not rewritten in place, so this
 second edition carries it.
 
 **Promoted from** the owner's
-[decisions page](../../feedbacks/2026-09-21-cairn-1-2-decisions.md) at blob
+[decisions page](../../feedbacks/1.2/2026-09-21-cairn-1-2-decisions.md) at blob
 `cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` (Q12, second option; Q13,
 second option; Q14, first option; and the ruling recorded under *Already
-decided on 21/09*) and the [asks note](../../feedbacks/2026-09-21-cairn-1-2-the-asks.md)
+decided on 21/09*) and the [asks note](../../feedbacks/1.2/2026-09-21-cairn-1-2-the-asks.md)
 at blob `837262d5b3a761ef14d14bad0be8278133256e53` (theme 4, K22; theme
 5, K26, K27 and K28). The lines come from
-[the channel note](../../feedbacks/2026-09-21-the-channel-an-adopter-cannot-reach.md),
-observations 8, 9 and 10, and [Atomik's adoption note](../../feedbacks/2026-09-21-atomik-adopts-1-1.md),
+[the channel note](../../feedbacks/1.2/2026-09-21-the-channel-an-adopter-cannot-reach.md),
+observations 8, 9 and 10, and [Atomik's adoption note](../../feedbacks/1.2/2026-09-21-atomik-adopts-1-1.md),
 observation 3. All of them stay exactly as they were.
 
 ## Context

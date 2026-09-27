@@ -196,5 +196,5 @@ remote integration complete, cleanup incomplete
 ```
 
 When a rule has already been broken, do not tidy the history: the
-[repair procedures](https://github.com/sinlalune/cairn/blob/df302781a2a326338ade01421e0196b9b2e41df1/spec/reference/repair.md) give the sequence for
+[repair procedures](https://github.com/sinlalune/cairn/blob/01cef13cbeaf304aaf15ff0b811de3596d19ccf0/spec/reference/repair.md) give the sequence for
 each case.

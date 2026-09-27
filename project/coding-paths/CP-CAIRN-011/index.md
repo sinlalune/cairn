@@ -65,7 +65,7 @@ change, and wrong where the README is.
 
 **What 1.1 leaves for the next milestone, and where it is written.**
 Path 6's [journal entry](../../log/2026-09-15-cp-cairn-010.md) and the
-first [agent feedback file](../../../feedbacks/2026-09-15-cp-cairn-009-writer-feedback.md)
+first [agent feedback file](../../../feedbacks/1.2/2026-09-15-cp-cairn-009-writer-feedback.md)
 name what nobody owns: a placeholder in a record's surface name that
 nothing notices, a measured fact restated in five documents that nothing
 reconciles, a definition of done that contradicts a record it cites, a

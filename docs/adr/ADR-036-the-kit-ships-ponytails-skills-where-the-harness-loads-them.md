@@ -21,9 +21,9 @@ files*. The second half stands: `cairn-code` keeps only Cairn's own, and
 the ladder, the review and the five tags come from Ponytail.
 
 **Promoted from** the owner's
-[decisions page](../../feedbacks/2026-09-21-cairn-1-2-decisions.md) at blob
+[decisions page](../../feedbacks/1.2/2026-09-21-cairn-1-2-decisions.md) at blob
 `cfe60ef6804526f939e2d7467fbe1cbee5f8a9df` (Q8, second option) and the
-[asks note](../../feedbacks/2026-09-21-cairn-1-2-the-asks.md) at blob
+[asks note](../../feedbacks/1.2/2026-09-21-cairn-1-2-the-asks.md) at blob
 `837262d5b3a761ef14d14bad0be8278133256e53` (theme 3, K18). The line
 comes from [the brainstorm note of 2026-09-16](../../project/brainstorm/2026-09-16-what-the-harness-loads.md),
 where the owner asked *why not just adding ponytails skills extracting

@@ -9,7 +9,7 @@ tags: [feedback, cairn]
 
 **Movement:** cairn-close, steps 3 and 4, on `pull-request` transport with one
 owner holding every role — the same movement as
-[`2026-09-17-ecos-merge-before-administrative-commit.md`](./2026-09-17-ecos-merge-before-administrative-commit.md).
+[`2026-09-17-ecos-merge-before-administrative-commit.md`](./1.2/2026-09-17-ecos-merge-before-administrative-commit.md).
 
 **Cost:** that file already named this failure and already named its remedy:
 land `A` on the branch before asking for the reading. CP-R4-001 followed it

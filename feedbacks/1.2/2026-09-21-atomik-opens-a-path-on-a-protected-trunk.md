@@ -24,7 +24,7 @@ not resumed.
 ## 6. The one registration sequence the kit ships needs a trunk that takes a direct push
 
 **Where.** `cairn-open` step 3, run exactly as
-[its reference](../skills/cairn-open/reference.md) writes it, on a record
+[its reference](../../skills/cairn-open/reference.md) writes it, on a record
 already accepted and gate-green:
 
 ```
@@ -106,7 +106,7 @@ discovers.
 **Where.** After the rejection, the only remaining route was to carry the
 registration on the path branch and let one request land both — branch before
 registration, which `cairn-open` forbids and the
-[repair reference](../spec/reference/repair.md) recognises as a shape to
+[repair reference](../../spec/reference/repair.md) recognises as a shape to
 register retroactively. The gate refuses it, correctly and immediately:
 
 ```

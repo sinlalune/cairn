@@ -3,7 +3,7 @@ type: Cairn Folder Index
 title: Backlog
 description: Deferred work: one file per item a path deferred, until a path takes it.
 tags: [index, cairn]
-timestamp: 2026-09-26T00:00:00Z
+timestamp: 2026-09-27T00:00:00Z
 ---
 
 # Backlog
