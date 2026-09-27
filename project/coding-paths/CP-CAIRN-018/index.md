@@ -7,13 +7,13 @@ timestamp: 2026-09-27T00:00:00Z
 cairn:
   id: CP-CAIRN-018
   route: full
-  status: running
+  status: ready
   current_step: S01
   base_commit: f78c338f8f83596c3a87a10010f193c2e9ea5e3e
   branch: path/cp-cairn-018
   assigned_writer: cp-cairn-018-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: 54dc9978fba1950baaae99f3f93e383aac4284ed
   resolution: null
   writes:
     - docs/adr/**
@@ -120,7 +120,7 @@ record. Amendments: none.
 ### Checkpoint
 
 ```text
-commit : 78628c4d9edbe45b264b400441e3a24f34fab978 — the registration commit
+commit : 54dc9978fba1950baaae99f3f93e383aac4284ed — C, the candidate: S01
 unit   : 1
 base   : f78c338f8f83596c3a87a10010f193c2e9ea5e3e
 trunk  : f78c338f8f83596c3a87a10010f193c2e9ea5e3e — origin/main at registration
@@ -128,9 +128,8 @@ trunk  : f78c338f8f83596c3a87a10010f193c2e9ea5e3e — origin/main at registratio
 
 ### Next action
 
-Close on S01's commit with `cairn-close`: the coherence read, `A`, the
-request, the owner's merge; then `1.2.0` tagged on the integrating
-commit.
+The owner reads the request and merges; then the integrating commit, and
+`1.2.0` tagged on it.
 
 ### Blockers
 
