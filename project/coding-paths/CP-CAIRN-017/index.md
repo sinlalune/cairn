@@ -7,14 +7,14 @@ timestamp: 2026-09-26T00:00:00Z
 cairn:
   id: CP-CAIRN-017
   route: full
-  status: ready
+  status: done
   current_step: S10
   base_commit: 3ed0f8cd8921381ab3e195e9095df6ead2514c28
   branch: path/cp-cairn-017
   assigned_writer: cp-cairn-017-writer
   depends_on: []
   subject_commit: c8b5b269570f99fc93735a8b5e2a6686159583e7
-  resolution: null
+  resolution: completed
   writes:
     - CHANGELOG.md
     - README.md
