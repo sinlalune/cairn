@@ -7,13 +7,13 @@ timestamp: 2026-09-26T00:00:00Z
 cairn:
   id: CP-CAIRN-017
   route: full
-  status: running
+  status: ready
   current_step: S09
   base_commit: 3ed0f8cd8921381ab3e195e9095df6ead2514c28
   branch: path/cp-cairn-017
   assigned_writer: cp-cairn-017-writer
   depends_on: []
-  subject_commit: null
+  subject_commit: b4640a9fafa405834a76e3d72158ed48067384a4
   resolution: null
   writes:
     - CHANGELOG.md
@@ -447,7 +447,7 @@ Forward steps live in [plan.md](./plan.md) until they are executed.
 ### Checkpoint
 
 ```text
-commit : a25f85f13b086e3cf1c2818c951a6f9de0c94749 — S08; the second candidate, void by the closing read
+commit : b4640a9fafa405834a76e3d72158ed48067384a4 — C, the candidate: S09
 unit   : 9
 base   : 3ed0f8cd8921381ab3e195e9095df6ead2514c28
 trunk  : 3ed0f8cd8921381ab3e195e9095df6ead2514c28 — origin/main at registration
@@ -455,10 +455,9 @@ trunk  : 3ed0f8cd8921381ab3e195e9095df6ead2514c28 — origin/main at registratio
 
 ### Next action
 
-Start S08 with `cairn-close` in the path's worktree: the trunk merged
-in, the gates bare, the register restored before the administrative
-commit, the fresh-context coherence read, the owner opening the site and
-the README and running one quick start, the merge.
+The owner reads the request, opens the site and the README, runs one
+quick start, and merges; then the integrating commit on the trunk, the
+tag `1.2.0` on it, the owner's publish.
 
 ### Blockers
 
