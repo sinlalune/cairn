@@ -8,7 +8,7 @@ cairn:
   id: CP-CAIRN-018
   route: full
   status: running
-  current_step: S02
+  current_step: S03
   base_commit: f78c338f8f83596c3a87a10010f193c2e9ea5e3e
   branch: path/cp-cairn-018
   assigned_writer: cp-cairn-018-writer
@@ -22,6 +22,7 @@ cairn:
     - README.md
     - docs/modules/application.md
     - CHANGELOG.md
+    - tools/cairn-pilot.test.mjs
     - project/coding-paths/index.md
     - project/coding-paths/CP-CAIRN-018/**
   governs:
@@ -116,21 +117,23 @@ record. Amendments: none.
 - **S01** — ADR-047 and every surface it names. [Record](./steps/S01.md).
 - **S02** — the rule the checker gained, explained, from the request's
   reviewer on `54dc997`. [Record](./steps/S02.md).
+- **S03** — the pilot test binds no withdrawn target, from the closing
+  read of `0b7ee43`. [Record](./steps/S03.md).
 
 ## Resume
 
 ### Checkpoint
 
 ```text
-commit : 850e2f9c8e5416dc9cc0ed2ea3aa9bddda0543d7 — A on the first candidate, void by the request's reviewer
-unit   : 2
+commit : 0b7ee43f6507f2518c4386cd899b2f17aa31a1fb — S02; the second candidate, void by the closing read
+unit   : 3
 base   : f78c338f8f83596c3a87a10010f193c2e9ea5e3e
 trunk  : f78c338f8f83596c3a87a10010f193c2e9ea5e3e — origin/main at registration
 ```
 
 ### Next action
 
-Close on S02's commit; then the owner reads request #36 and merges; then the integrating commit, and
+Close on S03's commit; then the owner reads request #36 and merges; then the integrating commit, and
 `1.2.0` tagged on it.
 
 ### Blockers
